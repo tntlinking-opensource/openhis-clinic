@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.taskmanagement.dao.TaskmangementDao">
+<sql id="taskManagementColumns">
+    a.id AS "id",
+    a.company.id AS "company.id",
+    IFNULL(company.name,'') AS "company.name",
+    a.created_by AS "createdBy",
+    a.created_time AS "createdTime",
+    a.updated_by AS "updatedBy",
+    a.updated_time AS "updatedTime",
+    a.del_flag AS "delFlage",
+    a.tasktype AS "tasktype",
+    a.taskname AS "taskname",
+    a.taskdescribe AS "taskdescribe",
+    a.taskaccessory AS "taskaccessory",
+    a.taskinitiator AS "taskinitiator",
+    a.taskdeadline AS "taskdeadline",
+    a.taskstatus AS "taskstatus",
+    a.auditresult AS "auditresult",
+    a.taskremark AS "taskremark",
+    IFNULL(b.name,'') AS "taskinitiatorname",
+</sql>
+
+<insert id="insertask">
+    insert into taskmanagement(
+    ID,
+    company_id,
+    CREATED_BY,
+    CREATED_TIME,
+    UPDATED_BY,
+    UPDATED_TIME,
+    del_flag,
+    tasktype,
+    taskname,
+    taskdescribe,
+    taskaccessory,
+    taskinitiator,
+    taskdeadline,
+    taskstatus,
+    auditresult,
+    taskremark
+    ) values(
+    #{ID},
+    #{companyId},
+    #{createdBy},
+    #{createdTime},
+    #{updatedBy},
+    #{updatedTime},
+    #{delFlag},
+    #{tasktype},
+    #{taskname},
+    #{taskdescribe},
+    #{taskaccessory},
+    #{taskinitiator},
+    #{taskdeadline},
+    #{taskstatus},
+    #{auditresult},
+    #{taskremark}
+    )
+</insert>
+    <update id="delete">
+        update taskmanagement set del_flag = "1" where id = #{ID}
+    </update>
+
+    <select id="selecttasktotal" resultType="com.geeke.taskmanagement.entity.taskmanagement">
+        select a.*,b.name taskinitiatorname from taskmanagement a
+        left join org_company oc on oc.id = a.company_id
+        left join sys_user b on a.taskinitiator=b.id and b.del_flag ='0'
+        where
+<!--        company_id in #{jgid}-->
+        a.del_flag = "0"
+        <if test="kssj!='' and jssj!='' and kssj!=null and jssj!=null">
+           and a.CREATED_TIME >=#{kssj} and a.CREATED_TIME &lt;=#{jssj}
+        </if>
+        <if test="tasktype!=null and tasktype!=''">
+            and a.tasktype=#{tasktype}
+        </if>
+        <if test="taskstatus!=null and taskstatus!=''">
+            and a.taskstatus=#{taskstatus}
+        </if>
+        <if test="taskname!='' and taskname!=null">
+            and (a.taskname like concat('%',#{taskname},'%'))
+        </if>
+    </select>
+
+    <select id="selecttasklist" resultType="com.geeke.taskmanagement.entity.taskmanagement">
+        select a.*,b.name taskinitiatorname from taskmanagement a
+        left join org_company oc on oc.id = a.company_id
+        left join sys_user b on a.taskinitiator=b.id and b.del_flag ='0'
+        where
+<!--        company_id in #{jgid}-->
+        a.del_flag = "0"
+        <if test="kssj!='' and jssj!='' and kssj!=null and jssj!=null">
+            and  a.CREATED_TIME >=#{kssj} and a.CREATED_TIME &lt;=#{jssj}
+        </if>
+        <if test="tasktype!=null and tasktype!=''">
+            and a.tasktype=#{tasktype}
+        </if>
+        <if test="taskstatus!=null and taskstatus!=''">
+            and a.taskstatus=#{taskstatus}
+        </if>
+        <if test="taskname!='' and taskname!=null">
+            and (a.taskname like concat('%',#{taskname},'%'))
+        </if>
+        order by a.updated_time desc
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="getusertree" resultType="com.geeke.taskmanagement.entity.Sysusertreeentity">
+
+        select id,name,parent_id patid  from org_company
+        where parent_id in (select parent_id  from org_company where id=#{companyId})
+        union all
+        select a.id,a.name,a.company_id patid from sys_user a
+        left join org_company b on a.company_id =b.id and b.del_flag ='0'
+        -- left join org_company c on b.parent_id  =c.parent_id and c.del_flag ='0'
+        where company_id in (
+        select id from org_company where parent_id in (select parent_id  from org_company where id=#{companyId}))
+    </select>
+
+    <insert id="savetaskexecutor">
+        insert into taskexecutor(
+        ID,
+        company_id,
+        CREATED_BY,
+        CREATED_TIME,
+        UPDATED_BY,
+        UPDATED_TIME,
+        taskmanagement_id,
+        clinic_id,
+        userid,
+        del_flag
+        ) values(
+        #{ID},
+        #{companyId},
+        #{createdBy},
+        #{createdTime},
+        #{updatedBy},
+        #{updatedTime},
+        #{taskmanagementid},
+        #{clinic_id},
+        #{userid},
+        #{delFlag}
+        )
+    </insert>
+
+    <select id="getfeedbacktable" resultType="com.geeke.taskmanagement.entity.feedbacktable">
+        select * from feedbacktable
+        where taskmanagement_id=#{taskmanagementid}
+    </select>
+    <select id="getById" resultType="com.geeke.taskmanagement.entity.taskmanagement">
+        select * from taskmanagement where id = #{id}
+    </select>
+
+    <update id="updateaudit">
+        update taskmanagement set auditresult=#{auditresult},taskremark=#{taskremark},UPDATED_BY=#{updatedBy},UPDATED_TIME=#{updatedTime},taskstatus=#{taskstatus}
+        where id=#{ID}
+    </update>
+    <update id="update">
+        update taskmanagement set
+        tasktype = #{tasktype},
+        taskname = #{taskname},
+        taskdescribe = #{taskdescribe},
+        taskaccessory = #{taskaccessory},
+        taskinitiator = #{taskinitiator},
+        taskdeadline = #{taskdeadline},
+        updated_by = #{updatedBy},
+        updated_time = #{updatedTime}
+        where id = #{ID}
+    </update>
+    <update id="release">
+        update taskmanagement set taskstatus = "1" where id = #{ID}
+    </update>
+
+    <insert id="savefeedbacktable">
+        insert into feedbacktable(
+        id,
+        company_id,
+        CREATED_BY,
+        CREATED_TIME,
+        UPDATED_BY,
+        UPDATED_TIME,
+        del_flag,
+        taskmanagement_id,
+        executeschedule,
+        audit_type,
+<!--        picture,-->
+        remark
+        ) values (
+        #{id},
+        #{companyId},
+        #{createdBy},
+        #{createdTime},
+        #{updatedBy},
+        #{updatedTime},
+        #{delFlag},
+        #{taskmanagementid},
+        #{executeschedule},
+        #{auditType},
+<!--        #{picture},-->
+        #{remark}
+        )
+    </insert>
+
+</mapper>

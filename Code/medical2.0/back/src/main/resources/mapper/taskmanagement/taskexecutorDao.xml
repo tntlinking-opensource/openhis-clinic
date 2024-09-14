@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.taskmanagement.dao.taskexecutorDao">
+<sql id="taskManagementColumns">
+    a.id AS "id",
+    a.created_by AS "createdBy",
+    a.created_time AS "createdTime",
+    a.updated_by AS "updatedBy",
+    a.updated_time AS "updatedTime",
+    a.del_flag AS "delFlage",
+    a.clinic_id AS "company.id",
+    IFNULL(oc.name,'') AS "company.name"
+</sql>
+    <delete id="delete" parameterType="com.geeke.taskmanagement.entity.taskmanagement">
+        delete from taskexecutor where taskmanagement_id = #{ID}
+    </delete>
+
+    <select id="list" resultType="com.geeke.taskmanagement.entity.taskexecutor" parameterType="string">
+        select
+        <include refid="taskManagementColumns"></include>
+        from taskexecutor a
+        left join org_company oc on oc.id = a.clinic_id
+        where
+        a.del_flag = '0'
+        and a.taskmanagement_id = #{taskID}
+    </select>
+
+
+</mapper>

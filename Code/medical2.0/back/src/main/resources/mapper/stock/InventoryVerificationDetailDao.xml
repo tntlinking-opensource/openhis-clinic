@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.stock.dao.InventoryVerificationDetailDao">
+    
+    <sql id="inventoryVerificationDetailColumns">
+        a.id AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.inventory_verification_id AS "inventoryVerification.id",
+        a.drug_id AS "drug.id",
+        a.stuff_id AS "stuff.id",
+        a.current_inventory AS "currentInventory",
+        a.check_inventory AS "checkInventory",
+        a.profit_and_loss AS "profitAndLoss",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.remarks AS "remarks",
+        a.profit_and_loss_price AS "profitAndLossPrice",
+        a.medicinal_storage_id  AS 'medicinalStorageId',
+        IFNULL(msc.id,'') AS 'medicinalStorageControl.id',
+        IFNULL(msc.storage_stock,'') AS 'medicinalStorageControl.storageStock',
+        IFNULL(msc.used_stock,'') AS 'medicinalStorageControl.usedStock',
+        IFNULL(msc.occupy_stock,'') AS 'medicinalStorageControl.occupyStock',
+        IFNULL(msc.surplus_stock,'') AS 'medicinalStorageControl.surplusStock',
+        IFNULL(msc.reimburse_stock,'') AS 'medicinalStorageControl.reimburseStock',
+        IFNULL(ss.id,'') AS 'supplierStock.id',
+        IFNULL(ss.norms,'') AS 'supplierStock.norms',
+        IFNULL(ss.batch_no,'') AS 'supplierStock.batchNo',
+        IFNULL(ss.end_date,'') AS 'supplierStock.endDate',
+        IFNULL(factory.id,'') AS 'supplierStock.factory.id',
+        IFNULL(factory.name,'') AS 'supplierStock.factory.name',
+        IFNULL(supplierId.id,'') AS 'supplierStock.supplierId.id',
+        IFNULL(supplierId.name,'') AS 'supplierStock.supplierId.name'
+    </sql>
+    
+    <sql id="inventoryVerificationDetailJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN inventory_verification inventoryVerification ON inventoryVerification.id = a.inventory_verification_id
+        LEFT JOIN drug drug ON drug.id = a.drug_id
+        LEFT JOIN stuff stuff ON stuff.id = a.stuff_id
+        LEFT JOIN medicinal_storage_control msc ON msc.id = a.medicinal_storage_id
+        LEFT JOIN supplier_stock ss ON ss.id = msc.storage_id
+        LEFT JOIN manufacture_factory factory ON factory.id = ss.factory
+        LEFT JOIN supplier supplierId ON supplierId.id = ss.supplier_id
+    </sql>
+    <delete id="deleteByInventoryVerificationId">
+        delete from inventory_verification_detail where inventory_verification_id = #{inventoryVerificationId}
+    </delete>
+
+    <select id="get" resultType="com.geeke.stock.entity.InventoryVerificationDetail">
+        SELECT 
+            <include refid="inventoryVerificationDetailColumns"/>
+        FROM inventory_verification_detail a
+        <include refid="inventoryVerificationDetailJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM inventory_verification_detail a
+        <include refid="inventoryVerificationDetailJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+    <!--and if(company.is_institution=0, company.id = #{id}, (company.id = #{institution} or company.id = #{id}) )-->
+
+    <select id="listPage" resultType="com.geeke.stock.entity.InventoryVerificationDetail">
+        SELECT 
+            <include refid="inventoryVerificationDetailColumns"/>
+        FROM inventory_verification_detail a
+        <include refid="inventoryVerificationDetailJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY stuff.location_number ASC,stuff.id DESC
+            </when>            
+            <otherwise>
+                ORDER BY drug.location_number ASC,drug.id DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="listPages" resultType="com.geeke.stock.entity.InventoryVerificationDetail">
+        SELECT
+        <include refid="inventoryVerificationDetailColumns"/>
+        FROM inventory_verification_detail a
+        <include refid="inventoryVerificationDetailJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            and if(company.is_institution=0, company.id = #{id}, (company.id = #{institution} or
+            company.id = #{id}) )
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY stuff.location_number ASC,stuff.id DESC
+            </when>
+            <otherwise>
+                ORDER BY drug.location_number ASC,drug.id DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.stock.entity.InventoryVerificationDetail">
+        SELECT 
+            <include refid="inventoryVerificationDetailColumns"/>
+        FROM inventory_verification_detail a
+        <include refid="inventoryVerificationDetailJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getByInfoId" resultType="com.geeke.stock.entity.InventoryVerificationDetail">
+    SELECT
+    <include refid="inventoryVerificationDetailColumns"/>
+    FROM inventory_verification_detail a
+    <include refid="inventoryVerificationDetailJoins"/>
+    WHERE
+    a.inventory_verification_id = #{infoId} and a.profit_and_loss &lt;&gt; 0
+</select>
+
+    <insert id="insert">
+        INSERT INTO inventory_verification_detail(
+            id,
+            company_id,
+            inventory_verification_id,
+            drug_id,
+            stuff_id,
+            current_inventory,
+            check_inventory,
+            profit_and_loss,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            remarks,
+            profit_and_loss_price,
+            medicinal_storage_id
+        ) VALUES (
+            #{id},
+            #{company.id},                    
+            #{inventoryVerification.id},                    
+            #{drug.id},                    
+            #{stuff.id},                    
+            #{currentInventory},
+            #{checkInventory},
+            #{profitAndLoss},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate},
+            #{remarks},
+            #{profitAndLossPrice},
+            #{medicinalStorageId}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE inventory_verification_detail SET     
+            company_id = #{company.id},                    
+            inventory_verification_id = #{inventoryVerification.id},                    
+            drug_id = #{drug.id},                    
+            stuff_id = #{stuff.id},                    
+            current_inventory = #{currentInventory},
+            check_inventory = #{checkInventory},
+            profit_and_loss = #{profitAndLoss},
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            remarks = #{remarks},
+            profit_and_loss_price = #{profitAndLossPrice},
+            medicinal_storage_id = #{medicinalStorageId}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        DELETE FROM inventory_verification_detail
+        WHERE id = #{id}
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO inventory_verification_detail(
+            id,
+            company_id,
+            inventory_verification_id,
+            drug_id,
+            stuff_id,
+            current_inventory,
+            check_inventory,
+            profit_and_loss,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            remarks,
+            profit_and_loss_price,
+            medicinal_storage_id
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.company.id},                    
+            #{entity.inventoryVerification.id},                    
+            #{entity.drug.id},                    
+            #{entity.stuff.id},                    
+            #{entity.currentInventory},
+            #{entity.checkInventory},
+            #{entity.profitAndLoss},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.remarks},
+            #{entity.profitAndLossPrice},
+            #{entity.medicinalStorageId}
+        )
+        </foreach>
+    </insert>
+    <insert id="saveDrug">
+        INSERT INTO inventory_verification_detail(
+        id,
+        company_id,
+        inventory_verification_id,
+        drug_id,
+        stuff_id,
+        current_inventory,
+        check_inventory,
+        profit_and_loss,
+        create_by,
+        create_date,
+        update_by,
+        update_date,
+        remarks,
+        profit_and_loss_price,
+        medicinal_storage_id
+        ) VALUES
+        <foreach collection="medicinalStorageControls" item="item" open="" separator="," close="" index="index">
+            (
+                #{item.inventoryVerificationDetailId},
+                #{item.inventoryVerification.company.id},
+                #{item.inventoryVerification.id},
+                #{item.drug.id},
+                null,
+                #{item.storageStock},
+                #{item.storageStock},
+                0,
+                #{item.inventoryVerification.createBy},
+                #{item.inventoryVerification.createDate},
+                #{item.inventoryVerification.updateBy},
+                #{item.inventoryVerification.updateDate},
+                null,
+                0,
+                #{item.id}
+            )
+        </foreach>
+    </insert>
+    <insert id="saveStuff">
+        INSERT INTO inventory_verification_detail(
+        id,
+        company_id,
+        inventory_verification_id,
+        drug_id,
+        stuff_id,
+        current_inventory,
+        check_inventory,
+        profit_and_loss,
+        create_by,
+        create_date,
+        update_by,
+        update_date,
+        remarks,
+        profit_and_loss_price,
+        medicinal_storage_id
+        ) VALUES
+        <foreach collection="medicinalStorageControls" item="item" open="" separator="," close="" index="index">
+            (
+            #{item.inventoryVerificationDetailId},
+            #{item.inventoryVerification.company.id},
+            #{item.inventoryVerification.id},
+            null,
+            #{item.stuff.id},
+            #{item.storageStock},
+            #{item.storageStock},
+            0,
+            #{item.inventoryVerification.createBy},
+            #{item.inventoryVerification.createDate},
+            #{item.inventoryVerification.updateBy},
+            #{item.inventoryVerification.updateDate},
+            null,
+            0,
+            #{item.id}
+            )
+        </foreach>
+    </insert>
+
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE inventory_verification_detail
+        <set>           
+            <trim prefix="company_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.company.id}
+                </foreach>
+            </trim>
+            <trim prefix="inventory_verification_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.inventoryVerification.id}
+                </foreach>
+            </trim>
+            <trim prefix="drug_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.drug.id}
+                </foreach>
+            </trim>
+            <trim prefix="stuff_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.stuff.id}
+                </foreach>
+            </trim>
+            <trim prefix="current_inventory=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.currentInventory}
+                </foreach>
+            </trim>
+            <trim prefix="check_inventory=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.checkInventory}
+                </foreach>
+            </trim>
+            <trim prefix="profit_and_loss=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.profitAndLoss}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+            <trim prefix="remarks=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.remarks}
+                </foreach>
+            </trim>
+            <trim prefix="profit_and_loss_price=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.profitAndLossPrice}
+                </foreach>
+            </trim>
+            <trim prefix="medicinal_storage_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.medicinalStorageControl.id}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        DELETE FROM inventory_verification_detail
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+
+</mapper>

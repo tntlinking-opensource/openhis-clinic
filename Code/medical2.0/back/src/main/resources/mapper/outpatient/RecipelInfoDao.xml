@@ -1,0 +1,627 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.outpatient.dao.RecipelInfoDao">
+    
+    <sql id="recipelInfoColumns">
+        a.id AS "id",
+        a.name AS "name",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.registration_id AS "registration.id",
+        a.recipel_type AS "recipelType.value",
+        IFNULL(recipelType.name,'') AS "recipelType.name",
+        a.dosage AS "dosage",
+        a.recipel_use AS "recipelUse.value",
+        IFNULL(recipelUse.name,'') AS "recipelUse.name",
+        a.frequency AS "frequency.value",
+        IFNULL(frequency.name,'') AS "frequency.name",
+        a.take_frequency AS "takeFrequency.value",
+        IFNULL(takeFrequency.name,'') AS "takeFrequency.name",
+        a.single_dosage AS "singleDosage",
+        a.fee AS "fee",
+        a.amount_received_total AS "amountReceivedTotal",
+        a.is_pay AS "isPay",
+        a.remarks AS "remarks",
+        a.pay_date AS "payDate",
+        a.create_by AS "createBy",
+        a.is_dispension AS "isDispension",
+        a.create_date AS "createDate",
+        a.dispension_date AS "dispensionDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.del_flag AS "delFlag",
+        a.seq AS "seq",
+        a.small_type AS "smallType.value",
+        IFNULL(smallType.name,'') AS "smallType.name",
+        a.entrust AS "entrust",
+        a.status AS "status",
+        a.charge_status AS "chargeStatus",
+        a.dispension_status AS "dispensionStatus",
+        a.retreat_charge_date AS "retreatChargeDate",
+        a.retreat_dispension_date AS "retreatDispensionDate",
+        a.invalid_date AS "invalidDate",
+        a.is_follow_up AS "isFollowUp",
+        a.follow_up_date AS "followUpDate",
+        a.pay_user AS "payUser",
+        a.retreat_charge_user AS "retreatChargeUser",
+        a.retreat_dispension_user AS "retreatDispensionUser",
+        a.dispension_user AS "dispensionUser",
+        a.code AS "code",
+        a.retreat_date AS "retreatDate",
+        a.cure_type AS "cureType",
+        a.infuse_type AS "infuseType",
+        a.chronic_disease AS "chronicDisease",
+        a.chiness_notes AS "chinessNotes",
+        a.not_show AS "notShow"
+    </sql>
+    
+    <sql id="recipelInfoJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN registration registration ON registration.id = a.registration_id
+        LEFT JOIN sys_dict_item recipelType ON recipelType.value = a.recipel_type
+        LEFT JOIN sys_dict_item recipelUse ON recipelUse.value = a.recipel_use
+        LEFT JOIN sys_dict_item frequency ON frequency.value = a.frequency
+        LEFT JOIN sys_dict_item takeFrequency ON takeFrequency.value = a.take_frequency
+        LEFT JOIN sys_dict_item smallType ON smallType.value = a.small_type
+    </sql>
+    
+    <select id="get" resultType="com.geeke.outpatient.entity.RecipelInfo">
+        SELECT 
+            <include refid="recipelInfoColumns"/>
+        FROM recipel_info a
+        <include refid="recipelInfoJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM recipel_info a
+        <include refid="recipelInfoJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.outpatient.entity.RecipelInfo">
+        SELECT 
+            <include refid="recipelInfoColumns"/>
+        FROM recipel_info a
+        <include refid="recipelInfoJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.outpatient.entity.RecipelInfo">
+        SELECT 
+            <include refid="recipelInfoColumns"/>
+        FROM recipel_info a
+        <include refid="recipelInfoJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getByMedicalId" resultType="com.geeke.outpatient.entity.RecipelInfo">
+        SELECT
+        <include refid="recipelInfoColumns"/>
+        FROM recipel_info a
+        <include refid="recipelInfoJoins"/>
+        WHERE
+        a.registration_id=#{registrationId}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO recipel_info(
+            id,
+            name,
+            company_id,
+            registration_id,
+            recipel_type,
+            dosage,
+            recipel_use,
+            frequency,
+            take_frequency,
+            single_dosage,
+            fee,
+            amount_received_total,
+            is_pay,
+            remarks,
+            pay_date,
+            create_by,
+            is_dispension,
+            create_date,
+            dispension_date,
+            update_by,
+            update_date,
+            del_flag,
+            seq,
+            small_type,
+            entrust,
+            status,
+            charge_status,
+            dispension_status,
+            retreat_charge_date,
+            retreat_dispension_date,
+            invalid_date,
+            is_follow_up,
+            follow_up_date,
+            pay_user,
+            retreat_charge_user,
+            retreat_dispension_user,
+            dispension_user,
+            code,
+            retreat_date,
+            cure_type,
+            infuse_type,
+            chronic_disease,
+            chiness_notes
+        ) VALUES (
+            #{id},
+            #{name},
+            #{company.id},                    
+            #{registration.id},
+            #{recipelType.value},                    
+            #{dosage},
+            #{recipelUse.value},                    
+            #{frequency.value},                    
+            #{takeFrequency.value},                    
+            #{singleDosage},
+            #{fee},
+            #{amountReceivedTotal},
+            #{isPay},
+            #{remarks},
+            #{payDate},
+            #{createBy},
+            #{isDispension},
+            #{createDate},
+            #{dispensionDate},
+            #{updateBy},
+            #{updateDate},
+            #{delFlag},
+            #{seq},
+            #{smallType.value},
+            #{entrust},
+            #{status},
+            #{chargeStatus},
+            #{dispensionStatus},
+            #{retreatChargeDate},
+            #{retreatDispensionDate},
+            #{invalidDate},
+            #{isFollowUp},
+            #{followUpDate},
+            #{payUser},
+            #{retreatChargeUser},
+            #{retreatDispensionUser},
+            #{dispensionUser},
+            #{code},
+            #{retreatDate},
+            #{cureType},
+            #{infuseType},
+            #{chronicDisease},
+            #{chinessNotes}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE recipel_info SET
+            registration_id = #{registration.id},
+            recipel_type = #{recipelType.value},                    
+            dosage = #{dosage},
+            recipel_use = #{recipelUse.value},                    
+            frequency = #{frequency.value},                    
+            take_frequency = #{takeFrequency.value},                    
+            single_dosage = #{singleDosage},
+            fee = #{fee},
+            amount_received_total = #{amountReceivedTotal},
+            is_pay = #{isPay},
+            remarks = #{remarks},
+            pay_date = #{payDate},
+            is_dispension = #{isDispension},
+            dispension_date = #{dispensionDate},
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            seq = #{seq},
+            small_type = #{smallType.value},
+            entrust = #{entrust},
+            status = #{status},
+            charge_status = #{chargeStatus},
+            dispension_status = #{dispensionStatus},
+            retreat_charge_date = #{retreatChargeDate},
+            retreat_dispension_date = #{retreatDispensionDate},
+            invalid_date = #{invalidDate},
+            is_follow_up = #{isFollowUp},
+            follow_up_date = #{followUpDate},
+            pay_user = #{payUser},
+            retreat_charge_user = #{retreatChargeUser},
+            retreat_dispension_user = #{retreatDispensionUser},
+            dispension_user = #{dispensionUser},
+            code = #{code},
+            name = #{name},
+            retreat_date=#{retreatDate},
+            cure_type=#{cureType},
+            infuse_type=#{infuseType},
+            chronic_disease=#{chronicDisease},
+            not_show=#{notShow},
+            chiness_notes =#{chinessNotes}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        UPDATE recipel_info SET
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO recipel_info(
+            id,
+            name,
+            company_id,
+            registration_id,
+            recipel_type,
+            dosage,
+            recipel_use,
+            frequency,
+            take_frequency,
+            single_dosage,
+            fee,
+            amount_received_total,
+            is_pay,
+            remarks,
+            pay_date,
+            create_by,
+            is_dispension,
+            create_date,
+            dispension_date,
+            update_by,
+            update_date,
+            del_flag,
+            seq,
+            small_type,
+            entrust,
+            status,
+            charge_status,
+            dispension_status,
+            retreat_charge_date,
+            retreat_dispension_date,
+            invalid_date,
+            is_follow_up,
+            follow_up_date,
+            pay_user,
+            retreat_charge_user,
+            retreat_dispension_user,
+            dispension_user,
+            code,
+            retreat_date,
+            cure_type,
+            infuse_type,
+            chronic_disease,
+            chiness_notes
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.name},
+            #{entity.company.id},                    
+            #{entity.registration.id},
+            #{entity.recipelType.value},                    
+            #{entity.dosage},
+            #{entity.recipelUse.value},                    
+            #{entity.frequency.value},                    
+            #{entity.takeFrequency.value},                    
+            #{entity.singleDosage},
+            #{entity.fee},
+            #{entity.amountReceivedTotal},
+            #{entity.isPay},
+            #{entity.remarks},
+            #{entity.payDate},
+            #{entity.createBy},
+            #{entity.isDispension},
+            #{entity.createDate},
+            #{entity.dispensionDate},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.delFlag},
+            #{entity.seq},
+            #{entity.smallType.value},
+            #{entity.entrust},
+            #{entity.status},
+            #{entity.chargeStatus},
+            #{entity.dispensionStatus},
+            #{entity.retreatChargeDate},
+            #{entity.retreatDispensionDate},
+            #{entity.invalidDate},
+            #{entity.isFollowUp},
+            #{entity.followUpDate},
+            #{entity.payUser},
+            #{entity.retreatChargeUser},
+            #{entity.retreatDispensionUser},
+            #{entity.dispensionUser},
+            #{entity.code},
+            #{entity.retreatDate},
+            #{entity.cureType},
+            #{entity.infuseType},
+            #{entity.chronicDisease},
+            #{entity.chinessNotes}
+            )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE recipel_info
+        <set>           
+            <trim prefix="registration_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.registration.id}
+                </foreach>
+            </trim>
+            <trim prefix="recipel_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.recipelType.value}
+                </foreach>
+            </trim>
+            <trim prefix="dosage=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.dosage}
+                </foreach>
+            </trim>
+            <trim prefix="recipel_use=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.recipelUse.value}
+                </foreach>
+            </trim>
+            <trim prefix="frequency=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.frequency.value}
+                </foreach>
+            </trim>
+            <trim prefix="take_frequency=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.takeFrequency.value}
+                </foreach>
+            </trim>
+            <trim prefix="single_dosage=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.singleDosage}
+                </foreach>
+            </trim>
+            <trim prefix="fee=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.fee}
+                </foreach>
+            </trim>
+            <trim prefix="amount_received_total=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.amountReceivedTotal}
+                </foreach>
+            </trim>
+            <trim prefix="is_pay=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isPay}
+                </foreach>
+            </trim>
+            <trim prefix="remarks=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.remarks}
+                </foreach>
+            </trim>
+            <trim prefix="pay_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.payDate}
+                </foreach>
+            </trim>
+            <trim prefix="is_dispension=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isDispension}
+                </foreach>
+            </trim>
+            <trim prefix="dispension_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.dispensionDate}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+            <trim prefix="seq=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.seq}
+                </foreach>
+            </trim>
+            <trim prefix="small_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.smallType}
+                </foreach>
+            </trim>
+            <trim prefix="entrust=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.entrust}
+                </foreach>
+            </trim>
+            <trim prefix="status=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.status}
+                </foreach>
+            </trim>
+            <trim prefix="charge_status=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.chargeStatus}
+                </foreach>
+            </trim>
+            <trim prefix="dispension_status=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.dispensionStatus}
+                </foreach>
+            </trim>
+            <trim prefix="retreat_charge_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.retreatChargeDate}
+                </foreach>
+            </trim>
+            <trim prefix="retreat_dispension_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.retreatDispensionDate}
+                </foreach>
+            </trim>
+            <trim prefix="invalid_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.invalidDate}
+                </foreach>
+            </trim>
+            <trim prefix="is_follow_up=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isFollowUp}
+                </foreach>
+            </trim>
+            <trim prefix="follow_up_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.followUpDate}
+                </foreach>
+            </trim>
+            <trim prefix="pay_user=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.payUser}
+                </foreach>
+            </trim>
+            <trim prefix="retreat_charge_user=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.retreatChargeUser}
+                </foreach>
+            </trim>
+            <trim prefix="retreat_dispension_user=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.retreatDispensionUser}
+                </foreach>
+            </trim>
+            <trim prefix="dispension_user=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.dispensionUser}
+                </foreach>
+            </trim>
+            <trim prefix="retreat_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.retreatDate}
+                </foreach>
+            </trim>
+            <trim prefix="cure_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.cureType}
+                </foreach>
+            </trim>
+            <trim prefix="infuse_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.infuseType}
+                </foreach>
+            </trim>
+            <trim prefix="chronic_disease=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.chronicDisease}
+                </foreach>
+            </trim>
+            <trim prefix="not_show=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.notShow}
+                </foreach>
+            </trim>
+            <trim prefix="chiness_notes=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.chinessNotes}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE recipel_info
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    <update id="updateById">
+        update recipel_info set
+        cure_type=#{cureType},
+        infuse_type=#{infuseType}
+        where id=#{id}
+    </update>
+
+    <update id="updateSchedule">
+        update recipel_info set
+        cure_type=#{cureType}
+        where id=#{id}
+    </update>
+
+    <select id="getHistoryRecipel" resultType="com.geeke.outpatient.entity.RecipelInfoDTO">
+        SELECT
+            <include refid="recipelInfoColumns"/>
+        FROM recipel_info a
+            <include refid="recipelInfoJoins"/>
+        left join patient patient on patient.id=registration.patient_id
+        <where>
+            a.status=1
+            <if test="order!=null and order!=''">
+                AND a.registration_id in (SELECT id FROM registration WHERE patient_id=(SELECT patient_id FROM registration WHERE id=#{order}) )
+            </if>
+            <include refid="Common.whereParams"/>
+        </where>
+        Order by a.update_date desc
+
+    </select>
+</mapper>

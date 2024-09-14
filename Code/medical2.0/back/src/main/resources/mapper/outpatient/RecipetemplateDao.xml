@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.outpatient.dao.RecipetemplateDao">
+    
+    <sql id="recipetemplateColumns">
+        a.id AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.recipetemplate_name AS "recipetemplateName",
+        a.code AS "code",
+        a.type AS "type.value",
+        IFNULL(type.name,'') AS "type.name",
+        a.category AS "category",
+        a.diagnosis AS "diagnosis",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.del_flag AS "delFlag",
+        a.remarks AS "remarks",
+        a.patient_id AS "patientId"
+    </sql>
+    
+    <sql id="recipetemplateJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN sys_dict_item type ON type.value = a.type
+    </sql>
+    
+    <select id="get" resultType="com.geeke.outpatient.entity.Recipetemplate">
+        SELECT 
+            <include refid="recipetemplateColumns"/>
+        FROM recipetemplate a
+        <include refid="recipetemplateJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM recipetemplate a
+        <include refid="recipetemplateJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            /*AND a.patient_id != null*/
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+<!--            AND a.category='0'-->
+<!--            OR a.category='1'-->
+<!--            AND a.id > 0-->
+<!--            AND a.del_flag = #{DEL_FLAG_NORMAL}-->
+        </where>
+    </select>
+    
+    <select id="listPage" resultType="com.geeke.outpatient.entity.Recipetemplate">
+        SELECT 
+            <include refid="recipetemplateColumns"/>
+        FROM recipetemplate a
+        <include refid="recipetemplateJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            /*AND a.patient_id != null*/
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+<!--            AND a.category='0'-->
+<!--            OR a.category='1'-->
+<!--            AND a.id > 0-->
+<!--            AND a.del_flag = #{DEL_FLAG_NORMAL}-->
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.outpatient.entity.Recipetemplate">
+        SELECT 
+            <include refid="recipetemplateColumns"/>
+        FROM recipetemplate a
+        <include refid="recipetemplateJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            /*AND a.patient_id != null*/
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+    <select id="listOne" resultType="string">
+        select a.code from recipetemplate a where a.company_id=#{companyId} order by a.create_date desc limit 1
+    </select>
+    <select id="getById" resultType="com.geeke.outpatient.entity.Recipetemplate">
+        SELECT
+           <include refid="recipetemplateColumns"/>
+        FROM recipetemplate a
+           <include refid="recipetemplateJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <insert id="insert">
+
+        INSERT INTO recipetemplate(
+            id,
+            company_id,
+            recipetemplate_name,
+            type,
+            category,
+            diagnosis,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_flag,
+            patient_id,
+            single_dosage
+        ) VALUES (
+            #{id},
+            #{company.id},                    
+            #{recipetemplateName},
+            #{type.value},                    
+            #{category},
+            #{diagnosis},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate},
+            #{delFlag},
+            #{patientId},
+            #{singleDosage}
+        )
+    </insert>
+    
+    <update id="updateById">
+
+        UPDATE recipetemplate SET
+        company_id=#{company.id},
+        recipetemplate_name=#{recipetemplateName},
+        code=#{code},
+        type=#{type.value},
+        category=#{category},
+        diagnosis=#{diagnosis},
+        create_by=#{createBy},
+        create_date=#{createDate},
+        update_by=#{updateBy},
+        update_date=#{updateDate},
+        del_flag=#{delFlag},
+        remarks=#{remarks},
+        patient_id=#{patientId}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        UPDATE recipetemplate SET
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO recipetemplate(
+            id,
+            company_id,
+            recipetemplate_name,
+            type,
+            category,
+            diagnosis,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_flag,
+            single_dosage
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.company.id},                    
+            #{entity.recipetemplateName},
+            #{entity.type.value},                    
+            #{entity.category},
+            #{entity.diagnosis},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.delFlag},
+            #{entity.singleDosage}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE recipetemplate
+        <set>           
+            <trim prefix="company_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.company.id}
+                </foreach>
+            </trim>
+            <trim prefix="recipetemplate_name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.recipetemplateName}
+                </foreach>
+            </trim>
+            <trim prefix="type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.type.value}
+                </foreach>
+            </trim>
+            <trim prefix="category=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.category}
+                </foreach>
+            </trim>
+            <trim prefix="diagnosis=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.diagnosis}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+            <trim prefix="single_dosage=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.singleDosage}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE recipetemplate
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    <insert id="allSave">
+        insert into recipetemplate(
+         id,
+         company_id,
+         recipetemplate_name,
+         code,
+         type,
+         category,
+         diagnosis,
+         create_by,
+         create_date,
+         update_by,
+         update_date,
+         del_flag,
+         patient_id,
+         remarks,
+         create_id
+        )values(
+        #{id},
+        #{company.id},
+        #{recipetemplateName},
+        #{code},
+        #{type.value},
+        #{category},
+        #{diagnosis},
+        #{createBy},
+        #{createDate},
+        #{updateBy},
+        #{updateDate},
+        #{delFlag},
+        #{patientId},
+        #{remarks},
+        #{createId}
+        )
+    </insert>
+
+    <select id="listAi" resultType="com.geeke.outpatient.entity.Recipetemplate">
+        SELECT
+        <include refid="recipetemplateColumns"/>
+        FROM recipetemplate a
+        <include refid="recipetemplateJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.patient_id = #{id}
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

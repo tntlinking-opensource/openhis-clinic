@@ -1,0 +1,22 @@
+    访问地址：
+    http://61.172.179.48:19020
+        诊所-演示账号和密码：18280312537，312537
+        机构-演示账号和密码：17623478987，478987
+        供应商账号：luoyixiu 123456
+        系统超级管理员：super 123456
+
+    项目框架：vue+springBoot+myBatis+maven
+
+    项目运行环境：JDK 1.8/MySQL 5.7/Redis 7/maven/node 12.22.8
+
+代码：
+    云诊所开源版本web地址：http://222.212.90.137:18080/
+    云诊所系统git库地址：http://222.212.90.137:18080/medical2.0.git
+    问卷系统（随访系统）git库地址：http://222.212.90.137:8080/questionnaire.git
+
+第三方系统：
+
+    问卷系统（随访系统）：
+        https://www.tduckcloud.com/
+    大屏：
+        https://dataease.io/

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.cure.dao.StmanagementDao">
+
+    <select id="stmanagementtotal" resultType="com.geeke.cure.entity.Stmanagement">
+        select c.id detailid ,c.ststate pszt,e.name hzxm,(if(f.allergy_history!='',f.allergy_history,'未明确')) gmqk,
+        c.create_date kdsj,c.create_by kdys,d.goods_name ypmc,d.dosis,g.name dosisunit,d.preparation,
+        h.name preparationunit,i.name pack,j.name yf,c.stexecutetime zxsj,c.stexecuteby zxr,c.stresult ,c.sttime
+        from registration a
+        left join recipel_info b on a.id=b.registration_id and a.company_id =b.company_id and b.del_flag ='0'
+        left join recipel_detail c on b.id=c.recipel_info_id and a.company_id =c.company_id and c.del_flag ='0'
+        left join drug d on c.drug_stuff_id =d.id and a.company_id =d.company_id and d.del_flag ='0'
+        left join patient e on a.patient_id =e.id and a.company_id =e.company_id and e.del_flag ='0'
+        left join medical_record f on a.id=f.registration_id and a.company_id =f.company_id and f.del_flag ='0'
+        left join sys_dict_item g on d.dosis_unit=g.value and g.del_flag ='0'
+        left join sys_dict_item h on d.preparation_unit=h.value and h.del_flag ='0'
+        left join sys_dict_item i on d.pack =i.value and i.del_flag ='0'
+        left join sys_dict_item j on c.infuse_use=j.value and j.del_flag ='0'
+        where a.company_id =#{companyId} and  b.recipel_type ='recipelType_2' and a.status ='registrationStatus_1'
+        and b.status ='1' and a.del_flag ='0' and c.skin_test ='skinTest_0'
+        <if test="kssj!=null and jssj!=null">
+            and c.create_date between #{kssj} and #{jssj}
+        </if>
+        <if test="zxzt!='' and zxzt!=null">
+            and c.ststate=#{zxzt} 
+        </if>
+        <if test="hzxm!='' and hzxm!=null">
+            and (e.name like concat('%',#{hzxm},'%'))
+        </if>
+        <if test="kdys!='' and kdys!=null">
+            and (c.create_by like concat('%',#{kdys},'%'))
+        </if>
+    </select>
+
+    <select id="stmanagementlist" resultType="com.geeke.cure.entity.Stmanagement">
+        select c.id detailid ,c.ststate pszt,e.name hzxm,(if(f.allergy_history!='',f.allergy_history,'未明确')) gmqk,
+        c.create_date kdsj,c.create_by kdys,d.goods_name ypmc,d.dosis,g.name dosisunit,d.preparation,
+        h.name preparationunit,i.name pack,j.name yf,c.stexecutetime zxsj,c.stexecuteby zxr,c.stresult ,c.sttime
+        from registration a
+        left join recipel_info b on a.id=b.registration_id and a.company_id =b.company_id and b.del_flag ='0'
+        left join recipel_detail c on b.id=c.recipel_info_id and a.company_id =c.company_id and c.del_flag ='0'
+        left join drug d on c.drug_stuff_id =d.id and a.company_id =d.company_id and d.del_flag ='0'
+        left join patient e on a.patient_id =e.id and a.company_id =e.company_id and e.del_flag ='0'
+        left join medical_record f on a.id=f.registration_id and a.company_id =f.company_id and f.del_flag ='0'
+        left join sys_dict_item g on d.dosis_unit=g.value and g.del_flag ='0'
+        left join sys_dict_item h on d.preparation_unit=h.value and h.del_flag ='0'
+        left join sys_dict_item i on d.pack =i.value and i.del_flag ='0'
+        left join sys_dict_item j on c.infuse_use=j.value and j.del_flag ='0'
+        where a.company_id =#{companyId} and  b.recipel_type ='recipelType_2' and a.status ='registrationStatus_1'
+        and b.status ='1' and a.del_flag ='0' and c.skin_test ='skinTest_0' and b.charge_status = 1
+        <if test="kssj!=null and jssj!=null">
+            and c.create_date between #{kssj} and #{jssj}
+        </if>
+        <if test="zxzt!='' and zxzt!=null">
+            and c.ststate=#{zxzt}
+        </if>
+        <if test="hzxm!='' and hzxm!=null">
+            and (e.name like concat('%',#{hzxm},'%'))
+        </if>
+        <if test="kdys!='' and kdys!=null">
+            and (c.create_by like concat('%',#{kdys},'%'))
+        </if>
+        order by c.ststate
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <update id="updatestresult">
+        update recipel_detail set ststate ='1' ,stresult =#{stresult},stexecuteby =#{zxr},stexecutetime =#{zxsj}
+        where company_id =#{companyId} and id=#{detailid}
+    </update>
+    <update id="updatesttime">
+        update recipel_detail set sttime=#{sttime}
+        where company_id =#{companyId} and id=#{detailid}
+    </update>
+
+    <select id="selectdetailid" resultType="com.geeke.cure.entity.Stmanagement">
+        select id detailid,stresult from recipel_detail where company_id =#{companyId} and id=#{detailid}
+    </select>
+</mapper>

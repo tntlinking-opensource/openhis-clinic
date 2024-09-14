@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.cure.dao.InspectionCheckInfoDao">
+    
+    <sql id="inspectionCheckInfoColumns">
+        a.id AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.inspection_check_id AS "inspectionCheck.id",
+        IFNULL(inspectionCheck.name,'') AS "inspectionCheck.name",
+        a.file_id AS "fileId",
+        a.patient_id AS "patient.id",
+        IFNULL(patient.name,'') AS "patient.name",
+        a.sampling_date AS "samplingDate",
+        a.sampling_num AS "samplingNum",
+        a.instrument AS "instrument",
+        a.checkout_num AS "checkoutNum",
+        a.checkout_date AS "checkoutDate",
+        a.checkout_office AS "checkoutOffice",
+        a.report_conclusion AS "reportConclusion",
+        a.check_type AS "checkType",
+        a.check_part AS "checkPart",
+        a.check_advise AS "checkAdvise",
+        a.opinion AS "opinion",
+        a.doctor AS "doctor",
+        a.check_project AS "checkProject",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate"
+    </sql>
+    
+    <sql id="inspectionCheckInfoJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN inspection_check inspectionCheck ON inspectionCheck.id = a.inspection_check_id
+        LEFT JOIN patient patient ON patient.id = a.patient_id
+    </sql>
+    <delete id="deleteBy">
+        delete from inspection_check_info where id=#{id}
+    </delete>
+
+    <select id="get" resultType="com.geeke.cure.entity.InspectionCheckInfo">
+        SELECT 
+            <include refid="inspectionCheckInfoColumns"/>
+        FROM inspection_check_info a
+        <include refid="inspectionCheckInfoJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM inspection_check_info a
+        <include refid="inspectionCheckInfoJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.cure.entity.InspectionCheckInfo">
+        SELECT 
+            <include refid="inspectionCheckInfoColumns"/>
+        FROM inspection_check_info a
+        <include refid="inspectionCheckInfoJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.cure.entity.InspectionCheckInfo">
+        SELECT 
+            <include refid="inspectionCheckInfoColumns"/>
+        FROM inspection_check_info a
+        <include refid="inspectionCheckInfoJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getByInspecId" resultType="com.geeke.cure.entity.InspectionCheckInfo">
+        SELECT
+          <include refid="inspectionCheckInfoColumns"/>
+        FROM inspection_check_info a
+           <include refid="inspectionCheckInfoJoins"/>
+        WHERE a.inspection_check_id = #{inspecId}
+    </select>
+    <select id="getByInspecId2" resultType="com.geeke.cure.entity.InspectionCheckInfoCostItem">
+        SELECT
+        <include refid="inspectionCheckInfoColumns"/>
+        FROM inspection_check_info a
+        <include refid="inspectionCheckInfoJoins"/>
+        WHERE a.inspection_check_id = #{inspecId}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO inspection_check_info(
+            id,
+            company_id,
+            inspection_check_id,
+            file_id,
+            patient_id,
+            sampling_date,
+            sampling_num,
+            instrument,
+            checkout_num,
+            checkout_date,
+            checkout_office,
+            report_conclusion,
+            check_type,
+            check_part,
+            check_advise,
+            opinion,
+            doctor,
+            check_project,
+            create_by,
+            create_date,
+            update_by,
+            update_date
+        ) VALUES (
+            #{id},
+            #{company.id},                    
+            #{inspectionCheck.id},                    
+            #{fileId},
+            #{patient.id},                    
+            #{samplingDate},
+            #{samplingNum},
+            #{instrument},
+            #{checkoutNum},
+            #{checkoutDate},
+            #{checkoutOffice},
+            #{reportConclusion},
+            #{checkType},
+            #{checkPart},
+            #{checkAdvise},
+            #{opinion},
+            #{doctor},
+            #{checkProject},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE inspection_check_info SET     
+            company_id = #{company.id},                    
+            inspection_check_id = #{inspectionCheck.id},                    
+            file_id = #{fileId},
+            patient_id = #{patient.id},                    
+            sampling_date = #{samplingDate},
+            sampling_num = #{samplingNum},
+            instrument = #{instrument},
+            checkout_num = #{checkoutNum},
+            checkout_date = #{checkoutDate},
+            checkout_office = #{checkoutOffice},
+            report_conclusion = #{reportConclusion},
+            check_type = #{checkType},
+            check_part = #{checkPart},
+            check_advise = #{checkAdvise},
+            opinion = #{opinion},
+            doctor = #{doctor},
+            check_project = #{checkProject},
+            update_by = #{updateBy},
+            update_date=#{updateDate}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        DELETE FROM inspection_check_info
+        WHERE id = #{id}
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO inspection_check_info(
+            id,
+            company_id,
+            inspection_check_id,
+            file_id,
+            patient_id,
+            sampling_date,
+            sampling_num,
+            instrument,
+            checkout_num,
+            checkout_date,
+            checkout_office,
+            report_conclusion
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.company.id},                    
+            #{entity.inspectionCheck.id},                    
+            #{entity.fileId},
+            #{entity.patient.id},                    
+            #{entity.samplingDate},
+            #{entity.samplingNum},
+            #{entity.instrument},
+            #{entity.checkoutNum},
+            #{entity.checkoutDate},
+            #{entity.checkoutOffice},
+            #{entity.reportConclusion}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE inspection_check_info
+        <set>           
+            <trim prefix="company_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.company.id}
+                </foreach>
+            </trim>
+            <trim prefix="inspection_check_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.inspectionCheck.id}
+                </foreach>
+            </trim>
+            <trim prefix="file_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.fileId}
+                </foreach>
+            </trim>
+            <trim prefix="patient_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.patient.id}
+                </foreach>
+            </trim>
+            <trim prefix="sampling_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.samplingDate}
+                </foreach>
+            </trim>
+            <trim prefix="sampling_num=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.samplingNum}
+                </foreach>
+            </trim>
+            <trim prefix="instrument=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.instrument}
+                </foreach>
+            </trim>
+            <trim prefix="checkout_num=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.checkoutNum}
+                </foreach>
+            </trim>
+            <trim prefix="checkout_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.checkoutDate}
+                </foreach>
+            </trim>
+            <trim prefix="checkout_office=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.checkoutOffice}
+                </foreach>
+            </trim>
+            <trim prefix="report_conclusion=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.reportConclusion}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        DELETE FROM inspection_check_info
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+</mapper>

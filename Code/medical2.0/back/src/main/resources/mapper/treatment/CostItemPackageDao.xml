@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.treatment.dao.CostItemPackageDao">
+    
+    <sql id="costItemColumns">
+        a.id AS "id",
+        a.cost_item_id AS "costItemId",
+        a.cost_item_pkg_id AS "costItemPkgId",
+        a.quantity AS "quantity",
+        a.remarks AS "remarks",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.del_flag AS "delFlag",
+        a.reference_unit AS "referenceUnit",
+        a.reference_value AS "referenceValue"
+    </sql>
+    
+    <sql id="costItemJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN sys_dict_item itemType ON itemType.value = a.item_type
+        LEFT JOIN sys_dict_item unit ON unit.value = a.unit
+    </sql>
+    
+    <select id="get" resultType="com.geeke.treatment.entity.CostItemPackage">
+        SELECT 
+            <include refid="costItemColumns"/>
+        FROM cost_item_package a
+
+        WHERE a.cost_item_pkg_id = #{costItemPkgId}
+    </select>
+
+    <delete id="deleteById" >
+        delete from cost_item_package where cost_item_pkg_id=#{costItemPkgId}
+    </delete>
+
+    <select id="findById" resultType="com.geeke.treatment.entity.CostItemPackage">
+        SELECT
+          <include refid="costItemColumns"/>
+        FROM cost_item_package a
+
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM cost_item a
+        <include refid="costItemJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.treatment.entity.CostItemPackage">
+        SELECT 
+            <include refid="costItemColumns"/>
+        FROM cost_item a
+        <include refid="costItemJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.treatment.entity.CostItem">
+        SELECT 
+            <include refid="costItemColumns"/>
+        FROM cost_item a
+        <include refid="costItemJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            AND a.is_use="1"
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getAll" resultType="com.geeke.treatment.entity.CostItemPackage">
+        SELECT
+        <include refid="costItemColumns"/>
+        FROM cost_item_package a
+
+        WHERE a.cost_item_pkg_id = #{costItemPkgId}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO cost_item_package(
+        id,
+        cost_item_id,
+        cost_item_pkg_id,
+        quantity,
+        remarks,
+        create_by,
+        create_date,
+        update_by,
+        update_date,
+        del_flag,
+        reference_unit,
+        reference_value
+        ) VALUES (
+            #{id},
+            #{costItemId},
+            #{costItemPkgId},
+            #{quantity},
+            #{remarks},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate},
+            #{delFlag},
+            #{referenceUnit},
+            #{referenceValue}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE cost_item SET     
+            item_name = #{itemName},
+            item_type = #{itemType.value},
+            unit = #{unit.value},
+            cost_price = #{costPrice},
+            sale_price = #{salePrice},
+            is_use = #{isUse},
+            remarks = #{remarks},
+            is_deduct = #{isDeduct},
+            reference_unit=#{referenceUnit},
+            reference_value=#{referenceValue}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        UPDATE cost_item SET
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO cost_item(
+            id,
+            company_id,
+            item_code,
+            item_name,
+            item_type,
+            unit,
+            cost_price,
+            sale_price,
+            is_use,
+            remarks,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            is_deduct,
+            del_flag
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.company.id},                    
+            #{entity.itemCode},
+            #{entity.itemName},
+            #{entity.itemType.value},                    
+            #{entity.unit.value},                    
+            #{entity.costPrice},
+            #{entity.salePrice},
+            #{entity.isUse},
+            #{entity.remarks},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.isDeduct},
+            #{entity.delFlag}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE cost_item
+        <set>           
+            <trim prefix="item_name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.itemName}
+                </foreach>
+            </trim>
+            <trim prefix="item_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.itemType.value}
+                </foreach>
+            </trim>
+            <trim prefix="unit=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.unit.value}
+                </foreach>
+            </trim>
+            <trim prefix="cost_price=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.costPrice}
+                </foreach>
+            </trim>
+            <trim prefix="sale_price=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.salePrice}
+                </foreach>
+            </trim>
+            <trim prefix="is_use=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isUse}
+                </foreach>
+            </trim>
+            <trim prefix="remarks=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.remarks}
+                </foreach>
+            </trim>
+            <trim prefix="is_deduct=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isDeduct}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE cost_item
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+</mapper>

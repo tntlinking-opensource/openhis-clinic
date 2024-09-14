@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.member.dao.MemberManagementDao">
+    
+    <sql id="memberManagementColumns">
+        a.id AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.patient_id AS "patient.id",
+        IFNULL(patient.name,'') AS "patient.name",
+        a.member_set_id AS "memberSet.id",
+        IFNULL(memberSet.name,'') AS "memberSet.name",
+        a.name AS "name",
+        a.age AS "age",
+        a.gender AS "gender.value",
+        IFNULL(gender.name,'') AS "gender.name",
+        a.card AS "card",
+        a.type AS "type.value",
+        IFNULL(type.name,'') AS "type.name",
+        a.member_name AS "memberName",
+        a.status AS "status",
+        a.identity_card AS "identityCard",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.phone AS "phone"
+    </sql>
+    
+    <sql id="memberManagementJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN patient patient ON patient.id = a.patient_id
+        LEFT JOIN member_set memberSet ON memberSet.id = a.member_set_id
+        LEFT JOIN sys_dict_item type ON type.value = a.type
+        LEFT JOIN sys_dict_item gender ON gender.value = a.gender
+    </sql>
+    
+    <select id="get" resultType="com.geeke.member.entity.MemberManagement">
+        SELECT 
+            <include refid="memberManagementColumns"/>
+        FROM member_management a
+        <include refid="memberManagementJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM member_management a
+        <include refid="memberManagementJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.member.entity.MemberManagement">
+        SELECT 
+            <include refid="memberManagementColumns"/>
+        FROM member_management a
+        <include refid="memberManagementJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.member.entity.MemberManagement">
+        SELECT 
+            <include refid="memberManagementColumns"/>
+        FROM member_management a
+        <include refid="memberManagementJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getByMemberSetId" resultType="com.geeke.member.entity.MemberManagement">
+        SELECT
+            <include refid="memberManagementColumns"/>
+        FROM member_management a
+            <include refid="memberManagementJoins"/>
+        WHERE a.member_set_id = #{memberSetId}
+    </select>
+    <select id="getByPatientAndMember" resultType="com.geeke.member.entity.MemberManagement">
+        SELECT
+            <include refid="memberManagementColumns"/>
+        FROM member_management a
+            <include refid="memberManagementJoins"/>
+        WHERE a.patient_id = #{patientId} and a.member_set_id = #{memberSetId} and (a.status = '0' or a.status = '1')
+    </select>
+    <select id="getByPatientId" resultType="com.geeke.member.entity.MemberManagement">
+        SELECT
+           <include refid="memberManagementColumns"/>
+        FROM member_management a
+           <include refid="memberManagementJoins"/>
+        WHERE a.patient_id = #{patientId} and (a.status = '0' or a.status = '1')
+    </select>
+
+    <insert id="insert">
+        INSERT INTO member_management(
+            id,
+            company_id,
+            patient_id,
+            member_set_id,
+            name,
+            age,
+            gender,
+            card,
+            type,
+            member_name,
+            status,
+            identity_card,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            phone
+        ) VALUES (
+            #{id},
+            #{company.id},                    
+            #{patient.id},                    
+            #{memberSet.id},                    
+            #{name},
+            #{age},
+            #{gender.value},
+            #{card},
+            #{type.value},
+            #{memberName},
+            #{status},
+            #{identityCard},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate},
+            #{phone}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE member_management SET     
+            company_id = #{company.id},                    
+            patient_id = #{patient.id},                    
+            member_set_id = #{memberSet.id},                    
+            name = #{name},
+            age = #{age},
+            gender = #{gender.value},
+            card = #{card},
+            type = #{type.value},
+            member_name = #{memberName},
+            status = #{status},
+            identity_card = #{identityCard},
+            update_by = #{updateBy},
+            update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        update member_management set status='2'
+        WHERE id = #{id}
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO member_management(
+            id,
+            company_id,
+            patient_id,
+            member_set_id,
+            name,
+            age,
+            gender,
+            card,
+            type,
+            member_name,
+            status,
+            identity_card,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            phone
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.company.id},                    
+            #{entity.patient.id},                    
+            #{entity.memberSet.id},                    
+            #{entity.name},
+            #{entity.age},
+            #{entity.gender},
+            #{entity.card},
+            #{entity.type},
+            #{entity.memberName},
+            #{entity.status},
+            #{entity.identityCard},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.phone}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE member_management
+        <set>           
+            <trim prefix="company_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.company.id}
+                </foreach>
+            </trim>
+            <trim prefix="patient_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.patient.id}
+                </foreach>
+            </trim>
+            <trim prefix="member_set_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.memberSet.id}
+                </foreach>
+            </trim>
+            <trim prefix="name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.name}
+                </foreach>
+            </trim>
+            <trim prefix="age=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.age}
+                </foreach>
+            </trim>
+            <trim prefix="gender=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.gender}
+                </foreach>
+            </trim>
+            <trim prefix="card=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.card}
+                </foreach>
+            </trim>
+            <trim prefix="type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.type}
+                </foreach>
+            </trim>
+            <trim prefix="member_name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.memberName}
+                </foreach>
+            </trim>
+            <trim prefix="status=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.status}
+                </foreach>
+            </trim>
+            <trim prefix="identity_card=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.identityCard}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        DELETE FROM member_management
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    <update id="updaStatus">
+        update member_management set status = '1' where id = #{id}
+    </update>
+
+</mapper>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.outpatient.dao.BlmbDao">
+
+    <insert id="insert">
+        INSERT INTO casehistorymbgl(
+        mbbm,
+        company_id,
+        mbmc,
+        mblx,
+        bllx,
+        zs,
+        grs,
+        gms,
+        jbs,
+        crbs,
+        sss,sxs,tgjc,jzzd,jzxg,jzs,yjz,hys,fzjc,xbs,
+        jws,qtjc,clqk,gthjkjy,lxbxs,
+        temperature,
+        pulse,
+        breathe,
+        blood_pressure,
+        western_diagnose,
+        china_diagnose,
+        del_flag,
+        CREATED_BY,
+        CREATED_TIME,
+        UPDATED_BY,
+        UPDATED_TIME,CREATED_ID) VALUES(
+        #{mbbm},
+        #{companyId},
+        #{mbmc},
+        #{mblx},
+        #{bllx},
+        #{zs},
+        #{grs},
+        #{gms},
+        #{jbs},
+        #{crbs},
+        #{sss},
+        #{sxs},
+        #{tgjc},
+        #{jzzd},
+        #{jzxg},
+        #{jzs},
+        #{yjz},
+        #{hys},
+        #{fzjc},
+        #{xbs},
+        #{jws},
+        #{qtjc},
+        #{clqk},
+        #{gthjkjy},
+        #{lxbxs},
+        #{temperature},
+        #{pulse},
+        #{breathe},
+        #{bloodPressure},
+        #{westernDiagnose},
+        #{chinaDiagnose},
+        #{delFlag},
+        #{createdBy},
+        #{createdTime},
+        #{updatedBy},
+        #{updatedTime},
+        #{createdID}
+        )
+    </insert>
+
+    <select id="getblmblisttotal" resultType="com.geeke.outpatient.entity.Blmb">
+        select a.*,b.name cjr from casehistorymbgl a
+        left join sys_user b on a.CREATED_ID=b.id and a.company_id =b.company_id and b.del_flag ='0'
+        where a.company_id=#{companyId} and a.del_flag ='0'
+        <if test="mbmc!='' and mbmc!=null">
+            and (a.mbmc like concat('%',#{mbmc},'%'))
+        </if>
+        <if test="cjr!='' and cjr!=null">
+            and (a.CREATED_BY like concat('%',#{cjr},'%'))
+        </if>
+        <if test="mblx!='' and mblx!=null">
+            and a.mblx=#{mblx}
+        </if>
+        <if test="bllx!='' and bllx!=null">
+            and a.bllx=#{bllx}
+        </if>
+        <if test="cjrid!='' and cjrid!=null">
+            and (a.CREATED_ID=#{cjrid} or a.mblx='0')
+        </if>
+        order by a.CREATED_TIME desc
+    </select>
+    <select id="getblmblist" resultType="com.geeke.outpatient.entity.Blmb">
+        select a.*,b.name cjr from casehistorymbgl a
+        left join sys_user b on a.CREATED_ID=b.id and a.company_id =b.company_id and b.del_flag ='0'
+        where a.company_id=#{companyId} and a.del_flag ='0'
+        <if test="mbmc!='' and mbmc!=null">
+            and (a.mbmc like concat('%',#{mbmc},'%'))
+        </if>
+        <if test="cjr!='' and cjr!=null">
+            and (a.CREATED_BY like concat('%',#{cjr},'%'))
+        </if>
+        <if test="mblx!='' and mblx!=null">
+            and a.mblx=#{mblx}
+        </if>
+        <if test="bllx!='' and bllx!=null">
+            and a.bllx=#{bllx}
+        </if>
+        <if test="cjrid!='' and cjrid!=null">
+            and (a.CREATED_ID=#{cjrid} or a.mblx='0')
+        </if>
+        order by a.CREATED_TIME desc
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <update id="deletembbm">
+        update casehistorymbgl set del_flag='1',UPDATED_BY=#{updatedBy},UPDATED_TIME=#{updatedTime}
+        where company_id=#{companyId} and mbbm=#{mbbm}
+    </update>
+
+    <select id="selectmbbm" resultType="com.geeke.outpatient.entity.Blmb">
+        select * from casehistorymbgl where company_id =#{companyId} and del_flag ='0' and mbbm =#{mbbm}
+    </select>
+
+    <update id="updatembbm">
+        update  casehistorymbgl
+        <set>
+            mbmc=#{mbmc},
+            mblx=#{mblx},
+            bllx=#{bllx},
+            zs=#{zs},
+            grs=#{grs},
+            gms=#{gms},
+            jbs=#{jbs},
+            crbs=#{crbs},
+            sss=#{sss},
+            sxs=#{sxs},
+            tgjc=#{tgjc},
+            jzzd=#{jzzd},
+            jzxg=#{jzxg},
+            jzs=#{jzs},
+            yjz=#{yjz},
+            hys=#{hys},
+            fzjc=#{fzjc},
+            xbs=#{xbs},
+            jws=#{jws},
+            qtjc=#{qtjc},
+            clqk=#{clqk},
+            gthjkjy=#{gthjkjy},
+            lxbxs=#{lxbxs},
+            temperature=#{temperature},
+            pulse=#{pulse},
+            breathe=#{breathe},
+            blood_pressure=#{bloodPressure},
+            western_diagnose=#{westernDiagnose},
+            china_diagnose=#{chinaDiagnose},
+            UPDATED_BY=#{updatedBy},
+            UPDATED_TIME=#{updatedTime}
+        </set>
+         <where>
+             company_id=#{companyId} and mbbm=#{mbbm}
+         </where>
+    </update>
+</mapper>

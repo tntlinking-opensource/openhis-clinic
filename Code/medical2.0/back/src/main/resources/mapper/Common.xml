@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="Common">   
+    <sql id="Common.whereParams">
+        <if test='params != null'>
+            <foreach collection="params" item="item" index="index">
+                <if test='item != null and item.queryType != null'>
+                    <choose>
+                        <when test='item.queryType == "("'>
+                            ${item.logic} (
+                        </when>
+                        <when test='item.queryType == ")"'>
+                            )
+                        </when>
+                        <when test='"is null".equalsIgnoreCase(item.queryType) or "is not null".equalsIgnoreCase(item.queryType)'>
+                            ${item.logic} <if test='item.columnName.indexOf(".") == -1'>a.</if>${item.columnName} ${item.queryType}
+                        </when>
+                        <when test='"between".equalsIgnoreCase(item.queryType) or "not between".equalsIgnoreCase(item.queryType)'>
+                            <if test='item != null and item.value != null and item.value[0] != null and (item.value[0] != "" or item.value[0] == "0".toString()) and item.value[1] != null and (item.value[1] != "" or item.value[1] == "0".toString())'>
+                              ${item.logic} ( <if test='item.columnName.indexOf(".") == -1'>a.</if>${item.columnName}
+                               <if test='"not between".equalsIgnoreCase(item.queryType)'>NOT</if> BETWEEN
+                                 #{item.value[0]} AND #{item.value[1]} )
+                            </if>
+                        </when>
+                        <when test='"like".equalsIgnoreCase(item.queryType) or "not like".equalsIgnoreCase(item.queryType)'>
+                            <if test='item != null and item.value != null and (item.value != "" or item.value == "0".toString())'>
+                                ${item.logic} <if test='item.columnName.indexOf(".") == -1'>a.</if>${item.columnName}
+                                   <if test='"not like".equalsIgnoreCase(item.queryType)'>NOT</if> LIKE
+                                <if test='dbName == "oracle"'>'%'||#{item.value}||'%'</if>
+                                <if test='dbName == "mssql"'>'%'+#{item.value}+'%'</if>
+                                <if test='dbName == "mysql"'>concat('%',#{item.value},'%')</if>
+                            </if>
+                        </when>
+                        <when test='"left_like".equalsIgnoreCase(item.queryType) or "not left_like".equalsIgnoreCase(item.queryType)'>
+                            <if test='item != null and item.value != null and (item.value != "" or item.value == "0".toString())'>
+                                ${item.logic} <if test='item.columnName.indexOf(".") == -1'>a.</if>${item.columnName}
+                                   <if test='"not left_like".equalsIgnoreCase(item.queryType)'>NOT</if> LIKE
+                                <if test='dbName == "oracle"'>'%'||#{item.value}</if>
+                                <if test='dbName == "mssql"'>'%'+#{item.value}</if>
+                                <if test='dbName == "mysql"'>concat('%',#{item.value})</if>
+                            </if>
+                        </when>
+                        <when test='"right_like".equalsIgnoreCase(item.queryType) or "not right_like".equalsIgnoreCase(item.queryType)'>
+                            <if test='item != null and item.value != null and (item.value != "" or item.value == "0".toString())'>
+                                ${item.logic} <if test='item.columnName.indexOf(".") == -1'>a.</if>${item.columnName}
+                                   <if test='"not right_like".equalsIgnoreCase(item.queryType)'>NOT</if> LIKE
+                                <if test='dbName == "oracle"'>#{item.value}||'%'</if>
+                                <if test='dbName == "mssql"'>#{item.value}+'%'</if>
+                                <if test='dbName == "mysql"'>concat(#{item.value},'%')</if>
+                            </if>
+                        </when>
+                        <when test='"in".equalsIgnoreCase(item.queryType) or "not in".equalsIgnoreCase(item.queryType)'>
+                            <if test='item != null and item.value != null and item.value.size() > 0'>
+                                ${item.logic} <if test='item.columnName.indexOf(".") == -1'>a.</if>${item.columnName}
+                                <if test='"not in".equalsIgnoreCase(item.queryType)'>NOT</if> IN
+                                <foreach collection="item.value" item="name" index="index" open="(" close=")" separator=",">
+                                    #{name}
+                                </foreach>
+                            </if>
+                        </when>
+                        <otherwise>
+                            <if test='item != null and item.value != null and (item.value != "" or item.value == "0".toString())'>
+                                ${item.logic} <if test='item.columnName.indexOf(".") == -1'>a.</if>${item.columnName} ${item.queryType} #{item.value}
+                            </if>                    
+                        </otherwise>
+                    </choose>
+                </if>                
+            </foreach>
+        </if>    
+    </sql>
+    
+</mapper>

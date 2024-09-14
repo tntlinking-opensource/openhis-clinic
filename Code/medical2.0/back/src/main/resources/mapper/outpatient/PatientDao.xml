@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.outpatient.dao.PatientDao">
+    
+    <sql id="patientColumns">
+        a.id AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.name AS "name",
+        a.gender AS "gender.value",
+        IFNULL(gender.name,'') AS "gender.name",
+        a.age AS "age",
+        a.month AS "month",
+        a.birthday AS "birthday",
+        a.phone AS "phone",
+        a.card AS "card",
+        a.with_patient_nexus AS "withPatientNexus.value",
+        IFNULL(withPatientNexus.name,'') AS "withPatientNexus.name",
+        a.health_card_no AS "healthCardNo",
+        a.province AS "province",
+        a.city AS "city",
+        a.area AS "area",
+        a.address AS "address",
+        a.remarks AS "remarks",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.del_flag AS "delFlag",
+        a.guardian_name AS "guardianName",
+        a.guardian_phone AS "guardianPhone",
+        a.open_id AS "openId"
+    </sql>
+    
+    <sql id="patientJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id and company.parent_id  !=0 and company.is_institution !=1
+        LEFT JOIN sys_dict_item gender ON gender.value = a.gender
+        LEFT JOIN sys_dict_item withPatientNexus ON withPatientNexus.value = a.with_patient_nexus
+    </sql>
+    
+    <select id="get" resultType="com.geeke.outpatient.entity.Patient">
+        SELECT 
+            <include refid="patientColumns"/>
+        FROM patient a
+        <include refid="patientJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="getPatientByPhone" resultType="com.geeke.outpatient.entity.Patient">
+        SELECT
+        <include refid="patientColumns"/>
+        FROM patient a
+        <include refid="patientJoins"/>
+        WHERE a.phone = #{phoneNumber}
+        and a.company_id = #{companyId}
+    </select>
+
+    <select id="countPatientByPhone" resultType="com.geeke.outpatient.entity.Patient">
+        SELECT
+        <include refid="patientColumns"/>
+        FROM patient a
+        <include refid="patientJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = 0
+            AND a.phone = #{phoneNumber}
+            and a.company_id = #{companyId}
+            and a.id != #{id}
+        </where>
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM patient a
+        <include refid="patientJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.outpatient.entity.Patient">
+        SELECT
+            <include refid="patientColumns"/>
+        FROM patient a
+        <include refid="patientJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and company.parent_id != 0
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.outpatient.entity.Patient">
+        SELECT 
+            <include refid="patientColumns"/>
+        FROM patient a
+        <include refid="patientJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and company.parent_id != 0
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getPatientByCard" resultType="com.geeke.outpatient.entity.Patient">
+        SELECT
+        <include refid="patientColumns"/>
+        FROM patient a
+        <include refid="patientJoins"/>
+        WHERE a.card = #{card}
+        and a.company_id = #{companyId}
+        and a.id != #{id}
+    </select>
+    <select id="getPatientByregistrationId" resultType="com.geeke.outpatient.entity.Patient">
+        select
+            <include refid="patientColumns"/>
+        from patient a
+            <include refid="patientJoins"/>
+        where
+        a.id=(select patient_id from registration where id=#{registrationId})
+    </select>
+    <select id="getByOpenId" resultType="com.geeke.outpatient.entity.Patient">
+        select
+            <include refid="patientColumns"/>
+        from patient a
+            <include refid="patientJoins"/>
+        where a.open_id = #{openId} and a.company_id = #{companyId}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO patient(
+            id,
+            company_id,
+            name,
+            gender,
+            age,
+            month,
+            birthday,
+            phone,
+            card,
+            with_patient_nexus,
+            health_card_no,
+            province,
+            city,
+            area,
+            address,
+            remarks,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_flag,
+            guardian_name,
+            guardian_phone,
+            open_id
+        ) VALUES (
+            #{id},
+            #{company.id},                    
+            #{name},
+            #{gender.value},                    
+            #{age},
+            #{month},
+            #{birthday},
+            #{phone},
+            #{card},
+            #{withPatientNexus.value},                    
+            #{healthCardNo},
+            #{province},
+            #{city},
+            #{area},
+            #{address},
+            #{remarks},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate},
+            #{delFlag},
+            #{guardianName},
+            #{guardianPhone},
+            #{openId}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE patient SET     
+            name = #{name},
+            gender = #{gender.value},                    
+            age = #{age},
+            month = #{month},
+            birthday = #{birthday},
+            phone = #{phone},
+            card = #{card},
+            with_patient_nexus = #{withPatientNexus.value},                    
+            health_card_no = #{healthCardNo},
+            province = #{province},
+            city = #{city},
+            area = #{area},
+            address = #{address},
+            remarks = #{remarks},
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            guardian_name = #{guardianName},
+            guardian_phone = #{guardianPhone},
+            open_id = #{openId}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        UPDATE patient SET
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO patient(
+            id,
+            company_id,
+            name,
+            gender,
+            age,
+            month,
+            birthday,
+            phone,
+            card,
+            with_patient_nexus,
+            health_card_no,
+            province,
+            city,
+            area,
+            address,
+            remarks,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_flag,
+            guardian_name,
+            guardian_phone,
+            open_id
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.company.id},                    
+            #{entity.name},
+            #{entity.gender.value},                    
+            #{entity.age},
+            #{entity.month},
+            #{entity.birthday},
+            #{entity.phone},
+            #{entity.card},
+            #{entity.withPatientNexus.value},                    
+            #{entity.healthCardNo},
+            #{entity.province},
+            #{entity.city},
+            #{entity.area},
+            #{entity.address},
+            #{entity.remarks},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.delFlag},
+            #{entity.guardianName},
+            #{entity.guardianPhone},
+            #{entity.openId}
+        )
+        </foreach>
+    </insert>
+    <insert id="wxInsert">
+        INSERT INTO patient(
+        id,
+        company_id,
+        name,
+        gender,
+        age,
+        month,
+        birthday,
+        phone,
+        card,
+        open_id,
+        create_date,
+        update_date
+        ) VALUES (
+        #{id},
+        #{company.id},
+        #{name},
+        #{gender.value},
+        #{age},
+        #{month},
+        #{birthday},
+        #{phone},
+        #{card},
+        #{openId},
+        #{createDate},
+        #{updateDate}
+        )
+    </insert>
+
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE patient
+        <set>           
+            <trim prefix="name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.name}
+                </foreach>
+            </trim>
+            <trim prefix="gender=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.gender.value}
+                </foreach>
+            </trim>
+            <trim prefix="age=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.age}
+                </foreach>
+            </trim>
+            <trim prefix="month=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.month}
+                </foreach>
+            </trim>
+            <trim prefix="birthday=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.birthday}
+                </foreach>
+            </trim>
+            <trim prefix="phone=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.phone}
+                </foreach>
+            </trim>
+            <trim prefix="card=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.card}
+                </foreach>
+            </trim>
+            <trim prefix="with_patient_nexus=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.withPatientNexus.value}
+                </foreach>
+            </trim>
+            <trim prefix="health_card_no=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.healthCardNo}
+                </foreach>
+            </trim>
+            <trim prefix="province=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.province}
+                </foreach>
+            </trim>
+            <trim prefix="city=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.city}
+                </foreach>
+            </trim>
+            <trim prefix="area=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.area}
+                </foreach>
+            </trim>
+            <trim prefix="address=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.address}
+                </foreach>
+            </trim>
+            <trim prefix="remarks=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.remarks}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+            <trim prefix="guardian_name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.guardianName}
+                </foreach>
+            </trim>
+            <trim prefix="guardian_phone=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.guardianPhone}
+                </foreach>
+            </trim>
+            <trim prefix="open_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.openId}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE patient
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    <update id="wxUpdate">
+        UPDATE patient SET
+        name = #{name},
+        gender = #{gender.value},
+        age = #{age},
+        month = #{month},
+        birthday = #{birthday},
+        phone = #{phone},
+        card = #{card},
+        open_id = #{openId}
+        WHERE id = #{id}
+    </update>
+
+    <!--根据患者姓名身份证查询患者信息-->
+    <select id="inquire" resultType="com.geeke.outpatient.entity.Patient">
+        SELECT
+        <include refid="patientColumns"/>
+        FROM patient a
+        <include refid="patientJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            AND a.name = #{name}
+            AND a.card = #{card}
+            AND a.company_id = #{company.id}
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,513 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.admin.dao.UserDao">
+
+    <sql id="userColumns">
+        a.id AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        company.ids AS "company.ids",
+        IFNULL(company.full_name, '') AS "company.fullName",
+        IFNULL(company.code, '') AS "company.code",
+        a.department_id AS "department.id",
+        IFNULL(department.name,'') AS "department.name",
+        department.ids AS "department.ids",
+	IFNULL(department.code, '') AS "department.code",
+        a.name AS "name",
+        a.login_name AS "loginName",
+        a.login_password AS "loginPassword",
+        a.phone AS "phone",
+        a.email AS "email",
+        a.qy_open_id AS "qyOpenId",
+        a.is_locked AS "isLocked",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.remarks AS "remarks",
+        a.del_flag AS "delFlag",
+        a.is_admin AS "isAdmin",
+        a.is_wxuser AS "isWxuser"
+    </sql>
+
+    <sql id="userJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN org_department department ON department.id = a.department_id
+    </sql>
+
+    <select id="get" resultType="com.geeke.admin.entity.User">
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        WHERE a.id = #{id} AND a.is_wxuser = "0"
+    </select>
+
+    <select id="getUserByCompanyIdAndJob" resultType="com.geeke.admin.entity.User">
+        SELECT
+        <include refid="userColumns"/>,
+        o.id AS office
+        FROM sys_user a
+        LEFT JOIN org_department department ON department.id = a.department_id
+        left join sys_user_ext e on e.user_id = a.id
+        left join clinic_office o on o.name = e.office and o.company_id = e.company_id
+        LEFT JOIN org_company company ON company.id = e.company_id
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = 0
+            AND e.del_flag = 0
+            AND e.company_id = #{companyId}
+            AND e.job_type = #{jobType}
+            AND a.is_locked = 0
+            AND a.is_wxuser = "0"
+        </where>
+        ORDER BY a.update_date DESC
+    </select>
+    <select id="NEWgetUserByCompanyIdAndJob" resultType="com.geeke.admin.entity.User">
+        SELECT DISTINCT
+        <include refid="userColumns"/>,
+        o.id AS office
+        FROM scheduling_data schd
+        left join sys_user a on a.id =schd.userid and a.company_id =schd.company_id
+        LEFT JOIN org_department department ON department.id = a.department_id
+        left join sys_user_ext e on e.user_id = a.id
+        left join clinic_office o on o.name = e.office and o.company_id = e.company_id
+        LEFT JOIN org_company company ON company.id = e.company_id
+        <where>
+            1=1
+            AND a.id > 0
+            and schd.del_flag='0' and schd.is_locked='0'
+            and schd.schedulingtime =curdate()
+            AND a.del_flag = 0
+            AND e.company_id = #{companyId}
+            AND e.job_type = #{jobType}
+            AND a.is_locked = 0
+            AND a.is_wxuser = "0"
+        </where>
+        ORDER BY a.update_date DESC
+    </select>
+
+    <select id="getByLoginName" resultType="com.geeke.admin.entity.User">
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        WHERE a.login_name = #{loginName} AND a.is_wxuser = "0"
+    </select>
+
+    <select id="getByPhone" resultType="com.geeke.admin.entity.User">
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        WHERE a.phone = #{phone} AND a.is_wxuser = "0"
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM sys_user a
+        <include refid="userJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            AND a.is_wxuser = "0"
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+    <select id="countForNoAdmin" resultType="int">
+        SELECT COUNT(*) FROM sys_user a
+        <include refid="userJoins"/>
+        left join user_tenant t on t.user_id = a.id
+        <where>
+            1=1
+            AND t.tenant_id = #{tenantId}
+            AND t.del_flag = '0'
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            AND a.is_wxuser = "0"
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+    <select id="listPage" resultType="com.geeke.admin.entity.User">
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            AND a.is_wxuser = "0"
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="listPageForNoAdmin" resultType="com.geeke.admin.entity.User">
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        left join user_tenant t on t.user_id = a.id
+        <where>
+            1=1
+            AND t.tenant_id = #{tenantId}
+            AND t.del_flag = '0'
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            AND a.is_wxuser = "0"
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="listAll" resultType="com.geeke.admin.entity.User">
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO sys_user(id,
+                             company_id,
+                             department_id,
+                             name,
+                             login_name,
+                             login_password,
+                             is_locked,
+                             phone,
+                             email,
+                             qy_open_id,
+                             create_by,
+                             create_date,
+                             update_by,
+                             update_date,
+                             remarks,
+                             del_flag,
+                             is_admin,
+                             is_wxuser)
+        VALUES (#{id},
+                #{company.id},
+                #{department.id},
+                #{name},
+                #{loginName},
+                #{loginPassword},
+                #{isLocked},
+                #{phone},
+                #{email},
+                #{qyOpenId},
+                #{createBy},
+                #{createDate},
+                #{updateBy},
+                #{updateDate},
+                #{remarks},
+                #{delFlag},
+                #{isAdmin},
+                #{isWxuser})
+    </insert>
+
+    <update id="update">
+        UPDATE sys_user
+        SET company_id    = #{company.id},
+            department_id = #{department.id},
+            name          = #{name},
+            login_name    = #{loginName},
+            is_locked     = #{isLocked},
+            phone         = #{phone},
+            email         = #{email},
+            qy_open_id    = #{qyOpenId},
+            update_by     = #{updateBy},
+            update_date   = #{updateDate},
+            remarks       = #{remarks},
+            is_Admin      = #{isAdmin},
+            is_wxuser     = #{isWxuser}
+        WHERE id = #{id}
+    </update>
+
+    <update id="delete">
+        UPDATE sys_user SET
+        update_by = #{updateBy},
+        update_date = #{updateDate},
+        del_flag = #{DEL_FLAG_DELETE}
+        <choose>
+            <when test="id !=null and id != ''">
+                WHERE id = #{id}
+            </when>
+            <otherwise>
+                WHERE company_id = #{company.id}
+            </otherwise>
+        </choose>
+    </update>
+
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO sys_user(
+        id,
+        company_id,
+        department_id,
+        name,
+        login_name,
+        is_locked,
+        phone,
+        email,
+        qy_open_id ,
+        create_by,
+        create_date,
+        update_by,
+        update_date,
+        remarks,
+        del_flag,
+        is_admin,
+        is_wxuser
+        ) VALUES
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+            (
+            #{entity.id},
+            #{entity.company.id},
+            #{entity.department.id},
+            #{entity.name},
+            #{entity.loginName},
+            #{entity.isLocked},
+            #{entity.phone},
+            #{entity.email},
+            #{entity.qyOpenId},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.remarks},
+            #{entity.delFlag},
+            #{entity.isAdmin},
+            #{entity.isWxuser}
+            )
+        </foreach>
+    </insert>
+
+    <update id="bulkUpdate" parameterType="java.util.List">
+        UPDATE sys_user
+        <set>
+            <trim prefix="company_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.company.id}
+                </foreach>
+            </trim>
+            <trim prefix="department_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.department.id}
+                </foreach>
+            </trim>
+            <trim prefix="name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.name}
+                </foreach>
+            </trim>
+            <trim prefix="login_name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.loginName}
+                </foreach>
+            </trim>
+            <trim prefix="is_locked=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isLocked}
+                </foreach>
+            </trim>
+            <trim prefix="phone=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.phone}
+                </foreach>
+            </trim>
+            <trim prefix="email=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.email}
+                </foreach>
+            </trim>
+            <trim prefix="qy_open_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.qyOpenId}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+            <trim prefix="remarks=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.remarks}
+                </foreach>
+            </trim>
+            <trim prefix="is_wxuser=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isWxuser}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+
+
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE sys_user
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+
+    <update id="updateLoginPassword">
+        UPDATE sys_user
+        SET login_password = #{pass}
+        WHERE id = #{id}
+    </update>
+
+    <select id="loginUser" resultType="com.geeke.admin.entity.User">
+        select *, o.name AS "company.id"
+        from sys_user a
+                 left join org_company o on o.id = a.company_id
+        WHERE o.parent_id = '1639720158872479714'
+    </select>
+
+
+    <select id="getListByLoginName" parameterType="java.lang.String" resultType="com.geeke.admin.entity.User">
+        SELECT a.id, a.company_id AS "company.id", a.del_flag
+        FROM sys_user a
+        WHERE a.del_flag = '0'
+          AND a.login_name = #{loginName}
+          AND a.is_wxuser = "0"
+    </select>
+
+    <update id="updateDelFlag">
+        UPDATE sys_user
+        SET del_flag = #{delFalg}
+        WHERE id = #{id}
+    </update>
+
+    <select id="getAdmin" resultType="com.geeke.admin.entity.User">
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        left join user_tenant u on u.user_id = a.id
+        WHERE a.is_admin = 1 and
+        u.tenant_id = #{companyId} AND a.is_wxuser = "0"
+        and a.department_id is null
+    </select>
+    <select id="getCompanyIdAndOpenId" resultType="com.geeke.admin.entity.User">
+        SELECT
+        <include refid="userColumns"/>
+        FROM sys_user a
+        <include refid="userJoins"/>
+        WHERE a.company_id = #{companyId} and a.openId = #{openId}
+    </select>
+    <select id="getUserByWxCompanyIdAndJob" resultType="com.geeke.admin.entity.User">
+        SELECT
+        <include refid="userColumns"/>,
+        o.id AS office
+        FROM sys_user a
+        LEFT JOIN org_department department ON department.id = a.department_id
+        left join sys_user_ext e on e.user_id = a.id
+        left join clinic_office o on o.name = e.office and o.company_id = e.company_id
+        LEFT JOIN org_company company ON company.id = e.company_id
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = 0
+            AND e.company_id = #{companyId}
+            AND e.job_type = #{job}
+            And e.office = #{office}
+            AND a.is_locked = 0
+            AND a.is_wxuser = "0"
+        </where>
+        ORDER BY a.update_date DESC
+    </select>
+
+    <update id="updateAdminPhoneAndPass">
+        UPDATE sys_user
+        SET login_name     = #{loginName},
+            login_password = #{pass}
+        WHERE id = #{id}
+    </update>
+
+    <insert id="insertUserTenant">
+        INSERT INTO user_tenant(id,
+                                user_id,
+                                tenant_id,
+                                login_name,
+                                del_flag)
+        VALUES (#{id},
+                #{userId},
+                #{tenantId},
+                #{loginName},
+                '0')
+    </insert>
+    <update id="updateUserTenantDelFlag">
+        UPDATE user_tenant
+        SET del_flag = #{delFlag}
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="updateWxUser">
+        update sys_user
+        set phone       = #{phone},
+            update_date = #{updateDate}
+        where id = #{id}
+    </update>
+</mapper>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.wx.dao.WxUserDao">
+
+    <sql id="wxUserColums">
+        a.id AS 'id',
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.open_id AS "openId",
+        a.phone AS "phone"
+    </sql>
+
+    <sql id="wxUserJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+    </sql>
+
+    <insert id="save">
+        insert into wx_user (
+        id,
+        company_id,
+        open_id,
+        phone
+        )values(
+        #{id},
+        #{company.id},
+        #{openId},
+        #{phone}
+        )
+    </insert>
+    <update id="update">
+        update wx_user set phone = #{phone} where open_id = #{openId}
+    </update>
+    <select id="getByOpenId" resultType="com.geeke.wx.entity.WxUser">
+        select
+          <include refid="wxUserColums"/>
+        from wx_user a
+          <include refid="wxUserJoins"/>
+        where a.open_id = #{id}
+    </select>
+</mapper>

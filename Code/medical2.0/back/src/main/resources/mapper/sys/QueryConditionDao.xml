@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.sys.dao.QueryConditionDao">
+    
+    <sql id="queryConditionColumns">
+        a.id AS "id",
+        a.user_id AS "userId",
+        a.router_id AS "routerId",
+        a.name AS "name",
+        a.conditions AS "conditions",
+        a.remarks AS "remarks",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.del_flag AS "delFlag"
+    </sql>
+    
+    <sql id="queryConditionJoins">
+    </sql>
+    
+    <select id="get" resultType="com.geeke.sys.entity.QueryCondition">
+        SELECT 
+            <include refid="queryConditionColumns"/>
+        FROM sys_condition a
+        <include refid="queryConditionJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM sys_condition a
+        <include refid="queryConditionJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.sys.entity.QueryCondition">
+        SELECT 
+            <include refid="queryConditionColumns"/>
+        FROM sys_condition a
+        <include refid="queryConditionJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.sys.entity.QueryCondition">
+        SELECT 
+            <include refid="queryConditionColumns"/>
+        FROM sys_condition a
+        <include refid="queryConditionJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when> 
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+      
+    <insert id="insert">
+        INSERT INTO sys_condition(
+            id,
+            user_id,
+            router_id,
+            name,
+            conditions,
+            remarks,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_flag
+        ) VALUES (
+            #{id},
+            #{userId},
+            #{routerId},
+            #{name},
+            #{conditions},
+            #{remarks},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate},
+            #{delFlag}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE sys_condition SET     
+            user_id = #{userId},
+            router_id = #{routerId},
+            name = #{name},
+            conditions = #{conditions},
+            update_by = #{updateBy},
+            update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        UPDATE sys_condition SET
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+    
+    
+</mapper>

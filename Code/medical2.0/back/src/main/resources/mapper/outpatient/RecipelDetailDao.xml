@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.outpatient.dao.RecipelDetailDao">
+
+    <sql id="recipelDetailColumns">
+        a
+        .
+        id
+        AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.recipel_info_id AS "recipelInfo.id",
+        recipelInfo.remarks AS "recipelInfo.remarks",
+        a.drug_stuff_id AS "drugStuffId.drugStuffId",
+        a.single_dosage AS "singleDosage",
+        a.total AS "total",
+        a.all_fee AS "allFee",
+        a.actual_payment AS "actualPayment",
+        a.western_medicine_use AS "westernMedicineUse.value",
+        IFNULL(westernMedicineUse.name,'') AS "westernMedicineUse.name",
+        a.frequency AS "frequency.value",
+        IFNULL(frequency.name,'') AS "frequency.name",
+        IFNULL(frequency.remarks,'') AS "frequency.remarks",
+        a.days AS "days.name",
+        IFNULL(days.name,'') AS "days.name",
+        a.chinese_medicine_use AS "chineseMedicineUse.value",
+        IFNULL(chineseMedicineUse.name,'') AS "chineseMedicineUse.name",
+        a.infuse_use AS "infuseUse.value",
+        IFNULL(infuseUse.name,'') AS "infuseUse.name",
+        a.dripping_speed AS "drippingSpeed",
+        a.skin_test AS "skinTest.value",
+        IFNULL(skinTest.name,'') AS "skinTest.name",
+        a.infuse_group AS "infuseGroup",
+        a.remarks AS "remarks",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.del_flag AS "delFlag",
+        a.retail_type AS "retailType",
+        a.is_extra AS "isExtra",
+        a.seq AS "seq",
+        a.is_unpack_sell AS "isUnpackSell",
+        a.unit_price AS "unitPrice",
+        a.unit_type AS "unitType",
+        a.stuff_type AS "stuffType",
+        a.min_total AS "minTotal",
+        a.executions AS "executions",
+        a.infuse_type AS "infuseType"
+    </sql>
+
+    <sql id="recipelDetailJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN recipel_info recipelInfo ON recipelInfo.id = a.recipel_info_id
+        LEFT JOIN sys_dict_item westernMedicineUse ON westernMedicineUse.value = a.western_medicine_use
+        LEFT JOIN sys_dict_item frequency ON frequency.value = a.frequency
+        LEFT JOIN sys_dict_item days ON days.name = a.days
+        LEFT JOIN sys_dict_item chineseMedicineUse ON chineseMedicineUse.value = a.chinese_medicine_use
+        LEFT JOIN sys_dict_item infuseUse ON infuseUse.value = a.infuse_use
+        LEFT JOIN sys_dict_item skinTest ON skinTest.value = a.skin_test
+    </sql>
+
+    <select id="get" resultType="com.geeke.outpatient.entity.RecipelDetail">
+        SELECT
+        <include refid="recipelDetailColumns"/>
+        FROM recipel_detail a
+        <include refid="recipelDetailJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM recipel_detail a
+        <include refid="recipelDetailJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+    <select id="listPage" resultType="com.geeke.outpatient.entity.RecipelDetail">
+        SELECT
+        <include refid="recipelDetailColumns"/>
+        FROM recipel_detail a
+        <include refid="recipelDetailJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="getDetailStasticsForOccupy" resultType="com.geeke.outpatient.entity.RecipelStastics">
+        select rd.drug_stuff_id as id,
+               rd.stuff_type    as stuffType,
+               sum(rd.min_total)   occupy
+        from recipel_detail rd
+                 left join recipel_info ri on
+            ri.id = rd.recipel_info_id
+        where ri.is_dispension = '0'
+          and ri.company_id = #{companyId}
+          and DATE_SUB(CURDATE(), INTERVAL #{days} DAY) <![CDATA[ <= ]]> ri.create_date
+        group by rd.drug_stuff_id, rd.stuff_type
+    </select>
+
+    <select id="getDetailStasticsForNowByRecordId" resultType="com.geeke.outpatient.entity.RecipelStastics">
+        select rd.drug_stuff_id,
+               rd.stuff_type,
+               rd.min_total occupy
+        from recipel_detail rd
+                 left join recipel_info ri on
+            ri.id = rd.recipel_info_id
+        where ri.medical_record_id = #{recordId}
+          and ri.company_id = #{companyId}
+    </select>
+
+
+    <select id="listAll" resultType="com.geeke.outpatient.entity.RecipelDetail">
+        SELECT
+        <include refid="recipelDetailColumns"/>
+        FROM recipel_detail a
+        <include refid="recipelDetailJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO recipel_detail(id,
+                                   company_id,
+                                   recipel_info_id,
+                                   drug_stuff_id,
+                                   single_dosage,
+                                   total,
+                                   all_fee,
+                                   actual_payment,
+                                   western_medicine_use,
+                                   frequency,
+                                   days,
+                                   chinese_medicine_use,
+                                   infuse_use,
+                                   dripping_speed,
+                                   skin_test,
+                                   infuse_group,
+                                   remarks,
+                                   create_by,
+                                   create_date,
+                                   update_by,
+                                   update_date,
+                                   del_flag,
+                                   retail_type,
+                                   is_extra,
+                                   seq,
+                                   is_unpack_sell,
+                                   unit_price,
+                                   unit_type,
+                                   stuff_type,
+                                   min_total,
+                                   executions,
+                                   infuse_type)
+        VALUES (#{id},
+                #{company.id},
+                #{recipelInfo.id},
+                #{drugStuffId.drugStuffId},
+                #{singleDosage},
+                #{total},
+                #{allFee},
+                #{actualPayment},
+                #{westernMedicineUse.value},
+                #{frequency.value},
+                #{days.name},
+                #{chineseMedicineUse.value},
+                #{infuseUse.value},
+                #{drippingSpeed},
+                #{skinTest.value},
+                #{infuseGroup},
+                #{remarks},
+                #{createBy},
+                #{createDate},
+                #{updateBy},
+                #{updateDate},
+                #{delFlag},
+                #{retailType},
+                #{isExtra},
+                #{seq},
+                #{isUnpackSell},
+                #{unitPrice},
+                #{unitType},
+                #{stuffType},
+                #{minTotal},
+                #{executions},
+                #{infuseType})
+    </insert>
+
+    <update id="update">
+        UPDATE recipel_detail
+        SET recipel_info_id      = #{recipelInfo.id},
+            drug_stuff_id        = #{drugStuffId},
+            single_dosage        = #{singleDosage},
+            total                = #{total},
+            all_fee              = #{allFee},
+            actual_payment       = #{actualPayment},
+            western_medicine_use = #{westernMedicineUse.value},
+            frequency            = #{frequency.value},
+            days                 = #{days.name},
+            chinese_medicine_use = #{chineseMedicineUse.value},
+            infuse_use           = #{infuseUse.value},
+            dripping_speed       = #{drippingSpeed},
+            skin_test            = #{skinTest.value},
+            infuse_group         = #{infuseGroup},
+            update_by            = #{updateBy},
+            update_date          = #{updateDate},
+            retail_type          = #{retailType},
+            is_extra             = #{isExtra},
+            seq                  = #{seq},
+            is_unpack_sell       = #{isUnpackSell},
+            unit_price           = #{unitPrice},
+            unit_type            = #{unitType},
+            stuff_type           = #{stuffType},
+            min_total            = #{minTotal},
+            executions           = #{executions},
+            infuse_type=#{infuseType}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateActualPayment">
+        UPDATE recipel_detail
+        SET actual_payment = #{actualPayment}
+        WHERE id = #{id}
+    </update>
+
+    <update id="delete">
+        UPDATE recipel_detail SET
+        update_by = #{updateBy},
+        update_date = #{updateDate},
+        del_flag = #{DEL_FLAG_DELETE}
+        <choose>
+            <when test="id !=null and id != ''">
+                WHERE id = #{id}
+            </when>
+            <otherwise>
+                WHERE recipel_info_id = #{recipelInfo.id}
+            </otherwise>
+        </choose>
+    </update>
+
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO recipel_detail(
+        id,
+        company_id,
+        recipel_info_id,
+        drug_stuff_id,
+        single_dosage,
+        total,
+        all_fee,
+        actual_payment,
+        western_medicine_use,
+        frequency,
+        days,
+        chinese_medicine_use,
+        infuse_use,
+        dripping_speed,
+        skin_test,
+        infuse_group,
+        remarks,
+        create_by,
+        create_date,
+        update_by,
+        update_date,
+        del_flag,
+        retail_type,
+        is_extra,
+        seq,
+        is_unpack_sell,
+        unit_price,
+        unit_type,
+        stuff_type,
+        min_total,
+        executions,
+        infuse_type
+        ) VALUES
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+            (
+            #{entity.id},
+            #{entity.company.id},
+            #{entity.recipelInfo.id},
+            #{entity.drugStuffId.drugStuffId},
+            #{entity.singleDosage},
+            #{entity.total},
+            #{entity.allFee},
+            #{entity.actualPayment},
+            #{entity.westernMedicineUse.value},
+            #{entity.frequency.value},
+            #{entity.days.name},
+            #{entity.chineseMedicineUse.value},
+            #{entity.infuseUse.value},
+            #{entity.drippingSpeed},
+            #{entity.skinTest.value},
+            #{entity.infuseGroup},
+            #{entity.remarks},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.delFlag},
+            #{entity.retailType},
+            #{entity.isExtra},
+            #{entity.seq},
+            #{entity.isUnpackSell},
+            #{entity.unitPrice},
+            #{entity.unitType},
+            #{entity.stuffType},
+            #{entity.minTotal},
+            #{entity.executions},
+            #{entity.infuseType}
+            )
+        </foreach>
+    </insert>
+
+    <update id="bulkUpdate" parameterType="java.util.List">
+        UPDATE recipel_detail
+        <set>
+            <trim prefix="recipel_info_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.recipelInfo.id}
+                </foreach>
+            </trim>
+            <trim prefix="drug_stuff_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.drugStuffId.drugStuffId}
+                </foreach>
+            </trim>
+            <trim prefix="single_dosage=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.singleDosage}
+                </foreach>
+            </trim>
+            <trim prefix="total=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.total}
+                </foreach>
+            </trim>
+            <trim prefix="all_fee=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.allFee}
+                </foreach>
+            </trim>
+            <trim prefix="actual_payment=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.actualPayment}
+                </foreach>
+            </trim>
+            <trim prefix="western_medicine_use=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.westernMedicineUse.value}
+                </foreach>
+            </trim>
+            <trim prefix="frequency=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.frequency.value}
+                </foreach>
+            </trim>
+            <trim prefix="days=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.days.name}
+                </foreach>
+            </trim>
+            <trim prefix="chinese_medicine_use=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.chineseMedicineUse.value}
+                </foreach>
+            </trim>
+            <trim prefix="infuse_use=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.infuseUse.value}
+                </foreach>
+            </trim>
+            <trim prefix="dripping_speed=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.drippingSpeed}
+                </foreach>
+            </trim>
+            <trim prefix="skin_test=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.skinTest.value}
+                </foreach>
+            </trim>
+            <trim prefix="infuse_group=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.infuseGroup}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+            <trim prefix="retail_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.retailType}
+                </foreach>
+            </trim>
+            <trim prefix="is_extra=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isExtra}
+                </foreach>
+            </trim>
+            <trim prefix="seq=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.seq}
+                </foreach>
+            </trim>
+            <trim prefix="is_unpack_sell=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isUnpackSell}
+                </foreach>
+            </trim>
+            <trim prefix="unit_price=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.unitPrice}
+                </foreach>
+            </trim>
+            <trim prefix="unit_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.unitType}
+                </foreach>
+            </trim>
+            <trim prefix="executions=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.executions}
+                </foreach>
+            </trim>
+            <trim prefix="infuse_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.infuse_type}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+
+
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE recipel_detail
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+
+    <select id="getByRecipelInfoId" parameterType="java.lang.String"
+            resultType="com.geeke.outpatient.entity.RecipelDetail">
+        SELECT
+        <include refid="recipelDetailColumns"/>
+        FROM recipel_detail a
+        <include refid="recipelDetailJoins"/>
+        WHERE a.recipel_info_id = #{recipelInfoId}
+    </select>
+
+    <select id="getRecipelDetail" parameterType="java.lang.String"
+            resultType="com.geeke.outpatient.entity.RecipelDetail">
+        SELECT
+        <include refid="recipelDetailColumns"/>
+        FROM recipel_detail a
+        <include refid="recipelDetailJoins"/>
+        WHERE a.recipel_info_id = #{id}
+    </select>
+
+    <select id="schedule" parameterType="java.lang.String"
+            resultType="int">
+        SELECT
+        sum(a.executions) - sum(total) as treatment
+        FROM recipel_detail a
+        WHERE a.recipel_info_id = #{id}
+    </select>
+
+    <select id="getInfuseByRecipelInfoId" parameterType="java.lang.String"
+            resultType="com.geeke.outpatient.entity.RecipelDetail">
+        SELECT
+        <include refid="recipelDetailColumns"/>
+        FROM recipel_detail a
+        <include refid="recipelDetailJoins"/>
+        WHERE a.recipel_info_id = #{recipelInfoId}
+        ORDER BY a.infuse_group
+    </select>
+    <select id="findByInfoId" resultType="com.geeke.outpatient.entity.RecipelDetail">
+        SELECT
+        <include refid="recipelDetailColumns"/>
+        FROM recipel_detail a
+        <include refid="recipelDetailJoins"/>
+        left join cost_item ci on ci.id = a.drug_stuff_id
+        WHERE a.recipel_info_id = #{recipelInfoId}
+        AND a.is_extra = 0
+        AND a.stuff_type=#{stuffType}
+        AND (ci.item_type = 'treatmentItemType_2' or ci.item_type = 'treatmentItemType_3')
+    </select>
+
+    <delete id="batchDelete" parameterType="java.util.List">
+        delete from recipel_detail
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </delete>
+    <update id="updateById">
+        update recipel_detail
+        set executions=#{executions},
+            infuse_type=#{infuseType}
+        where id = #{id}
+    </update>
+</mapper>

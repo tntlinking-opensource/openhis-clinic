@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.cure.dao.CureManagementDao">
+    
+    <sql id="cureColumns">
+        a.id AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.recipel_detail_id AS "recipelDetail.id",
+        IFNULL(recipelDetail.executions,'') AS "recipelDetail.executions",
+        IFNULL(recipelDetail.stuff_type,'') AS "recipelDetail.stuffType",
+        a.executions AS "executions",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.del_type AS "delType",
+        a.execute_date AS "executeDate",
+        a.remarks AS "remarks",
+        a.add_number AS "addNumber",
+        a.recipel_info_id AS "recipelInfoId",
+        a.infuse_group AS "infuseGroup"
+    </sql>
+    
+    <sql id="cureJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN recipel_detail recipelDetail ON recipelDetail.id = a.recipel_detail_id
+    </sql>
+    
+    <select id="get" resultType="com.geeke.cure.entity.CureManagement">
+        SELECT 
+            <include refid="cureColumns"/>
+        FROM cure a
+        <include refid="cureJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM cure a
+        <include refid="cureJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.cure.entity.CureManagement">
+        SELECT 
+            <include refid="cureColumns"/>
+        FROM cure a
+        <include refid="cureJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.cure.entity.CureManagement">
+        SELECT 
+            <include refid="cureColumns"/>
+        FROM cure a
+        <include refid="cureJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+    </select>
+      
+    <insert id="insert">
+        INSERT INTO cure(
+            id,
+            company_id,
+            recipel_detail_id,
+            executions,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_type,
+            execute_date,
+            remarks,
+            add_number,
+            recipel_info_id,
+            infuse_group
+        ) VALUES (
+            #{id},
+            #{company.id},
+            #{recipelDetail.id},
+            #{executions},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate},
+            #{delType},
+            #{executeDate},
+            #{remarks},
+            #{addNumber},
+            #{recipelInfoId},
+            #{infuseGroup}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE cure SET
+        company_id=#{company.id},
+        recipel_detail_id=#{recipelDetail.id},
+        executions=#{executions},
+        create_by=#{createBy},
+        create_date=#{createDate},
+        update_by=#{updateBy},
+        update_date=#{updateDate},
+        del_type=#{delType},
+        execute_date=#{executeDate},
+        remarks=#{remarks},
+        add_number=#{addNumber},
+        recipel_info_id=#{recipelInfoId},
+        infuse_group=#{infuseGroup}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        DELETE FROM cure
+        <choose>
+            <when test="id !=null and id != ''">
+                WHERE id = #{id}
+            </when>
+            <otherwise>
+                WHERE toll_id = #{tollId.id}
+            </otherwise>
+        </choose>
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO cure(
+            id,
+            recipel_id,
+            toll_id
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.recipel.id},                    
+            #{entity.tollId.id}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE cure
+        <set>           
+            <trim prefix="recipel_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.recipel.id}
+                </foreach>
+            </trim>
+            <trim prefix="toll_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.tollId.id}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        DELETE FROM cure
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+</mapper>

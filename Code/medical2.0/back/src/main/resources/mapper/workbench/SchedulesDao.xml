@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.workbench.dao.SchedulesDao">
+
+    <update id="updateoverlookid" >
+        update registration set overlook='1',update_date=now() where id=#{recipelInfoIds}
+    </update>
+
+    <select id="visitprogresspage" resultType="com.geeke.workbench.entity.VisitProgress" >
+        select a.name xm,(case when a.gender='gender_0' then '男' when a.gender='gender_1' then '女' else '' end) xb,
+        a.birthday sr,a.phone ,c.name ks,b.treat_type jzlx,b.status jzzt,e.name ys,
+        date_format(b.create_date,"%H:%i") as djsj,count(d.status='1') cfs from patient a
+        left join registration b on a.id=b.patient_id
+        left join clinic_office c on c.id= b.department_id
+        left join recipel_info d on d.registration_id =b.id
+        left join sys_user e on b.doctor_id =e.id
+        where b.company_id=#{companyId}
+
+        <if test="values!='' and values!=null">
+            and (a.name like concat('%',#{values},'%')
+            or a.phone like concat('%',#{values},'%')
+            or a.card like concat('%',#{values},'%'))
+        </if>
+        <if test="status!='' and status!=null">
+            and b.status=#{status}
+        </if>
+        <if test="kssj!='' and jssj!='' and kssj!=null and jssj!=null">
+            and b.create_date between #{kssj} and #{jssj}
+        </if>
+        <if test="kssj=='' and jssj==''">
+            and date_format(b.create_date,'%y%m%d') = date_format(now(),'%y%m%d')
+        </if>
+        group by a.name,c.name ,b.treat_type ,b.status ,e.name ,b.create_date,a.gender, a.birthday ,a.phone
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+
+    <select id="visitprogresspagecounts" resultType="com.geeke.workbench.entity.VisitProgress" >
+        select a.name xm,(case when a.gender='gender_0' then '男' when a.gender='gender_1' then '女' else '' end) xb,
+        a.birthday sr,a.phone ,c.name ks,b.treat_type jzlx,b.status jzzt,e.name ys,
+        date_format(b.create_date,"%H:%i") as djsj,count(d.status='1') cfs from patient a
+        left join registration b on a.id=b.patient_id
+        left join clinic_office c on c.id= b.department_id
+        left join recipel_info d on d.registration_id =b.id
+        left join sys_user e on b.doctor_id =e.id
+        where b.company_id=#{companyId}
+
+        <if test="values!='' and values!=null">
+            and (a.name like concat('%',#{values},'%')
+            or a.phone like concat('%',#{values},'%')
+            or a.card like concat('%',#{values},'%'))
+        </if>
+        <if test="status!='' and status!=null">
+            and b.status=#{status}
+        </if>
+        <if test="kssj!='' and jssj!='' and kssj!=null and jssj!=null">
+            and b.create_date between #{kssj} and #{jssj}
+        </if>
+        <if test="kssj=='' and jssj==''">
+            and date_format(b.create_date,'%y%m%d') = date_format(now(),'%y%m%d')
+        </if>
+        group by a.name,c.name ,b.treat_type ,b.status ,e.name ,b.create_date,a.gender, a.birthday ,a.phone
+    </select>
+
+    <select id="listPages" resultType="String">
+        SELECT
+        a.id
+        FROM registration a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN clinic_office clinicOffice ON clinicOffice.id = a.department_id
+        LEFT JOIN patient patientId ON patientId.id = a.patient_id
+        LEFT JOIN sys_dict_item gender ON gender.value = patientId.gender
+        LEFT JOIN sys_user doctor ON doctor.id = a.doctor_id
+        LEFT JOIN sys_dict_item treatType ON treatType.value = a.treat_type
+        LEFT JOIN sys_dict_item source ON source.value = a.source
+        LEFT JOIN sys_dict_item payType ON payType.value = a.pay_type
+        LEFT JOIN sys_dict_item status ON status.value = a.status
+        <if test="status !='registrationStatus_0'">
+            INNER JOIN recipel_info ri on a.id=ri.registration_id
+            LEFT JOIN recipel_detail rd on ri.id=rd.recipel_info_id
+            LEFT JOIN cost_item ci on ci.id=rd.drug_stuff_id
+        </if>
+
+        WHERE a.company_id=#{companyId}
+        <if test="chargeStatus!=3">
+            AND ri.charge_status = #{chargeStatus}
+        </if>
+        <if test="recipeStatus!='' and recipeStatus!=null ">
+            AND a.recipe_status=#{recipeStatus}
+        </if>
+        <if test=" updateDate!=null ">
+            AND a.update_date>#{updateDate}
+        </if>
+        <if test="status!='' and status!=null ">
+            AND a.status=#{status}
+        </if>
+
+        <if test="dispensionStatus!=3">
+            AND ri.dispension_status=#{dispensionStatus}
+        </if>
+        <if test="recipelType=='recipelType_3'">
+            AND ri.recipel_type != #{recipelType}
+        </if>
+        <if test="recipelType=='recipelType_10'">
+            AND ri.recipel_type='recipelType_3'
+            AND (ci.item_type='treatmentItemType_2' or ci.item_type='treatmentItemType_3')
+        </if>
+        <if test="recipelType=='recipelType_11'">
+            AND ri.recipel_type='recipelType_2'
+        </if>
+        <if test="cureType==0">
+            AND ri.cure_type=0
+        </if>
+        <if test="cureType==1">
+            AND ri.cure_type=1
+        </if>
+        <if test="infuseType==0">
+            AND ri.infuse_type=0
+        </if>
+        <if test="infuseType==1">
+            AND ri.infuse_type=1
+        </if>
+        <if test="patientName!='' and patientName!=null">
+            AND (patientid.name like concat('%',#{patientName},'%') or patientid.health_card_no=#{patientCode})
+        </if>
+        <if test="overlook!='3'.toString() ">
+            and a.overlook=#{overlook}
+        </if>
+        <if test="doctorid!='' and doctorid!=null">
+            and a.doctor_id=#{doctorid}
+        </if>
+
+        GROUP BY a.id
+        <if test="columnName!='' and columnName!=null">
+            ORDER BY ${columnName} desc
+        </if>
+
+    </select>
+
+    <select id="listPagejyjc" resultType="String">
+        select r.id  from inspection_check a
+        left join registration r on a.registration_id =r.id
+        <where>
+            a.company_id =#{companyId}
+            and a.status ='0'
+            and r.overlook=#{overlook}
+        </where>
+
+    </select>
+
+</mapper>

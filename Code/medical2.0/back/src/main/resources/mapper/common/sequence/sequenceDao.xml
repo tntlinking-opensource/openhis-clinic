@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.geeke.common.sequence.dao.SequenceDao">
+
+    <select id="getByPrefix" resultType="com.geeke.common.sequence.entity.Sequence">
+        SELECT 
+            a.id AS "id",
+            a.company_id AS "companyId",
+            a.code AS "code",
+            a.prefix AS "prefix",
+            a.val AS "val",
+            a.create_by AS "createBy",
+	        a.create_date AS "createDate",
+	        a.update_by AS "updateBy",
+	        a.update_date AS "updateDate"
+        FROM sys_squence a
+        WHERE a.company_id = #{companyId} AND a.code = #{code} AND a.prefix = #{prefix} FOR UPDATE
+    </select>
+
+	<insert id="insert">
+        INSERT INTO sys_squence(
+			id,
+			company_id,
+			code,
+			prefix,
+			val,
+            create_by,
+            create_date,
+            update_by,
+            update_date
+        ) VALUES (
+            #{id},
+            #{companyId},
+            #{code},
+            #{prefix},
+            #{val},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate}
+        )	   
+	</insert>
+
+	<update id="nextSeqById">
+        UPDATE sys_squence SET 
+            val = val + 1,
+            update_by = #{updateBy},
+            update_date = #{updateDate}
+        WHERE id=#{id}
+	</update>
+
+</mapper>  

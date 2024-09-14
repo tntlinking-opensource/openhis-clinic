@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.largeScreen.dao.ScreenDao">
+    <resultMap id="OutpatientLogRespVO" type="com.geeke.toll.entity.OutpatientLog">
+        <id property="id" column="id"/>
+        <result property="patientName" column="name"/>
+        <result property="patriarchName" column="guardian_name"/>
+        <result property="sex" column="gender"/>
+        <result property="age" column="age"/>
+        <result property="nation" column="nation"/>
+        <result property="occupation" column="occupation"/>
+        <result property="address" column="address"/>
+        <result property="visitDate" column="reception_end_date"/>
+        <result property="initialVisit" column="source"/>
+        <result property="bloodPressure" column="blood_pressure"/>
+        <result property="symptom" column="patient_tell"/>
+        <result property="fever" column="temperature"/>
+        <result property="epidemicDisease" column="epidemic_disease"/>
+        <result property="chinaDiagnose" column="china_diagnose"/>
+        <result property="westernDiagnose" column="western_diagnose"/>
+        <result property="certificate" column="card"/>
+        <result property="infect" column="infect_type"/>
+        <result property="handle" column="handling_situation"/>
+        <result property="unit" column="workplace"/>
+        <result property="signature" column="doctor_id"/>
+        <result property="poverty" column="number"/>
+        <result property="telephone" column="phone"/>
+        <result property="morbidityDate" column="morbidity_time"/>
+        <result property="positiveResult" column="-------------"/>
+        <result property="healthEducation" column="health_education"/>
+    </resultMap>
+
+    <!-- 新增任务 -->
+    <select id="getQuest" resultType="String">taskmanagement
+    select count(*)
+    from taskmanagement t
+    where t.company_id in (SELECT id FROM org_company WHERE parent_id = #{parentId})
+      and t.del_flag = '0'
+      and to_days(t.UPDATED_BY) = to_days(now())
+    </select>
+
+
+    <!-- 今日挂号人数 -->
+    <select id="getRegister" resultType="String">
+        select count(*)
+        from registration r
+        where r.company_id in (SELECT id FROM org_company WHERE parent_id = #{parentId})
+          and (r.status = 'registrationStatus_1' or r.status = 'registrationStatus_0')
+          and r.del_flag = '0'
+          and to_days(r.create_date) = to_days(now())
+    </select>
+
+    <!-- 今日接诊数 -->
+    <select id="getReceivePatients" resultType="String">
+        select count(*)
+        from registration r
+        where r.company_id in (SELECT id FROM org_company WHERE parent_id = #{parentId})
+          and r.status = 'registrationStatus_1'
+          and r.del_flag = '0'
+          and to_days(r.create_date) = to_days(now())
+    </select>
+
+    <!-- 今日收入 -->
+    <select id="getIncome" resultType="String">
+        select IFNULL(sum(ti.amount_received), 0)
+        from toll_info ti
+        where ti.amount_status = 'amountStatus_1'
+          and ti.del_flag = '0'
+          and ti.return_type = '0'
+          and to_days(ti.create_date) = to_days(now())
+          and ti.company_id in (SELECT id FROM org_company WHERE parent_id = #{parentId})
+    </select>
+
+    <!-- 今日新增签约数 -->
+    <select id="getSigning" resultType="String">
+    </select>
+
+    <!-- 任务详情 -->
+    <select id="taskDetails" resultType="String">
+        select (case t.tasktype when 0 THEN '常规任务' when 1 THEN '宣传任务' end) tasktype,
+               t.taskname,
+               t.taskdeadline,
+               (SELECT COUNT(f.executeschedule)
+                FROM feedbacktable f
+                WHERE f.executeschedule = 1
+                  and f.taskmanagement_id = t.ID) as                       ywc,
+               (SELECT COUNT(f.executeschedule)
+                FROM feedbacktable f
+                WHERE f.executeschedule = 0
+                  and f.taskmanagement_id = t.ID) as                       wwc
+        from taskmanagement t
+                 inner join feedbacktable f on t.ID = f.taskmanagement_id
+        WHERE t.company_id = '1639720158872479714'
+    </select>
+
+    <!-- 今日们门诊记录 -->
+    <select id="outpatientRecord" resultType="String">
+        select IFNULL(status.name, '')    as status,
+               IFNULL(p.name, '')         as name,
+               IFNULL(gender.name, '')    as gender,
+               IFNULL(p.age, '')          as age,
+               IFNULL(p.phone, '')        as phone,
+               IFNULL(treatType.name, '') as treatType,
+               IFNULL(co.name, '')        as clinic,
+               IFNULL(d.name, '')         as doctor,
+               r.update_date as date
+        from registration r
+            left join patient p
+        on p.id = r.patient_id
+            left join org_company oc on oc.id = r.company_id
+            left join sys_dict_item gender on gender.value = p.gender
+            left join sys_dict_item treatType on treatType.value = r.treat_type
+            left join clinic_office co on co.id = r.department_id
+            left join sys_user d on d.id = r.doctor_id
+            left join sys_dict_item status on status.value = r.status
+        where r.company_id in (SELECT id FROM org_company WHERE parent_id='1639720158872479714')
+          and (r.status = 'registrationStatus_1'
+           or r.status = 'registrationStatus_0')
+          and r.del_flag = '0'
+          and to_days(r.create_date) = to_days(now())
+    </select>
+
+    <!-- 高血压统计 -->
+    <select id="hypertension">
+        select
+            (SELECT COUNT(f.executeschedule)
+             FROM fm_user_form_import_visit v
+             WHERE v.form_name = '高血压患者随访服务记录表') as gxyzs,
+        from fm_user_form_import_visit v
+    </select>
+</mapper>

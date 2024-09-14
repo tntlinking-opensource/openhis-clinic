@@ -1,0 +1,699 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.stock.dao.StuffDao">
+
+    <sql id="stuffColumns">
+        a.id AS "id",
+        IFNULL(a.sync_id,'') as sync_id,
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.name AS "name",
+        a.common_name AS "commonName",
+        a.pinyin_code AS "pinyinCode",
+        a.code AS "code",
+        a.type AS "type.value",
+        IFNULL(type.name,'') AS "type.name",
+        a.factory AS "factory.id",
+        IFNULL(factory.name,'') AS "factory.name",
+        a.nature AS "nature.value",
+        IFNULL(nature.name,'') AS "nature.name",
+        a.bar_code AS "barCode",
+        a.registration_name AS "registrationName",
+        a.registration_code AS "registrationCode",
+        a.specifications AS "specifications",
+        a.pack_number AS "packNumber",
+        a.min_unit AS "minUnit.value",
+        IFNULL(minUnit.name,'') AS "minUnit.name",
+        a.pack_unit AS "packUnit.value",
+        IFNULL(packUnit.name,'') AS "packUnit.name",
+        a.is_out_sell AS "isOutSell",
+        a.price_out_sell AS "priceOutSell",
+        a.is_unpack_sell AS "isUnpackSell",
+        a.retail_price AS "retailPrice",
+        a.remarks AS "remarks",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.del_flag AS "delFlag",
+        a.status AS "status",
+        a.inventory AS "inventory",
+        a.location_number AS "locationNumber",
+        a.inventory_limit AS "inventoryLimit",
+        a.inventory_floor AS "inventoryFloor",
+        a.indate AS "indate",
+        IFNULL(stock.id,'') AS "stock.id",
+        IFNULL(stock.storage_stock,'') AS 'stock.storageStock',
+        IFNULL(stock.used_stock,'') AS 'stock.usedStock',
+        IFNULL(stock.occupy_stock,'') AS 'stock.occupyStock',
+        IFNULL(stock.surplus_stock,'') AS 'stock.surplusStock',
+        IFNULL(stock.reimburse_stock,'') AS 'stock.reimburseStock'
+    </sql>
+
+    <sql id="groupBy">
+        a
+        .
+        id
+        , a.company_id, company.name, a.name, a.common_name,a.pinyin_code, a.code, a.type, type.name, a.factory, factory.name, a.nature, nature.name,
+        a.bar_code, a.registration_name, a.registration_code, a.specifications, a.pack_number, a.min_unit, minUnit.name, a.pack_unit, packUnit.name,
+        a.is_out_sell, a.price_out_sell, a.is_unpack_sell, a.retail_price, a.remarks, a.create_by, a.create_date, a.update_by, a.update_date, a.del_flag,
+        status,stock.id,stock.storage_stock,stock.occupy_stock,stock.surplus_stock,stock.reimburse_stock
+    </sql>
+
+    <sql id="stuffJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN sys_dict_item type ON type.value = a.type
+        LEFT JOIN manufacture_factory factory ON factory.id = a.factory
+        LEFT JOIN sys_dict_item nature ON nature.value = a.nature
+        LEFT JOIN sys_dict_item minUnit ON minUnit.value = a.min_unit
+        LEFT JOIN sys_dict_item packUnit ON packUnit.value = a.pack_unit
+        LEFT JOIN medicinal_stock_control stock ON stock.drug_stuff_id = a.id
+    </sql>
+
+    <select id="get" resultType="com.geeke.stock.entity.Stuff">
+        SELECT
+        <include refid="stuffColumns"/>
+        FROM stuff a
+        <include refid="stuffJoins"/>
+        WHERE a.id = #{id} limit 1
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM stuff a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN sys_dict_item type ON type.value = a.type
+        LEFT JOIN manufacture_factory factory ON factory.id = a.factory
+        LEFT JOIN sys_dict_item nature ON nature.value = a.nature
+        LEFT JOIN sys_dict_item minUnit ON minUnit.value = a.min_unit
+        LEFT JOIN sys_dict_item packUnit ON packUnit.value = a.pack_unit
+        LEFT JOIN medicinal_stock_control stock ON (stock.drug_stuff_id = a.id and stock.company_id = #{id})
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and if(company.is_institution=1, company.id = #{institution}, (company.id = #{institution} or
+            company.id = #{id}) )
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+    <select id="listPage" resultType="com.geeke.stock.entity.Stuff">
+        SELECT
+        <include refid="stuffColumns"/>
+        ,sum(ss.number) AS stockNumber
+        FROM stuff a
+        <include refid="stuffJoins"/>
+        left join supplier_stock ss on ss.stuff_id = a.id
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        group by
+        <include refid="groupBy"/>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="listPages" resultType="com.geeke.stock.entity.Stuff">
+        SELECT
+        <include refid="stuffColumns"/>
+        FROM stuff a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN sys_dict_item type ON type.value = a.type
+        LEFT JOIN manufacture_factory factory ON factory.id = a.factory
+        LEFT JOIN sys_dict_item nature ON nature.value = a.nature
+        LEFT JOIN sys_dict_item minUnit ON minUnit.value = a.min_unit
+        LEFT JOIN sys_dict_item packUnit ON packUnit.value = a.pack_unit
+        LEFT JOIN medicinal_stock_control stock ON (stock.drug_stuff_id = a.id and stock.company_id = #{id})
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and if(company.is_institution=1, company.id = #{institution}, (company.id = #{institution} or
+            company.id = #{id}) )
+            <include refid="Common.whereParams"/>
+        </where>
+        group by
+        <include refid="groupBy"/>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="listAll" resultType="com.geeke.stock.entity.Stuff">
+        SELECT
+        <include refid="stuffColumns"/>
+        FROM stuff a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN sys_dict_item type ON type.value = a.type
+        LEFT JOIN manufacture_factory factory ON factory.id = a.factory
+        LEFT JOIN sys_dict_item nature ON nature.value = a.nature
+        LEFT JOIN sys_dict_item minUnit ON minUnit.value = a.min_unit
+        LEFT JOIN sys_dict_item packUnit ON packUnit.value = a.pack_unit
+        LEFT JOIN medicinal_stock_control stock ON (stock.drug_stuff_id = a.id and stock.company_id = #{id})
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and if(company.is_institution=1, company.id = #{institution}, (company.id = #{institution} or
+            company.id = #{id}) )
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="listAlls" resultType="com.geeke.stock.entity.Stuff">
+        SELECT
+        <include refid="stuffColumns"/>
+        FROM stuff a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN sys_dict_item type ON type.value = a.type
+        LEFT JOIN manufacture_factory factory ON factory.id = a.factory
+        LEFT JOIN sys_dict_item nature ON nature.value = a.nature
+        LEFT JOIN sys_dict_item minUnit ON minUnit.value = a.min_unit
+        LEFT JOIN sys_dict_item packUnit ON packUnit.value = a.pack_unit
+        LEFT JOIN medicinal_stock_control stock ON (stock.drug_stuff_id = a.id and stock.company_id = #{id})
+        left join supplier_stock ss on (ss.stuff_id = a.id and ss.drug_id = #{id})
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.status = 1
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+            and (a.company_id = #{institution} or a.company_id = #{id})
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getAll" resultType="com.geeke.stock.entity.Stuff">
+        SELECT
+        a.id AS 'id',(stock.storage_stock-stock.used_stock-stock.reimburse_stock) AS 'inventory'
+        FROM stuff a
+        <include refid="stuffJoins"/>
+        WHERE a.company_id = #{companyId}
+        AND a.del_flag = '0'
+        AND a.status = '1'
+        <if test='type == "0"'>
+            AND (stock.storage_stock-stock.used_stock-stock.reimburse_stock) > 0
+        </if>
+    </select>
+    <select id="getCountWarning" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM stuff a
+        <include refid="stuffJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = '0'
+            and if(company.is_institution=0, company.id = #{id}, (company.id = #{id}))
+            AND (stock.storage_stock-stock.used_stock-stock.reimburse_stock) &lt;= a.inventory_floor
+            <include refid="Common.whereParams"/>
+        </where>
+
+    </select>
+
+    <select id="getStuffInventoryWarning" resultType="com.geeke.stock.entity.Stuff">
+        SELECT
+        <include refid="stuffColumns"/>
+        FROM stuff a
+        <include refid="stuffJoins"></include>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = '0'
+            and if(company.is_institution=0, company.id = #{id}, (company.id = #{id}))
+            AND (stock.storage_stock-stock.used_stock-stock.reimburse_stock) &lt;= a.inventory_floor
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO stuff(id,
+                          company_id,
+                          name,
+                          common_name,
+                          pinyin_code,
+                          code,
+                          type,
+                          factory,
+                          nature,
+                          bar_code,
+                          registration_name,
+                          registration_code,
+                          specifications,
+                          pack_number,
+                          min_unit,
+                          pack_unit,
+                          is_out_sell,
+                          price_out_sell,
+                          is_unpack_sell,
+                          retail_price,
+                          remarks,
+                          create_by,
+                          create_date,
+                          update_by,
+                          update_date,
+                          del_flag,
+                          status,
+                          inventory,
+                          location_number,
+                          inventory_limit,
+                          inventory_floor,
+                          indate,sync_id)
+        VALUES (#{id},
+                #{company.id},
+                #{name},
+                #{commonName},
+                #{pinyinCode},
+                #{code},
+                #{type.value},
+                #{factory.id},
+                #{nature.value},
+                #{barCode},
+                #{registrationName},
+                #{registrationCode},
+                #{specifications},
+                #{packNumber},
+                #{minUnit.value},
+                #{packUnit.value},
+                #{isOutSell},
+                #{priceOutSell},
+                #{isUnpackSell},
+                #{retailPrice},
+                #{remarks},
+                #{createBy},
+                #{createDate},
+                #{updateBy},
+                #{updateDate},
+                #{delFlag},
+                #{status},
+                #{inventory},
+                #{locationNumber},
+                #{inventoryLimit},
+                #{inventoryFloor},
+                #{indate},#{syncId})
+    </insert>
+
+    <update id="update">
+        UPDATE stuff
+        SET name              = #{name},
+            common_name       = #{commonName},
+            pinyin_code=#{pinyinCode},
+            type              = #{type.value},
+            factory           = #{factory.id},
+            nature            = #{nature.value},
+            bar_code          = #{barCode},
+            registration_name = #{registrationName},
+            registration_code = #{registrationCode},
+            specifications    = #{specifications},
+            pack_number       = #{packNumber},
+            min_unit          = #{minUnit.value},
+            pack_unit         = #{packUnit.value},
+            is_out_sell       = #{isOutSell},
+            price_out_sell    = #{priceOutSell},
+            is_unpack_sell    = #{isUnpackSell},
+            retail_price      = #{retailPrice},
+            update_by         = #{updateBy},
+            update_date       = #{updateDate},
+            inventory         = #{inventory},
+            location_number   = #{locationNumber},
+            inventory_limit   = #{inventoryLimit},
+            inventory_floor   = #{inventoryFloor},
+            indate            = #{indate}
+        WHERE id = #{id}
+    </update>
+
+    <update id="delete">
+        UPDATE stuff
+        SET update_by   = #{updateBy},
+            update_date = #{updateDate},
+            del_flag    = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO stuff(
+        id,
+        company_id,
+        name,
+        common_name,
+        pinyin_code,
+        code,
+        type,
+        factory,
+        nature,
+        bar_code,
+        registration_name,
+        registration_code,
+        specifications,
+        pack_number,
+        min_unit,
+        pack_unit,
+        is_out_sell,
+        price_out_sell,
+        is_unpack_sell,
+        retail_price,
+        remarks,
+        create_by,
+        create_date,
+        update_by,
+        update_date,
+        del_flag,
+        status,
+        inventory,
+        location_number,
+        inventory_limit,
+        inventory_floor,
+        indate
+        ) VALUES
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+            (
+            #{entity.id},
+            #{entity.company.id},
+            #{entity.name},
+            #{entity.commonName},
+            #{entity.pinyinCode},
+            #{entity.code},
+            #{entity.type.value},
+            #{entity.factory.id},
+            #{entity.nature.value},
+            #{entity.barCode},
+            #{entity.registrationName},
+            #{entity.registrationCode},
+            #{entity.specifications},
+            #{entity.packNumber},
+            #{entity.minUnit.value},
+            #{entity.packUnit.value},
+            #{entity.isOutSell},
+            #{entity.priceOutSell},
+            #{entity.isUnpackSell},
+            #{entity.retailPrice},
+            #{entity.remarks},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.delFlag},
+            #{entity.status},
+            #{entity.inventory},
+            #{entity.locationNumber},
+            #{entity.inventoryLimit},
+            #{entity.inventoryFloor},
+            #{entity.indate}
+            )
+        </foreach>
+    </insert>
+
+    <update id="bulkUpdate" parameterType="java.util.List">
+        UPDATE stuff
+        <set>
+            <trim prefix="name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.name}
+                </foreach>
+            </trim>
+            <trim prefix="common_name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.commonName}
+                </foreach>
+            </trim>
+            <trim prefix="pinyin_code=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.pinyinCode}
+                </foreach>
+            </trim>
+            <trim prefix="type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.type.value}
+                </foreach>
+            </trim>
+            <trim prefix="factory=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.factory.id}
+                </foreach>
+            </trim>
+            <trim prefix="nature=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.nature.value}
+                </foreach>
+            </trim>
+            <trim prefix="bar_code=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.barCode}
+                </foreach>
+            </trim>
+            <trim prefix="registration_name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.registrationName}
+                </foreach>
+            </trim>
+            <trim prefix="registration_code=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.registrationCode}
+                </foreach>
+            </trim>
+            <trim prefix="specifications=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.specifications}
+                </foreach>
+            </trim>
+            <trim prefix="pack_number=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.packNumber}
+                </foreach>
+            </trim>
+            <trim prefix="min_unit=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.minUnit.value}
+                </foreach>
+            </trim>
+            <trim prefix="pack_unit=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.packUnit.value}
+                </foreach>
+            </trim>
+            <trim prefix="is_out_sell=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isOutSell}
+                </foreach>
+            </trim>
+            <trim prefix="price_out_sell=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.priceOutSell}
+                </foreach>
+            </trim>
+            <trim prefix="is_unpack_sell=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isUnpackSell}
+                </foreach>
+            </trim>
+            <trim prefix="retail_price=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.retailPrice}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>indate
+            </trim>
+            <trim prefix="indate=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.indate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+
+
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE stuff
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    <update id="updateInventory">
+        update stuff
+        set inventory=#{inventory},
+            update_date=now()
+        where id = #{id}
+    </update>
+
+    <update id="updateAllIndate">
+        update stuff
+        set indate = #{indate}
+        where company_id = #{companyId}
+    </update>
+
+    <update id="updateAllInventory">
+        update stuff
+        set inventory_floor = #{inventoryFloor}
+        where company_id = #{companyId}
+    </update>
+
+    <select id="inventory" resultType="com.geeke.stock.entity.Stuff">
+        SELECT
+        sum(stock.surplus_stock) AS 'stock.surplusStock'
+        FROM stuff a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN medicinal_stock_control stock ON stock.drug_stuff_id = a.id
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and company.parent_id = #{institution}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="repeat" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM stuff a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = '0'
+            and if(company.is_institution=0, company.id = #{company.id}, (company.id = #{company.parent.id} or company.id = #{company.id}))
+            AND a.name = #{name}
+            AND a.pack_number = #{packNumber}
+            AND a.price_out_sell = #{priceOutSell}
+        </where>
+    </select>
+
+    <select id="repeatInCompany" resultType="int">
+        SELECT COUNT(*) FROM stuff a        <where>
+             a.id > 0
+            AND a.del_flag = '0'
+            and a.company_id=#{company.id}
+            AND a.name = #{name}
+            AND a.pack_number = #{packNumber}
+            AND a.price_out_sell = #{priceOutSell}
+        </where>
+
+    </select>
+
+    <select id="countByInstitution" resultType="int">
+        SELECT COUNT(*) FROM stuff a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN sys_dict_item type ON type.value = a.type
+        LEFT JOIN manufacture_factory factory ON factory.id = a.factory
+        LEFT JOIN sys_dict_item nature ON nature.value = a.nature
+        LEFT JOIN sys_dict_item minUnit ON minUnit.value = a.min_unit
+        LEFT JOIN sys_dict_item packUnit ON packUnit.value = a.pack_unit
+        LEFT JOIN medicinal_stock_control stock ON (stock.drug_stuff_id = a.id and stock.company_id = #{id})
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and a.company_id=#{institution}
+            <include refid="Common.whereParams"/>
+        </where>
+
+
+
+    </select>
+
+    <select id="listByInstitution" resultType="com.geeke.stock.entity.Stuff">
+        SELECT
+        <include refid="stuffColumns"/>,
+        (SELECT COUNT(1) FROM stuff as z WHERE z.sync_id=a.id and z.company_id=#{id}) as syncNum
+        FROM stuff a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN sys_dict_item type ON type.value = a.type
+        LEFT JOIN manufacture_factory factory ON factory.id = a.factory
+        LEFT JOIN sys_dict_item nature ON nature.value = a.nature
+        LEFT JOIN sys_dict_item minUnit ON minUnit.value = a.min_unit
+        LEFT JOIN sys_dict_item packUnit ON packUnit.value = a.pack_unit
+        LEFT JOIN medicinal_stock_control stock ON (stock.drug_stuff_id = a.id and stock.company_id = #{id})
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and a.company_id=#{institution}
+            <include refid="Common.whereParams"/>
+        </where>
+        group by
+        <include refid="groupBy"/>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+</mapper>

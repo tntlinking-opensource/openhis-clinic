@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.outpatient.dao.MedicalRecordDao">
+    
+    <sql id="medicalRecordColumns">
+        a.id AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.doctor_id AS "doctor.id",
+        IFNULL(doctor.name,'') AS "doctor.name",
+        a.registration_id AS "registration.id",
+        a.patient_tell AS "patientTell",
+        a.now_history AS "nowHistory",
+        a.before_history AS "beforeHistory",
+        a.diagnose AS "diagnose",
+        a.personal_history AS "personalHistory",
+        a.allergy_history AS "allergyHistory",
+        a.disease_history AS "diseaseHistory",
+        a.pregnancy_history AS "pregnancyHistory",
+        a.infectious_history AS "infectiousHistory",
+        a.lunaria_history AS "lunariaHistory",
+        a.family_history AS "familyHistory",
+        a.surgery_history AS "surgeryHistory",
+        a.transfusion_history AS "transfusionHistory",
+        a.physique_check AS "physiqueCheck",
+        a.assist_check AS "assistCheck",
+        a.emergency_diagnose AS "emergencyDiagnose",
+        a.emergency_effect AS "emergencyEffect",
+        a.other_check AS "otherCheck",
+        a.handling_situation AS "handlingSituation",
+        a.epidemic_disease AS "epidemicDisease",
+        a.health_education AS "healthEducation",
+        a.diagnose_date AS "diagnoseDate",
+        a.doctor_advice AS "doctorAdvice",
+        a.fee AS "fee",
+        a.remarks AS "remarks",
+        a.file_id AS "fileId",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.del_flag AS "delFlag",
+        a.western_diagnose AS "westernDiagnose",
+        a.china_diagnose AS "chinaDiagnose"
+    </sql>
+    
+    <sql id="medicalRecordJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN sys_user doctor ON doctor.id = a.doctor_id
+        LEFT JOIN registration registration ON registration.id = a.registration_id
+    </sql>
+    
+    <select id="get" resultType="com.geeke.outpatient.entity.MedicalRecord">
+        SELECT 
+            <include refid="medicalRecordColumns"/>
+        FROM medical_record a
+        <include refid="medicalRecordJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM medical_record a
+        <include refid="medicalRecordJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.outpatient.entity.MedicalRecord">
+        SELECT 
+            <include refid="medicalRecordColumns"/>
+        FROM medical_record a
+        <include refid="medicalRecordJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.outpatient.entity.MedicalRecord">
+        SELECT 
+            <include refid="medicalRecordColumns"/>
+        FROM medical_record a
+        <include refid="medicalRecordJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+      
+    <insert id="insert">
+        INSERT INTO medical_record(
+            id,
+            company_id,
+            doctor_id,
+            registration_id,
+            patient_tell,
+            now_history,
+            before_history,
+            diagnose,
+            personal_history,
+            allergy_history,
+            disease_history,
+            pregnancy_history,
+            infectious_history,
+            lunaria_history,
+            family_history,
+            surgery_history,
+            transfusion_history,
+            physique_check,
+            assist_check,
+            emergency_diagnose,
+            emergency_effect,
+            other_check,
+            handling_situation,
+            epidemic_disease,
+            health_education,
+            diagnose_date,
+            doctor_advice,
+            fee,
+            remarks,
+            file_id,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_flag,
+            western_diagnose,
+            china_diagnose
+        ) VALUES (
+            #{id},
+            #{company.id},                    
+            #{doctor.id},                    
+            #{registration.id},                    
+            #{patientTell},
+            #{nowHistory},
+            #{beforeHistory},
+            #{diagnose},
+            #{personalHistory},
+            #{allergyHistory},
+            #{diseaseHistory},
+            #{pregnancyHistory},
+            #{infectiousHistory},
+            #{lunariaHistory},
+            #{familyHistory},
+            #{surgeryHistory},
+            #{transfusionHistory},
+            #{physiqueCheck},
+            #{assistCheck},
+            #{emergencyDiagnose},
+            #{emergencyEffect},
+            #{otherCheck},
+            #{handlingSituation},
+            #{epidemicDisease},
+            #{healthEducation},
+            #{diagnoseDate},
+            #{doctorAdvice},
+            #{fee},
+            #{remarks},
+            #{fileId},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate},
+            #{delFlag},
+            #{westernDiagnose},
+            #{chinaDiagnose}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE medical_record SET     
+            doctor_id = #{doctor.id},                    
+            registration_id = #{registration.id},                    
+            patient_tell = #{patientTell},
+            now_history = #{nowHistory},
+            before_history = #{beforeHistory},
+            diagnose = #{diagnose},
+            personal_history = #{personalHistory},
+            allergy_history = #{allergyHistory},
+            disease_history = #{diseaseHistory},
+            pregnancy_history = #{pregnancyHistory},
+            infectious_history = #{infectiousHistory},
+            lunaria_history = #{lunariaHistory},
+            family_history = #{familyHistory},
+            surgery_history = #{surgeryHistory},
+            transfusion_history = #{transfusionHistory},
+            physique_check = #{physiqueCheck},
+            assist_check = #{assistCheck},
+            emergency_diagnose = #{emergencyDiagnose},
+            emergency_effect = #{emergencyEffect},
+            other_check = #{otherCheck},
+            handling_situation = #{handlingSituation},
+            epidemic_disease = #{epidemicDisease},
+            health_education = #{healthEducation},
+            diagnose_date = #{diagnoseDate},
+            doctor_advice = #{doctorAdvice},
+            fee = #{fee},
+            remarks = #{remarks},
+            file_id = #{fileId},
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            western_diagnose = #{westernDiagnose},
+            china_diagnose = #{chinaDiagnose}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        UPDATE medical_record SET
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            del_flag = #{DEL_FLAG_DELETE}
+        <choose>
+            <when test="id !=null and id != ''">
+                WHERE id = #{id}
+            </when>
+            <otherwise>
+                WHERE registration_id = #{registration.id}
+            </otherwise>
+        </choose>
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO medical_record(
+            id,
+            company_id,
+            doctor_id,
+            registration_id,
+            patient_tell,
+            now_history,
+            before_history,
+            diagnose,
+            personal_history,
+            allergy_history,
+            disease_history,
+            pregnancy_history,
+            infectious_history,
+            lunaria_history,
+            family_history,
+            surgery_history,
+            transfusion_history,
+            physique_check,
+            assist_check,
+            emergency_diagnose,
+            emergency_effect,
+            other_check,
+            diagnose_date,
+            doctor_advice,
+            fee,
+            remarks,
+            file_id,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_flag,
+            western_diagnose,
+            china_diagnose
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.company.id},                    
+            #{entity.doctor.id},                    
+            #{entity.registration.id},                    
+            #{entity.patientTell},
+            #{entity.nowHistory},
+            #{entity.beforeHistory},
+            #{entity.diagnose},
+            #{entity.personalHistory},
+            #{entity.allergyHistory},
+            #{entity.diseaseHistory},
+            #{entity.pregnancyHistory},
+            #{entity.infectiousHistory},
+            #{entity.lunariaHistory},
+            #{entity.familyHistory},
+            #{entity.surgeryHistory},
+            #{entity.transfusionHistory},
+            #{entity.physiqueCheck},
+            #{entity.assistCheck},
+            #{entity.emergencyDiagnose},
+            #{entity.emergencyEffect},
+            #{entity.otherCheck},
+            #{entity.diagnoseDate},
+            #{entity.doctorAdvice},
+            #{entity.fee},
+            #{entity.remarks},
+            #{entity.fileId},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.delFlag},
+            #{entity.westernDiagnose},
+            #{entity.chinaDiagnose}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE medical_record
+        <set>           
+            <trim prefix="doctor_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.doctor.id}
+                </foreach>
+            </trim>
+            <trim prefix="registration_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.registration.id}
+                </foreach>
+            </trim>
+            <trim prefix="patient_tell=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.patientTell}
+                </foreach>
+            </trim>
+            <trim prefix="now_history=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.nowHistory}
+                </foreach>
+            </trim>
+            <trim prefix="before_history=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.beforeHistory}
+                </foreach>
+            </trim>
+            <trim prefix="diagnose=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.diagnose}
+                </foreach>
+            </trim>
+            <trim prefix="personal_history=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.personalHistory}
+                </foreach>
+            </trim>
+            <trim prefix="allergy_history=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.allergyHistory}
+                </foreach>
+            </trim>
+            <trim prefix="disease_history=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.diseaseHistory}
+                </foreach>
+            </trim>
+            <trim prefix="pregnancy_history=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.pregnancyHistory}
+                </foreach>
+            </trim>
+            <trim prefix="infectious_history=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.infectiousHistory}
+                </foreach>
+            </trim>
+            <trim prefix="lunaria_history=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.lunariaHistory}
+                </foreach>
+            </trim>
+            <trim prefix="family_history=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.familyHistory}
+                </foreach>
+            </trim>
+            <trim prefix="surgery_history=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.surgeryHistory}
+                </foreach>
+            </trim>
+            <trim prefix="transfusion_history=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.transfusionHistory}
+                </foreach>
+            </trim>
+            <trim prefix="physique_check=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.physiqueCheck}
+                </foreach>
+            </trim>
+            <trim prefix="assist_check=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.assistCheck}
+                </foreach>
+            </trim>
+            <trim prefix="emergency_diagnose=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.emergencyDiagnose}
+                </foreach>
+            </trim>
+            <trim prefix="emergency_effect=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.emergencyEffect}
+                </foreach>
+            </trim>
+            <trim prefix="other_check=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.otherCheck}
+                </foreach>
+            </trim>
+            <trim prefix="diagnose_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.diagnoseDate}
+                </foreach>
+            </trim>
+            <trim prefix="doctor_advice=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.doctorAdvice}
+                </foreach>
+            </trim>
+            <trim prefix="fee=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.fee}
+                </foreach>
+            </trim>
+            <trim prefix="remarks=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.remarks}
+                </foreach>
+            </trim>
+            <trim prefix="file_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.fileId}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE medical_record
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+
+    <select id="listMedicalRecordByChargeStatus" resultType="com.geeke.outpatient.entity.MedicalRecord">
+        SELECT
+        <include refid="medicalRecordColumns"/>
+        FROM medical_record a
+        <include refid="medicalRecordJoins"/>
+        where exists
+        (
+          select
+          1 FROM recipel_info r
+           where r.charge_status = #{chargeStatus}
+            and r.company_id = #{companyId}
+            and r.medical_record_id = a.id
+        )
+    </select>
+
+    <select id="getByRegistrationId" resultType="com.geeke.outpatient.entity.MedicalRecord">
+        SELECT
+        <include refid="medicalRecordColumns"/>
+        FROM medical_record a
+        <include refid="medicalRecordJoins"/>
+        where a.registration_id = #{registrationId}
+    </select>
+
+    <select id="recordpatlist" resultType="com.geeke.outpatient.entity.Recordpatvo">
+        select a.create_date jzsj ,b.name xm,b.age nl,c.western_diagnose xyzd,c.china_diagnose zyzd,a.id regid,b.id patid  from registration a
+        left join patient b on a.patient_id =b.id and a.company_id =b.company_id and b.del_flag ='0'
+        left join medical_record c on a.id=c.registration_id and a.company_id =c.company_id and c.del_flag ='0'
+        where a.company_id =#{companyId} and a.del_flag ='0' and a.patient_id =#{id} and a.status='registrationStatus_1'
+        order by a.create_date desc
+    </select>
+
+    <select id="getByOrder" resultType="com.geeke.outpatient.entity.MedicalRecord">
+        select
+            p.name as name,
+            mr.patient_tell as patientTell,
+            mr.now_history as nowHistory,
+            mr.before_history as beforeHistory,
+            mr.diagnose as diagnose,
+            mr.personal_history as personalHistory,
+            mr.allergy_history as allergyHistory,
+            mr.disease_history as diseaseHistory,
+            mr.pregnancy_history as pregnancyHistory,
+            mr.infectious_history as infectiousHistory,
+            mr.lunaria_history as lunariaHistory,
+            mr.family_history as familyHistory,
+            mr.surgery_history as surgeryHistory,
+            mr.transfusion_history as transfusionHistory,
+            mr.physique_check as physiqueCheck,
+            mr.assist_check as assistCheck,
+            mr.emergency_diagnose as emergencyDiagnose,
+            mr.emergency_effect as emergencyEffect,
+            mr.epidemic_disease as otherCheck,
+            mr.other_check as handlingSituation,
+            mr.handling_situation as healthEducation,
+            mr.health_education as epidemicDisease,
+            mr.diagnose_date as diagnoseDate,
+            mr.doctor_advice as doctorAdvice,
+            mr.create_by as createBy,
+            mr.create_date as createDate,
+            mr.western_diagnose as westernDiagnose,
+            mr.china_diagnose as chinaDiagnose
+        from registration a
+            left join medical_record mr on a.id = mr.registration_id
+            left join patient p on a.patient_id = p.id
+        WHERE a.id = #{registration}
+    </select>
+
+    
+</mapper>

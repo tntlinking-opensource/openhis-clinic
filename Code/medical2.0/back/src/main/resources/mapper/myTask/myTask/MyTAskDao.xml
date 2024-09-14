@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.sys.dao.MyTaskDao">
+
+    <sql id="myTaskColumns">
+        distinct(a.id) AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.created_by AS "createBy",
+        a.created_time AS "createDate",
+        a.updated_by AS "updateBy",
+        a.updated_time AS "updateDate",
+        a.del_flag AS "delFlag",
+        a.remark AS "remark",
+        a.file_id AS "fileId",
+        a.executeschedule AS "executeschedule",
+        a.taskmanagement_id AS "taskManagement.id",
+        IFNULL(tm.created_time,'') AS "taskManagement.updateDate",
+        IFNULL(tm.tasktype,'') AS "taskManagement.tasktype",
+        IFNULL(tm.taskname,'') AS "taskManagement.taskname",
+        IFNULL(tm.taskdescribe,'') AS "taskManagement.taskdescribe",
+        IFNULL(tm.taskaccessory,'') AS "taskManagement.taskaccessory",
+        IFNULL(tm.taskdeadline,'') AS "taskManagement.taskdeadline",
+        IFNULL(tm.taskremark,'') AS "taskManagement.taskremark",
+        IFNULL(tm.taskinitiator,'') AS "taskManagement.user.id",
+        IFNULL(tm.auditresult,'') AS "taskManagement.auditresult",
+        IFNULL(su.name,'') AS "taskManagement.user.name",
+        a.audit_type AS "auditType"
+    </sql>
+
+    <sql id="myTaskJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN taskmanagement tm on tm.id = a.taskmanagement_id
+        LEFT JOIN sys_user su on su.id = tm.taskinitiator
+    </sql>
+
+    <select id="get" resultType="com.geeke.sys.entity.MyTask">
+        SELECT
+        <include refid="myTaskColumns"/>
+        FROM feedbacktable a
+        <include refid="myTaskJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(a.id) FROM feedbacktable a
+        <include refid="myTaskJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            AND tm.taskstatus = '1'
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+    <select id="listPage" resultType="com.geeke.sys.entity.MyTask">
+        SELECT
+        <include refid="myTaskColumns"/>
+        FROM feedbacktable a
+        <include refid="myTaskJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            AND tm.taskstatus = '1'
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.executeschedule asc , a.updated_time desc , a.created_time desc
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="listAll" resultType="com.geeke.sys.entity.MyTask">
+        SELECT
+        <include refid="myTaskColumns"/>
+        FROM feedbacktable a
+        <include refid="myTaskJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.code ASC
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getByCode" resultType="com.geeke.sys.entity.MyTask">
+        SELECT
+        <include refid="myTaskColumns"/>
+        FROM feedbacktable a
+        <include refid="myTaskJoins"/>
+        where a.code = #{code} and a.company_id = #{company.id}
+    </select>
+    <select id="getByName" resultType="com.geeke.sys.entity.MyTask">
+        SELECT
+        <include refid="myTaskColumns"/>
+        FROM feedbacktable a
+        <include refid="myTaskJoins"/>
+        where a.name = #{name} and a.company_id = #{company.id}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO feedbacktable(
+        id,
+        company_id,
+        code,
+        is_locked,
+        name,
+        sort,
+        category,
+        create_by,
+        create_date,
+        update_by,
+        address,
+        update_date,
+        del_flag,
+        is_default,
+        is_register
+        ) VALUES (
+        #{id},
+        #{company.id},
+        #{code},
+        #{isLocked},
+        #{name},
+        #{sort},
+        #{category},
+        #{createBy},
+        #{createDate},
+        #{updateBy},
+        #{address},
+        #{updateDate},
+        #{delFlag},
+        #{isDefault},
+        #{isRegister}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE feedbacktable SET
+        company_id = #{company.id},
+        updated_by = #{updateBy},
+        updated_time = #{updateDate},
+        executeschedule = #{executeschedule},
+        remark = #{remark},
+        file_id = #{fileId},
+        audit_type = #{auditType}
+        WHERE id = #{id}
+    </update>
+
+    <update id="delete">
+        UPDATE feedbacktable SET
+        update_by = #{updateBy},
+        update_date = #{updateDate},
+        del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO feedbacktable(
+        id,
+        company_id,
+        code,
+        is_locked,
+        name,
+        sort,
+        category,
+        create_by,
+        create_date,
+        update_by,
+        address,
+        update_date,
+        del_flag,
+        is_default,
+        is_register
+        ) VALUES
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+            (
+            #{entity.id},
+            #{entity.company.id},
+            #{entity.code},
+            #{entity.isLocked},
+            #{entity.name},
+            #{entity.sort},
+            #{entity.category},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.updateBy},
+            #{entity.address},
+            #{entity.updateDate},
+            #{entity.delFlag},
+            #{entity.isDefault},
+            #{entity.isRegister}
+            )
+        </foreach>
+    </insert>
+
+    <update id="bulkUpdate" parameterType="java.util.List">
+        UPDATE feedbacktable
+        <set>
+            <trim prefix="company_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.company.id}
+                </foreach>
+            </trim>
+            <trim prefix="code=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.code}
+                </foreach>
+            </trim>
+            <trim prefix="is_locked=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isLocked}
+                </foreach>
+            </trim>
+            <trim prefix="name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.name}
+                </foreach>
+            </trim>
+            <trim prefix="category=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.category}
+                </foreach>
+            </trim>
+            <trim prefix="address=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.address}
+                </foreach>
+            </trim>
+            <trim prefix="is_default=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isDefault}
+                </foreach>
+            </trim>
+            <trim prefix="is_register=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isRegister}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+
+
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE feedbacktable
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    <update id="updateDefault">
+        update feedbacktable set is_default='0' where company_id = #{companyId}
+    </update>
+
+</mapper>

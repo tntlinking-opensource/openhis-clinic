@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.outpatient.dao.SchedulingDao">
+    <insert id="insert">
+        INSERT INTO scheduling_data(
+        ID,
+        company_id,
+        userid,
+        schedulingtime,
+        timeid,
+        create_by,
+        create_date,
+        update_by,
+        update_date,
+        del_flag,
+        is_locked
+        ) VALUES (
+        #{id},
+        #{companyid},
+        #{userid},
+        #{schedulingtime},
+        #{timeid},
+        #{createBy},
+        #{createDate},
+        #{updateBy},
+        #{updateDate},
+        #{delFlag},
+        #{isLocked}
+        )
+    </insert>
+    <select id="getpbuserlist" resultType="com.geeke.outpatient.entity.schedulingDTO">
+        select user_id userid,su.name username,sue.office ksname,o.id ksid ,count(sd.userid) pbsl  from sys_user su
+        inner join sys_user_ext sue on su.company_id =sue.company_id and su.id =sue.user_id
+        left join scheduling_data sd on su.company_id =sd.company_id and su.id =sd.userid and sd.del_flag ='0'and sd.is_locked ='0'
+        left join clinic_office o on o.name = sue.office and o.company_id = sue.company_id
+        where
+            su.del_flag='0' and su.is_locked='0'
+           and su.company_id =#{companyid}
+        group by user_id,su.name,sue.office,su.department_id,o.id
+    </select>
+    <select id="listscheduling" resultType="com.geeke.outpatient.entity.scheduling">
+        select * from scheduling_data sd
+        <where>
+            company_id =#{companyid}
+            <if test="userid!='' and userid !=null ">
+                and userid =#{userid}
+            </if>
+            <if test="stratime!='' and stratime!=null ">
+                and schedulingtime &gt;= #{stratime}
+            </if>
+            <if test="endtime!='' and endtime!=null">
+                and schedulingtime &lt;= #{endtime}
+            </if>
+        </where>
+        order by schedulingtime
+    </select>
+
+    <select id="listcount" resultType="com.geeke.outpatient.entity.scheduling">
+        select * from scheduling_data sd where company_id =#{companyid} and userid =#{userid}
+        and schedulingtime=#{schedulingtime}  and del_flag='0'
+    </select>
+    <select id="listschedulingmx" resultType="com.geeke.outpatient.entity.schedulingmxDTO">
+        select a.id,a.patient_id, p.name,sdib.name gendername,p.age,a.subscribe_date ,su.name ysname,sue.office ksname,sdia.name sourcename,
+        sdi.name statusname,a.remarks ,a.create_date,DATE_FORMAT(a.subscribe_date,'%H') houser
+        from registration a
+        left join patient p on a.patient_id =p.id and a.company_id =p.company_id
+        left join sys_dict_item sdi on a.status=sdi.value and sdi.del_flag ='0'
+        left join sys_dict_item sdia on a.source=sdia.value and sdia.del_flag ='0'
+        left join sys_dict_item sdib on p.gender=sdib.value and sdib.del_flag ='0'
+        left join sys_user su on a.company_id =su.company_id
+        and a.department_id =su.department_id and a.doctor_id =su.id
+        left join sys_user_ext sue on su.company_id =sue.company_id and su.id =sue.user_id
+        <where>
+            a.del_flag='0' and a.overlook='0'
+            and a.company_id =#{companyid} and a.subscribe_date is not null
+            <if test="userid!=null">
+                and a.doctor_id =#{userid}
+            </if>
+            <if test="ksid!=null">
+                and a.department_id=#{ksid}
+            </if>
+            <if test="status!=null">
+                and a.status =#{status}
+            </if>
+            <if test="patientname!=null">
+                and p.name like concat('%',#{patientname},'%')
+            </if>
+            <if test="datestra!=null">
+                and a.subscribe_date >=#{datestra}
+            </if>
+            <if test="dateend!=null">
+                and a.subscribe_date &lt;= #{dateend}
+            </if>
+        </where>
+        order by a.subscribe_date
+    </select>
+    <select id="getList" resultType="com.geeke.outpatient.entity.scheduling">
+        SELECT a.* FROM scheduling_data a
+        WHERE ( datediff ( a.schedulingtime , #{schedulingtime} ) = 0 ) and
+                a.ID = (SELECT MAX(b.ID) FROM scheduling_data b
+                        WHERE b.schedulingtime = a.schedulingtime)
+        ORDER BY a.schedulingtime
+    </select>
+
+    <update id="delete">
+        update scheduling_data set del_flag='1',update_by =#{updateBy},update_date =#{updateDate}
+        where userid=#{userid} and schedulingtime =#{schedulingtime}
+        and company_id =#{companyid}
+        and del_flag ='0' and is_locked ='0'
+    </update>
+
+</mapper>

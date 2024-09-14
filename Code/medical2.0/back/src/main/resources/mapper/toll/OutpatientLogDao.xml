@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.toll.dao.OutpatientLogDao">
+    <resultMap id="OutpatientLogRespVO" type="com.geeke.toll.entity.OutpatientLog">
+        <id property="id" column="id"/>
+        <result property="patientName" column="name"/>
+        <result property="patriarchName" column="guardian_name"/>
+        <result property="sex" column="gender"/>
+        <result property="age" column="age"/>
+        <result property="nation" column="nation"/>
+        <result property="occupation" column="occupation"/>
+        <result property="address" column="address"/>
+        <result property="visitDate" column="reception_end_date"/>
+        <result property="initialVisit" column="source"/>
+        <result property="bloodPressure" column="blood_pressure"/>
+        <result property="symptom" column="patient_tell"/>
+        <result property="fever" column="temperature"/>
+        <result property="epidemicDisease" column="epidemic_disease"/>
+        <result property="chinaDiagnose" column="china_diagnose"/>
+        <result property="westernDiagnose" column="western_diagnose"/>
+        <result property="certificate" column="card"/>
+        <result property="infect" column="infect_type"/>
+        <result property="handle" column="handling_situation"/>
+        <result property="unit" column="workplace"/>
+        <result property="signature" column="doctor_id"/>
+        <result property="poverty" column="number"/>
+        <result property="telephone" column="phone"/>
+        <result property="morbidityDate" column="morbidity_time"/>
+        <result property="positiveResult" column="-------------"/>
+        <result property="healthEducation" column="health_education"/>
+    </resultMap>
+    <update id="updateLog" parameterType="com.geeke.toll.entity.OutpatientLog">
+        update registration a
+            inner join patient p on a.patient_id = p.id
+            inner join medical_record m on a.id = m.registration_id
+            inner join sys_user s on a.doctor_id = s.id
+            inner join org_company oc ON a.company_id = oc.id and oc.del_flag ='0'
+            set
+                p.name = #{patientName},
+                p.guardian_name = #{patriarchName},
+                p.gender = #{sex},
+                p.age = #{age},
+                a.nation = #{nation},
+                a.occupation = #{occupation},
+                p.address= #{address},
+                a.reception_end_date= #{visitDate},
+                a.source= #{initialVisit},
+                a.blood_pressure= #{bloodPressure},
+                m.patient_tell= #{symptom},
+                a.temperature= #{fever},
+                m.epidemic_disease= #{epidemicDisease},
+                m.china_diagnose= #{chinaDiagnose},
+                m.western_diagnose= #{westernDiagnose},
+                p.card= #{certificate},
+                a.infect_type= #{infect},
+                m.handling_situation= #{handle},
+                a.workplace= #{unit},
+                s.name= #{signature},
+                p.phone= #{telephone},
+                a.morbidity_time= #{morbidityDate},
+                m.health_education= #{healthEducation}
+        where a.id = #{id}
+    </update>
+
+    <resultMap id="PatientRespVO" type="com.geeke.outpatient.entity.Patient">
+        <id property="id" column="id"/>
+        <result property="card" column="card"/>
+        <result property="poverty" column="number"/>
+    </resultMap>
+
+    <sql id="OutpatientLogVo">
+        select a.id,
+               p.name,
+               p.guardian_name,
+               p.gender,
+               p.age,
+               a.nation,
+               a.occupation,
+               p.address,
+               a.reception_end_date,
+               a.source,
+               a.blood_pressure,
+               m.patient_tell,
+               a.temperature,
+               m.epidemic_disease,
+               m.china_diagnose,
+               m.western_diagnose,
+               a.infect_type,
+               m.handling_situation,
+               p.card,
+               a.workplace,
+               s.name as doctor_id,
+               p.card,
+               p.phone,
+               a.morbidity_time,
+               m.health_education
+        from registration a
+                 inner join patient p on a.patient_id = p.id
+                 inner join medical_record m on a.id = m.registration_id
+                 inner join sys_user s on a.doctor_id = s.id
+                 inner join org_company oc ON a.company_id = oc.id and oc.del_flag = '0'
+    </sql>
+
+    <select id="getLogs" resultType="String" resultMap="OutpatientLogRespVO">
+        select a.id,
+               p.name,
+               p.guardian_name,
+               p.gender,
+               p.age,
+               a.nation,
+               a.occupation,
+               p.address,
+               a.reception_end_date,
+               a.source,
+               a.blood_pressure,
+               m.patient_tell,
+               a.temperature,
+               m.epidemic_disease,
+               m.china_diagnose,
+               m.western_diagnose,
+               m.diagnose,
+               a.infect_type,
+               m.handling_situation,
+               p.card,
+               a.workplace,
+               s.name as doctor_id,
+               p.card,
+               p.phone,
+               a.morbidity_time,
+               m.health_education
+        from registration a
+                 inner join patient p on a.patient_id = p.id
+                 inner join medical_record m on a.id = m.registration_id
+                 inner join sys_user s on a.doctor_id = s.id
+                 inner join org_company oc ON a.company_id = oc.id and oc.del_flag = '0'
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="logCount" resultType="int">
+        SELECT COUNT(*)
+        <include refid="OutpatientLogVo"/>
+        <where>
+            1=1
+            AND a.id > 0
+        </where>
+    </select>
+
+    <select id="getOutpatientLog" resultType="com.geeke.toll.entity.OutpatientLog" resultMap="OutpatientLogRespVO">
+        select a.id,p.name,p.guardian_name,p.gender,p.age,a.nation,a.occupation,p.address,a.reception_end_date,a.source,
+        a.blood_pressure,m.patient_tell,a.temperature,m.epidemic_disease,m.china_diagnose,m.western_diagnose,m.diagnose,a.infect_type,m.handling_situation,
+        p.card,a.workplace,s.name as doctor_id,p.card,p.phone,a.morbidity_time,m.health_education
+        from registration a
+        inner join patient p on a.patient_id = p.id
+        inner join medical_record m on a.id = m.registration_id
+        inner join sys_user s on a.doctor_id = s.id
+        inner join org_company oc ON a.company_id = oc.id and oc.del_flag ='0'
+        <if test=" jgid!=null and jgzt==1">and a.company_id =#{jgid}</if>
+        <if test=" jgid==null and jgzt==1">and oc.parent_id in (select parent_id from org_company oc2 where
+            id=#{companyId})
+        </if>
+        <if test="jgid==null and jgzt==null">and a.company_id =#{companyId}</if>
+        <if test="kssj!=null and jssj!=null">and a.reception_end_date between #{kssj} and #{jssj}</if>
+        <if test="certificate!='' and certificate!=null">and p.card=#{certificate}</if>
+        <if test="patientName!='' and patientName!=null">and p.name=#{patientName}</if>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="getOutpatientlist" resultType="com.geeke.toll.entity.OutpatientLog" resultMap="OutpatientLogRespVO">
+        select a.id,p.name,p.guardian_name,p.gender,p.age,a.nation,a.occupation,p.address,a.reception_end_date,a.source,
+        a.blood_pressure,m.patient_tell,a.temperature,m.epidemic_disease,m.china_diagnose,m.western_diagnose,m.diagnose,a.infect_type,m.handling_situation,
+        p.card,a.workplace,s.name as doctor_id,p.card,p.phone,a.morbidity_time,m.health_education
+        from registration a
+        inner join patient p on a.patient_id = p.id
+        inner join medical_record m on a.id = m.registration_id
+        inner join sys_user s on a.doctor_id = s.id
+        inner join org_company oc ON a.company_id = oc.id and oc.del_flag ='0'
+        <if test=" jgid!=null and jgzt==1">and a.company_id =#{jgid}</if>
+        <if test=" jgid==null and jgzt==1">and oc.parent_id in (select parent_id from org_company oc2 where
+            id=#{companyId})
+        </if>
+        <if test="jgid==null and jgzt==null">and a.company_id =#{companyId}</if>
+        <if test="kssj!=null and jssj!=null">and a.reception_end_date between #{kssj} and #{jssj}</if>
+        <if test="certificate!='' and certificate!=null">and p.card=#{certificate}</if>
+        <if test="patientName!='' and patientName!=null">and p.name=#{patientName}</if>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+
+    <select id="getPovert" resultType="com.geeke.outpatient.entity.Patient" resultMap="PatientRespVO">
+        select a.card, ph.number
+        from patient a
+                 inner join poor_households ph on a.card = ph.number
+    </select>
+
+    <select id="getPoverty" parameterType="String" resultMap="PatientRespVO">
+        select a.id, a.card, ph.number
+        from patient a
+                 inner join poor_households ph on a.card = ph.number
+        WHERE a.id = #{id}
+    </select>
+</mapper>

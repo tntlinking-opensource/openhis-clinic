@@ -1,0 +1,56 @@
+server:
+  port: 7016
+
+spring:
+  datasource:
+    url: jdbc:mysql://61.172.179.48:19011/medical_yzs?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8&useSSL=false
+    username: new_touch
+    password: bW9Ivzt0CAQdoJTDZ2wAnduvi
+  cache:
+    type: redis  # 可选 redis、none、ehcache
+  redis:
+    host: 61.172.179.48 # server host
+    port: 19013
+    password: bW9Ivzt0CAQdoJTDZ2wAnduvi
+    timeout: 3000
+    database: 0
+    cacheType: redis  # 可选 redis、none、ehcache
+
+  rabbitmq:
+    host: 182.151.20.115
+    port: 7014
+    username: rys
+    password: 123456
+
+jwtUtils:
+  id: jwt
+  secret: 6686df7fc3a34e26a61c034d5ec82488
+  ttlMillis: 3600000
+
+#启信宝
+qixin:
+  appkey: 266b93724-e6d3f-48397-ab308-a003d9554c2fd
+  secretKey: a11377eb8-1326b-4033c-a3cbd-026ff9ec3eb5d
+  host: https://api.qixin.com/
+  profile: APIService
+
+#企业微信
+weChat:
+  corpid: ww21ecf19d6c519f83
+  corpsecret: G3rf94sZqkZJ90duduA-TCIaou-QUeA9qNe7ANtjR9Y
+  agentid: 1000006
+
+# 报表集成
+report:
+  dataease:
+    username: wdmpk
+    password: kjuuIYcARhyk+R5Q1s8QLwmZzfeoRgoYGHaIFzsoKD10nNbEukHG2hxieAqrHD/tN0IpsBOTEIFbnn5uIwM+tw==
+    frontend:
+      host: localhost
+      port: 9528
+      useSSLLink: 0
+    backend:
+      host: localhostx
+      port: 8081
+      useSSLLink: 0
+    rsa_public_key: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANL378k3RiZHWx5AfJqdH9xRNBmD9wGD2iRe41HdTNF8RUhNnHit5NpMNtGL0NPTSSpPjjI1kJfVorRvaQerUgkCAwEAAQ==

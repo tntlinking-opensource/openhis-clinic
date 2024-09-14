@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.org.dao.DepartmentDao">
+    
+    <sql id="departmentColumns">
+        a.id AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.parent_id AS "parent.id",
+        IFNULL(parent.name,'') AS "parent.name",
+        a.code AS "code",
+        a.ids AS "ids",
+        a.name AS "name",
+        a.sort AS "sort",
+        a.director AS "director.id",
+        IFNULL(director.name,'') AS "director.name",
+        a.manager AS "manager.id",
+        IFNULL(manager.name,'') AS "manager.name",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.remarks AS "remarks",
+        a.del_flag AS "delFlag"
+    </sql>
+    
+    <sql id="departmentJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN org_department parent ON parent.id = a.parent_id
+        LEFT JOIN sys_user director ON director.id = a.director
+        LEFT JOIN sys_user manager ON manager.id = a.manager
+    </sql>
+    
+    <select id="get" resultType="com.geeke.org.entity.Department">
+        SELECT 
+            <include refid="departmentColumns"/>
+        FROM org_department a
+        <include refid="departmentJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM org_department a
+        <include refid="departmentJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.org.entity.Department">
+        SELECT 
+            <include refid="departmentColumns"/>
+        FROM org_department a
+        <include refid="departmentJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+                ORDER BY a.sort ASC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.org.entity.Department">
+        SELECT 
+            <include refid="departmentColumns"/>
+        FROM org_department a
+        <include refid="departmentJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when> 
+            <otherwise>
+                ORDER BY a.sort ASC
+            </otherwise>
+        </choose>
+    </select>
+      
+    <insert id="insert">
+        INSERT INTO org_department(
+            id,
+            company_id,
+            parent_id,
+            code,
+            ids,
+            name,
+            sort,
+            director,
+            manager,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            remarks,
+            del_flag
+        ) VALUES (
+            #{id},
+            #{company.id},                    
+            #{parent.id},                    
+            #{code},
+            #{ids},
+            #{name},
+            #{sort},
+            #{director.id},                    
+            #{manager.id},                    
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate},
+            #{remarks},
+            #{delFlag}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE org_department SET     
+            company_id = #{company.id},                    
+            parent_id = #{parent.id},                    
+            code = #{code},
+            ids = #{ids},
+            name = #{name},
+            sort = #{sort},
+            director = #{director.id},                    
+            manager = #{manager.id},                    
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            remarks = #{remarks}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        UPDATE org_department SET
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            del_flag = #{DEL_FLAG_DELETE}
+        <choose>
+            <when test="id !=null and id != ''">
+                WHERE id = #{id}
+            </when>
+            <otherwise>
+                WHERE company_id = #{company.id}
+            </otherwise>
+        </choose>
+    </update>
+    
+    
+</mapper>

@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.stock.dao.SupplierStockDao">
+    
+    <sql id="supplierStockColumns">
+        a.id AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.supplier_id AS "supplierId.id",
+        IFNULL(supplierId.name,'') AS "supplierId.name",
+        a.drug_id AS "drug.id",
+        IFNULL(drug.goods_name,'') AS "drug.goodsName",
+        IFNULL(drug.dosis,'') AS "drug.dosis",
+        IFNULL(drug.dosis_unit,'') AS "drug.dosisUnit.value",
+        IFNULL(dosisUnit.name,'') AS "drug.dosisUnit.name",
+        IFNULL(drug.preparation,'') AS "drug.preparation",
+        IFNULL(drug.preparation_unit,'') AS "drug.preparationUnit.value",
+        IFNULL(preparationUnit.name,'') AS "drug.preparationUnit.name",
+        IFNULL(drug.pack,'') AS "drug.pack.value",
+        IFNULL(pack.name,'') AS "drug.pack.name",
+        IFNULL(drug.price,'') AS "drug.price",
+        IFNULL(drug.inventory,'') AS "drug.inventory",
+        IFNULL(type.value,'') AS "drug.type.value",
+        IFNULL(type.name,'') AS "drug.type.name",
+        a.supplier_storage_id AS "supplierStorage.id",
+        supplierStorage.code AS "supplierStorage.code",
+        a.stuff_id AS "stuff.id",
+        IFNULL(stuff.name,'') AS "stuff.name",
+        IFNULL(stuff.pack_number,'') AS "stuff.packNumber",
+        IFNULL(stuffType.value,'') AS "stuff.type.value",
+        IFNULL(stuffType.name,'') AS "stuff.type.name",
+        IFNULL(minUnit.value,'') AS "stuff.minUnit.value",
+        IFNULL(minUnit.name,'') AS "stuff.minUnit.name",
+        IFNULL(packUnit.name,'') AS "stuff.packUnit.name",
+        IFNULL(packUnit.value,'') AS "stuff.packUnit.value",
+        IFNULL(stuff.price_out_sell,'') AS "stuff.priceOutSell",
+        IFNULL(stuff.inventory,'') AS "stuff.inventory",
+        a.norms AS "norms",
+        a.factory AS "factory.id",
+        IFNULL(factory.name,'') AS "factory.name",
+        a.batch_no AS "batchNo",
+        a.produce_date AS "produceDate",
+        a.end_date AS "endDate",
+        a.number AS "number",
+        <!-- IFNULL(storage.storage_stock,0)-IFNULL(storage.used_stock,0)-IFNULL(storage.reimburse_stock,0) AS 'number', -->
+        a.bid AS "bid",
+        a.least_bid AS "leastBid",
+        a.retail_price AS "retailPrice",
+        a.all_bid AS "allBid",
+        a.all_retail_price AS "allRetailPrice",
+        a.remarks AS "remarks",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.del_flag AS "delFlag",
+        a.initial AS "initial",
+        a.cancellation AS "cancellation",
+        IFNULL(storage.id,'') AS 'medicinalStorageControl.id',
+        IFNULL(storage.storage_stock,'') AS 'medicinalStorageControl.storageStock',
+        IFNULL(storage.used_stock,'') AS 'medicinalStorageControl.usedStock',
+        IFNULL(storage.occupy_stock,'') AS 'medicinalStorageControl.occupyStock',
+        IFNULL(storage.surplus_stock,'') AS 'medicinalStorageControl.surplusStock',
+        IFNULL(storage.reimburse_stock,'') AS 'medicinalStorageControl.reimburseStock'
+    </sql>
+    
+    <sql id="supplierStockJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN supplier supplierId ON supplierId.id = a.supplier_id
+        LEFT JOIN drug drug ON drug.id = a.drug_id
+        LEFT JOIN supplier_storage supplierStorage ON supplierStorage.id = a.supplier_storage_id
+        LEFT JOIN stuff stuff ON stuff.id = a.stuff_id
+        LEFT JOIN manufacture_factory factory ON factory.id = a.factory
+        LEFT JOIN sys_dict_item type ON type.value = drug.type
+        LEFT JOIN sys_dict_item dosisUnit ON dosisUnit.value = drug.dosis_unit
+        LEFT JOIN sys_dict_item preparationUnit ON preparationUnit.value = drug.preparation_unit
+        LEFT JOIN sys_dict_item pack ON pack.value = drug.pack
+        LEFT JOIN sys_dict_item minUnit ON minUnit.value = stuff.min_unit
+        LEFT JOIN sys_dict_item packUnit ON packUnit.value = stuff.pack_unit
+        LEFT JOIN sys_dict_item stuffType ON stuffType.value = stuff.type
+        LEFT JOIN medicinal_storage_control storage ON storage.storage_id = a.id
+    </sql>
+    
+    <select id="get" resultType="com.geeke.stock.entity.SupplierStock">
+        SELECT 
+            <include refid="supplierStockColumns"/>
+        FROM supplier_stock a
+        <include refid="supplierStockJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM supplier_stock a
+        <include refid="supplierStockJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.stock.entity.SupplierStock">
+        SELECT 
+            <include refid="supplierStockColumns"/>
+        FROM supplier_stock a
+        <include refid="supplierStockJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.stock.entity.SupplierStock">
+        SELECT 
+            <include refid="supplierStockColumns"/>
+        FROM supplier_stock a
+        <include refid="supplierStockJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+      
+    <insert id="insert">
+        INSERT INTO supplier_stock(
+            id,
+            company_id,
+            supplier_id,
+            drug_id,
+            supplier_storage_id,
+            stuff_id,
+            norms,
+            factory,
+            batch_no,
+            produce_date,
+            end_date,
+            number,
+            bid,
+            least_bid,
+            retail_price,
+            all_bid,
+            all_retail_price,
+            remarks,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_flag,
+            initial,
+            cancellation
+        ) VALUES (
+            #{id},
+            #{company.id},                    
+            #{supplierId.id},                    
+            #{drug.id},                    
+            #{supplierStorage.id},                    
+            #{stuff.id},                    
+            #{norms},
+            #{factory.id},                    
+            #{batchNo},
+            #{produceDate},
+            #{endDate},
+            #{number},
+            #{bid},
+            #{leastBid},
+            #{retailPrice},
+            #{allBid},
+            #{allRetailPrice},
+            #{remarks},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate},
+            #{delFlag},
+            #{initial},
+            #{cancellation}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE supplier_stock SET     
+            company_id = #{company.id},                    
+            supplier_id = #{supplierId.id},                    
+            drug_id = #{drug.id},                    
+            supplier_storage_id = #{supplierStorage.id},                    
+            stuff_id = #{stuff.id},                    
+            norms = #{norms},
+            factory = #{factory.id},                    
+            batch_no = #{batchNo},
+            produce_date = #{produceDate},
+            end_date = #{endDate},
+            number = #{number},
+            bid = #{bid},
+            least_bid = #{leastBid},
+            retail_price = #{retailPrice},
+            all_bid = #{allBid},
+            all_retail_price = #{allRetailPrice},
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            initial = #{initial},
+            cancellation = #{cancellation}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        UPDATE supplier_stock SET
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            del_flag = #{DEL_FLAG_DELETE}
+        <choose>
+            <when test="id !=null and id != ''">
+                WHERE id = #{id}
+            </when>
+            <otherwise>
+                WHERE supplier_storage_id = #{supplierStorage.id}
+            </otherwise>
+        </choose>
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO supplier_stock(
+            id,
+            company_id,
+            supplier_id,
+            drug_id,
+            supplier_storage_id,
+            stuff_id,
+            norms,
+            factory,
+            batch_no,
+            produce_date,
+            end_date,
+            number,
+            bid,
+            least_bid,
+            retail_price,
+            all_bid,
+            all_retail_price,
+            remarks,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_flag,
+            initial,
+            cancellation
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.company.id},                    
+            #{entity.supplierId.id},                    
+            #{entity.drug.id},                    
+            #{entity.supplierStorage.id},                    
+            #{entity.stuff.id},                    
+            #{entity.norms},
+            #{entity.factory.id},                    
+            #{entity.batchNo},
+            #{entity.produceDate},
+            #{entity.endDate},
+            #{entity.number},
+            #{entity.bid},
+            #{entity.leastBid},
+            #{entity.retailPrice},
+            #{entity.allBid},
+            #{entity.allRetailPrice},
+            #{entity.remarks},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.delFlag},
+            #{entity.initial},
+            #{cancellation}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE supplier_stock
+        <set>           
+            <trim prefix="company_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.company.id}
+                </foreach>
+            </trim>
+            <trim prefix="supplier_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.supplierId.id}
+                </foreach>
+            </trim>
+            <trim prefix="drug_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.drug.id}
+                </foreach>
+            </trim>
+            <trim prefix="supplier_storage_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.supplierStorage.id}
+                </foreach>
+            </trim>
+            <trim prefix="stuff_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.stuff.id}
+                </foreach>
+            </trim>
+            <trim prefix="norms=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.norms}
+                </foreach>
+            </trim>
+            <trim prefix="factory=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.factory.id}
+                </foreach>
+            </trim>
+            <trim prefix="batch_no=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.batchNo}
+                </foreach>
+            </trim>
+            <trim prefix="produce_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.produceDate}
+                </foreach>
+            </trim>
+            <trim prefix="end_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.endDate}
+                </foreach>
+            </trim>
+            <trim prefix="number=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.number}
+                </foreach>
+            </trim>
+            <trim prefix="bid=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.bid}
+                </foreach>
+            </trim>
+            <trim prefix="retail_price=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.retailPrice}
+                </foreach>
+            </trim>
+            <trim prefix="all_bid=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.allBid}
+                </foreach>
+            </trim>
+            <trim prefix="all_retail_price=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.allRetailPrice}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>initial
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+            <trim prefix="initial=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.initial}
+                </foreach>
+            </trim>
+            <trim prefix="cancellation=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.cancellation}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE supplier_stock
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    <update id="updateCancel">
+        UPDATE supplier_stock
+        <set>
+            <trim prefix="cancellation=case" suffix="end,">
+                <foreach collection="list" item="entity" index="index">
+                    when id=#{entity.id} then '1'
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="list" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    <select id="getByStorageId" resultType="com.geeke.stock.entity.SupplierStock">
+        SELECT
+        <include refid="supplierStockColumns"/>
+        FROM supplier_stock a
+        <include refid="supplierStockJoins"/>
+        WHERE a.supplier_storage_id = #{storageId}
+    </select>
+    <select id="getByDrugId" resultType="java.math.BigDecimal">
+        SELECT sum(a.least_bid * a.number) from supplier_stock a WHERE a.drug_id = #{drugOrStuffId} AND a.cancellation = '0'
+    </select>
+    <select id="getByStuffId" resultType="java.math.BigDecimal">
+        SELECT sum(a.least_bid * a.number) from supplier_stock a WHERE a.stuff_id = #{stuffId} AND a.cancellation = '0'
+    </select>
+    <select id="getByStuffIdDetail" resultType="com.geeke.stock.entity.SupplierStock">
+        SELECT
+         <include refid="supplierStockColumns"/>
+        FROM supplier_stock a
+         <include refid="supplierStockJoins"/>
+        where a.stuff_id = #{drugStuffId} and a.cancellation = '0' and a.del_flag = '0'
+        and a.number > 0
+        order by a.create_date
+    </select>
+    <select id="countWarning" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM supplier_stock a
+        <include refid="supplierStockJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and if(company.is_institution=0, company.id = #{id}, (company.id = #{institution} or company.id = #{id}))
+            AND DATEDIFF(a.end_date ,now()) &lt;= drug.indate
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+    <select id="getDrugIndateWarning" resultType="com.geeke.stock.entity.SupplierStock">
+        SELECT
+        <include refid="supplierStockColumns"/>
+        FROM supplier_stock a
+        <include refid="supplierStockJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and if(company.is_institution=0, company.id = #{id}, (company.id = #{institution} or company.id = #{id}))
+            AND DATEDIFF(a.end_date ,now()) &lt;= drug.indate
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.cancellation , a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    <select id="countStuffWarning" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM supplier_stock a
+        <include refid="supplierStockJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            AND DATEDIFF(a.end_date ,now()) &lt;= stuff.indate
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+    <select id="getStuffIndateWarning" resultType="com.geeke.stock.entity.SupplierStock">
+        SELECT
+        <include refid="supplierStockColumns"/>
+        FROM supplier_stock a
+        <include refid="supplierStockJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            AND DATEDIFF(a.end_date ,now()) &lt;= stuff.indate
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.cancellation , a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+</mapper>

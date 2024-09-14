@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.taskmanagement.dao.ArticleDao">
+
+
+    <sql id="articleColumns">
+        a.id AS "id",
+        a.company_id AS "companyid",
+        IFNULL(oc.id,'') AS "company.id",
+        IFNULL(oc.name,'') AS "company.name",
+        a.userid AS "userid",
+        IFNULL(su.id,'') AS "user.id",
+        IFNULL(su.name,'') AS "user.name",
+        a.aricledate AS "aricledate",
+        a.title AS "title",
+        a.abstracts AS "abstracts",
+        a.content AS "content",
+        a.sources AS "sources",
+        a.originallink AS "originallink",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.del_flag AS "delFlag",
+        a.auditor AS "auditor",
+        a.auditordate AS "auditordate",
+        a.username AS "username",
+        a.auditstatus AS "auditstatus"
+
+    </sql>
+
+    <sql id="articleJoins">
+        left join org_company oc on oc.id = a.company_id
+        left join sys_user su on su.id = a.userid
+    </sql>
+
+    <insert id="insert">
+        insert into article(
+        ID,
+        company_id,
+        userid,
+        aricledate,
+        title,
+        abstracts,
+        content,
+        sources,
+        originallink,
+        create_by,
+        create_date,
+        update_by,
+        update_date,
+        del_flag,
+        is_locked,
+        auditor,
+        auditordate,
+        username,
+        auditstatus
+        ) values(
+        #{id},
+        #{companyid},
+        #{userid},
+        #{aricledate},
+        #{title},
+        #{abstracts},
+        #{content},
+        #{sources},
+        #{originallink},
+        #{createBy},
+        #{createDate},
+        #{updateBy},
+        #{updateDate},
+        #{delFlag},
+        #{isLocked},
+        #{auditor},
+        #{auditordate},
+        #{username},
+        #{auditstatus}
+        )
+    </insert>
+    <select id="count" resultType="int">
+        SELECT COUNT(*)  FROM article a
+        <include refid="articleJoins"></include>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+    <select id="listPage" resultType="com.geeke.taskmanagement.entity.article">
+        SELECT
+        <include refid="articleColumns"/>
+        FROM article a
+        <include refid="articleJoins"></include>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.aricledate DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="counts" resultType="int">
+        SELECT COUNT(*)  FROM article a
+        <include refid="articleJoins"></include>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+    <select id="listPages" resultType="com.geeke.taskmanagement.entity.article">
+        SELECT
+        <include refid="articleColumns"/>
+        FROM article a
+        <include refid="articleJoins"></include>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.aricledate DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="listAll" resultType="com.geeke.taskmanagement.entity.article">
+        SELECT
+        <include refid="articleColumns"/>
+        FROM article a
+        <include refid="articleJoins"></include>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.aricledate DESC
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getlistAll" resultType="com.geeke.taskmanagement.entity.article">
+        select * from article a
+        <include refid="articleJoins"></include>
+        <where>
+            a.company_id =#{companyid}
+            <if test="userid!='' and userid !=null ">
+                and a.userid =#{userid}
+            </if>
+            <if test="stratime!='' and stratime!=null ">
+                and a.aricledate  &gt;= #{stratime}
+            </if>
+            <if test="endtime!='' and endtime!=null">
+                and a.aricledate  &lt;= #{endtime}
+            </if>
+            <if test="auditstatus!='' and auditstatus!=null">
+                and a.auditstatus=#{auditstatus}
+            </if>
+        </where>
+        order by a.aricledate desc
+    </select>
+    <select id="listgetid" resultType="com.geeke.taskmanagement.entity.article">
+        select
+        <include refid="articleColumns"></include>
+        from article a
+        <include refid="articleJoins"></include>
+        <where>
+            a.del_flag='0'
+            <if test="id!='' and id!=null ">
+                and a.id=#{id}
+            </if>
+            <if test="id =='' and id ==null ">
+                and a.company_id=#{companyid}
+            </if>
+        </where>
+    </select>
+    <update id="update">
+        update article
+        <set>
+            <if test="auditor!=null">
+                auditor=#{auditor},
+            </if>
+            <if test="auditordate!=null">
+                auditordate=#{auditordate},
+            </if>
+            <if test="username!=null">
+                username=#{username},
+            </if>
+            <if test="auditstatus!=null">
+                auditstatus=#{auditstatus},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+</mapper>

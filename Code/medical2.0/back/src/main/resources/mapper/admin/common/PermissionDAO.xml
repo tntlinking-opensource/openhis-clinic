@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.geeke.admin.common.dao.PermissionDAO">
+
+    <sql id="routerColumns">
+        router.parent_id AS "parent.id",
+        router.id AS "id",
+        router.name AS "name",
+        router.code AS "code",
+        router.url AS "url",
+        router.properties AS "properties"
+    </sql>
+
+    <select id="listResourcePermission" resultType="com.geeke.admin.entity.Resource">
+		SELECT resource.* 
+		FROM sys_resource resource
+		WHERE resource.id IN(
+		      SELECT p.resource_id 
+		      FROM sys_resource_permission p
+			     INNER JOIN sys_role role ON p.role_id=role.id AND role.del_flag = 0 AND role.is_locked = 0
+			     INNER JOIN sys_user_role ur ON role.id=ur.role_id AND ur.del_flag = 0
+              WHERE ur.user_id=#{userId}
+              )
+            AND resource.del_flag = 0
+            AND resource.is_locked = 0
+        <if test="routerId != null and routerId != ''">
+            AND resource.router_id=#{routerId}
+        </if>        
+    </select>
+    
+    <select id="listRouterPermission" resultType="com.geeke.admin.entity.Router">
+        SELECT 
+            <include refid="routerColumns"/> 
+        FROM sys_router router
+        WHERE router.id IN(
+            SELECT p.router_id
+            FROM sys_router_permission p
+                INNER JOIN sys_role role ON p.role_id=role.id AND role.del_flag = 0 AND role.is_locked = 0
+                INNER JOIN sys_user_role ur ON role.id=ur.role_id AND ur.del_flag = 0
+            WHERE
+                ur.user_id=#{userId}
+            and ur.company_id=#{companyId}
+            )
+            AND router.del_flag = 0
+            AND router.is_locked = 0
+        ORDER BY router.SORT, router.id  
+    </select>
+
+    <select id="listRouterPermissionByRoleId" resultType="com.geeke.admin.entity.Router">
+        SELECT
+        <include refid="routerColumns"/>
+        FROM sys_router router
+        WHERE router.id IN(
+        SELECT p.router_id
+        FROM sys_router_permission p
+        INNER JOIN sys_role role ON p.role_id=role.id AND role.del_flag = 0 AND role.is_locked = 0
+        WHERE
+        role.id=#{roleId}
+        )
+        AND router.del_flag = 0
+        AND router.is_locked = 0
+        ORDER BY router.SORT, router.id
+    </select>
+	
+    <select id="listResourcePermissionByUserId" resultType="String">
+		SELECT res.permission FROM sys_resource res 
+			INNER JOIN sys_resource_permission rp 
+				ON res.id = rp.resource_id
+			INNER JOIN sys_user_role ur 
+				ON rp.role_id = ur.role_id AND ur.del_flag = 0 AND ur.user_id = #{userId} AND ur.company_id = #{companyId}
+			INNER JOIN sys_role sr 
+				ON sr.id = rp.role_id AND sr.del_flag = 0 AND sr.is_locked = 0
+		WHERE res.del_flag = 0 AND res.is_locked=0
+    </select>	
+	
+    <select id="listResourcePermissionByRoleId" resultType="String">
+        SELECT resource_id 
+            FROM sys_resource_permission 
+            WHERE role_id=#{roleId}
+    </select>
+    
+    <delete id="removeRouterByRoleId">
+        DELETE FROM sys_router_permission WHERE role_id=#{roleId}
+    </delete>
+    
+    <insert id="saveRouterPermission">
+        INSERT INTO sys_router_permission(id, role_id, router_id)
+        VALUES
+        <foreach collection="map" index="routerId" item="id" separator=",">
+            (${id}, #{roleId}, #{routerId})
+        </foreach>
+    </insert>   
+        
+    <delete id="removeResourceByRoleId">
+        DELETE FROM sys_resource_permission WHERE role_id=#{roleId}
+    </delete>
+
+    <insert id="saveResourcePermission">
+        INSERT INTO sys_resource_permission(id, role_id, resource_id)
+        VALUES
+        <foreach collection="map" index="resourceId" item="id" separator=",">
+            (${id},  #{roleId}, #{resourceId})
+        </foreach>
+    </insert>  
+    
+    <select id="listDataPermissionByRoleId" resultType="com.geeke.admin.common.entity.DataPermission">
+        SELECT a.id AS "id",
+            a.role_id AS "roleId",
+            a.router_id AS "routerId",
+            a.meta_id AS "metaId",
+            a.conditions AS "conditions"
+        FROM sys_data_permission a 
+        WHERE a.role_id = #{roleId}
+    </select>
+      
+    <delete id="removeDataPermssionByRoleId">
+        DELETE FROM sys_data_permission WHERE role_id=#{roleId} 
+    </delete>
+    
+    <insert id="saveDataPermission" parameterType="java.util.List">
+        INSERT INTO sys_data_permission(id, router_id, role_id, meta_id, conditions)
+        VALUES
+        <foreach collection="dataPermissions" item="item"  index="idx" separator=",">
+            (${ids[idx]}, #{item.routerId}, #{item.roleId}, #{item.metaId}, #{item.conditions})
+        </foreach>
+    </insert>
+    
+    
+    <select id="listDataPermissionByUserId" resultType="com.geeke.admin.common.entity.DataPermission">
+        SELECT a.id AS "id",
+            a.role_id AS "roleId",
+            a.router_id AS "routerId",
+            a.meta_id AS "metaId",
+            a.conditions AS "conditions"
+        FROM sys_data_permission a 
+            INNER JOIN sys_role r ON r.id = a.role_id AND r.del_flag = 0  AND r.is_locked = 0 
+            INNER JOIN sys_user_role ur ON ur.role_id = a.role_id AND ur.del_flag = 0 AND ur.user_id = #{userId}
+            AND ur.company_id = #{companyId}
+        ORDER BY a.meta_id, a.role_id
+    </select>    
+    
+    
+    <select id="listDefaultResourceByRouters" resultType="String">
+        SELECT permission 
+            FROM sys_resource 
+            WHERE is_default = 1 
+                AND router_id IN <foreach collection="routers" item="router" index="index" open="(" close=")" separator=",">#{router.id}</foreach> 
+    </select>
+
+</mapper>  

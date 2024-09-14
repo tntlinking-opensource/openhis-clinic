@@ -1,0 +1,34 @@
+# Compiled class file
+*.class
+
+# Log files
+*.log
+
+# IntelliJ IDEA project files
+.idea/
+
+# Gradle specific files
+.gradle/
+
+# Maven specific files
+target/
+classes/
+target/classes/
+
+node_modules/
+Code/medical2.0/client/node_modules/
+
+# Spring Boot specific files
+spring-boot-starter-parent.iml
+mvnw
+mvnw.cmd
+src/main/resources/application.properties
+
+# IDE-specific files
+*.iml
+*.ipr
+*.iws
+out/
+
+
+

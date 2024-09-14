@@ -1,0 +1,1009 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.stock.dao.DrugDao">
+
+    <sql id="drugColumns">
+        a.id AS "id",
+        a.sync_id,
+        a.goods_name AS "goodsName",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.brand_name AS "brandName",
+        a.pinyin_code AS "pinyinCode",
+        a.type AS "type.value",
+        IFNULL(type.name,'') AS "type.name",
+        a.code AS "code",
+        a.source AS "source",
+        a.nature AS "nature.value",
+        IFNULL(nature.name,'') AS "nature.name",
+        a.factory AS "factory.id",
+        IFNULL(factory.name,'') AS "factory.name",
+        a.standard_code AS "standardCode",
+        a.bit_code AS "bitCode",
+        a.bar_code AS "barCode",
+        a.insurance_code AS "insuranceCode",
+        a.remarks AS "remarks",
+        a.dosis AS "dosis",
+        a.create_by AS "createBy",
+        a.dosis_unit AS "dosisUnit.value",
+        IFNULL(dosisUnit.name,'') AS "dosisUnit.name",
+        a.create_date AS "createDate",
+        a.preparation AS "preparation",
+        a.update_by AS "updateBy",
+        a.preparation_unit AS "preparationUnit.value",
+        IFNULL(preparationUnit.name,'') AS "preparationUnit.name",
+        a.update_date AS "updateDate",
+        a.pack AS "pack.value",
+        IFNULL(pack.name,'') AS "pack.name",
+        a.del_flag AS "delFlag",
+        a.price AS "price",
+        a.is_unpack_sell AS "isUnpackSell",
+        a.retail_price AS "retailPrice",
+        a.status AS "status",
+        a.inventory AS "inventory",
+        a.western_medicine_use AS "westernMedicineUse.value",
+        IFNULL(westernMedicineUse.name,'') AS "westernMedicineUse.name",
+        a.chinese_medicine_use AS "chineseMedicineUse.value",
+        IFNULL(chineseMedicineUse.name,'') AS "chineseMedicineUse.name",
+        a.single_dosage AS "singleDosage",
+        a.total AS "total",
+        a.frequency AS "frequency.value",
+        IFNULL(frequency.name,'') AS "frequency.name",
+        a.days AS "days.value",
+        IFNULL(days.name,'') AS "days.name",
+        a.location_number AS "locationNumber",
+        a.inventory_limit AS "inventoryLimit",
+        a.inventory_floor AS "inventoryFloor",
+        a.indate AS "indate",
+        IFNULL(stock.id,'') AS "stock.id",
+        IFNULL(stock.storage_stock,'') AS 'stock.storageStock',
+        IFNULL(stock.used_stock,'') AS 'stock.usedStock',
+        IFNULL(stock.occupy_stock,'') AS 'stock.occupyStock',
+        IFNULL(stock.surplus_stock,'') AS 'stock.surplusStock',
+        IFNULL(stock.reimburse_stock,'') AS 'stock.reimburseStock'
+    </sql>
+
+    <sql id="groupBy">
+        a
+        .
+        id
+        , a.goods_name, a.company_id, company.name, a.brand_name,a.pinyin_code, a.type, type.name, a.code, a.source, a.nature, nature.name, a.factory, factory.name,
+        a.standard_code, a.bit_code, a.bar_code, a.insurance_code, a.remarks, a.dosis, a.create_by, a.dosis_unit, dosisUnit.name, a.create_date, a.preparation,
+        a.update_by, a.preparation_unit, preparationUnit.name, a.update_date, a.pack, pack.name, a.del_flag, a.price, a.is_unpack_sell, a.retail_price,a.status,
+        a.western_medicine_use, westernMedicineUse.name, a.chinese_medicine_use, chineseMedicineUse.name, a.single_dosage,a.total, a.frequency,frequency.name,a.days,days.name,
+        stock.id,stock.storage_stock,stock.occupy_stock,stock.surplus_stock,stock.reimburse_stock
+    </sql>
+
+    <sql id="drugJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN sys_dict_item type ON type.value = a.type
+        LEFT JOIN sys_dict_item nature ON nature.value = a.nature
+        LEFT JOIN manufacture_factory factory ON factory.id = a.factory
+        LEFT JOIN sys_dict_item dosisUnit ON dosisUnit.value = a.dosis_unit
+        LEFT JOIN sys_dict_item preparationUnit ON preparationUnit.value = a.preparation_unit
+        LEFT JOIN sys_dict_item pack ON pack.value = a.pack
+        LEFT JOIN sys_dict_item westernMedicineUse ON westernMedicineUse.value = a.western_medicine_use
+        LEFT JOIN sys_dict_item frequency ON frequency.value = a.frequency
+        LEFT JOIN sys_dict_item days ON days.value = a.days
+        LEFT JOIN sys_dict_item chineseMedicineUse ON chineseMedicineUse.value = a.chinese_medicine_use
+        LEFT JOIN medicinal_stock_control stock ON stock.drug_stuff_id = a.id
+    </sql>
+
+    <select id="get" resultType="com.geeke.stock.entity.Drug">
+        SELECT
+        <include refid="drugColumns"/>
+        FROM drug a
+        <include refid="drugJoins"/>
+        WHERE a.id = #{id} limit 1
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM drug a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN sys_dict_item type ON type.value = a.type
+        LEFT JOIN sys_dict_item nature ON nature.value = a.nature
+        LEFT JOIN manufacture_factory factory ON factory.id = a.factory
+        LEFT JOIN sys_dict_item dosisUnit ON dosisUnit.value = a.dosis_unit
+        LEFT JOIN sys_dict_item preparationUnit ON preparationUnit.value = a.preparation_unit
+        LEFT JOIN sys_dict_item pack ON pack.value = a.pack
+        LEFT JOIN sys_dict_item westernMedicineUse ON westernMedicineUse.value = a.western_medicine_use
+        LEFT JOIN sys_dict_item frequency ON frequency.value = a.frequency
+        LEFT JOIN sys_dict_item days ON days.value = a.days
+        LEFT JOIN sys_dict_item chineseMedicineUse ON chineseMedicineUse.value = a.chinese_medicine_use
+        LEFT JOIN medicinal_stock_control stock ON (stock.drug_stuff_id = a.id and stock.company_id = #{id})
+        left join supplier_stock ss on (ss.drug_id = a.id and ss.drug_id = #{id})
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and if(company.is_institution=0, company.id = #{id}, (company.id = #{institution} or
+            company.id = #{id}) )
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+    <select id="listPage" resultType="com.geeke.stock.entity.Drug">
+        SELECT
+        <include refid="drugColumns"/>
+        ,sum(case a.is_unpack_sell when 1 then
+        ss.number*(case ifnull(a.preparation,'') when '' then '0' else a.preparation end )
+        else ss.number end) AS 'stock.surplusStock'
+        FROM drug a
+        <include refid="drugJoins"/>
+        left join supplier_stock ss on ss.drug_id = a.id
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and (stock.company_id = #{institution})
+            <include refid="Common.whereParams"/>
+        </where>
+        group by
+        <include refid="groupBy"/>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="listPages" resultType="com.geeke.stock.entity.Drug">
+        SELECT
+        a.id AS "id",
+        IFNULL(a.sync_id,'') as sync_id,
+        a.goods_name AS "goodsName",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.brand_name AS "brandName",
+        a.pinyin_code AS "pinyinCode",
+        a.type AS "type.value",
+        IFNULL(type.name,'') AS "type.name",
+        a.code AS "code",
+        a.source AS "source",
+        a.nature AS "nature.value",
+        IFNULL(nature.name,'') AS "nature.name",
+        a.factory AS "factory.id",
+        IFNULL(factory.name,'') AS "factory.name",
+        a.standard_code AS "standardCode",
+        a.bit_code AS "bitCode",
+        a.bar_code AS "barCode",
+        a.insurance_code AS "insuranceCode",
+        a.remarks AS "remarks",
+        a.dosis AS "dosis",
+        a.create_by AS "createBy",
+        a.dosis_unit AS "dosisUnit.value",
+        IFNULL(dosisUnit.name,'') AS "dosisUnit.name",
+        a.create_date AS "createDate",
+        a.preparation AS "preparation",
+        a.update_by AS "updateBy",
+        a.preparation_unit AS "preparationUnit.value",
+        IFNULL(preparationUnit.name,'') AS "preparationUnit.name",
+        a.update_date AS "updateDate",
+        a.pack AS "pack.value",
+        IFNULL(pack.name,'') AS "pack.name",
+        a.del_flag AS "delFlag",
+        a.price AS "price",
+        a.is_unpack_sell AS "isUnpackSell",
+        a.retail_price AS "retailPrice",
+        a.status AS "status",
+        a.inventory AS "inventory",
+        a.western_medicine_use AS "westernMedicineUse.value",
+        IFNULL(westernMedicineUse.name,'') AS "westernMedicineUse.name",
+        a.chinese_medicine_use AS "chineseMedicineUse.value",
+        IFNULL(chineseMedicineUse.name,'') AS "chineseMedicineUse.name",
+        a.single_dosage AS "singleDosage",
+        a.total AS "total",
+        a.frequency AS "frequency.value",
+        IFNULL(frequency.name,'') AS "frequency.name",
+        a.days AS "days.value",
+        IFNULL(days.name,'') AS "days.name",
+        a.location_number AS "locationNumber",
+        a.inventory_limit AS "inventoryLimit",
+        a.inventory_floor AS "inventoryFloor",
+        a.indate AS "indate",
+        IFNULL(stock.id,'') AS "stock.id",
+        IFNULL(stock.storage_stock,'') AS 'stock.storageStock',
+        IFNULL(stock.used_stock,'') AS 'stock.usedStock',
+        IFNULL(stock.surplus_stock,'') AS 'stock.surplusStock',
+        IFNULL(stock.occupy_stock,'') AS 'stock.occupyStock',
+        IFNULL(stock.reimburse_stock,'') AS 'stock.reimburseStock'
+        ,sum(case a.is_unpack_sell when 1 then
+        ss.number*(case ifnull(a.preparation,'') when '' then '0' else a.preparation end )
+        else ss.number end) AS stockNumber
+        FROM drug a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN sys_dict_item type ON type.value = a.type
+        LEFT JOIN sys_dict_item nature ON nature.value = a.nature
+        LEFT JOIN manufacture_factory factory ON factory.id = a.factory
+        LEFT JOIN sys_dict_item dosisUnit ON dosisUnit.value = a.dosis_unit
+        LEFT JOIN sys_dict_item preparationUnit ON preparationUnit.value = a.preparation_unit
+        LEFT JOIN sys_dict_item pack ON pack.value = a.pack
+        LEFT JOIN sys_dict_item westernMedicineUse ON westernMedicineUse.value = a.western_medicine_use
+        LEFT JOIN sys_dict_item frequency ON frequency.value = a.frequency
+        LEFT JOIN sys_dict_item days ON days.value = a.days
+        LEFT JOIN sys_dict_item chineseMedicineUse ON chineseMedicineUse.value = a.chinese_medicine_use
+        LEFT JOIN medicinal_stock_control stock ON (stock.drug_stuff_id = a.id and stock.company_id = #{id})
+        left join supplier_stock ss on (ss.drug_id = a.id and ss.drug_id = #{id})
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and if(company.is_institution=0, company.id = #{id}, (company.id = #{institution} or
+            company.id = #{id}) )
+            <include refid="Common.whereParams"/>
+        </where>
+        group by
+        <include refid="groupBy"/>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="listAll" resultType="com.geeke.stock.entity.Drug">
+        SELECT
+        <include refid="drugColumns"/>
+        FROM drug a
+        <include refid="drugJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and if(company.is_institution=0, company.id = #{id}, (company.id = #{institution} or
+            company.id = #{id}) )
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="listAlls" resultType="com.geeke.stock.entity.Drug">
+        SELECT
+        <include refid="drugColumns"/>
+        FROM drug a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN sys_dict_item type ON type.value = a.type
+        LEFT JOIN sys_dict_item nature ON nature.value = a.nature
+        LEFT JOIN manufacture_factory factory ON factory.id = a.factory
+        LEFT JOIN sys_dict_item dosisUnit ON dosisUnit.value = a.dosis_unit
+        LEFT JOIN sys_dict_item preparationUnit ON preparationUnit.value = a.preparation_unit
+        LEFT JOIN sys_dict_item pack ON pack.value = a.pack
+        LEFT JOIN sys_dict_item westernMedicineUse ON westernMedicineUse.value = a.western_medicine_use
+        LEFT JOIN sys_dict_item frequency ON frequency.value = a.frequency
+        LEFT JOIN sys_dict_item days ON days.value = a.days
+        LEFT JOIN sys_dict_item chineseMedicineUse ON chineseMedicineUse.value = a.chinese_medicine_use
+        LEFT JOIN medicinal_stock_control stock ON (stock.drug_stuff_id = a.id and stock.company_id = #{id})
+        left join supplier_stock ss on (ss.drug_id = a.id and ss.drug_id = #{id})
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.status = 1
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and (company.id = #{institution} or company.id = #{id})
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="inventory" resultType="com.geeke.stock.entity.Drug">
+        SELECT
+        sum(stock.surplus_stock) AS 'stock.surplusStock'
+        FROM drug a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN medicinal_stock_control stock ON stock.drug_stuff_id = a.id
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and company.parent_id = #{institution}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="listAllStock" resultType="com.geeke.stock.entity.Drug">
+        SELECT
+        <include refid="drugColumns"/>
+        ,sum(case a.is_unpack_sell when 1 then
+        ss.number*(case ifnull(a.preparation,'') when '' then '0' else a.preparation end )
+        else ss.number end) AS stockNumber
+        FROM drug a
+        <include refid="drugJoins"/>
+        left join supplier_stock ss on ss.drug_id = a.id
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+            AND ss.number > 0
+        </where>
+        group by
+        <include refid="groupBy"/>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="listAllStock2" resultType="com.geeke.stock.entity.Drug">
+        SELECT
+        <include refid="drugColumns"/>
+        ,sum(case a.is_unpack_sell when 1 then
+        ss.number*(case ifnull(a.preparation,'') when '' then '0' else a.preparation end )
+        else ss.number end) AS stockNumber
+        FROM drug a
+        <include refid="drugJoins"/>
+        left join supplier_stock ss on ss.drug_id = a.id
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and (company.id = #{institution} or company.id = #{id})
+            <include refid="Common.whereParams"/>
+        </where>
+        group by
+        <include refid="groupBy"/>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getAll" resultType="com.geeke.stock.entity.Drug">
+        SELECT
+        a.id AS 'id',(stock.storage_stock-stock.used_stock-stock.reimburse_stock) AS 'inventory'
+        FROM drug a
+        <include refid="drugJoins"/>
+        WHERE a.company_id = #{companyId}
+        AND a.del_flag = '0'
+        AND a.status = '1'
+        <if test='type == "0"'>
+            AND (stock.storage_stock-stock.used_stock-stock.reimburse_stock) > 0
+        </if>
+    </select>
+
+    <select id="countInventory" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM drug a
+        <include refid="drugJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = '0'
+            and if(company.is_institution=0, company.id = #{id}, (company.id = #{institution} or company.id = #{id}))
+            AND (stock.storage_stock-stock.used_stock-stock.reimburse_stock) &lt;= a.inventory_floor*a.preparation
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+    <select id="getDrugInventoryWarning" resultType="com.geeke.stock.entity.Drug">
+        SELECT
+        <include refid="drugColumns"></include>
+        FROM drug a
+        <include refid="drugJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = '0'
+            AND (stock.storage_stock-stock.used_stock-stock.reimburse_stock) &lt;= a.inventory_floor*a.preparation
+            <include refid="Common.whereParams"/>
+        </where>
+        group by
+        <include refid="groupBy"/>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO drug(id,
+                         goods_name,
+                         company_id,
+                         brand_name,
+                         pinyin_code,
+                         type,
+                         code,
+                         source,
+                         nature,
+                         factory,
+                         standard_code,
+                         bit_code,
+                         bar_code,
+                         insurance_code,
+                         remarks,
+                         dosis,
+                         create_by,
+                         dosis_unit,
+                         create_date,
+                         preparation,
+                         update_by,
+                         preparation_unit,
+                         update_date,
+                         pack,
+                         del_flag,
+                         price,
+                         is_unpack_sell,
+                         retail_price,
+                         status,
+                         inventory,
+                         western_medicine_use,
+                         chinese_medicine_use,
+                         single_dosage,
+                         total,
+                         frequency,
+                         days,
+                         location_number,
+                         inventory_limit,
+                         inventory_floor,
+                         indate,sync_id)
+        VALUES (#{id},
+                #{goodsName},
+                #{company.id},
+                #{brandName},
+                #{pinyinCode},
+                #{type.value},
+                #{code},
+                #{source},
+                #{nature.value},
+                #{factory.id},
+                #{standardCode},
+                #{bitCode},
+                #{barCode},
+                #{insuranceCode},
+                #{remarks},
+                #{dosis},
+                #{createBy},
+                #{dosisUnit.value},
+                #{createDate},
+                #{preparation},
+                #{updateBy},
+                #{preparationUnit.value},
+                #{updateDate},
+                #{pack.value},
+                #{delFlag},
+                #{price},
+                #{isUnpackSell},
+                #{retailPrice},
+                #{status},
+                #{inventory},
+                #{westernMedicineUse.value},
+                #{chineseMedicineUse.value},
+                #{singleDosage},
+                #{total},
+                #{frequency.value},
+                #{days.value},
+                #{locationNumber},
+                #{inventoryLimit},
+                #{inventoryFloor},
+                #{indate},
+                #{syncId})
+    </insert>
+
+    <update id="update">
+        UPDATE drug
+        SET goods_name           = #{goodsName},
+            brand_name           = #{brandName},
+            pinyin_code=#{pinyinCode},
+            type                 = #{type.value},
+            source               = #{source},
+            nature               = #{nature.value},
+            factory              = #{factory.id},
+            standard_code        = #{standardCode},
+            bit_code             = #{bitCode},
+            bar_code             = #{barCode},
+            insurance_code       = #{insuranceCode},
+            dosis                = #{dosis},
+            dosis_unit           = #{dosisUnit.value},
+            preparation          = #{preparation},
+            update_by            = #{updateBy},
+            preparation_unit     = #{preparationUnit.value},
+            update_date          = #{updateDate},
+            pack                 = #{pack.value},
+            price                = #{price},
+            is_unpack_sell       = #{isUnpackSell},
+            retail_price         = #{retailPrice},
+            status               = #{status},
+            inventory            = #{inventory},
+            western_medicine_use = #{westernMedicineUse.value},
+            chinese_medicine_use = #{chineseMedicineUse.value},
+            single_dosage        = #{singleDosage},
+            total                = #{total},
+            frequency            = #{frequency.value},
+            days                 = #{days.value},
+            location_number      = #{locationNumber},
+            inventory_limit      = #{inventoryLimit},
+            inventory_floor      = #{inventoryFloor},
+            indate               = #{indate}
+        WHERE id = #{id}
+    </update>
+
+    <update id="delete">
+        UPDATE drug
+        SET update_by   = #{updateBy},
+            update_date = #{updateDate},
+            del_flag    = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO drug(
+        id,
+        goods_name,
+        company_id,
+        brand_name,
+        pinyin_code,
+        type,
+        code,
+        source,
+        nature,
+        factory,
+        standard_code,
+        bit_code,
+        bar_code,
+        insurance_code,
+        remarks,
+        dosis,
+        create_by,
+        dosis_unit,
+        create_date,
+        preparation,
+        update_by,
+        preparation_unit,
+        update_date,
+        pack,
+        del_flag,
+        price,
+        is_unpack_sell,
+        retail_price,
+        status,
+        inventory,
+        western_medicine_use,
+        chinese_medicine_use,
+        single_dosage,
+        total,
+        frequency,
+        days,
+        location_number,
+        inventory_limit,
+        inventory_floor,
+        indate
+        ) VALUES
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+            (
+            #{entity.id},
+            #{entity.goodsName},
+            #{entity.company.id},
+            #{entity.brandName},
+            #{entity.pinyinCode},
+            #{entity.type.value},
+            #{entity.code},
+            #{entity.source},
+            #{entity.nature.value},
+            #{entity.factory.id},
+            #{entity.standardCode},
+            #{entity.bitCode},
+            #{entity.barCode},
+            #{entity.insuranceCode},
+            #{entity.remarks},
+            #{entity.dosis},
+            #{entity.createBy},
+            #{entity.dosisUnit.value},
+            #{entity.createDate},
+            #{entity.preparation},
+            #{entity.updateBy},
+            #{entity.preparationUnit.value},
+            #{entity.updateDate},
+            #{entity.pack.value},
+            #{entity.delFlag},
+            #{entity.price},
+            #{entity.isUnpackSell},
+            #{entity.retailPrice},
+            #{entity.status},
+            #{entity.inventory},
+            #{entity.westernMedicineUse.value},
+            #{entity.chineseMedicineUse.value},
+            #{entity.singleDosage},
+            #{entity.total},
+            #{entity.frequency.value},
+            #{entity.days.value},
+            #{entity.locationNumber},
+            #{entity.inventoryLimit},
+            #{entity.inventoryFloor},
+            #{entity.indate}
+            )
+        </foreach>
+    </insert>
+
+    <update id="bulkUpdate" parameterType="java.util.List">
+        UPDATE drug
+        <set>
+            <trim prefix="goods_name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.goodsName}
+                </foreach>
+            </trim>
+            <trim prefix="brand_name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.brandName}
+                </foreach>
+            </trim>
+            <trim prefix="pinyin_code=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.pinyinCode}
+                </foreach>
+            </trim>
+            <trim prefix="type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.type.value}
+                </foreach>
+            </trim>
+            <trim prefix="source=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.source}
+                </foreach>
+            </trim>
+            <trim prefix="nature=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.nature.value}
+                </foreach>
+            </trim>
+            <trim prefix="factory=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.factory.id}
+                </foreach>
+            </trim>
+            <trim prefix="standard_code=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.standardCode}
+                </foreach>
+            </trim>
+            <trim prefix="bit_code=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.bitCode}
+                </foreach>
+            </trim>
+            <trim prefix="bar_code=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.barCode}
+                </foreach>
+            </trim>
+            <trim prefix="insurance_code=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.insuranceCode}
+                </foreach>
+            </trim>
+            <trim prefix="dosis=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.dosis}
+                </foreach>
+            </trim>
+            <trim prefix="dosis_unit=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.dosisUnit.value}
+                </foreach>
+            </trim>
+            <trim prefix="preparation=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.preparation}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="preparation_unit=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.preparationUnit.value}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+            <trim prefix="pack=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.pack.value}
+                </foreach>
+            </trim>
+            <trim prefix="price=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.price}
+                </foreach>
+            </trim>
+            <trim prefix="is_unpack_sell=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isUnpackSell}
+                </foreach>
+            </trim>
+            <trim prefix="retail_price=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.retailPrice}
+                </foreach>
+            </trim>
+            <trim prefix="status=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.status}
+                </foreach>
+            </trim>
+
+            <trim prefix="western_medicine_use=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.westernMedicineUse.value}
+                </foreach>
+            </trim>
+            <trim prefix="chinese_medicine_use=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.chineseMedicineUse.value}
+                </foreach>
+            </trim>
+            <trim prefix="single_dosage=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.singleDosage}
+                </foreach>
+            </trim>
+            <trim prefix="total=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.total}
+                </foreach>
+            </trim>
+            <trim prefix="frequency=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.frequency.value}
+                </foreach>
+            </trim>
+            <trim prefix="days=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.days.value}
+                </foreach>
+            </trim>
+            <trim prefix="indate=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.indate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+
+
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE drug
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    <update id="updateInventory">
+        update drug
+        set inventory=#{inventory},
+            update_date=now()
+        where id = #{id}
+    </update>
+    <update id="updateAllIndate">
+        update drug
+        set indate = #{indate}
+        where company_id = #{companyId}
+    </update>
+
+    <update id="updateAllInventory">
+        update drug
+        set inventory_floor = #{inventoryFloor}
+        where company_id = #{companyId}
+    </update>
+
+    <select id="repeat" resultType="com.geeke.stock.entity.Drug">
+        SELECT * FROM drug a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        <where>
+            AND a.id > 0
+            AND a.del_flag = '0'
+            and a.company_id = #{company.id}
+            AND a.goods_name = #{goodsName}
+            AND a.dosis = #{dosis}
+            AND a.preparation = #{preparation}
+            AND a.price = #{price}
+        </where>
+    </select>
+
+    <select id="getId" resultType="java.lang.String">
+        SELECT
+        a.drug_stuff_id
+        FROM medicinal_stock_control a
+        WHERE a.drug_stuff_name = #{name} and surplus_stock > 0 and a.company_id = #{company}
+              limit 1
+    </select>
+
+    <select id="countByInstitution" resultType="int">
+        SELECT COUNT(*) FROM drug a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN sys_dict_item type ON type.value = a.type
+        LEFT JOIN sys_dict_item nature ON nature.value = a.nature
+        LEFT JOIN manufacture_factory factory ON factory.id = a.factory
+        LEFT JOIN sys_dict_item dosisUnit ON dosisUnit.value = a.dosis_unit
+        LEFT JOIN sys_dict_item preparationUnit ON preparationUnit.value = a.preparation_unit
+        LEFT JOIN sys_dict_item pack ON pack.value = a.pack
+        LEFT JOIN sys_dict_item westernMedicineUse ON westernMedicineUse.value = a.western_medicine_use
+        LEFT JOIN sys_dict_item frequency ON frequency.value = a.frequency
+        LEFT JOIN sys_dict_item days ON days.value = a.days
+        LEFT JOIN sys_dict_item chineseMedicineUse ON chineseMedicineUse.value = a.chinese_medicine_use
+        LEFT JOIN medicinal_stock_control stock ON (stock.drug_stuff_id = a.id and stock.company_id = #{id})
+        left join supplier_stock ss on (ss.drug_id = a.id and ss.drug_id = #{id})
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and a.company_id=#{institution}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+    <select id="listByInstitution" resultType="com.geeke.stock.entity.Drug">
+        SELECT
+        a.id AS "id",
+        a.goods_name AS "goodsName",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.brand_name AS "brandName",
+        a.pinyin_code AS "pinyinCode",
+        a.type AS "type.value",
+        IFNULL(type.name,'') AS "type.name",
+        a.code AS "code",
+        a.source AS "source",
+        a.nature AS "nature.value",
+        IFNULL(nature.name,'') AS "nature.name",
+        a.factory AS "factory.id",
+        IFNULL(factory.name,'') AS "factory.name",
+        a.standard_code AS "standardCode",
+        a.bit_code AS "bitCode",
+        a.bar_code AS "barCode",
+        a.insurance_code AS "insuranceCode",
+        a.remarks AS "remarks",
+        a.dosis AS "dosis",
+        a.create_by AS "createBy",
+        a.dosis_unit AS "dosisUnit.value",
+        IFNULL(dosisUnit.name,'') AS "dosisUnit.name",
+        a.create_date AS "createDate",
+        a.preparation AS "preparation",
+        a.update_by AS "updateBy",
+        a.preparation_unit AS "preparationUnit.value",
+        IFNULL(preparationUnit.name,'') AS "preparationUnit.name",
+        a.update_date AS "updateDate",
+        a.pack AS "pack.value",
+        IFNULL(pack.name,'') AS "pack.name",
+        a.del_flag AS "delFlag",
+        a.price AS "price",
+        a.is_unpack_sell AS "isUnpackSell",
+        a.retail_price AS "retailPrice",
+        a.status AS "status",
+        a.inventory AS "inventory",
+        a.western_medicine_use AS "westernMedicineUse.value",
+        IFNULL(westernMedicineUse.name,'') AS "westernMedicineUse.name",
+        a.chinese_medicine_use AS "chineseMedicineUse.value",
+        IFNULL(chineseMedicineUse.name,'') AS "chineseMedicineUse.name",
+        a.single_dosage AS "singleDosage",
+        a.total AS "total",
+        a.frequency AS "frequency.value",
+        IFNULL(frequency.name,'') AS "frequency.name",
+        a.days AS "days.value",
+        IFNULL(days.name,'') AS "days.name",
+        a.location_number AS "locationNumber",
+        a.inventory_limit AS "inventoryLimit",
+        a.inventory_floor AS "inventoryFloor",
+        a.indate AS "indate",
+        IFNULL(stock.id,'') AS "stock.id",
+        IFNULL(stock.storage_stock,'') AS 'stock.storageStock',
+        IFNULL(stock.used_stock,'') AS 'stock.usedStock',
+        IFNULL(stock.surplus_stock,'') AS 'stock.surplusStock',
+        IFNULL(stock.occupy_stock,'') AS 'stock.occupyStock',
+        IFNULL(stock.reimburse_stock,'') AS 'stock.reimburseStock'
+        ,sum(case a.is_unpack_sell when 1 then
+        ss.number*(case ifnull(a.preparation,'') when '' then '0' else a.preparation end )
+        else ss.number end) AS stockNumber,
+        (SELECT COUNT(1) FROM drug as z WHERE z.sync_id=a.id and z.company_id=#{id}) as syncNum
+        FROM drug a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN sys_dict_item type ON type.value = a.type
+        LEFT JOIN sys_dict_item nature ON nature.value = a.nature
+        LEFT JOIN manufacture_factory factory ON factory.id = a.factory
+        LEFT JOIN sys_dict_item dosisUnit ON dosisUnit.value = a.dosis_unit
+        LEFT JOIN sys_dict_item preparationUnit ON preparationUnit.value = a.preparation_unit
+        LEFT JOIN sys_dict_item pack ON pack.value = a.pack
+        LEFT JOIN sys_dict_item westernMedicineUse ON westernMedicineUse.value = a.western_medicine_use
+        LEFT JOIN sys_dict_item frequency ON frequency.value = a.frequency
+        LEFT JOIN sys_dict_item days ON days.value = a.days
+        LEFT JOIN sys_dict_item chineseMedicineUse ON chineseMedicineUse.value = a.chinese_medicine_use
+        LEFT JOIN medicinal_stock_control stock ON (stock.drug_stuff_id = a.id and stock.company_id = #{id})
+        left join supplier_stock ss on (ss.drug_id = a.id and ss.drug_id = #{id})
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            and a.company_id=#{institution}
+            <include refid="Common.whereParams"/>
+        </where>
+        group by
+        <include refid="groupBy"/>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="checkCompanyAndCode" resultType="int">
+        select count(1) from drug where  company_id=#{companyId} and  code=#{code}
+
+    </select>
+    <select id="getByCode" resultType="com.geeke.stock.entity.Drug">
+        select   *
+        FROM drug a
+            where a.code=#{ypdm} and a.company_id=#{companyId}
+
+    </select>
+</mapper>

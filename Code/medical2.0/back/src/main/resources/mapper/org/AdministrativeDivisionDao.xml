@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.org.dao.AdministrativeDivisionDao">
+    
+    <sql id="administrativeDivisionColumns">
+        a.id AS "id",
+        a.parten_id AS "parten.id",
+        IFNULL(parten.name,'') AS "parten.name",
+        a.name AS "name",
+        a.level AS "level"
+    </sql>
+    
+    <sql id="administrativeDivisionJoins">
+        LEFT JOIN administrative_division parten ON parten.id = a.parten_id
+    </sql>
+    
+    <select id="get" resultType="com.geeke.org.entity.AdministrativeDivision">
+        SELECT 
+            <include refid="administrativeDivisionColumns"/>
+        FROM administrative_division a
+        <include refid="administrativeDivisionJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM administrative_division a
+        <include refid="administrativeDivisionJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.org.entity.AdministrativeDivision">
+        SELECT 
+            <include refid="administrativeDivisionColumns"/>
+        FROM administrative_division a
+        <include refid="administrativeDivisionJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.org.entity.AdministrativeDivision">
+        SELECT 
+            <include refid="administrativeDivisionColumns"/>
+        FROM administrative_division a
+        <include refid="administrativeDivisionJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+    </select>
+      
+    <insert id="insert">
+        INSERT INTO administrative_division(
+            id,
+            parten_id,
+            name,
+            level
+        ) VALUES (
+            #{id},
+            #{parten.id},                    
+            #{name},
+            #{level}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE administrative_division SET     
+            parten_id = #{parten.id},                    
+            name = #{name},
+            level = #{level}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        DELETE FROM administrative_division
+        WHERE id = #{id}
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO administrative_division(
+            id,
+            parten_id,
+            name,
+            level
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.parten.id},                    
+            #{entity.name},
+            #{entity.level}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE administrative_division
+        <set>           
+            <trim prefix="parten_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.parten.id}
+                </foreach>
+            </trim>
+            <trim prefix="name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.name}
+                </foreach>
+            </trim>
+            <trim prefix="level=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.level}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        DELETE FROM administrative_division
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+</mapper>

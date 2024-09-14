@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.outpatient.dao.RemoteDiagnosisTreatmentDao">
+
+    <sql id="patientColumns">
+        a.id AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.name AS "name",
+        a.patient_id AS "nameId",
+        a.registration_id AS "registrationId",
+        a.gender AS "gender",
+        a.card AS "card",
+        a.hospital AS "hospital",
+        a.hospital_id AS "hospitalId",
+        a.department AS "department",
+        a.department_id AS "departmentId",
+        a.medic AS "medic",
+        a.medic_id AS "medicId",
+        a.diagnosis_time AS "diagnosisTime",
+        a.status AS "status",
+        a.medication_status AS "medicationStatus",
+        a.application_results AS "applicationResults",
+        a.recipient_name AS "recipientName",
+        a.recipient_phone AS "recipientPhone",
+        a.province AS "province",
+        a.market AS "market",
+        a.distinguish AS "distinguish",
+        a.recipient_address AS "recipientAddress",
+        a.pay_fee AS "payFee",
+        a.order_no AS "orderNo",
+        a.card_no AS "cardNo",
+        a.create_date AS "createDate",
+        a.create_by AS "createBy",
+        a.update_by AS "updateBy",
+        a.conference_id AS "conferenceId",
+        a.update_date AS "updateDate"
+
+    </sql>
+
+    <sql id="patientJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+    </sql>
+
+    <select id="diagnosisCount" resultType="int">
+        SELECT COUNT(*) FROM remote_diagnosis a
+        <include refid="patientJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+    <select id="diagnosisById" resultType="com.geeke.outpatient.entity.RemoteDiagnosisTreatment">
+        SELECT
+            <include refid="patientColumns"/>
+        FROM remote_diagnosis a
+        <include refid="patientJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="getRegistrationId" resultType="com.geeke.outpatient.entity.RemoteDiagnosisTreatment">
+        SELECT
+            <include refid="patientColumns"/>
+        FROM remote_diagnosis a
+        <include refid="patientJoins"/>
+        WHERE a.registration_id = #{registrationId}
+    </select>
+
+    <select id="diagnosisPage" resultType="com.geeke.outpatient.entity.RemoteDiagnosisTreatment">
+        SELECT
+        <include refid="patientColumns"/>
+        FROM remote_diagnosis a
+        <include refid="patientJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <insert id="diagnosisInsert">
+        INSERT INTO remote_diagnosis(
+        id,
+        company_id,
+        patient_id,
+        registration_id,
+        name,
+        gender,
+        card,
+        hospital,
+        hospital_id,
+        department,
+        department_id,
+        medic,
+        medic_id,
+        diagnosis_time,
+        status,
+        application_results,
+        create_by,
+        create_date,
+        update_by,
+        update_date,
+        del_flag
+        ) VALUES
+        (
+        #{id},
+        #{company.id},
+        #{nameId},
+        #{registrationId},
+        #{name},
+        #{gender},
+        #{card},
+        #{hospital},
+        #{hospitalId},
+        #{department},
+        #{departmentId},
+        #{medic},
+        #{medicId},
+        #{diagnosisTime},
+        #{status},
+        #{applicationResults},
+        #{createBy},
+        #{createDate},
+        #{updateBy},
+        #{updateDate},
+        #{delFlag}
+        )
+    </insert>
+
+    <update id="diagnosisUpdate">
+        UPDATE remote_diagnosis SET
+        status = #{status},
+        update_by=#{updateBy},
+        update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+
+    <update id="modifiedState">
+        UPDATE remote_diagnosis SET
+        status = #{status},
+        medication_status = #{medicationStatus},
+        recipient_name = #{recipientName},
+        recipient_phone = #{recipientPhone},
+        province = #{province},
+        market = #{market},
+        distinguish = #{distinguish},
+        recipient_address = #{recipientAddress},
+        application_results = #{applicationResults},
+        conference_id = #{conferenceId},
+        pay_fee = #{payFee},
+        order_no = #{orderNo},
+        card_no = #{cardNo},
+        update_date = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+    </update>
+
+    <!-- 远程诊疗处方收费 -->
+    <update id="chargeState">
+        UPDATE recipel_info SET
+        charge_status = 1
+        WHERE id = #{id}
+    </update>
+
+    <!-- 远程诊疗收费状态修改 -->
+    <update id="chargeEdit">
+        UPDATE remote_diagnosis SET
+        medication_status = 1
+        WHERE registration_id = #{id}
+    </update>
+
+    <select id="getCase" resultType="com.geeke.outpatient.entity.RecipelInfo">
+        SELECT * FROM recipel_info a
+        WHERE a.registration_id = #{id}
+    </select>
+
+    <update id="diagnosisDelete">
+        UPDATE remote_diagnosis SET
+        del_flag="1"
+        WHERE id = #{id}
+    </update>
+
+</mapper>

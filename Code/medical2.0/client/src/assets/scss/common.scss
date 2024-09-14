@@ -1,0 +1,339 @@
+body {
+  font-family: pingfang SC,helvetica neue,arial,hiragino sans gb,microsoft yahei ui,microsoft yahei,simsun,sans-serif!important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+/* 表格 */
+.el-table {
+  width: 100%;
+  color: #111;
+  th {
+      background: #F2F6FC!important;
+      color: #111;
+  }
+}
+.drag_table th {
+  background: #F2F6FC;
+  color: #111;
+}
+
+
+/**修改全局的滚动条*/
+/**滚动条的宽度*/
+::-webkit-scrollbar {
+  width: 8px;        //y轴宽度
+  height: 8px;      //x轴高度
+
+}
+//滚动条的滑块
+::-webkit-scrollbar-thumb {
+  background-color: #eaecf1;
+  border-radius: 3px;
+}
+
+
+//修改表格的滚动条
+.el-table__body-wrapper::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+//滚动条的滑块
+.el-table__body-wrapper::-webkit-scrollbar-thumb {
+  background-color: #eaecf1;
+  border-radius: 3px;
+}
+
+
+//表格对齐
+body .el-table th.gutter {
+  display: table-cell !important;
+}
+body .el-table colgroup.gutter {
+  display: table-cell !important;
+}
+
+/* 分页 */
+.el-pagination {
+  float: right;
+  margin-top: 10px;
+}
+
+/* 对话框 */
+.el-dialog {
+  display: flex;
+  flex-direction: column;
+  margin: 0!important;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-height: calc(100%);
+}
+.el-dialog .el-dialog__body {
+  flex: 1;
+  overflow: auto;
+}
+.dialog-header {
+  width: 100%;
+  font-weight: bold;
+  padding-bottom: 8px;
+  border-bottom: solid 1px #eee;
+}
+.el-dialog__body {
+  padding-top: 7px;
+  padding-bottom: 7px;
+  margin-top: 7px;
+  margin-bottom: 7px;
+}
+.el-popover {
+  max-height: calc(100% - 40px);
+  overflow-y: auto;
+}
+
+/* Container 布局容器 */
+.el-container {
+  .el-main {
+    padding-top: 5px;
+    padding: 0px }
+}
+
+/* 主页面搜索框 */
+.search-row {
+  // padding-bottom: 5px;
+  .el-col {
+    max-height: 46px;
+  }
+  .el-form-item__label {
+    text-align-last: justify;
+    -moz-text-align-last: justify;
+  }
+  .el-form-item {
+
+  }
+  .el-select {
+    width: 100%!important;
+  }
+  .el-input,  .el-input__inner, .el-date-editor {
+    width: 90%!important;
+  }
+  .el-input__suffix, .el-cascader .el-input__suffix{
+    right: 12%;
+  }
+  .form-input-number {
+    width: 100%;
+    .form-input-number-inner {}
+    .suffix {}
+  }
+}
+.form-input-number {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  box-sizing: border-box;
+  .form-input-number-inner {
+    flex: 1;
+  }
+  .suffix {
+    width: 30px;
+    display: inline-block;
+    text-align: center;
+    font-size: 12px;
+  }
+}
+
+/* 编辑form */
+.edit-form {
+  .el-date-editor.el-input { width: 100%; }
+
+  .el-select { width: 100%;  }
+}
+
+.el-input.is-disabled .el-input__inner, .el-textarea.is-disabled .el-textarea__inner {
+  color: #606266!important;
+}
+
+/* 编辑框中 计数器的InputNumber的文本左对齐，宽度100% */
+.el-input-number {
+  width: 100% !important;
+  .el-input__inner {
+        text-align: left;
+  }
+}
+.el-input-number--small { width: 100%; }
+
+
+.el-cascader { width:100%; }
+
+
+/* disable控件的样式 */
+.el-switch.is-disabled {
+  opacity: 1
+}
+.el-input.is-disabled .el-input__inner {
+  background-color: #FFF;
+  color: #606266;
+}
+.el-textarea.is-disabled .el-textarea__inner {
+    background-color: #FFF;
+    color: #606266;
+}
+
+/* 查询条件 */
+.query-form-container {
+  background: #fff;
+  padding: 0 0px 10px 0px;
+  border-bottom: 0;
+  /*box-shadow: 0px 0px 4px rgba(0,0,0,.1);*/
+  .query-form {
+    margin-bottom: 18px;
+  }
+  .el-main, .el-aside {
+    overflow: hidden!important;
+  }
+}
+
+// 新增
+.page-container {
+  padding: 18px;
+  background: #fff;
+  flex: 1;
+  min-width: 0;
+  .page-container-header {
+    display: flex;
+    justify-content: space-between;
+  }
+  .page-container-header-end {
+    display: flex;
+    justify-content: end;
+    margin-bottom: 10px;
+  }
+  .el-tabs__header {
+    margin: 0;
+  }
+  .el-tabs--card > .el-tabs__header {
+    border-bottom: 0;
+  }
+}
+
+.page-left-container, .page-right-container {
+  padding: 18px;
+  background: #fff;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.page-left-container {
+  flex: 0 0 240px;
+  border-right: 1px solid #f5f5f5;
+}
+.page-left-container .tree-title {
+  font-size: 14px;
+  display: inline-block;
+  padding: 10px 0;
+}
+.page-left-container .el-aside {
+  width: 100% !important;
+  .el-table__body-wrapper {
+    cursor: pointer;
+  }
+}
+.page-left-container .el-table:before {
+  height: 0!important;
+}
+.page-right-container {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 数据展示 */
+.data-container {
+  padding: 18px;
+  background: #fff;
+  margin-bottom: 10px;
+  /*box-shadow: 0px 0px 4px rgba(0,0,0,.1);*/
+  .el-table th {
+    background-color: #f8f8f9;
+  }
+}
+
+.tab-item {
+  position: relative;
+  .tab-option {
+    position: absolute;
+    top: -46px;
+    right: 0;
+  }
+}
+.data-tabs {
+  background-color: #fff;
+  padding: 0 18px
+}
+.wf-tabs {
+  .el-tabs__nav {
+    float: left;
+  }
+
+}
+.wf-cards {
+  .image {
+    width: 100%;
+    height: 200px;
+    background-color: #f5f5f5;
+    text-align: center;
+    .el-image__inner {
+      width: 80%;
+    }
+  }
+  .wf-cards-name {
+    font-size: 14px;
+  }
+  .bottom {
+    display: flex;
+    justify-content: center;
+  }
+}
+.mask-layout {
+  position: absolute;
+  width: calc(100% - 200px);
+  height: calc(100% - 36px);
+  z-index: 100;
+  -webkit-transition: 0.3s width ease-in-out;
+  transition: 0.3s width ease-in-out;
+  &.is-collapse {
+    width: calc(100% - 64px);
+  }
+}
+.mask-dialog-layout {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+}
+
+.el-loading-spinner {
+  background-image: url("~@/assets/images/loading2.gif");
+  background-repeat: no-repeat;
+  background-size: 40px;
+  margin-top: -50px!important;
+  width: 100%;
+  height: 100px;
+  background-position: center;
+  top: 50%;
+}
+.el-loading-spinner .circular {
+  display: none;
+}
+
+.el-loading-spinner .el-loading-text {
+  margin: 85px 0px;
+}
+
+// 用于解决表格最右横线问题
+.el-table__fixed-right{
+  height: 100% !important;
+}
+ .el-table__fixed {
+  height: 100% !important;
+}

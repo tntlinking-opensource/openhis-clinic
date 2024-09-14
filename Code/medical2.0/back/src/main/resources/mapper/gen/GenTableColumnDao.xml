@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.gen.dao.GenTableColumnDao">
+    
+    <sql id="genTableColumnColumns">
+        a.id AS "id",
+        a.gen_table_id AS "genTable.id",
+        IFNULL(genTable.name,'') AS "genTable.name",
+        a.name AS "name",
+        a.comments AS "comments",
+        a.jdbc_type AS "jdbcType",
+        a.java_type AS "javaType.value",
+        IFNULL(javaType.name,'') AS "javaType.name",
+        a.custom_type AS "customType.id",
+        IFNULL(customType.name,'') AS "customType.name",
+        a.java_field AS "javaField",
+        a.def_val AS "defVal",
+        a.is_pk AS "isPk",
+        a.is_null AS "isNull",
+        a.is_insert AS "isInsert",
+        a.is_edit AS "isEdit",
+        a.is_list AS "isList",
+        a.width AS "width",
+        a.is_query AS "isQuery",
+        a.query_type AS "queryType.value",
+        IFNULL(queryType.name,'') AS "queryType.name",
+        a.query_val AS "queryVal",
+        a.show_type AS "showType.value",
+        IFNULL(showType.name,'') AS "showType.name",
+        a.interaction AS "interaction",
+        a.interaction_val AS "interactionVal",
+        a.parameters AS "parameters",
+        a.settings AS "settings",
+        a.sort AS "sort",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.remarks AS "remarks",
+        a.del_flag AS "delFlag"
+    </sql>
+    
+    <sql id="genTableColumnJoins">
+        LEFT JOIN gen_table genTable ON genTable.id = a.gen_table_id
+        LEFT JOIN sys_dict_item javaType ON javaType.value = a.java_type
+                    AND javaType.dict_type_id = '5001'
+        LEFT JOIN gen_scheme customType ON customType.id = a.custom_type
+        LEFT JOIN sys_dict_item queryType ON queryType.value = a.query_type
+                    AND queryType.dict_type_id = '5002'
+        LEFT JOIN sys_dict_item showType ON showType.value = a.show_type
+                    AND showType.dict_type_id = '5003'
+    </sql>
+    
+    <select id="get" resultType="com.geeke.gen.entity.GenTableColumnEx">
+        SELECT 
+            <include refid="genTableColumnColumns"/>
+        FROM gen_table_column a
+        <include refid="genTableColumnJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM gen_table_column a
+        <include refid="genTableColumnJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.gen.entity.GenTableColumnEx">
+        SELECT 
+            <include refid="genTableColumnColumns"/>
+        FROM gen_table_column a
+        <include refid="genTableColumnJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+                ORDER BY a.sort ASC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.gen.entity.GenTableColumnEx">
+        SELECT 
+            <include refid="genTableColumnColumns"/>
+        FROM gen_table_column a
+        <include refid="genTableColumnJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when> 
+            <otherwise>
+                ORDER BY a.sort ASC
+            </otherwise>
+        </choose>
+    </select>
+      
+    <insert id="insert">
+        INSERT INTO gen_table_column(
+            id,
+            gen_table_id,
+            name,
+            comments,
+            jdbc_type,
+            java_type,
+            custom_type,
+            java_field,
+            def_val,
+            is_pk,
+            is_null,
+            is_insert,
+            is_edit,
+            is_list,
+            width,
+            is_query,
+            query_type,
+            query_val,
+            show_type,
+            interaction,
+            interaction_val,
+            parameters,
+            settings,
+            sort,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            remarks,
+            del_flag
+        ) VALUES (
+            #{id},
+            #{genTable.id},                    
+            #{name},
+            #{comments},
+            #{jdbcType},
+            #{javaType.value},                    
+            #{customType.id},                    
+            #{javaField},
+            #{defVal},
+            #{isPk},
+            #{isNull},
+            #{isInsert},
+            #{isEdit},
+            #{isList},
+            #{width},
+            #{isQuery},
+            #{queryType.value},                    
+            #{queryVal},
+            #{showType.value},                    
+            #{interaction},
+            #{interactionVal},
+            #{parameters},
+            #{settings},
+            #{sort},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate},
+            #{remarks},
+            #{delFlag}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE gen_table_column SET     
+            name = #{name},
+            comments = #{comments},
+            jdbc_type = #{jdbcType},
+            java_type = #{javaType.value},                    
+            custom_type = #{customType.id},                    
+            java_field = #{javaField},
+            def_val = #{defVal},
+            is_pk = #{isPk},
+            is_null = #{isNull},
+            is_insert = #{isInsert},
+            is_edit = #{isEdit},
+            is_list = #{isList},
+            width = #{width},
+            is_query = #{isQuery},
+            query_type = #{queryType.value},                    
+            query_val = #{queryVal},
+            show_type = #{showType.value},                    
+            interaction = #{interaction},
+            interaction_val = #{interactionVal},
+            parameters = #{parameters},
+            sort = #{sort},
+            update_by = #{updateBy},
+            update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        UPDATE gen_table_column SET 
+            del_flag = #{DEL_FLAG_DELETE}
+        <choose>
+            <when test="id !=null and id != ''">
+                WHERE id = #{id}
+            </when>
+            <otherwise>
+                WHERE gen_table_id = #{genTable.id}
+            </otherwise>
+        </choose>
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO gen_table_column(
+            id,
+            gen_table_id,
+            name,
+            comments,
+            jdbc_type,
+            java_type,
+            custom_type,
+            java_field,
+            def_val,
+            is_pk,
+            is_null,
+            is_insert,
+            is_edit,
+            is_list,
+            width,
+            is_query,
+            query_type,
+            query_val,
+            show_type,
+            interaction,
+            interaction_val,
+            parameters,
+            settings,
+            sort,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            remarks,
+            del_flag
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.genTable.id},                    
+            #{entity.name},
+            #{entity.comments},
+            #{entity.jdbcType},
+            #{entity.javaType.value},                    
+            #{entity.customType.id},                    
+            #{entity.javaField},
+            #{entity.defVal},
+            #{entity.isPk},
+            #{entity.isNull},
+            #{entity.isInsert},
+            #{entity.isEdit},
+            #{entity.isList},
+            #{entity.width},
+            #{entity.isQuery},
+            #{entity.queryType.value},                    
+            #{entity.queryVal},
+            #{entity.showType.value},                    
+            #{entity.interaction},
+            #{entity.interactionVal},
+            #{entity.parameters},
+            #{entity.settings},
+            #{entity.sort},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.remarks},
+            #{entity.delFlag}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE gen_table_column
+        <set>           
+            <trim prefix="name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.name}
+                </foreach>
+            </trim>
+            <trim prefix="comments=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.comments}
+                </foreach>
+            </trim>
+            <trim prefix="jdbc_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.jdbcType}
+                </foreach>
+            </trim>
+            <trim prefix="java_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.javaType.value}
+                </foreach>
+            </trim>
+            <trim prefix="custom_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.customType.id}
+                </foreach>
+            </trim>
+            <trim prefix="java_field=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.javaField}
+                </foreach>
+            </trim>
+            <trim prefix="def_val=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.defVal}
+                </foreach>
+            </trim>
+            <trim prefix="is_pk=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isPk}
+                </foreach>
+            </trim>
+            <trim prefix="is_null=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isNull}
+                </foreach>
+            </trim>
+            <trim prefix="is_insert=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isInsert}
+                </foreach>
+            </trim>
+            <trim prefix="is_edit=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isEdit}
+                </foreach>
+            </trim>
+            <trim prefix="is_list=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isList}
+                </foreach>
+            </trim>
+            <trim prefix="width=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.width}
+                </foreach>
+            </trim>
+            <trim prefix="is_query=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isQuery}
+                </foreach>
+            </trim>
+            <trim prefix="query_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.queryType.value}
+                </foreach>
+            </trim>
+            <trim prefix="query_val=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.queryVal}
+                </foreach>
+            </trim>
+            <trim prefix="show_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.showType.value}
+                </foreach>
+            </trim>
+            <trim prefix="interaction=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.interaction}
+                </foreach>
+            </trim>
+            <trim prefix="interaction_val=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.interactionVal}
+                </foreach>
+            </trim>
+            <trim prefix="parameters=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.parameters}
+                </foreach>
+            </trim>
+            <trim prefix="sort=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.sort}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE gen_table_column SET 
+            del_flag = 1
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+</mapper>

@@ -1,0 +1,941 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.outpatient.dao.RegistrationDao">
+    
+    <sql id="registrationColumns">
+        a.id AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.department_id AS "clinicOffice.id",
+        IFNULL(clinicOffice.name,'') AS "clinicOffice.name",
+        a.patient_id AS "patientId.id",
+        IFNULL(patientId.name,'') AS "patientId.name",
+<!--        IFNULL(patientId.name,'') AS "patientId.name",-->
+        a.doctor_id AS "doctor.id",
+        IFNULL(doctor.name,'') AS "doctor.name",
+        a.treat_type AS "treatType.value",
+        IFNULL(treatType.name,'') AS "treatType.name",
+        a.infect_type AS "infectType.value",
+        IFNULL(infectType.name,'') AS "infectType.name",
+        a.reception_start_date AS "receptionStartDate",
+        a.source AS "source.value",
+        IFNULL(source.name,'') AS "source.name",
+        a.reception_end_date AS "receptionEndDate",
+        a.pulse AS "pulse",
+        a.breathe AS "breathe",
+        a.temperature AS "temperature",
+        a.is_go_higharea AS "isGoHigharea",
+        a.high_area AS "highArea",
+        a.free_registration_fee AS "freeRegistrationFee",
+        a.registration_fee AS "registrationFee",
+        a.pay_type AS "payType.value",
+        IFNULL(payType.name,'') AS "payType.name",
+        a.remarks AS "remarks",
+        a.status AS "status.value",
+        IFNULL(status.name,'') AS "status.name",
+        a.practicle_registration_fee as "practicleRegistrationFee",
+        a.practicle_registration_pay_remarks as "practicalRegistrationPayRemarks",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.dispensing_status AS "dispensingStatus",
+        a.update_by AS "updateBy",
+        a.dispensing_date AS "dispensingDate",
+        a.update_date AS "updateDate",
+        a.charge_status AS "chargeStatus",
+        a.del_flag AS "delFlag",
+        a.charge_date AS "chargeDate",
+        a.signed_date AS signedDate,
+        a.exit_number_date as exitNumberDate,
+        a.follow_up_date AS followUpDate,
+        a.pay_date AS payDate,
+        a.guardian_name AS "guardianName",
+        a.guardian_phone AS "guardianPhone",
+        a.workplace AS "workplace",
+        a.nation AS "nation",
+        a.occupation AS "occupation",
+        IFNULL(gender.value, '') as "patientId.gender.value",
+        IFNULL(gender.name,'') as "patientId.gender.name",
+        IFNULL(patientId.age, '') as "patientId.age",
+        IFNULL(patientId.month, '') as "patientId.month",
+        IFNULL(patientId.phone,'') as "patientId.phone",
+        patientId.birthday as "patientId.birthday",
+        patientId.card as "card",
+        a.recipe_status AS "recipeStatus",
+        a.blood_pressure AS "bloodPressure",
+        a.subscribe_date AS "subscribeDate",
+        a.subscribe_project AS "subscribeProject",
+        a.retreats_date AS "retreatsDate",
+        a.return_date AS "returnDate",
+        a.treatment_date AS "treatmentDate",
+        a.morbidity_time AS "morbidityTime"
+    </sql>
+    
+    <sql id="registrationJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN clinic_office clinicOffice ON clinicOffice.id = a.department_id
+        LEFT JOIN patient patientId ON patientId.id = a.patient_id
+        LEFT JOIN sys_dict_item gender ON gender.value = patientId.gender
+        LEFT JOIN sys_user doctor ON doctor.id = a.doctor_id
+        LEFT JOIN sys_dict_item treatType ON treatType.value = a.treat_type
+        LEFT JOIN sys_dict_item infectType ON infectType.value = a.infect_type
+        LEFT JOIN sys_dict_item source ON source.value = a.source
+        LEFT JOIN sys_dict_item payType ON payType.value = a.pay_type
+        LEFT JOIN sys_dict_item status ON status.value = a.status
+    </sql>
+    
+    <select id="get" resultType="com.geeke.outpatient.entity.Registration">
+        SELECT 
+            <include refid="registrationColumns"/>
+        FROM registration a
+        <include refid="registrationJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM registration a
+        <include refid="registrationJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            and a.status != 'registrationStatus_4'
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+    <select id="countId" resultType="String">
+        SELECT a.id FROM registration a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN clinic_office clinicOffice ON clinicOffice.id = a.department_id
+        LEFT JOIN patient patientId ON patientId.id = a.patient_id
+        LEFT JOIN sys_dict_item gender ON gender.value = patientId.gender
+        LEFT JOIN sys_user doctor ON doctor.id = a.doctor_id
+        LEFT JOIN sys_dict_item treatType ON treatType.value = a.treat_type
+        LEFT JOIN sys_dict_item infectType ON infectType.value = a.infect_type
+        LEFT JOIN sys_dict_item source ON source.value = a.source
+        LEFT JOIN sys_dict_item payType ON payType.value = a.pay_type
+        LEFT JOIN sys_dict_item status ON status.value = a.status
+        INNER JOIN recipel_info ri ON a.id=ri.registration_id
+        LEFT JOIN recipel_detail rd on ri.id=rd.recipel_info_id
+        LEFT JOIN cost_item ci on ci.id=rd.drug_stuff_id
+        <where>
+            ri.status=1
+            <if test="chargeStatus!=3">
+                AND ri.charge_status = #{chargeStatus}
+            </if>
+            <if test="dispensionStatus!=3">
+                AND ri.dispension_status=#{dispensionStatus}
+            </if>
+            <if test="recipelType=='recipelType_3'">
+                AND ri.recipel_type != #{recipelType}
+            </if>
+            <if test="recipelType=='recipelType_10'">
+                AND ri.recipel_type='recipelType_3'
+            </if>
+            <if test="recipelType=='recipelType_11'">
+                AND ri.recipel_type='recipelType_2'
+            </if>
+            <if test="cureType==0">
+                AND ri.cure_type=0
+            </if>
+            <if test="cureType==1">
+                AND ri.cure_type=1
+            </if>
+            <if test="infuseType==0">
+                AND ri.infuse_type=0
+            </if>
+            <if test="infuseType==1">
+                AND ri.infuse_type=1
+            </if>
+            AND a.company_id=#{companyId}
+            AND a.recipe_status=#{recipeStatus}
+            AND a.update_date > #{updateDate}
+            AND a.status=#{status}
+            <if test="patientName!='' and patientName!=null">
+                AND (patientid.name like concat('%',#{patientName},'%') or patientid.health_card_no=#{patientCode})
+            </if>
+            <if test="overlook!='3'.toString()">
+                and a.overlook=#{overlook}
+            </if>
+        </where>
+        GROUP BY a.id
+        ORDER BY ${columnName} desc
+    </select>
+    
+    <select id="listPage" resultType="com.geeke.outpatient.entity.Registration">
+        SELECT 
+            <include refid="registrationColumns"/>
+        FROM registration a
+        <include refid="registrationJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            and a.status != 'registrationStatus_4'
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+                ORDER BY case a.status when 'registrationStatus_2' then 0 else 1 end desc,case a.status when 'registrationStatus_0' then 0 else 1 end asc,a.update_date desc
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="listPages" resultType="String">
+        SELECT
+        a.id
+        FROM registration a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN clinic_office clinicOffice ON clinicOffice.id = a.department_id
+        LEFT JOIN patient patientId ON patientId.id = a.patient_id
+        LEFT JOIN sys_dict_item gender ON gender.value = patientId.gender
+        LEFT JOIN sys_user doctor ON doctor.id = a.doctor_id
+        LEFT JOIN sys_dict_item treatType ON treatType.value = a.treat_type
+        LEFT JOIN sys_dict_item infectType ON infectType.value = a.infect_type
+        LEFT JOIN sys_dict_item source ON source.value = a.source
+        LEFT JOIN sys_dict_item payType ON payType.value = a.pay_type
+        LEFT JOIN sys_dict_item status ON status.value = a.status
+        INNER JOIN recipel_info ri on a.id=ri.registration_id
+        LEFT JOIN recipel_detail rd on ri.id=rd.recipel_info_id
+        LEFT JOIN cost_item ci on ci.id=rd.drug_stuff_id
+        WHERE
+            ri.status=1
+        <if test="chargeStatus!=3">
+            AND ri.charge_status = #{chargeStatus}
+        </if>
+            AND a.company_id=#{companyId}
+            AND a.recipe_status=#{recipeStatus}
+            AND a.update_date>#{updateDate}
+            AND a.status=#{status}
+        <if test="dispensionStatus!=3">
+            AND ri.dispension_status=#{dispensionStatus}
+        </if>
+        <if test="recipelType=='recipelType_3'">
+            AND ri.recipel_type != #{recipelType}
+        </if>
+        <if test="recipelType=='recipelType_10'">
+            AND ri.recipel_type='recipelType_3'
+            AND ci.id is not null
+--             AND (ci.item_type='treatmentItemType_2' or ci.item_type='treatmentItemType_3')
+        </if>
+        <if test="recipelType=='recipelType_11'">
+            AND ri.recipel_type='recipelType_2'
+        </if>
+        <if test="cureType==0">
+            AND ri.cure_type=0
+        </if>
+        <if test="cureType==1">
+            AND ri.cure_type=1
+        </if>
+        <if test="infuseType==0">
+            AND ri.infuse_type=0
+        </if>
+        <if test="infuseType==1">
+            AND ri.infuse_type=1
+        </if>
+        <if test="patientName!='' and patientName!=null">
+            AND (patientid.name like concat('%',#{patientName},'%') or patientid.health_card_no=#{patientCode})
+        </if>
+        <if test="overlook!='3'.toString() ">
+            and a.overlook=#{overlook}
+        </if>
+
+        GROUP BY a.id
+        ORDER BY ${columnName} desc
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="listAll" resultType="com.geeke.outpatient.entity.Registration">
+        SELECT 
+            <include refid="registrationColumns"/>
+        FROM registration a
+        <include refid="registrationJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            and a.status != 'registrationStatus_4'
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO registration(
+            id,
+            company_id,
+            department_id,
+            patient_id,
+            doctor_id,
+            treat_type,
+            infect_type,
+            reception_start_date,
+            source,
+            reception_end_date,
+            pulse,
+            breathe,
+            temperature,
+            morbidity_time,
+            is_go_higharea,
+            high_area,
+            free_registration_fee,
+            registration_fee,
+            practicle_registration_fee,
+            practicle_registration_pay_remarks,
+            pay_type,
+            remarks,
+            status,
+            create_by,
+            create_date,
+            dispensing_status,
+            update_by,
+            dispensing_date,
+            update_date,
+            charge_status,
+            del_flag,
+            charge_date,
+            signed_date,
+            exit_number_date,
+            follow_up_date,
+            pay_date,
+            guardian_name,
+            guardian_phone,
+            workplace,
+            nation,
+            occupation,
+            recipe_status,
+            blood_pressure,
+            subscribe_date,
+            subscribe_project,
+            retreats_date,
+            return_date,
+            treatment_date
+        ) VALUES (
+            #{id},
+            #{company.id},                    
+            #{clinicOffice.id},
+            #{patientId.id},                    
+            #{doctor.id},                    
+            #{treatType.value},
+            #{infectType.value},
+            #{receptionStartDate},
+            #{source.value},                    
+            #{receptionEndDate},
+            #{pulse},
+            #{breathe},
+            #{temperature},
+            #{morbidityTime},
+            #{isGoHigharea},
+            #{highArea},
+            #{freeRegistrationFee},
+            #{registrationFee},
+            #{practicleRegistrationFee},
+            #{practicalRegistrationPayRemarks},
+            #{payType.value},                    
+            #{remarks},
+            #{status.value},                    
+            #{createBy},
+            #{createDate},
+            #{dispensingStatus},
+            #{updateBy},
+            #{dispensingDate},
+            #{updateDate},
+            #{chargeStatus},
+            #{delFlag},
+            #{chargeDate},
+            #{signedDate},
+            #{exitNumberDate},
+            #{followUpDate},
+            #{payDate},
+            #{guardianName},
+            #{guardianPhone},
+            #{workplace},
+            #{nation},
+            #{occupation},
+            '0',
+            #{bloodPressure},
+            #{subscribeDate},
+            #{subscribeProject},
+            #{retreatsDate},
+            #{returnDate},
+            #{treatmentDate}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE registration SET     
+            department_id = #{clinicOffice.id},
+            patient_id = #{patientId.id},                    
+            doctor_id = #{doctor.id},                    
+            treat_type = #{treatType.value},
+            infect_type = #{infectType.value},
+            source = #{source.value},
+            reception_end_date = #{receptionEndDate},
+            pulse = #{pulse},
+            breathe = #{breathe},
+            temperature = #{temperature},
+            morbidity_time = #{morbidityTime},
+            is_go_higharea = #{isGoHigharea},
+            high_area = #{highArea},
+            free_registration_fee = #{freeRegistrationFee},
+            registration_fee = #{registrationFee},
+            practicle_registration_fee = #{practicleRegistrationFee},
+            practicle_registration_pay_remarks = #{practicalRegistrationPayRemarks},
+            pay_type = #{payType.value},                    
+            remarks = #{remarks},
+            status = #{status.value},                    
+            dispensing_status = #{dispensingStatus},
+            update_by = #{updateBy},
+            dispensing_date = #{dispensingDate},
+            update_date = #{updateDate},
+            charge_status = #{chargeStatus},
+            charge_date = #{chargeDate},
+            signed_date = #{signedDate},
+            exit_number_date = #{exitNumberDate},
+            follow_up_date = #{followUpDate},
+            pay_date = #{payDate},
+            guardian_name = #{guardianName},
+            guardian_phone = #{guardianPhone},
+            workplace = #{workplace},
+            nation = #{nation},
+            occupation = #{occupation},
+            recipe_status = '0',
+            blood_pressure=#{bloodPressure},
+            subscribe_date=#{subscribeDate},
+            subscribe_project=#{subscribeProject},
+            retreats_date=#{retreatsDate},
+            return_date=#{returnDate},
+            treatment_date=#{treatmentDate}
+        WHERE id = #{id}
+    </update>
+
+    <update id="delete">
+        UPDATE registration SET
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            del_flag = #{DEL_FLAG_DELETE}
+        <choose>
+            <when test="id !=null and id != ''">
+                WHERE id = #{id}
+            </when>
+            <otherwise>
+                WHERE patient_id = #{patientId.id}
+            </otherwise>
+        </choose>
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO registration(
+            id,
+            company_id,
+            department_id,
+            patient_id,
+            doctor_id,
+            treat_type,
+            infect_type,
+            reception_start_date,
+            source,
+            reception_end_date,
+            pulse,
+            breathe,
+            temperature,
+            morbidity_time,
+            is_go_higharea,
+            high_area,
+            free_registration_fee,
+            registration_fee,
+            pay_type,
+            remarks,
+            status,
+            create_by,
+            create_date,
+            dispensing_status,
+            update_by,
+            dispensing_date,
+            update_date,
+            charge_status,
+            del_flag,
+            charge_date,
+            signed_date,
+            exit_number_date,
+            follow_up_date,
+            pay_date,
+            guardian_name,
+            guardian_phone,
+            recipe_status,
+            blood_pressure,
+            subscribe_date,
+            subscribe_project,
+            retreats_date,
+            return_date,
+            treatment_date
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.company.id},                    
+            #{entity.clinicOffice.id},
+            #{entity.patientId.id},                    
+            #{entity.doctor.id},                    
+            #{entity.treatType.value},                    
+            #{entity.infectType.value},
+            #{entity.receptionStartDate},
+            #{entity.source.value},                    
+            #{entity.receptionEndDate},
+            #{entity.pulse},
+            #{entity.breathe},
+            #{entity.temperature},
+            #{entity.morbidityTime},
+            #{entity.isGoHigharea},
+            #{entity.highArea},
+            #{entity.freeRegistrationFee},
+            #{entity.registrationFee},
+            #{entity.payType.value},                    
+            #{entity.remarks},
+            #{entity.status.value},                    
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.dispensingStatus},
+            #{entity.updateBy},
+            #{entity.dispensingDate},
+            #{entity.updateDate},
+            #{entity.chargeStatus},
+            #{entity.delFlag},
+            #{entity.chargeDate},
+            #{entity.signedDate},
+            #{entity.exitNumberDate},
+            #{entity.followUpDate},
+            #{entity.payDate},
+            #{entity.guardianName},
+            #{entity.guardianPhone},
+            #{entity.recipeStatus},
+            #{entity.bloodPressure},
+            #{entity.subscribeDate},
+            #{entity.subscribeProject},
+            #{entity.retreatsDate},
+            #{entity.returnDate},
+            #{entity.treatmentDate}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE registration
+        <set>           
+            <trim prefix="department_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.clinicOffice.id}
+                </foreach>
+            </trim>
+            <trim prefix="patient_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.patientId.id}
+                </foreach>
+            </trim>
+            <trim prefix="doctor_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.doctor.id}
+                </foreach>
+            </trim>
+            <trim prefix="treat_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.treatType.value}
+                </foreach>
+            </trim>
+            <trim prefix="infect_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.infectType.value}
+                </foreach>
+            </trim>
+            <trim prefix="source=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.source.value}
+                </foreach>
+            </trim>
+            <trim prefix="pulse=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.pulse}
+                </foreach>
+            </trim>
+            <trim prefix="breathe=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.breathe}
+                </foreach>
+            </trim>
+            <trim prefix="temperature=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.temperature}
+                </foreach>
+            </trim>
+            <trim prefix="morbidity_time=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.morbidityTime}
+                </foreach>
+            </trim>
+            <trim prefix="is_go_higharea=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isGoHigharea}
+                </foreach>
+            </trim>
+            <trim prefix="high_area=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.highArea}
+                </foreach>
+            </trim>
+            <trim prefix="free_registration_fee=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.freeRegistrationFee}
+                </foreach>
+            </trim>
+            <trim prefix="registration_fee=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.registrationFee}
+                </foreach>
+            </trim>
+            <trim prefix="pay_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.payType.value}
+                </foreach>
+            </trim>
+            <trim prefix="remarks=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.remarks}
+                </foreach>
+            </trim>
+            <trim prefix="status=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.status.value}
+                </foreach>
+            </trim>
+            <trim prefix="dispensing_status=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.dispensingStatus}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="dispensing_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.dispensingDate}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+            <trim prefix="charge_status=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.chargeStatus}
+                </foreach>
+            </trim>
+            <trim prefix="charge_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.chargeDate}
+                </foreach>
+            </trim>
+            <trim prefix="guardian_name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.guardianName}
+                </foreach>
+            </trim>
+            <trim prefix="guardian_phone=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.guardianPhone}
+                </foreach>
+            </trim>
+            <trim prefix="guardian_phone=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.recipeStatus}
+                </foreach>
+            </trim>
+            <trim prefix="blood_pressure=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.bloodPressure}
+                </foreach>
+            </trim>
+            <trim prefix="subscribe_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.subscribeDate}
+                </foreach>subscribeProject
+            </trim>
+            <trim prefix="subscribe_project=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.subscribeProject}
+                </foreach>
+            </trim>
+            <trim prefix="retreats_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.retreatsDate}
+                </foreach>
+            </trim>
+            <trim prefix="return_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.returnDate}
+                </foreach>
+            </trim>
+            <trim prefix="treatment_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.treatment_date}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE registration
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    <update id="updateRecipeStatus">
+        UPDATE registration SET recipe_status='1' WHERE id=#{id}
+    </update>
+    <update id="updateStatusByCompanyId">
+        UPDATE registration SET status='registrationStatus_4',update_date=#{createDate} WHERE company_id=#{companyId} AND (subscribe_date &lt; #{subscribeDate} OR create_date&lt;#{createDate}) AND status in ('registrationStatus_3','registrationStatus_0')
+    </update>
+    <update id="wxReturnPay">
+        update registration set status=#{status.value},refund_registration_pay_type=#{refundRegistrationPayType.value},refund_registration_remarks=#{refundRegistrationRemarks},exit_number_date=#{exitNumberDate} where id = #{id}
+    </update>
+
+    <select id="conditionList" resultType="com.geeke.outpatient.entity.Registration">
+        SELECT
+        <include refid="registrationColumns"/>
+        FROM registration a
+        <include refid="registrationJoins"/>
+        <where>
+                a.company_id = #{companyId}
+                AND (patientId.name like '%#{value}%'
+                or patientId.phone like '%#{value}%'
+                or patientId.card like '%#{value}%')
+        </where>
+        ORDER BY case a.status when 'registrationStatus_2' then 0 else 1 end desc,a.update_date desc
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countConditionList" resultType="int">
+        SELECT COUNT(*) FROM registration a
+        <include refid="registrationJoins"/>
+        <where>
+            a.company_id = #{companyId}
+            AND (patientId.name like '%#{value}%'
+            or patientId.phone like '%#{value}%'
+            or patientId.card like '%#{value}%')
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+    <select id="findById" resultType="com.geeke.outpatient.entity.Registration">
+        SELECT
+        <include refid="registrationColumns"/>
+        FROM registration a
+        <include refid="registrationJoins"/>
+        WHERE a.id in
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+        ORDER BY ${pageRegistration.columnName} desc
+    </select>
+    <select id="getByPatientId" resultType="com.geeke.outpatient.entity.Registration">
+        SELECT
+          <include refid="registrationColumns"/>
+        FROM registration a
+          <include refid="registrationJoins"/>
+        WHERE a.patient_id = #{patientId}
+        order by a.update_date desc
+    </select>
+
+
+    <select id="wxCount" resultType="String">
+        SELECT a.id FROM registration a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN clinic_office clinicOffice ON clinicOffice.id = a.department_id
+        LEFT JOIN patient patientId ON patientId.id = a.patient_id
+        LEFT JOIN sys_dict_item gender ON gender.value = patientId.gender
+        LEFT JOIN sys_user doctor ON doctor.id = a.doctor_id
+        LEFT JOIN sys_dict_item treatType ON treatType.value = a.treat_type
+        LEFT JOIN sys_dict_item infectType ON infectType.value = a.infect_type
+        LEFT JOIN sys_dict_item source ON source.value = a.source
+        LEFT JOIN sys_dict_item payType ON payType.value = a.pay_type
+        LEFT JOIN sys_dict_item status ON status.value = a.status
+        INNER JOIN recipel_info ri ON a.id=ri.registration_id
+        LEFT JOIN recipel_detail rd on ri.id=rd.recipel_info_id
+        LEFT JOIN cost_item ci on ci.id=rd.drug_stuff_id
+        <where>
+            ri.status=1
+            AND a.company_id=#{companyId}
+            AND a.recipe_status=#{recipeStatus}
+            AND a.update_date > #{updateDate}
+            AND a.status=#{status}
+            AND a.patient_id in (select id from patient where open_id = #{openId})
+        </where>
+        GROUP BY a.id
+        ORDER BY ${columnName} desc
+    </select>
+
+    <select id="wxListPages" resultType="String">
+        SELECT
+        a.id
+        FROM registration a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN clinic_office clinicOffice ON clinicOffice.id = a.department_id
+        LEFT JOIN patient patientId ON patientId.id = a.patient_id
+        LEFT JOIN sys_dict_item gender ON gender.value = patientId.gender
+        LEFT JOIN sys_user doctor ON doctor.id = a.doctor_id
+        LEFT JOIN sys_dict_item treatType ON treatType.value = a.treat_type
+        LEFT JOIN sys_dict_item infectType ON infectType.value = a.infect_type
+        LEFT JOIN sys_dict_item source ON source.value = a.source
+        LEFT JOIN sys_dict_item payType ON payType.value = a.pay_type
+        LEFT JOIN sys_dict_item status ON status.value = a.status
+        INNER JOIN recipel_info ri on a.id=ri.registration_id
+        LEFT JOIN recipel_detail rd on ri.id=rd.recipel_info_id
+        LEFT JOIN cost_item ci on ci.id=rd.drug_stuff_id
+        WHERE
+        ri.status=1
+        AND a.company_id=#{companyId}
+        AND a.recipe_status=#{recipeStatus}
+        AND a.update_date>#{updateDate}
+        AND a.status=#{status}
+        AND a.patient_id in (select id from patient where open_id = #{openId})
+        GROUP BY a.id
+        ORDER BY ${columnName} desc
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="wxDispensingCount" resultType="String">
+        SELECT a.id FROM registration a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN clinic_office clinicOffice ON clinicOffice.id = a.department_id
+        LEFT JOIN patient patientId ON patientId.id = a.patient_id
+        LEFT JOIN sys_dict_item gender ON gender.value = patientId.gender
+        LEFT JOIN sys_user doctor ON doctor.id = a.doctor_id
+        LEFT JOIN sys_dict_item treatType ON treatType.value = a.treat_type
+        LEFT JOIN sys_dict_item infectType ON infectType.value = a.infect_type
+        LEFT JOIN sys_dict_item source ON source.value = a.source
+        LEFT JOIN sys_dict_item payType ON payType.value = a.pay_type
+        LEFT JOIN sys_dict_item status ON status.value = a.status
+        INNER JOIN recipel_info ri ON a.id=ri.registration_id
+        LEFT JOIN recipel_detail rd on ri.id=rd.recipel_info_id
+        LEFT JOIN cost_item ci on ci.id=rd.drug_stuff_id
+        <where>
+            ri.status=1
+            AND ri.charge_status = 1
+            AND ri.recipel_type != "recipelType_3"
+            AND a.company_id=#{companyId}
+            AND a.recipe_status=#{recipeStatus}
+            AND a.update_date > #{updateDate}
+            AND a.status=#{status}
+            AND a.patient_id in (select id from patient where open_id = #{openId})
+        </where>
+        GROUP BY a.id
+        ORDER BY ${columnName} desc
+    </select>
+
+    <select id="wxDispensingListPages" resultType="String">
+        SELECT
+        a.id
+        FROM registration a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN clinic_office clinicOffice ON clinicOffice.id = a.department_id
+        LEFT JOIN patient patientId ON patientId.id = a.patient_id
+        LEFT JOIN sys_dict_item gender ON gender.value = patientId.gender
+        LEFT JOIN sys_user doctor ON doctor.id = a.doctor_id
+        LEFT JOIN sys_dict_item treatType ON treatType.value = a.treat_type
+        LEFT JOIN sys_dict_item infectType ON infectType.value = a.infect_type
+        LEFT JOIN sys_dict_item source ON source.value = a.source
+        LEFT JOIN sys_dict_item payType ON payType.value = a.pay_type
+        LEFT JOIN sys_dict_item status ON status.value = a.status
+        INNER JOIN recipel_info ri on a.id=ri.registration_id
+        LEFT JOIN recipel_detail rd on ri.id=rd.recipel_info_id
+        LEFT JOIN cost_item ci on ci.id=rd.drug_stuff_id
+        WHERE
+        ri.status=1
+        AND ri.charge_status = 1
+        AND ri.recipel_type != "recipelType_3"
+        AND a.company_id=#{companyId}
+        AND a.recipe_status=#{recipeStatus}
+        AND a.update_date > #{updateDate}
+        AND a.status=#{status}
+        AND a.patient_id in (select id from patient where open_id = #{openId})
+        GROUP BY a.id
+        ORDER BY ${columnName} desc
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <update id="registrationupdate">
+        UPDATE registration
+        <set>
+            <if test="doctor!=null ">
+                doctor_id=#{doctor.id},
+            </if>
+            <if test="status!=null">
+                status=#{status.value},
+            </if>
+            <if test="updateDate!=null">
+                update_date=#{updateDate},
+            </if>
+            <if test="pulse!=null">
+                pulse=#{pulse},
+            </if>
+            <if test="breathe!=null">
+                breathe=#{breathe},
+            </if>
+            <if test="temperature!=null">
+                temperature=#{temperature},
+            </if>
+            <if test="morbidityTime!=null">
+                morbidity_time=#{morbidityTime},
+            </if>
+            <if test="isGoHigharea!=null">
+                is_go_higharea=#{isGoHigharea},
+            </if>
+            <if test="highArea!=null">
+                high_area=#{highArea},
+            </if>
+            <if test="bloodPressure!=null">
+                blood_pressure=#{bloodPressure},
+            </if>
+            <if test="remarks!=null">
+                remarks=#{remarks},
+            </if>
+        </set>
+
+        WHERE company_id=#{company.id} and id=#{id} AND status in ('registrationStatus_5')
+    </update>
+</mapper>

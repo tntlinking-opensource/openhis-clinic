@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.stock.dao.DispensingDao">
+    
+    <sql id="dispensingColumns">
+        a.id AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.registration_id AS "registration.id",
+        a.supplier_stock_id AS "supplierStock.id",
+        a.recipel_info_id AS "recipelInfo.id",
+        IFNULL(recipelInfo.name,'') AS "recipelInfo.name",
+        a.number AS "number",
+        a.remarks AS "remarks",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.del_flag AS "delFlag"
+    </sql>
+    
+    <sql id="dispensingJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN registration registration ON registration.id = a.registration_id
+        LEFT JOIN supplier_stock supplierStock ON supplierStock.id = a.supplier_stock_id
+        LEFT JOIN recipel_info recipelInfo ON recipelInfo.id = a.recipel_info_id
+    </sql>
+    
+    <select id="get" resultType="com.geeke.stock.entity.Dispensing">
+        SELECT 
+            <include refid="dispensingColumns"/>
+        FROM dispensing a
+        <include refid="dispensingJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM dispensing a
+        <include refid="dispensingJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.stock.entity.Dispensing">
+        SELECT 
+            <include refid="dispensingColumns"/>
+        FROM dispensing a
+        <include refid="dispensingJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.stock.entity.Dispensing">
+        SELECT 
+            <include refid="dispensingColumns"/>
+        FROM dispensing a
+        <include refid="dispensingJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+      
+    <insert id="insert">
+        INSERT INTO dispensing(
+            id,
+            company_id,
+            registration_id,
+            supplier_stock_id,
+            recipel_info_id,
+            number,
+            remarks,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_flag
+        ) VALUES (
+            #{id},
+            #{company.id},                    
+            #{registration.id},                    
+            #{supplierStock.id},                    
+            #{recipelInfo.id},                    
+            #{number},
+            #{remarks},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate},
+            #{delFlag}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE dispensing SET     
+            company_id = #{company.id},                    
+            registration_id = #{registration.id},                    
+            supplier_stock_id = #{supplierStock.id},                    
+            recipel_info_id = #{recipelInfo.id},                    
+            number = #{number},
+            remarks = #{remarks},
+            update_by = #{updateBy},
+            update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        UPDATE dispensing SET
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO dispensing(
+            id,
+            company_id,
+            registration_id,
+            supplier_stock_id,
+            recipel_info_id,
+            number,
+            remarks,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_flag
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.company.id},                    
+            #{entity.registration.id},                    
+            #{entity.supplierStock.id},                    
+            #{entity.recipelInfo.id},                    
+            #{entity.number},
+            #{entity.remarks},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.delFlag}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE dispensing
+        <set>           
+            <trim prefix="company_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.company.id}
+                </foreach>
+            </trim>
+            <trim prefix="registration_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.registration.id}
+                </foreach>
+            </trim>
+            <trim prefix="supplier_stock_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.supplierStock.id}
+                </foreach>
+            </trim>
+            <trim prefix="recipel_info_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.recipelInfo.id}
+                </foreach>
+            </trim>
+            <trim prefix="number=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.number}
+                </foreach>
+            </trim>
+            <trim prefix="remarks=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.remarks}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE dispensing
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+
+    <select id="reportListCount" resultType="int">
+        SELECT COUNT(*) FROM dispensing a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN registration registration ON registration.id = a.registration_id
+        LEFT JOIN supplier_stock supplierStock ON supplierStock.id = a.supplier_stock_id
+        LEFT JOIN recipel_info recipelInfo ON recipelInfo.id = a.recipel_info_id
+        LEFT JOIN drug drug on drug.id = supplierStock.drug_id
+        LEFT JOIN sys_dict_item medicalType ON medicalType.value = drug.type
+        LEFT JOIN sys_dict_item drugUnitType ON drugUnitType.value = drug.preparation_unit
+        LEFT JOIN manufacture_factory factory ON factory.id = supplierStock.factory
+        LEFT JOIN recipel_detail recipelDetail ON recipelDetail.recipel_info_id = recipelInfo.id AND recipelDetail.drug_stuff_id = supplierStock.drug_id
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            AND supplierStock.drug_id is not null
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+    <select id="reportList" resultType="com.geeke.stock.entity.DispensingReportEvt">
+        SELECT
+        recipelInfo.code as recipelCode,
+        recipelDetail.is_unpack_sell as isUnpackSell,
+        medicalType.name type,
+        drug.goods_name name,
+        supplierStock.norms norms,
+        a.number number,
+        drug.preparation preparation,
+        drugUnitType.name unit,
+        drugUnitTypeTo.name pack,
+        supplierStock.least_bid bid,
+        supplierStock.bid packageBid,
+        (a.number * supplierStock.least_bid) bidTotal,
+        drug.retail_price price,
+        drug.price packagePrice,
+        TRUNCATE(((recipelDetail.all_fee / recipelDetail.total) * a.number),2) priceTotal,
+        (TRUNCATE(((recipelDetail.all_fee / recipelDetail.total) * a.number),2) - a.number * supplierStock.least_bid) profit,
+        factory.name factory,
+        supplierStock.batch_no batchNo,
+        supplierStock.end_date endDate,
+        a.create_date dispensingDate
+        FROM dispensing a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        inner JOIN registration registration ON registration.id = a.registration_id
+        LEFT JOIN supplier_stock supplierStock ON supplierStock.id = a.supplier_stock_id
+        inner JOIN recipel_info recipelInfo ON recipelInfo.id = a.recipel_info_id
+        LEFT JOIN drug drug on drug.id = supplierStock.drug_id
+        LEFT JOIN sys_dict_item medicalType ON medicalType.value = drug.type
+        LEFT JOIN sys_dict_item drugUnitType ON drugUnitType.value = drug.preparation_unit
+        LEFT JOIN sys_dict_item drugUnitTypeTo ON drugUnitTypeTo.value = drug.pack
+        LEFT JOIN manufacture_factory factory ON factory.id = supplierStock.factory
+        inner JOIN recipel_detail recipelDetail ON recipelDetail.recipel_info_id = recipelInfo.id AND recipelDetail.drug_stuff_id = supplierStock.drug_id
+<!--        where a.company_id = #{companyId} and supplierStock.drug_id is not null;-->
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            AND supplierStock.drug_id is not null
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="reportAmount" resultType="com.geeke.stock.entity.DispensingReportTotalEvt">
+        SELECT
+        sum(a.number) numberAmount,
+        sum((a.number * supplierStock.least_bid)) bidTotalAmount,
+        sum(TRUNCATE(((recipelDetail.all_fee / recipelDetail.total) * a.number),2)) priceTotalAmount,
+        (sum(TRUNCATE(((recipelDetail.all_fee / recipelDetail.total) * a.number),2)) - sum((a.number * supplierStock.least_bid))) profitAmount
+        FROM dispensing a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN registration registration ON registration.id = a.registration_id
+        LEFT JOIN supplier_stock supplierStock ON supplierStock.id = a.supplier_stock_id
+        LEFT JOIN recipel_info recipelInfo ON recipelInfo.id = a.recipel_info_id
+        LEFT JOIN drug drug on drug.id = supplierStock.drug_id
+        LEFT JOIN sys_dict_item medicalType ON medicalType.value = drug.type
+        LEFT JOIN sys_dict_item drugUnitType ON drugUnitType.value = drug.preparation_unit
+        LEFT JOIN manufacture_factory factory ON factory.id = supplierStock.factory
+        LEFT JOIN recipel_detail recipelDetail ON recipelDetail.recipel_info_id = recipelInfo.id AND recipelDetail.drug_stuff_id = supplierStock.drug_id
+<!--        where a.company_id = #{companyId} and supplierStock.drug_id is not null;-->
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            AND supplierStock.drug_id is not null
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+
+    </select>
+    <select id="getOrganizationListCount" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM dispensing a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN registration registration ON registration.id = a.registration_id
+        LEFT JOIN supplier_stock supplierStock ON supplierStock.id = a.supplier_stock_id
+        LEFT JOIN recipel_info recipelInfo ON recipelInfo.id = a.recipel_info_id
+        LEFT JOIN drug drug on drug.id = supplierStock.drug_id
+        LEFT JOIN sys_dict_item medicalType ON medicalType.value = drug.type
+        LEFT JOIN sys_dict_item drugUnitType ON drugUnitType.value = drug.preparation_unit
+        LEFT JOIN manufacture_factory factory ON factory.id = supplierStock.factory
+        LEFT JOIN recipel_detail recipelDetail ON recipelDetail.recipel_info_id = recipelInfo.id AND recipelDetail.drug_stuff_id = supplierStock.drug_id
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            AND supplierStock.drug_id is not null
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+    <select id="getOrganizationList" resultType="com.geeke.stock.entity.DispensingReportEvt">
+        SELECT
+        company.id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        recipelInfo.code as recipelCode,
+        medicalType.name type,
+        drug.goods_name name,
+        supplierStock.norms norms,
+        a.number number,
+        drugUnitType.name unit,
+        supplierStock.least_bid bid,
+        (a.number * supplierStock.least_bid) bidTotal,
+        TRUNCATE((recipelDetail.all_fee / recipelDetail.total),2) price,
+        TRUNCATE(((recipelDetail.all_fee / recipelDetail.total) * a.number),2) priceTotal,
+        (TRUNCATE(((recipelDetail.all_fee / recipelDetail.total) * a.number),2) - a.number * supplierStock.least_bid) profit,
+        factory.name factory,
+        supplierStock.batch_no batchNo,
+        supplierStock.end_date endDate,
+        a.create_date dispensingDate
+        FROM dispensing a
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN registration registration ON registration.id = a.registration_id
+        LEFT JOIN supplier_stock supplierStock ON supplierStock.id = a.supplier_stock_id
+        LEFT JOIN recipel_info recipelInfo ON recipelInfo.id = a.recipel_info_id
+        LEFT JOIN drug drug on drug.id = supplierStock.drug_id
+        LEFT JOIN sys_dict_item medicalType ON medicalType.value = drug.type
+        LEFT JOIN sys_dict_item drugUnitType ON drugUnitType.value = drug.preparation_unit
+        LEFT JOIN manufacture_factory factory ON factory.id = supplierStock.factory
+        LEFT JOIN recipel_detail recipelDetail ON recipelDetail.recipel_info_id = recipelInfo.id AND recipelDetail.drug_stuff_id = supplierStock.drug_id
+        <!--        where a.company_id = #{companyId} and supplierStock.drug_id is not null;-->
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            AND supplierStock.drug_id is not null
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+
+    <update id="updateDelFlag">
+        UPDATE dispensing SET
+        del_flag = 1
+        WHERE recipel_info_id = #{recipelInfoId}
+    </update>
+
+</mapper>

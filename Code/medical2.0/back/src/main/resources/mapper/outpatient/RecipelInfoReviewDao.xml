@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.outpatient.dao.RecipelInfoReviewDao">
+    
+    <sql id="recipellnfoReviewColumns">
+        a.id                          AS "id"
+     , a.review_result               AS "reviewResult"
+     , a.review_content              AS "reviewContent"
+     , a.reviewer_name               AS "reviewerName"
+     , a.review_status               AS "reviewStatus"
+     , a.remarks                     AS "remarks"
+     , a.create_by                   AS "createBy"
+     , a.create_date                 AS "createDate"
+     , a.update_by                   AS "updateBy"
+     , a.update_date                 AS "updateDate"
+     , a.del_flag                    AS "delFlag"
+     , recipelInfo.id               AS "recipelInfo.id"
+     , recipelInfo.create_date       AS "recipelInfo.create_date"
+     , recipelInfo.company_id        AS "recipelInfo.company.id"
+     , IFNULL(company.name, '')      AS "recipelInfo.company.name"
+     , recipelInfo.registration_id    AS "recipelInfo.registration.id"
+     , registration.department_id    AS "recipelInfo.registration.clinicOffice.id"
+     , IFNULL(clinicOffice.name, '') AS "recipelInfo.registration.clinicOffice.name"
+     , registration.doctor_id        AS "recipelInfo.registration.doctor.id"
+     , IFNULL(doctor.name, '')       AS "recipelInfo.registration.doctor.name"
+     , recipelInfo.code              AS "recipelInfo.code"
+     , recipelInfo.fee              AS "recipelInfo.fee"
+     , recipelInfo.chronic_disease  AS "recipelInfo.chronicDisease"
+     , recipelInfo.entrust          AS "recipelInfo.entrust"
+     , recipelInfo.status          AS "recipelInfo.status"
+     , recipelInfo.not_show          AS "recipelInfo.notShow"
+     , recipelInfo.dispension_status          AS "recipelInfo.dispensionStatus"
+     , recipelInfo.charge_status          AS "recipelInfo.chargeStatus"
+     , registration.patient_id       AS "recipelInfo.registration.patientId.id"
+     , IFNULL(patientId.name, '')    AS "recipelInfo.registration.patientId.name"
+     , IFNULL(patientId.gender, '')     AS "recipelInfo.registration.patientId.gender.value"
+     , IFNULL(gender.name, '')     AS "recipelInfo.registration.patientId.gender.name"
+     , IFNULL(patientId.age, '')     AS "recipelInfo.registration.patientId.age"
+     , IFNULL(patientId.card, '')     AS "recipelInfo.registration.patientId.card"
+     , IFNULL(patientId.phone, '')     AS "recipelInfo.registration.patientId.phone"
+     , recipelInfo.dosage     AS "recipelInfo.dosage"
+     , recipelInfo.single_dosage     AS "recipelInfo.singleDosage"
+     , recipelInfo.small_type      AS "recipelInfo.smallType.value"
+     ,  IFNULL(recipelType.name, '')  AS "recipelInfo.smallType.name"
+     , recipelInfo.recipel_type      AS "recipelInfo.recipelType.value"
+     , IFNULL(recipelType.name, '')  AS "recipelInfo.recipelType.name"
+     , recipelInfo.recipel_use      AS "recipelInfo.recipelUse.value"
+     , IFNULL(recipelUse.name, '')  AS "recipelInfo.recipelUse.name"
+     , recipelInfo.frequency      AS "recipelInfo.frequency.value"
+     , IFNULL(frequency.name, '')  AS "recipelInfo.frequency.name"
+     , recipelInfo.take_frequency      AS "recipelInfo.takeFrequency.value"
+     , IFNULL(takeFrequency.name, '')  AS "recipelInfo.takeFrequency.name"
+     , IFNULL(medicalRecord.id, '')  AS "medicalRecord.id"
+     , IFNULL(medicalRecord.western_diagnose, '')  AS "medicalRecord.westernDiagnose"
+     , IFNULL(medicalRecord.china_diagnose, '')  AS "medicalRecord.chinaDiagnose"
+    </sql>
+    
+    <sql id="recipellnfoReviewJoins">
+     LEFT JOIN org_company company on recipelInfo.company_id = company.id
+     LEFT JOIN registration registration on recipelInfo.registration_id = registration.id
+     LEFT JOIN medical_record medicalRecord on registration.id = medicalRecord.registration_id
+     LEFT JOIN clinic_office clinicOffice on registration.department_id = clinicOffice.id
+     LEFT JOIN sys_user doctor ON doctor.id = registration.doctor_id
+     LEFT JOIN patient patientId ON patientId.id = registration.patient_id
+     LEFT JOIN sys_dict_item recipelType ON recipelType.value = recipelInfo.recipel_type
+     LEFT JOIN sys_dict_item gender ON gender.value = patientId.gender
+     LEFT JOIN sys_dict_item smallType ON smallType.value = recipelInfo.small_type
+     LEFT JOIN sys_dict_item recipelUse ON recipelUse.value = recipelInfo.recipel_use
+     LEFT JOIN sys_dict_item frequency ON frequency.value = recipelInfo.frequency
+     LEFT JOIN sys_dict_item takeFrequency ON takeFrequency.value = recipelInfo.take_frequency
+    </sql>
+    
+    <select id="get" resultType="com.geeke.outpatient.entity.RecipelInfoReview">
+        SELECT 
+            <include refid="recipellnfoReviewColumns"/>
+        FROM recipel_info recipelInfo
+         left join recipel_info_review a on recipelInfo.id = a.recipel_info_id
+        <include refid="recipellnfoReviewJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    <select id="getByRecipelInfoId" resultType="com.geeke.outpatient.entity.RecipelInfoReview">
+        SELECT
+            <include refid="recipellnfoReviewColumns"/>
+        FROM recipel_info recipelInfo
+         left join recipel_info_review a on recipelInfo.id = a.recipel_info_id
+        <include refid="recipellnfoReviewJoins"/>
+        WHERE recipelInfo.id = #{id}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM recipel_info recipelInfo
+         left join recipel_info_review a on recipelInfo.id = a.recipel_info_id
+        <include refid="recipellnfoReviewJoins"/>
+        <where>
+            1=1
+            AND recipelInfo.id > 0
+            AND recipelInfo.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+    <select id="listPage" resultType="com.geeke.outpatient.entity.RecipelInfoReview">
+        SELECT 
+            <include refid="recipellnfoReviewColumns"/>
+        FROM recipel_info recipelInfo
+         left join recipel_info_review a on recipelInfo.id = a.recipel_info_id
+        <include refid="recipellnfoReviewJoins"/>
+        <where>
+            1=1
+            AND recipelInfo.id > 0
+            AND recipelInfo.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <!--使用mysql的RAND()实现随机排序，这里 NOW() 返回当前时间戳，确保每次查询都提供不同的随机种子，从而得到不同的结果。每次查询的结果都会因为不同的种子值而不同。
+        如果以后因为数据量大了，查询很慢，可以换成java代码来随机 的方式-->
+            <when test="order == '`RAND(NOW())`'">
+                ORDER BY RAND(NOW())
+            </when>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY recipelInfo.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.outpatient.entity.RecipelInfoReview">
+        SELECT 
+            <include refid="recipellnfoReviewColumns"/>
+        FROM recipel_info recipelInfo
+         left join recipel_info_review a on recipelInfo.id = a.recipel_info_id
+        <include refid="recipellnfoReviewJoins"/>
+        <where>
+            1=1
+            AND recipelInfo.id > 0
+            AND recipelInfo.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when> 
+            <otherwise>
+                ORDER BY recipelInfo.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+      
+    <insert id="insert">
+        INSERT INTO recipel_info_review(
+            id,
+            recipel_info_id,
+            review_result,
+            review_content,
+            reviewer_name,
+            review_status,
+            remarks,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_flag
+        ) VALUES (
+            #{id},
+            #{recipelInfo.id},
+            #{reviewResult},
+            #{reviewContent},
+            #{reviewerName},
+            #{reviewStatus},
+            #{remarks},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate},
+            #{delFlag}
+        )
+    </insert>
+
+    <select id="listPageStatement" resultType="com.geeke.outpatient.vo.StatementVO">
+        SELECT
+        IFNULL(company.name, '')     AS "company",
+        <if test="groupByColumns != null and !groupByColumns.isEmpty() and groupByColumns.contains('doctor.name')">
+            IFNULL(doctor.name, '')     AS "doctor",
+        </if>
+        <if test="groupByColumns != null and !groupByColumns.isEmpty() and groupByColumns.contains('clinicOffice.name')">
+            IFNULL(clinicOffice.name, '') AS "clinicOffice",
+        </if>
+        SUM(a.review_status is not null) AS "comment",
+        IFNULL(SUM(a.review_result = 1),0)  AS "rational",
+        FLOOR(IFNULL(SUM(a.review_result = 1)/SUM(a.review_status is not null),0)*100) as "rate"
+        FROM recipel_info recipelInfo
+        left join recipel_info_review a on recipelInfo.id = a.recipel_info_id
+        <include refid="recipellnfoReviewJoins"/>
+        <where>
+            1=1
+            AND recipelInfo.id > 0
+            AND recipelInfo.del_flag = '0'
+            AND doctor.id != ''
+            AND clinicOffice.id != ''
+            <include refid="Common.whereParams"/>
+        </where>
+        GROUP BY
+        <foreach collection="groupByColumns" item="column" separator=",">
+            ${column}
+        </foreach>
+    </select>
+
+    <update id="update">
+        UPDATE recipel_info_review SET
+           review_result = #{reviewResult},
+           review_content = #{reviewContent},
+           reviewer_name = #{reviewerName},
+           review_status = #{reviewStatus},
+            update_by = #{updateBy},
+            update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM recipel_info_review WHERE id = #{id}
+    </delete>
+
+    <select id="prescriptionStatistics" resultType="com.geeke.outpatient.vo.PrescriptionStatisticsVO">
+        SELECT
+            count(*) AS "total",
+            sum(recipelInfo.dispension_status = 1) AS "dispensedMedicine",
+            sum(recipelInfo.dispension_status = 0) AS "undispensedMedicine",
+            sum(a.review_status is not null) AS "alreadyReviewed",
+            sum(a.review_result = 1) AS "good",
+            sum(a.review_result = 0) AS "bad",
+            FLOOR(sum(a.review_result = 1)/sum(a.review_status is not null)*100) AS "rate"
+        FROM recipel_info recipelInfo
+        left join recipel_info_review a on recipelInfo.id = a.recipel_info_id
+        <include refid="recipellnfoReviewJoins"/>
+        <where>
+            company.parent_id = #{id}
+            <if test='startTime != null and startTime != "" and endTime != null and endTime != ""'  >
+                and recipelInfo.`create_date` BETWEEN #{startTime} AND #{endTime}
+            </if>
+            <if test='startTime == null and startTime == "" '  >
+                and recipelInfo.create_date >='2023-01-01 00:00:00'
+            </if>
+
+        </where>
+    </select>
+</mapper>

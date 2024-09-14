@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.stock.dao.SupplierStorageDao">
+    
+    <sql id="supplierStorageColumns">
+        a.id AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.supplier_id AS "supplier.id",
+        IFNULL(supplier.name,'') AS "supplier.name",
+        a.code AS "code",
+        a.breed AS "breed",
+        a.number AS "number",
+        a.all_bid AS "allBid",
+        a.all_retail_price AS "allRetailPrice",
+        a.cancel_date AS "cancelDate",
+        a.examine AS "examine.value",
+        IFNULL(examine.name,'') AS "examine.name",
+        a.examine_date AS "examineDate",
+        a.with_goods_no AS "withGoodsNo",
+        a.invoice_number AS "invoiceNumber",
+        a.remarks AS "remarks",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.del_flag AS "delFlag",
+        a.initial AS "initial",
+        a.type AS "type"
+    </sql>
+    
+    <sql id="supplierStorageJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN supplier supplier ON supplier.id = a.supplier_id
+        LEFT JOIN sys_dict_item examine ON examine.value = a.examine
+        LEFT JOIN supplier_stock ss ON ss.supplier_storage_id = a.id
+    </sql>
+    
+    <select id="get" resultType="com.geeke.stock.entity.SupplierStorage">
+        SELECT 
+            <include refid="supplierStorageColumns"/>
+        FROM supplier_storage a
+        <include refid="supplierStorageJoins"/>
+        WHERE a.id = #{id}
+        group by a.id,a.update_date ,a.examine,examine.name,supplier.name
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(distinct(a.id)) FROM supplier_storage a
+        <include refid="supplierStorageJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+    <select id="listPage" resultType="com.geeke.stock.entity.SupplierStorage">
+        SELECT
+            <include refid="supplierStorageColumns"/>
+        FROM supplier_storage a
+        <include refid="supplierStorageJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        group by a.id,a.update_date ,a.examine,examine.name,supplier.name
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY a.examine asc, ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.examine asc, a.update_date desc
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="listAll" resultType="com.geeke.stock.entity.SupplierStorage">
+        SELECT
+            <include refid="supplierStorageColumns"/>
+        FROM supplier_storage a
+        <include refid="supplierStorageJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+    <select id="getCode" resultType="String">
+        SELECT
+        a.code
+        FROM
+        supplier_storage a
+        WHERE
+        a.company_id = #{companyId}
+        ORDER BY create_date DESC
+        limit 1
+    </select>
+
+    <insert id="insert">
+        INSERT INTO supplier_storage(
+            id,
+            company_id,
+            supplier_id,
+            code,
+            breed,
+            number,
+            all_bid,
+            all_retail_price,
+            cancel_date,
+            examine,
+            examine_date,
+            with_goods_no,
+            invoice_number,
+            remarks,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_flag,
+            initial,
+            type
+        ) VALUES (
+            #{id},
+            #{company.id},                    
+            #{supplier.id},                    
+            #{code},
+            #{breed},
+            #{number},
+            #{allBid},
+            #{allRetailPrice},
+            #{cancelDate},
+            #{examine.value},
+            #{examineDate},
+            #{withGoodsNo},
+            #{invoiceNumber},
+            #{remarks},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate},
+            #{delFlag},
+            #{initial},
+            #{type}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE supplier_storage SET     
+            supplier_id = #{supplier.id},                    
+            breed = #{breed},
+            number = #{number},
+            all_bid = #{allBid},
+            all_retail_price = #{allRetailPrice},
+            cancel_date = #{cancelDate},
+            examine = #{examine.value},
+            examine_date = #{examineDate},
+            with_goods_no = #{withGoodsNo},
+            invoice_number = #{invoiceNumber},
+            remarks = #{remarks},
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            initial=#{initial},
+            type=#{type}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        UPDATE supplier_storage SET
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO supplier_storage(
+            id,
+            company_id,
+            supplier_id,
+            code,
+            breed,
+            number,
+            all_bid,
+            all_retail_price,
+            cancel_date,
+            examine,
+            examine_date,
+            with_goods_no,
+            invoice_number,
+            remarks,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_flag,
+            initial,
+            type
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.company.id},                    
+            #{entity.supplier.id},                    
+            #{entity.code},
+            #{entity.breed},
+            #{entity.number},
+            #{entity.allBid},
+            #{entity.allRetailPrice},
+            #{entity.cancelDate},
+            #{entity.examine.value},
+            #{entity.examineDate},
+            #{entity.withGoodsNo},
+            #{entity.invoiceNumber},
+            #{entity.remarks},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.delFlag},
+            #{entity.initial},
+            #{entity.type}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE supplier_storage
+        <set>           
+            <trim prefix="supplier_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.supplier.id}
+                </foreach>
+            </trim>
+            <trim prefix="breed=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.breed}
+                </foreach>
+            </trim>
+            <trim prefix="number=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.number}
+                </foreach>
+            </trim>
+            <trim prefix="all_bid=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.allBid}
+                </foreach>
+            </trim>
+            <trim prefix="all_retail_price=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.allRetailPrice}
+                </foreach>
+            </trim>
+            <trim prefix="cancel_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.cancelDate}
+                </foreach>
+            </trim>
+            <trim prefix="examine=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.examine.value}
+                </foreach>
+            </trim>
+            <trim prefix="examine_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.examineDate}
+                </foreach>
+            </trim>
+            <trim prefix="with_goods_no=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.withGoodsNo}
+                </foreach>
+            </trim>
+            <trim prefix="invoice_number=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.invoiceNumber}
+                </foreach>
+            </trim>
+            <trim prefix="remarks=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.remarks}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+            <trim prefix="initial=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.initial}
+                </foreach>
+            </trim>
+            <trim prefix="type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.type}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE supplier_storage
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+
+    <select id="listByCode" resultType="com.geeke.stock.entity.SupplierStorage">
+        SELECT
+        <include refid="supplierStorageColumns"/>
+        FROM supplier_storage a
+        <include refid="supplierStorageJoins"/>
+        LEFT JOIN drug d on d.id=ss.drug_id
+        LEFT JOIN stuff s on s.id=ss.stuff_id
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="companyId != null and companyId != ''">
+                a.company_id=#{companyId}
+            </if>
+            <if test="pinyinCode != null and pinyinCode != ''">
+                and (d.pinyin_code like concat('%',#{pinyinCode},'%') or s.pinyin_code like  concat('%',#{pinyinCode},'%'))
+            </if>
+            <if test="status != null and status != ''">
+                and a.examine=#{status}
+            </if>
+            <if test="startTime != null and startTime != ''">
+                and a.create_date>=#{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and s.create_date &lt;= #{endTime}
+            </if>
+        </trim>
+
+    </select>
+</mapper>

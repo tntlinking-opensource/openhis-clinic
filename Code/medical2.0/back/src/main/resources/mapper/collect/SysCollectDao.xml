@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.collect.dao.SysCollectDao">
+
+    <sql id="sysCollectColumns">
+        a.id AS "id",
+        a.user_id AS "userId.id",
+        IFNULL(userId.name,'') AS "userId.name",
+        a.router_id AS "routerId.id",
+        IFNULL(routerId.name,'') AS "routerId.name",
+        routerId.properties AS "routerId.properties",
+        routerId.url AS "routerId.url",
+        a.sort AS "sort"
+    </sql>
+
+    <sql id="sysCollectJoins">
+        LEFT JOIN sys_user userId ON userId.id = a.user_id
+        LEFT JOIN sys_router routerId ON routerId.id = a.router_id
+    </sql>
+
+    <select id="get" resultType="com.geeke.collect.entity.SysCollect">
+        SELECT 
+            <include refid="sysCollectColumns"/>
+        FROM sys_collect a
+        <include refid="sysCollectJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM sys_collect a
+        <include refid="sysCollectJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+
+    <select id="listAllByUserId" resultType="com.geeke.collect.entity.SysCollect">
+        SELECT 
+            <include refid="sysCollectColumns"/>
+        FROM sys_collect a
+        <include refid="sysCollectJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.user_id = #{userId}
+            AND a.router_id IN (
+                SELECT p.router_id FROM sys_router_permission p 
+                    INNER JOIN sys_user_role ur ON p.role_id = ur.role_id AND ur.user_id = #{userId} 
+                )
+        </where>
+      ORDER BY a.sort
+    </select>
+
+
+    <insert id="insert">
+        INSERT INTO sys_collect(
+        id,
+        user_id ,
+        router_id,
+        sort,
+        create_by,
+        create_date,
+        update_by,
+        update_date
+        ) VALUES (
+       #{id},
+       #{userId.id},
+       #{routerId.id},
+        unix_timestamp(now()),
+       #{createBy},
+       #{createDate},
+       #{updateBy},
+       #{updateDate}
+        )
+    </insert>
+
+
+    <update id="update">
+        UPDATE sys_collect SET     
+            sort = #{sort},
+            update_by = #{updateBy},
+            update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete">
+        delete from sys_collect
+        WHERE id = #{id}
+    </delete>
+
+
+<update id="updateBatch" parameterType="java.util.List">
+     update sys_collect
+      <trim prefix="set" suffixOverrides=",">
+       <trim prefix="sort =case" suffix="end,">
+           <foreach collection="sysCollectList" item="i" index="index">
+                   <if test="i.sort!=null">
+                    when id=#{i.id} then #{i.sort}
+                   </if>
+           </foreach>
+        </trim>
+        <trim prefix=" update_by =case" suffix="end,">
+           <foreach collection="sysCollectList" item="i" index="index">
+                   <if test="i.updateBy!=null">
+                    when id=#{i.id} then #{i.updateBy}
+                   </if>
+           </foreach>
+        </trim>
+
+        <trim prefix="update_date =case" suffix="end," >
+           <foreach collection="sysCollectList" item="i" index="index">
+                   <if test="i.updateDate!=null">
+                    when id=#{i.id} then #{i.updateDate}
+                   </if>
+           </foreach>
+        </trim>
+    </trim>
+    where
+    <foreach collection="sysCollectList" separator="or" item="i" index="index" >
+        id=#{i.id}
+    </foreach>
+</update>
+
+</mapper>

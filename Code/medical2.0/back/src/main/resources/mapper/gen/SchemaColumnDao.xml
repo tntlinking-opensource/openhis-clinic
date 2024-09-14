@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.gen.dao.SchemaColumnDao">
+	
+	<sql id="schemaColumnColumns">
+		a.COLUMN_NAME AS "name",
+		a.COLUMN_COMMENT AS "comments",
+		a.COLUMN_TYPE AS "jdbcType",
+		(CASE WHEN IS_NULLABLE = 'YES' THEN '1' ELSE '0' END)  AS "isNull",
+		(ORDINAL_POSITION * 10)  AS "sort",
+		(CASE WHEN a.COLUMN_KEY='PRI' THEN '1' ELSE '0' END) AS "isPk",
+		a.COLUMN_DEFAULT AS "defVal"
+	</sql>
+	
+	<sql id="schemaColumnJoins">
+	</sql>
+	
+	<select id="get" resultType="com.geeke.gen.entity.GenTableColumnEx">
+		SELECT 
+			<include refid="schemaColumnColumns"/>
+		FROM information_schema.columns a
+		<include refid="schemaColumnJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="count" resultType="int">
+		SELECT COUNT(*) FROM information_schema.columns a
+		<include refid="schemaColumnJoins"/>
+		<where>
+			a.TABLE_SCHEMA = (select database())
+			<include refid="Common.whereParams"/>
+		</where>
+	</select>	
+	
+	<select id="listPage" resultType="com.geeke.gen.entity.GenTableColumnEx">
+		SELECT 
+			<include refid="schemaColumnColumns"/>
+		FROM information_schema.columns a
+		<include refid="schemaColumnJoins"/>
+        <where>
+            a.TABLE_SCHEMA = (select database())
+			<include refid="Common.whereParams"/>
+        </where>
+		<choose>
+			<when test="order != null and order != ''">
+				ORDER BY ${order}
+			</when>			
+			<otherwise>
+				ORDER BY sort ASC
+			</otherwise>
+		</choose>
+		LIMIT #{limit} OFFSET #{offset}
+	</select>
+	
+	<select id="listAll" resultType="com.geeke.gen.entity.GenTableColumnEx">
+		SELECT 
+			<include refid="schemaColumnColumns"/>
+		FROM information_schema.columns a
+		<include refid="schemaColumnJoins"/>
+        <where>
+            a.TABLE_SCHEMA = (select database())
+			<include refid="Common.whereParams"/>
+        </where>
+		<choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when> 
+			<otherwise>
+				ORDER BY sort ASC
+			</otherwise>
+		</choose>
+	</select>
+	
+	
+	<insert id="insert">
+		INSERT INTO information_schema.columns(
+			column_name
+		) VALUES (
+			#{name}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE information_schema.columns SET 	
+			column_name = #{name}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		DELETE FROM information_schema.columns
+		WHERE id = #{id}
+	</update>
+	
+	
+</mapper>

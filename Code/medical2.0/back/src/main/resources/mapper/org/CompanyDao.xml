@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.org.dao.CompanyDao">
+    
+    <sql id="companyColumns">
+        a.id AS "id",
+        a.parent_id AS "parent.id",
+        IFNULL(parent.name,'') AS "parent.name",
+        a.full_name AS "fullName",
+        a.ids AS "ids",
+        a.name AS "name",
+        a.code AS "code",
+        a.sort AS "sort",
+        a.address_province AS "addressProvince",
+        a.create_by AS "createBy",
+        a.address_city AS "addressCity",
+        a.create_date AS "createDate",
+        a.address_region AS "addressRegion",
+        a.update_by AS "updateBy",
+        a.address AS "address",
+        a.update_date AS "updateDate",
+        a.phone_number AS "phoneNumber",
+        a.remarks AS "remarks",
+        a.license_subject AS "licenseSubject",
+        a.del_flag AS "delFlag",
+        a.file_id AS "fileId",
+        a.version_id AS "version.id",
+        IFNULL(version.name,'') AS "version.name",
+        IFNULL(version.role_id,'') AS "version.roleId",
+        a.is_institution AS "isInstitution",
+        a.status AS "status",
+        a.start_use_date AS "startUseDate",
+        a.expire_date AS "expireDate",
+        a.contact_name as "contactName"
+    </sql>
+
+    <sql id="companyJoins">
+         LEFT JOIN org_company parent ON parent.id = a.parent_id
+        LEFT JOIN clinic_version version ON version.id = a.version_id
+    </sql>
+    
+    <select id="get" resultType="com.geeke.org.entity.Company">
+        SELECT 
+            <include refid="companyColumns"/>
+        FROM org_company a
+        <include refid="companyJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM org_company a
+        <include refid="companyJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+    <select id="countClinic" resultType="int">
+        SELECT COUNT(*) FROM org_company a
+        <include refid="companyJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.parent_id !=0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+    <select id="listPage" resultType="com.geeke.org.entity.Company">
+        SELECT 
+            <include refid="companyColumns"/>
+        FROM org_company a
+        <include refid="companyJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+                ORDER BY a.sort ASC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countTenant" resultType="int">
+        SELECT COUNT(*) FROM org_company a
+        <include refid="companyJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.parent_id = 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+    <select id="listTenantPage" resultType="com.geeke.org.entity.Company">
+        SELECT
+        <include refid="companyColumns"/>
+        FROM org_company a
+        <include refid="companyJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.parent_id = 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.sort ASC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="listClinicPage" resultType="com.geeke.org.entity.Company">
+        SELECT
+        <include refid="companyColumns"/>
+        FROM org_company a
+        <include refid="companyJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.parent_id != 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.parent_id DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="listAll" resultType="com.geeke.org.entity.Company">
+        SELECT 
+            <include refid="companyColumns"/>
+        FROM org_company a
+        <include refid="companyJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.sort ASC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="listAllTenant" resultType="com.geeke.org.entity.Company">
+        SELECT
+        <include refid="companyColumns"/>
+        FROM org_company a
+        <include refid="companyJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.parent_id = 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.sort ASC
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="listAllClinic" resultType="com.geeke.org.entity.Company">
+        SELECT
+        <include refid="companyColumns"/>
+        FROM org_company a
+        <include refid="companyJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.parent_id != 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.sort ASC
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO org_company(
+            id,
+            parent_id,
+            full_name,
+            ids,
+            name,
+            code,
+            sort,
+            address_province,
+            create_by,
+            address_city,
+            create_date,
+            address_region,
+            update_by,
+            address,
+            update_date,
+            phone_number,
+            remarks,
+            license_subject,
+            del_flag,
+            file_id,
+            version_id,
+            is_institution,
+            status,
+            start_use_date,
+            expire_date,
+            contact_name
+        ) VALUES (
+            #{id},
+            #{parent.id},                    
+            #{fullName},
+            #{ids},
+            #{name},
+            #{code},
+            #{sort},
+            #{addressProvince},
+            #{createBy},
+            #{addressCity},
+            #{createDate},
+            #{addressRegion},
+            #{updateBy},
+            #{address},
+            #{updateDate},
+            #{phoneNumber},
+            #{remarks},
+            #{licenseSubject},
+            #{delFlag},
+            #{fileId},
+            #{version.id},                    
+            #{isInstitution},
+            #{status},
+            #{startUseDate},
+            #{expireDate},
+            #{contactName}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE org_company SET     
+            parent_id = #{parent.id},                    
+            full_name = #{fullName},
+            name = #{name},
+            code = #{code},
+            sort = #{sort},
+            address_province = #{addressProvince},
+            address_city = #{addressCity},
+            address_region = #{addressRegion},
+            address = #{address},
+            phone_number = #{phoneNumber},
+            remarks = #{remarks},
+            license_subject = #{licenseSubject},
+            file_id = #{fileId},
+            version_id = #{version.id},
+            is_institution = #{isInstitution},
+            status = #{status},
+            start_use_date = #{startUseDate},
+            expire_date = #{expireDate},
+            contact_name = #{contactName}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        UPDATE org_company SET
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO org_company(
+            id,
+            parent_id,
+            full_name,
+            ids,
+            name,
+            code,
+            sort,
+            address_province,
+            create_by,
+            address_city,
+            create_date,
+            address_region,
+            update_by,
+            address,
+            update_date,
+            phone_number,
+            remarks,
+            license_subject,
+            del_flag,
+            file_id,
+            version_id,
+            is_institution,
+            status,
+            start_use_date,
+            expire_date,
+            contact_name
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.parent.id},                    
+            #{entity.fullName},
+            #{entity.ids},
+            #{entity.name},
+            #{entity.code},
+            #{entity.sort},
+            #{entity.addressProvince},
+            #{entity.createBy},
+            #{entity.addressCity},
+            #{entity.createDate},
+            #{entity.addressRegion},
+            #{entity.updateBy},
+            #{entity.address},
+            #{entity.updateDate},
+            #{entity.phoneNumber},
+            #{entity.remarks},
+            #{entity.licenseSubject},
+            #{entity.delFlag},
+            #{entity.fileId},
+            #{entity.version.id},                    
+            #{entity.isInstitution},
+            #{entity.status},
+            #{entity.startUseDate},
+            #{entity.expireDate},
+            #{entity.contactName}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE org_company
+        <set>           
+            <trim prefix="parent_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.parent.id}
+                </foreach>
+            </trim>
+            <trim prefix="full_name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.fullName}
+                </foreach>
+            </trim>
+            <trim prefix="name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.name}
+                </foreach>
+            </trim>
+            <trim prefix="code=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.code}
+                </foreach>
+            </trim>
+            <trim prefix="sort=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.sort}
+                </foreach>
+            </trim>
+            <trim prefix="address_province=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.addressProvince}
+                </foreach>
+            </trim>
+            <trim prefix="address_city=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.addressCity}
+                </foreach>
+            </trim>
+            <trim prefix="address_region=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.addressRegion}
+                </foreach>
+            </trim>
+            <trim prefix="address=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.address}
+                </foreach>
+            </trim>
+            <trim prefix="phone_number=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.phoneNumber}
+                </foreach>
+            </trim>
+            <trim prefix="remarks=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.remarks}
+                </foreach>
+            </trim>
+            <trim prefix="license_subject=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.licenseSubject}
+                </foreach>
+            </trim>
+            <trim prefix="file_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.fileId}
+                </foreach>
+            </trim>
+            <trim prefix="version_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.version.id}
+                </foreach>
+            </trim>
+            <trim prefix="status=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.status}
+                </foreach>
+            </trim>
+            <trim prefix="is_institution=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isInstitution}
+                </foreach>
+            </trim>
+            <trim prefix="start_use_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.startUseDate}
+                </foreach>
+            </trim>
+            <trim prefix="expire_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.expireDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE org_company
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    <select id="selectClinicsByLoginName" resultType="com.geeke.org.entity.Company">
+        select
+        a.id,a.name
+        from org_company a
+        left join
+        user_tenant ut on a.id = ut.tenant_id
+        where ut.login_name  = #{loginName}
+        and ut.del_flag = '0' and a.status = 1
+    </select>
+    <select id="getCompanys" resultType="com.geeke.org.entity.Company">
+        select
+        <include refid="companyColumns"></include>
+        from org_company a
+        <include refid="companyJoins"></include>
+        where a.parent_id = (
+            select parent_id from org_company where id = #{id}
+        )
+        and a.id!=#{id}
+    </select>
+
+
+    <select id="getInstitution" resultType="String">
+ select
+        a.id
+        from org_company a
+        where a.parent_id = (SELECT parent_id FROM org_company WHERE id=#{companyId}) and a.is_institution = 1;
+    </select>
+
+
+</mapper>

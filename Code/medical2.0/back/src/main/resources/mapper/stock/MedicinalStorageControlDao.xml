@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.stock.dao.MedicinalStorageControlDao">
+    
+    <sql id="medicinalStorageControlColumns">
+        a.id AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
+        a.storage_id AS "storageId",
+        a.drug_stuff_id AS "drugStuffId",
+        a.drug_stuff_name AS "drugStuffName",
+        a.type AS "type",
+        a.storage_stock AS "storageStock",
+        a.used_stock AS "usedStock",
+        a.occupy_stock AS "occupyStock",
+        a.surplus_stock AS "surplusStock",
+        a.reimburse_stock AS "reimburseStock",
+        a.remarks AS "remarks",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.del_flag AS "delFlag",
+        a.return_todo_fee_stock AS "returnTodoFeeStock",
+        IFNULL(drug.id,'') AS 'drug.id',
+        IFNULL(drug.goods_name,'') AS 'drug.goodsName',
+        IFNULL(drug.dosis,'') AS 'drug.dosis',
+        IFNULL(drug.dosis_unit,'') AS 'drug.dosisUnit.value',
+        IFNULL(dosisUnit.name,'') AS 'drug.dosisUnit.name',
+        IFNULL(drug.preparation,'') AS 'drug.preparation',
+        IFNULL(drug.preparation_unit,'') AS 'drug.preparationUnit.value',
+        IFNULL(preparationUnit.name,'') AS 'drug.preparationUnit.name',
+        IFNULL(drug.pack,'') AS 'drug.pack.value',
+        IFNULL(pack.name,'') AS 'drug.pack.name',
+        IFNULL(drug.factory,'') AS 'drug.factory.id',
+        IFNULL(factory.name,'') AS 'drug.factory.name',
+        IFNULL(drug.price,'') AS 'drug.price',
+        IFNULL(drug.retail_price,'') AS 'drug.retailPrice',
+        IFNULL(type.name,'') AS 'drug.type.name',
+        IFNULL(type.value,'') AS 'drug.type.value',
+        IFNULL(drug.days,'') AS 'drug.days.value',
+        IFNULL(days.name,'') AS 'drug.days.name',
+        IFNULL(frequency.value,'') AS 'drug.frequency.value',
+        IFNULL(frequency.name,'') AS 'drug.frequency.name',
+        IFNULL(westernMedicineUse.value,'') AS 'drug.westernMedicineUse.value',
+        IFNULL(westernMedicineUse.name,'') AS 'drug.westernMedicineUse.name',
+        IFNULL(chineseMedicineUse.value,'') AS 'drug.chineseMedicineUse.value',
+        IFNULL(chineseMedicineUse.name,'') AS 'drug.chineseMedicineUse.name',
+        IFNULL(drug.single_dosage,'') AS 'drug.singleDosage',
+        IFNULL(drug.total,'') AS 'drug.total',
+        IFNULL(drug.is_unpack_sell,'') AS 'drug.isUnpackSell',
+        IFNULL(stuff.id,'') AS "stuff.id",
+        IFNULL(stuff.name,'') AS 'stuff.name',
+        IFNULL(stuffType.value,'') AS 'stuff.type.value',
+        IFNULL(stuffType.name,'') AS 'stuff.type.name',
+        IFNULL(stuffFactory.name,'') AS 'stuff.factory.name',
+        IFNULL(minUnit.value,'') AS 'stuff.minUnit.value',
+        IFNULL(minUnit.name,'') AS 'stuff.minUnit.name',
+        IFNULL(packUnit.value,'') AS 'stuff.packUnit.value',
+        IFNULL(packUnit.name,'') AS 'stuff.packUnit.name',
+        IFNULL(stuff.pack_number,'') AS 'stuff.packNumber',
+        IFNULL(stuff.is_unpack_sell,'') AS 'stuff.isUnpackSell',
+        IFNULL(stuff.is_out_sell,'') AS 'stuff.isOutSell',
+        IFNULL(stuff.price_out_sell,'') AS 'stuff.priceOutSell',
+        IFNULL(stuff.retail_price,'') AS 'stuff.retailPrice',
+        IFNULL(supplierStock.id,'') AS 'supplierStock.id',
+        IFNULL(supplierStock.norms,'') AS 'supplierStock.norms',
+        IFNULL(supplierStock.bid,'') AS 'supplierStock.bid',
+        IFNULL(supplierStock.least_bid,'') AS 'supplierStock.leastBid',
+        IFNULL(supplierId.id,'') AS 'supplierStock.supplierId.id',
+        IFNULL(supplierId.name,'') AS 'supplierStock.supplierId.name',
+        IFNULL(supplierStock.bid,'') AS 'supplierStock.bid',
+        IFNULL(supplierStock.retail_price,'') AS 'supplierStock.retail_price',
+        IFNULL(supplierStock.batch_no,'') AS 'supplierStock.batchNo',
+        IFNULL(supplierStock.produce_date,'') AS 'supplierStock.produce_date',
+        IFNULL(supplierStock.end_date,'') AS 'supplierStock.end_date'
+    </sql>
+    
+    <sql id="medicinalStorageControlJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN drug drug on drug.id = a.drug_stuff_id
+        LEFT JOIN stuff stuff on stuff.id = a.drug_stuff_id
+        LEFT JOIN sys_dict_item dosisUnit ON dosisUnit.value = drug.dosis_unit
+        LEFT JOIN sys_dict_item preparationUnit ON preparationUnit.value = drug.preparation_unit
+        LEFT JOIN sys_dict_item pack ON pack.value = drug.pack
+        LEFT JOIN sys_dict_item type ON type.value = drug.type
+        LEFT JOIN sys_dict_item westernMedicineUse ON westernMedicineUse.value = drug.western_medicine_use
+        LEFT JOIN sys_dict_item frequency ON frequency.value = drug.frequency
+        LEFT JOIN sys_dict_item days ON days.value = drug.days
+        LEFT JOIN sys_dict_item chineseMedicineUse ON chineseMedicineUse.value = drug.chinese_medicine_use
+        LEFT JOIN manufacture_factory factory ON factory.id = drug.factory
+        LEFT JOIN sys_dict_item stuffType ON stuffType.value = stuff.type
+        LEFT JOIN manufacture_factory stuffFactory ON stuffFactory.id = stuff.factory
+        LEFT JOIN sys_dict_item minUnit ON minUnit.value = stuff.min_unit
+        LEFT JOIN sys_dict_item packUnit ON packUnit.value = stuff.pack_unit
+        LEFT JOIN supplier_stock supplierStock ON supplierStock.id = a.storage_id
+        LEFT JOIN supplier supplierId ON supplierId.id = supplierStock.supplier_id
+    </sql>
+    
+    <select id="get" resultType="com.geeke.stock.entity.MedicinalStorageControl">
+        SELECT 
+            <include refid="medicinalStorageControlColumns"/>
+        FROM medicinal_storage_control a
+        <include refid="medicinalStorageControlJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM medicinal_storage_control a
+        <include refid="medicinalStorageControlJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.stock.entity.MedicinalStorageControl">
+        SELECT 
+            <include refid="medicinalStorageControlColumns"/>
+        FROM medicinal_storage_control a
+        <include refid="medicinalStorageControlJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.stock.entity.MedicinalStorageControl">
+        SELECT 
+            <include refid="medicinalStorageControlColumns"/>
+        FROM medicinal_storage_control a
+        <include refid="medicinalStorageControlJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+      
+    <insert id="insert">
+        INSERT INTO medicinal_storage_control(
+            id,
+            company_id,
+            storage_id,
+            drug_stuff_id,
+            drug_stuff_name,
+            type,
+            storage_stock,
+            used_stock,
+            occupy_stock,
+            surplus_stock,
+            reimburse_stock,
+            remarks,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_flag,
+            return_todo_fee_stock
+        ) VALUES (
+            #{id},
+            #{company.id},                    
+            #{storageId},
+            #{drugStuffId},
+            #{drugStuffName},
+            #{type},
+            #{storageStock},
+            #{usedStock},
+            #{occupyStock},
+            #{surplusStock},
+            #{reimburseStock},
+            #{remarks},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate},
+            #{delFlag},
+            #{returnTodoFeeStock}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE medicinal_storage_control SET     
+            company_id = #{company.id},                    
+            storage_id = #{storageId},
+            drug_stuff_id = #{drugStuffId},
+            drug_stuff_name = #{drugStuffName},
+            type = #{type},
+            storage_stock = #{storageStock},
+            used_stock = #{usedStock},
+            occupy_stock = #{occupyStock},
+            surplus_stock = #{surplusStock},
+            reimburse_stock = #{reimburseStock},
+            remarks = #{remarks},
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            return_todo_fee_stock = #{returnTodoFeeStock}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        UPDATE medicinal_storage_control SET
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO medicinal_storage_control(
+            id,
+            company_id,
+            storage_id,
+            drug_stuff_id,
+            drug_stuff_name,
+            type,
+            storage_stock,
+            used_stock,
+            occupy_stock,
+            surplus_stock,
+            reimburse_stock,
+            remarks,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            del_flag,
+            return_todo_fee_stock
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.company.id},                    
+            #{entity.storageId},
+            #{entity.drugStuffId},
+            #{entity.drugStuffName},
+            #{entity.type},
+            #{entity.storageStock},
+            #{entity.usedStock},
+            #{entity.occupyStock},
+            #{entity.surplusStock},
+            #{entity.reimburseStock},
+            #{entity.remarks},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.delFlag},
+            #{entity.returnTodoFeeStock}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE medicinal_storage_control
+        <set>           
+            <trim prefix="company_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.company.id}
+                </foreach>
+            </trim>
+            <trim prefix="storage_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.storageId}
+                </foreach>
+            </trim>
+            <trim prefix="drug_stuff_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.drugStuffId}
+                </foreach>
+            </trim>
+            <trim prefix="drug_stuff_name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.drugStuffName}
+                </foreach>
+            </trim>
+            <trim prefix="type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.type}
+                </foreach>
+            </trim>
+            <trim prefix="storage_stock=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.storageStock}
+                </foreach>
+            </trim>
+            <trim prefix="used_stock=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.usedStock}
+                </foreach>
+            </trim>
+            <trim prefix="occupy_stock=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.occupyStock}
+                </foreach>
+            </trim>
+            <trim prefix="surplus_stock=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.surplusStock}
+                </foreach>
+            </trim>
+            <trim prefix="reimburse_stock=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.reimburseStock}
+                </foreach>
+            </trim>
+            <trim prefix="remarks=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.remarks}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+            <trim prefix="return_todo_fee_stock=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.returnTodoFeeStock}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE medicinal_storage_control
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+
+    <select id="getSurplusStockByDrugStuffId" resultType="com.geeke.stock.entity.MedicinalStorageControl">
+        select
+         <include refid="medicinalStorageControlColumns"/>
+        from medicinal_storage_control a
+        inner join supplier_stock supplierStock on a.storage_id = supplierStock.id
+        inner join supplier_storage sge on supplierStock.supplier_storage_id = sge.id
+        left join org_company company on company.id = a.company_id
+        LEFT JOIN drug drug on drug.id = a.drug_stuff_id
+        LEFT JOIN stuff stuff on stuff.id = a.drug_stuff_id
+        LEFT JOIN sys_dict_item dosisUnit ON dosisUnit.value = drug.dosis_unit
+        LEFT JOIN sys_dict_item preparationUnit ON preparationUnit.value = drug.preparation_unit
+        LEFT JOIN sys_dict_item pack ON pack.value = drug.pack
+        LEFT JOIN sys_dict_item type ON type.value = drug.type
+        LEFT JOIN sys_dict_item westernMedicineUse ON westernMedicineUse.value = drug.western_medicine_use
+        LEFT JOIN sys_dict_item frequency ON frequency.value = drug.frequency
+        LEFT JOIN sys_dict_item days ON days.value = drug.days
+        LEFT JOIN sys_dict_item chineseMedicineUse ON chineseMedicineUse.value = drug.chinese_medicine_use
+        LEFT JOIN manufacture_factory factory ON factory.id = drug.factory
+        LEFT JOIN sys_dict_item stuffType ON stuffType.value = stuff.type
+        LEFT JOIN manufacture_factory stuffFactory ON stuffFactory.id = stuff.factory
+        LEFT JOIN sys_dict_item minUnit ON minUnit.value = stuff.min_unit
+        LEFT JOIN sys_dict_item packUnit ON packUnit.value = stuff.pack_unit
+        LEFT JOIN supplier supplierId ON supplierId.id = supplierStock.supplier_id
+        where a.drug_stuff_id = #{drugStuffId}
+        and sge.examine not in ('supplierStorageExamineStatus_2')
+        and a.surplus_stock > 0
+        and a.del_flag = 0
+        and supplierStock.end_date >= sysdate()
+        order by a.create_date asc
+    </select>
+
+    <select id="getSurplusStockByDrugStuffIdTo" resultType="com.geeke.stock.entity.MedicinalStorageControl">
+        select
+        <include refid="medicinalStorageControlColumns"/>
+        from medicinal_storage_control a
+        inner join supplier_stock supplierStock on a.storage_id = supplierStock.id
+        inner join supplier_storage sge on supplierStock.supplier_storage_id = sge.id
+        left join org_company company on company.id = a.company_id
+        LEFT JOIN drug drug on drug.id = a.drug_stuff_id
+        LEFT JOIN stuff stuff on stuff.id = a.drug_stuff_id
+        LEFT JOIN sys_dict_item dosisUnit ON dosisUnit.value = drug.dosis_unit
+        LEFT JOIN sys_dict_item preparationUnit ON preparationUnit.value = drug.preparation_unit
+        LEFT JOIN sys_dict_item pack ON pack.value = drug.pack
+        LEFT JOIN sys_dict_item type ON type.value = drug.type
+        LEFT JOIN sys_dict_item westernMedicineUse ON westernMedicineUse.value = drug.western_medicine_use
+        LEFT JOIN sys_dict_item frequency ON frequency.value = drug.frequency
+        LEFT JOIN sys_dict_item days ON days.value = drug.days
+        LEFT JOIN sys_dict_item chineseMedicineUse ON chineseMedicineUse.value = drug.chinese_medicine_use
+        LEFT JOIN manufacture_factory factory ON factory.id = drug.factory
+        LEFT JOIN sys_dict_item stuffType ON stuffType.value = stuff.type
+        LEFT JOIN manufacture_factory stuffFactory ON stuffFactory.id = stuff.factory
+        LEFT JOIN sys_dict_item minUnit ON minUnit.value = stuff.min_unit
+        LEFT JOIN sys_dict_item packUnit ON packUnit.value = stuff.pack_unit
+        LEFT JOIN supplier supplierId ON supplierId.id = supplierStock.supplier_id
+        where a.drug_stuff_id = #{drugStuffId} and a.company_id = #{companyId}
+        and sge.examine not in ('supplierStorageExamineStatus_2')
+        and a.surplus_stock > 0
+        and a.del_flag = 0
+        and supplierStock.end_date >= sysdate()
+        order by a.create_date asc
+    </select>
+
+    <select id="getAll" resultType="com.geeke.stock.entity.MedicinalStorageControl">
+        SELECT
+        <include refid="medicinalStorageControlColumns"/>
+        FROM medicinal_storage_control a
+        <include refid="medicinalStorageControlJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = '0'
+            AND a.company_id = #{companyId}
+            AND a.storage_stock > 0
+            <if test='variety == "0"'>
+                AND a.type = 1
+            </if>
+            <if test='variety == "1"'>
+                AND a.type = 2
+            </if>
+            <if test='type == "0"'>
+                AND (a.storage_stock-a.used_stock-a.reimburse_stock) > 0
+            </if>
+
+        </where>
+        ORDER BY a.update_date DESC
+    </select>
+    <select id="getByDrugOrStuffId" resultType="java.math.BigDecimal">
+        SELECT
+            sum(supplierStock.least_bid*(a.storage_stock-a.used_stock-a.reimburse_stock))
+        FROM medicinal_storage_control a
+            <include refid="medicinalStorageControlJoins"/>
+        WHERE
+        a.id>0
+        AND a.del_flag=0
+        AND a.storage_stock>0
+        AND a.drug_stuff_id = #{drugOrStuffId}
+    </select>
+
+    <select id="getByDrugOrStuffIds" resultType="java.math.BigDecimal">
+        SELECT
+        sum(supplierStock.least_bid*(a.storage_stock-a.used_stock-a.reimburse_stock))
+        FROM medicinal_storage_control a
+        <include refid="medicinalStorageControlJoins"/>
+        WHERE
+        a.id>0
+        AND a.del_flag=0
+        AND a.storage_stock>0
+<!--        AND a.drug_stuff_id in (-->
+<!--            <foreach collection="list" item="item" separator=",">-->
+<!--                #{item.id}-->
+<!--            </foreach>-->
+<!--        )-->
+    </select>
+</mapper>

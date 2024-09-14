@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fieldMapping>
+    <mapping>
+<!-- 药品编码-->
+        <oldFieldName>ypCode</oldFieldName>
+        <newFieldName>code</newFieldName>
+    </mapping>
+<!--  药品名称  -->
+    <mapping>
+        <oldFieldName>ypmc</oldFieldName>
+        <newFieldName>goodsName</newFieldName>
+    </mapping>
+    <!--  别名 -->
+    <mapping>
+        <oldFieldName>spm</oldFieldName>
+        <newFieldName>brandName</newFieldName>
+    </mapping>
+    <!--  拼音  -->
+    <mapping>
+        <oldFieldName>py</oldFieldName>
+        <newFieldName>pinyinCode</newFieldName>
+    </mapping>
+    <!--  剂量  -->
+    <mapping>
+        <oldFieldName>jl</oldFieldName>
+        <newFieldName>dosis</newFieldName>
+    </mapping>
+    <!--  剂量单位  -->
+    <mapping>
+        <oldFieldName>jldw</oldFieldName>
+        <newFieldName>dosisUnit</newFieldName>
+    </mapping>
+    <!--  包装数（制剂数） -->
+    <mapping>
+        <oldFieldName>bzs</oldFieldName>
+        <newFieldName>preparation</newFieldName>
+    </mapping>
+    <!--  制剂单 -->
+    <mapping>
+        <oldFieldName>zxdw</oldFieldName>
+        <newFieldName>preparationUnit</newFieldName>
+    </mapping>
+    <!--  包装单位  -->
+    <mapping>
+        <oldFieldName>bzdw</oldFieldName>
+        <newFieldName>pack</newFieldName>
+    </mapping>
+    <!--  生产厂家  -->
+    <mapping>
+        <oldFieldName>ycmc</oldFieldName>
+        <newFieldName>factory</newFieldName>
+    </mapping>
+    <!--  国药准字  -->
+    <mapping>
+        <oldFieldName>pzwh</oldFieldName>
+        <newFieldName>standardCode</newFieldName>
+    </mapping>
+    <!--  医保编码  -->
+    <mapping>
+        <oldFieldName>ybdm</oldFieldName>
+        <newFieldName>insuranceCode</newFieldName>
+    </mapping>
+    <!--  售价 -->
+    <mapping>
+        <oldFieldName>lsj</oldFieldName>
+        <newFieldName>price</newFieldName>
+    </mapping>
+<!--    药品类型-->
+    <mapping>
+        <oldFieldName>dlCode</oldFieldName>
+        <newFieldName>type</newFieldName>
+    </mapping>
+<!--    状态-->
+    <mapping>
+        <oldFieldName>zt</oldFieldName>
+        <newFieldName>status</newFieldName>
+    </mapping>
+    <!-- 可以添加更多的映射 -->
+</fieldMapping>
+

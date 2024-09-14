@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.admin.dao.UserExtDao">
+
+    <sql id="userExtColumns">
+        a.id AS "id",
+        a.user_id AS "userId",
+        a.sex AS "sex",
+        a.photo_id AS "photoId",
+        a.is_duty AS "isDuty",
+        a.nation AS "nation",
+        a.birthday AS "birthday",
+        a.credit_type AS "creditType",
+        a.credit_num AS "creditNum",
+        a.post AS "post",
+        a.job_type AS "jobType",
+        a.office AS "office",
+        a.description AS "description",
+        a.start_work_time AS "startWorkTime",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.end_work_time AS "endWorkTime",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.del_flag AS "delFlag",
+        a.company_id AS "companyId"
+    </sql>
+
+    <sql id="userExtJoins">
+    </sql>
+
+    <select id="get" resultType="com.geeke.admin.entity.UserExt">
+        SELECT
+        <include refid="userExtColumns"/>
+        FROM sys_user_ext a
+        <include refid="userExtJoins"/>
+        WHERE a.id = #{id}
+    </select>
+
+    <select id="getUserExtByUserId" resultType="com.geeke.admin.entity.UserExt">
+        SELECT
+        <include refid="userExtColumns"/>
+        FROM sys_user_ext a
+        WHERE a.user_id = #{userId}
+        and a.company_id = #{companyId}
+        and a.del_flag != 1
+    </select>
+
+    <select id="getAllUserExtByUserId" resultType="com.geeke.admin.entity.UserExt">
+        SELECT
+        <include refid="userExtColumns"/>
+        FROM sys_user_ext a
+        WHERE a.user_id = #{userId}
+    </select>
+
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM sys_user_ext a
+        <include refid="userExtJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>
+
+    <select id="listPage" resultType="com.geeke.admin.entity.UserExt">
+        SELECT
+        <include refid="userExtColumns"/>
+        FROM sys_user_ext a
+        <include refid="userExtJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="listAll" resultType="com.geeke.admin.entity.UserExt">
+        SELECT
+        <include refid="userExtColumns"/>
+        FROM sys_user_ext a
+        <include refid="userExtJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO sys_user_ext(
+        id,
+        user_id,
+        photo_id,
+        is_duty,
+        nation,
+        sex,
+        birthday,
+        credit_type,
+        credit_num,
+        post,
+        job_type,
+        office,
+        description,
+        start_work_time,
+        create_by,
+        create_date,
+        end_work_time,
+        update_by,
+        update_date,
+        del_flag,
+        company_id
+        ) VALUES (
+        #{id},
+        #{userId},
+        #{photoId},
+        #{isDuty},
+        #{nation},
+        #{sex},
+        #{birthday},
+        #{creditType},
+        #{creditNum},
+        #{post},
+        #{jobType},
+        #{office},
+        #{description},
+        #{startWorkTime},
+        #{createBy},
+        #{createDate},
+        #{endWorkTime},
+        #{updateBy},
+        #{updateDate},
+        #{delFlag},
+        #{companyId}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE sys_user_ext SET
+        user_id = #{userId},
+        photo_id = #{photoId},
+        is_duty = #{isDuty},
+        nation = #{nation},
+        sex = #{sex},
+        birthday = #{birthday},
+        credit_type = #{creditType},
+        credit_num = #{creditNum},
+        post = #{post},
+        job_type = #{jobType},
+        office = #{office},
+        description = #{description},
+        start_work_time = #{startWorkTime},
+        end_work_time = #{endWorkTime},
+        update_by = #{updateBy},
+        update_date = #{updateDate}
+        WHERE id = #{id}
+    </update>
+
+    <update id="delete">
+        UPDATE sys_user_ext SET
+        update_by = #{updateBy},
+        update_date = #{updateDate},
+        del_flag = #{DEL_FLAG_DELETE}
+        WHERE id = #{id}
+    </update>
+
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO sys_user_ext(
+        id,
+        user_id,
+        photo_id,
+        is_duty,
+        nation,
+        sex,
+        birthday,
+        credit_type,
+        credit_num,
+        post,
+        job_type,
+        office,
+        description,
+        start_work_time,
+        create_by,
+        create_date,
+        end_work_time,
+        update_by,
+        update_date,
+        del_flag,
+        company_id
+        ) VALUES
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+            (
+            #{entity.id},
+            #{entity.userId},
+            #{entity.photoId},
+            #{entity.isDuty},
+            #{entity.nation},
+            #{entity.sex},
+            #{entity.birthday},
+            #{entity.creditType},
+            #{entity.creditNum},
+            #{entity.post},
+            #{entity.jobType},
+            #{entity.office},
+            #{entity.description},
+            #{entity.startWorkTime},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.endWorkTime},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.delFlag},
+            #{entity.companyId}
+            )
+        </foreach>
+    </insert>
+
+    <update id="bulkUpdate" parameterType="java.util.List">
+        UPDATE sys_user_ext
+        <set>
+            <trim prefix="user_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.userId}
+                </foreach>
+            </trim>
+            <trim prefix="photo_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.photoId}
+                </foreach>
+            </trim>
+            <trim prefix="is_duty=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isDuty}
+                </foreach>
+            </trim>
+            <trim prefix="nation=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.nation}
+                </foreach>
+            </trim>
+            <trim prefix="birthday=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.birthday}
+                </foreach>
+            </trim>
+            <trim prefix="credit_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.creditType}
+                </foreach>
+            </trim>
+            <trim prefix="credit_num=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.creditNum}
+                </foreach>
+            </trim>
+            <trim prefix="post=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.post}
+                </foreach>
+            </trim>
+            <trim prefix="job_type=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.jobType}
+                </foreach>
+            </trim>
+            <trim prefix="office=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.office}
+                </foreach>
+            </trim>
+            <trim prefix="description=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.description}
+                </foreach>
+            </trim>
+            <trim prefix="start_work_time=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.startWorkTime}
+                </foreach>
+            </trim>
+            <trim prefix="end_work_time=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.endWorkTime}
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+
+
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE sys_user_ext
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+
+</mapper>

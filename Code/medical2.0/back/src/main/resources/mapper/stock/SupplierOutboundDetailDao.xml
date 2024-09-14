@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.stock.dao.SupplierOutboundDetailDao">
+    <sql id="supplierOutboundDetailColumns">
+       <!--  a.id AS "id",
+        a.company_id AS "company.id",
+        a.supplier_outbound_id AS "supplierOutbound.id",
+        a.drug_id AS "drug.id",
+        a.stuff_id AS "stuff.id",
+        a.current_stock AS "currentStock",
+        a.number,
+        a.medicinal_storage_id AS "medicinalStorage.id",
+        a.remarks -->
+        a.id,
+        a.company_id AS `company.id`,
+        a.supplier_outbound_id AS `supplierOutbound.id`,
+        a.drug_id AS `drug.id`,
+        a.stuff_id AS `stuff.id`,
+        a.current_stock AS currentStock,
+        a.number,
+        a.medicinal_storage_id AS `medicinalStorage.id`,
+        a.remarks,
+        a.create_by AS createBy,
+        a.create_date AS createDate,
+        a.update_by AS updateBy,
+        a.update_date AS updateDate,
+        c.drug_stuff_id AS `medicinalStorage.storageId`,
+        c.drug_stuff_name AS `medicinalStorage.drugStuffName`,
+        c.type AS `medicinalStorage.type`,
+        c.used_stock AS `medicinalStorage.usedStock`,
+        c.occupy_stock AS `medicinalStorage.occupyStock`,
+        c.surplus_stock AS `medicinalStorage.surplusStock`,
+        c.reimburse_stock AS `medicinalStorage.reimburseStock`,
+        drug.goods_name AS `drug.goodsName`,
+        drug.pack AS `drug.pack.value`,
+        drug.brand_name AS `drug.brandName`,
+        drug.pinyin_code AS `drug.pinyinCode`,
+        drug.`code` AS `drug.code`,
+        drug.source AS `drug.source`,
+        drug.nature AS `drug.nature`,
+        drug.standard_code AS `drug.standardCode`,
+        drug.bit_code AS `drug.bitCode`,
+        drug.bar_code AS `drug.barCode`,
+        drug.insurance_code AS `drug.insuranceCode`,
+        drug.dosis AS `drug.dosis`,
+        drug.dosis_unit AS `drug.dosisUnit`,
+        drug.preparation AS `drug.preparation`,
+        drug.preparation_unit AS `drug.preparationUnit.value`,
+        drug.price AS `drug.price`,
+        drug.retail_price AS `drug.retailPrice`,
+        drug.`status` AS `drug.status`,
+        IFNULL(drug.factory,'') AS 'drug.factory.id',
+        IFNULL(factory.name,'') AS 'drug.factory.name',
+        stuff.`name` AS `stuff.name`,
+        stuff.common_name AS `stuff.companyName`,
+        stuff.pinyin_code AS `stuff.pinyinCode`,
+        stuff.`code` AS `stuff.code`,
+        stuff.type AS `stuff.type`,
+        stuff.nature AS `stuff.nature`,
+        stuff.bar_code AS `stuff.barCode`,
+        stuff.registration_name AS `stuff.registrationName`,
+        stuff.registration_code AS `stuff.registrationCode`,
+        stuff.specifications AS `stuff.specifications`,
+        stuff.pack_number AS `stuff.packNumber`,
+        stuff.pack_unit AS `stuff.packUnit.value`,
+        stuff.min_unit AS `stuff.minUnit.value`,
+        stuff.price_out_sell AS `stuff.priceOutSell`,
+        stuff.is_unpack_sell AS `stuff.isUnpackSell`,
+        stuff.factory AS 'stuff.factory.id',
+        IFNULL(stuffFactory.name,'') AS 'stuff.factory.name',
+        stock.id AS `supplierStock.id`,
+        stuff.retail_price AS `stuff.retailPrice`,
+        stock.norms AS `supplierStock.norms`,
+        stock.factory,
+        stock.batch_no AS `supplierStock.batchNo`,
+        stock.produce_date AS `supplierStock.produceDate`,
+        stock.end_date AS `supplierStock.endDate`,
+        stock.number AS `supplierStock.number`,
+        stock.bid AS `supplierStock.bid`,
+        stock.least_bid AS `supplierStock.leastBid`,
+        stock.retail_price AS `supplierStock.retailPrice`,
+        stock.all_bid AS `supplierStock.allBid`,
+        stock.all_retail_price AS `supplierStock.allRetailPrice`
+    </sql>
+
+    <sql id="supplierOutboundDetailJoins">
+        INNER JOIN medicinal_storage_control AS c ON a.medicinal_storage_id = c.id
+        LEFT JOIN supplier_stock AS stock ON stock.id = c.storage_id
+        LEFT JOIN drug ON a.drug_id = drug.id
+        LEFT JOIN stuff ON a.stuff_id = stuff.id
+        LEFT JOIN manufacture_factory stuffFactory ON stuffFactory.id = stuff.factory
+        LEFT JOIN manufacture_factory factory ON factory.id = drug.factory
+    </sql>
+
+    <insert id="saveDrug">
+        INSERT INTO supplier_outbound_detail(
+        id,
+        company_id,
+        supplier_outbound_id,
+        drug_id,
+        stuff_id,
+        current_stock,
+        number,
+        medicinal_storage_id,
+        remarks,
+        create_by,
+        create_date,
+        update_by,
+        update_date
+        ) VALUES
+        <foreach collection="medicinalStorageControls" item="item" open="" separator="," close="" index="index">
+            (
+            #{item.id},
+            #{item.company.id},
+            #{item.supplierOutbound.id},
+            <choose>
+                <when test="item.drug != null">
+                    #{item.drug.id},
+                </when>
+                <otherwise>
+                    null,
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="item.stuff != null">
+                    #{item.stuff.id},
+                </when>
+                <otherwise>
+                    null,
+                </otherwise>
+            </choose>
+            #{item.currentStock},
+            #{item.number},
+            #{item.medicinalStorage.id},
+            #{item.remark},
+            #{item.createBy},
+            #{item.createDate},
+            #{item.updateBy},
+            #{item.updateDate}
+            )
+        </foreach>
+    </insert>
+
+    <select id="getByOutboundId" resultType="com.geeke.stock.entity.SupplierOutboundDetail">
+        SELECT
+        <include refid="supplierOutboundDetailColumns"/>
+        FROM supplier_outbound_detail a
+        <include refid="supplierOutboundDetailJoins"/>
+        <where>
+            1=1
+            AND a.supplier_outbound_id = #{outboundId}
+        </where>
+    </select>
+
+    <delete id="deleteByOutboundId">
+        DELETE FROM supplier_outbound_detail a
+        <where>
+            1=1
+            AND a.supplier_outbound_id = #{outboundId}
+        </where>
+    </delete>
+
+    <delete id="delete">
+        DELETE FROM supplier_outbound_detail
+        <where>
+            id = #{id}
+        </where>
+    </delete>
+
+    <insert id="insert">
+        INSERT INTO supplier_outbound_detail(
+        id,
+        company_id,
+        supplier_outbound_id,
+        drug_id,
+        stuff_id,
+        current_stock,
+        number,
+        medicinal_storage_id,
+        remarks,
+        create_by,
+        create_date,
+        update_by,
+        update_date
+        ) VALUES
+            (
+            #{id},
+            #{company.id},
+            #{supplierOutbound.id},
+            <choose>
+                <when test="drug != null and drug.id>0">
+                    #{drug.id},null,
+                </when>
+            </choose>
+            <choose>
+                <when test="stuff != null and stuff.id>0">
+                    null,#{stuff.id},
+                </when>
+            </choose>
+            #{currentStock},
+            #{number},
+            #{medicinalStorage.id},
+            #{remark},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate}
+            )
+    </insert>
+
+    <update id="update">
+        UPDATE supplier_outbound_detail SET
+            name = #{name},
+            current_stock = #{currentStock},
+            number=#{number},
+            remarks = #{remarks}
+        WHERE id = #{id}
+    </update>
+
+    <select id="get" resultType="com.geeke.stock.entity.SupplierOutboundDetail">
+        SELECT
+        <include refid="supplierOutboundDetailColumns"/>
+        FROM supplier_outbound_detail a
+        <include refid="supplierOutboundDetailJoins"/>
+        WHERE a.id = #{id}
+    </select>
+</mapper>

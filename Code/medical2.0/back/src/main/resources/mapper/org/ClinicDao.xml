@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.org.dao.ClinicDao">
+    
+    <sql id="clinicColumns">
+        a.id AS "id",
+        a.name AS "name",
+        a.lessee_id AS "lesseeId.id",
+        lesseeId.user_name AS "lesseeId.userName",
+        a.address_province AS "addressProvince",
+        a.address_city AS "addressCity",
+        a.address_region AS "addressRegion",
+        a.address AS "address",
+        a.phone_number AS "phoneNumber",
+        a.license_subject AS "licenseSubject",
+        a.file_id AS "fileId",
+        a.version_id AS "version.id",
+        IFNULL(version.name,'') AS "version.name",
+        a.status AS "status",
+        a.is_institution AS "isInstitution",
+        a.start_use_date AS "startUseDate",
+        a.expire_date AS "expireDate",
+        a.create_by AS "createBy",
+        a.create_date AS "createDate",
+        a.update_by AS "updateBy",
+        a.update_date AS "updateDate",
+        a.remarks AS "remarks",
+        a.del_flag AS "delFlag"
+    </sql>
+    
+    <sql id="clinicJoins">
+        LEFT JOIN lessee lesseeId ON lesseeId.id = a.lessee_id
+        LEFT JOIN clinic_version version ON version.id = a.version_id
+    </sql>
+    
+    <select id="get" resultType="com.geeke.org.entity.Clinic">
+        SELECT 
+            <include refid="clinicColumns"/>
+        FROM clinic a
+        <include refid="clinicJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM clinic a
+        <include refid="clinicJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.org.entity.Clinic">
+        SELECT 
+            <include refid="clinicColumns"/>
+        FROM clinic a
+        <include refid="clinicJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.org.entity.Clinic">
+        SELECT 
+            <include refid="clinicColumns"/>
+        FROM clinic a
+        <include refid="clinicJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+                ORDER BY a.update_date DESC
+            </otherwise>
+        </choose>
+    </select>
+      
+    <insert id="insert">
+        INSERT INTO clinic(
+            id,
+            name,
+            lessee_id,
+            address_province,
+            address_city,
+            address_region,
+            address,
+            phone_number,
+            license_subject,
+            file_id,
+            version_id,
+            status,
+            is_institution,
+            start_use_date,
+            expire_date,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            remarks,
+            del_flag
+        ) VALUES (
+            #{id},
+            #{name},
+            #{lesseeId.id},                    
+            #{addressProvince},
+            #{addressCity},
+            #{addressRegion},
+            #{address},
+            #{phoneNumber},
+            #{licenseSubject},
+            #{fileId},
+            #{version.id},                    
+            #{status},
+            #{isInstitution},
+            #{startUseDate},
+            #{expireDate},
+            #{createBy},
+            #{createDate},
+            #{updateBy},
+            #{updateDate},
+            #{remarks},
+            #{delFlag}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE clinic SET     
+            name = #{name},
+            lessee_id = #{lesseeId.id},                    
+            address_province = #{addressProvince},
+            address_city = #{addressCity},
+            address_region = #{addressRegion},
+            address = #{address},
+            phone_number = #{phoneNumber},
+            license_subject = #{licenseSubject},
+            file_id = #{fileId},
+            version_id = #{version.id},                    
+            status = #{status},
+            is_institution = #{isInstitution},
+            start_use_date = #{startUseDate},
+            expire_date = #{expireDate},
+            update_date = #{updateDate},
+            remarks = #{remarks}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        UPDATE clinic SET
+            update_by = #{updateBy},
+            update_date = #{updateDate},
+            del_flag = #{DEL_FLAG_DELETE}
+        <choose>
+            <when test="id !=null and id != ''">
+                WHERE id = #{id}
+            </when>
+            <otherwise>
+                WHERE lessee_id = #{lesseeId.id}
+            </otherwise>
+        </choose>
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO clinic(
+            id,
+            name,
+            lessee_id,
+            address_province,
+            address_city,
+            address_region,
+            address,
+            phone_number,
+            license_subject,
+            file_id,
+            version_id,
+            status,
+            is_institution,
+            start_use_date,
+            expire_date,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            remarks,
+            del_flag
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.name},
+            #{entity.lesseeId.id},                    
+            #{entity.addressProvince},
+            #{entity.addressCity},
+            #{entity.addressRegion},
+            #{entity.address},
+            #{entity.phoneNumber},
+            #{entity.licenseSubject},
+            #{entity.fileId},
+            #{entity.version.id},                    
+            #{entity.status},
+            #{entity.isInstitution},
+            #{entity.startUseDate},
+            #{entity.expireDate},
+            #{entity.createBy},
+            #{entity.createDate},
+            #{entity.updateBy},
+            #{entity.updateDate},
+            #{entity.remarks},
+            #{entity.delFlag}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE clinic
+        <set>           
+            <trim prefix="name=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.name}
+                </foreach>
+            </trim>
+            <trim prefix="lessee_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.lesseeId.id}
+                </foreach>
+            </trim>
+            <trim prefix="address_province=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.addressProvince}
+                </foreach>
+            </trim>
+            <trim prefix="address_city=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.addressCity}
+                </foreach>
+            </trim>
+            <trim prefix="address_region=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.addressRegion}
+                </foreach>
+            </trim>
+            <trim prefix="address=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.address}
+                </foreach>
+            </trim>
+            <trim prefix="phone_number=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.phoneNumber}
+                </foreach>
+            </trim>
+            <trim prefix="license_subject=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.licenseSubject}
+                </foreach>
+            </trim>
+            <trim prefix="file_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.fileId}
+                </foreach>
+            </trim>
+            <trim prefix="version_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.version.id}
+                </foreach>
+            </trim>
+            <trim prefix="status=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.status}
+                </foreach>
+            </trim>
+            <trim prefix="is_Institution=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.isInstitution}
+                </foreach>
+            </trim>
+            <trim prefix="start_use_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.startUseDate}
+                </foreach>
+            </trim>
+            <trim prefix="expire_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.expireDate}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+            <trim prefix="remarks=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.remarks}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        UPDATE clinic
+        <set>
+            <trim prefix="del_flag=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then 1
+                </foreach>
+            </trim>
+            <trim prefix="update_by=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateBy}
+                </foreach>
+            </trim>
+            <trim prefix="update_date=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.updateDate}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+</mapper>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.geeke.common.dao.ColumnViewDao">
+
+    <select id="list" resultType="com.geeke.common.entity.ColumnView">
+        SELECT 
+            cv.id        AS     "id",
+            cv.prop      AS        "prop",
+            cv.display   AS     "display",
+            cv.sort      AS     "sort",
+            cv.width    AS      "width"
+        FROM sys_column_view cv
+        WHERE cv.table_id = #{tableId} AND cv.user_id = #{userId} AND cv.router_id = #{routerId}
+        ORDER BY cv.sort
+    </select>
+    
+    <insert id="insert">
+        INSERT INTO sys_column_view(
+            id,
+            table_id,
+            user_id,
+            router_id,
+            prop,
+            display,
+            sort,
+            width
+        ) VALUES (
+            #{id}, 
+            #{tableId},
+            #{userId},
+            #{routerId},
+            #{prop},
+            #{display},
+            #{sort},
+            #{width}
+        )       
+    </insert>
+
+    <update id="update">
+        UPDATE sys_column_view SET display=#{display}, sort=#{sort}, width=#{width} WHERE id=#{id}
+    </update>
+
+    <delete id="deleteAll">
+        DELETE FROM sys_column_view WHERE table_id=#{tableId} AND user_id=#{userId} AND router_id=#{routerId}
+    </delete>
+    
+    <delete id="delete">
+        DELETE FROM sys_column_view WHERE id=#{id}
+    </delete>
+    
+    
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO sys_column_view(
+            id,
+            table_id,
+            user_id,
+            router_id,
+            prop,
+            display,
+            sort,
+            width
+        ) VALUES 
+        <foreach collection="list" index="index" item="item" open="" separator="," close="">
+        (
+            #{item.id}, 
+            #{item.tableId},
+            #{item.userId},
+            #{item.routerId},
+            #{item.prop},
+            #{item.display},
+            #{item.sort},
+            #{item.width}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate">    
+        UPDATE sys_column_view
+        <set>
+            <trim prefix="display=case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    when id=#{item.id} then #{item.display}
+                </foreach>
+            </trim>
+            <trim prefix="sort=case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    when id=#{item.id} then #{item.sort}
+                </foreach>
+            </trim>
+            <trim prefix="width=case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    when id=#{item.id} then #{item.width}
+                    </foreach>
+            </trim>
+        </set>
+        WHERE id in
+        <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+    
+</mapper>  

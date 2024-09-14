@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.toll.dao.TollDetailDao">
+    
+    <sql id="tollDetailColumns">
+        a.id AS "id",
+        a.recipel_id AS "recipel.id",
+        IFNULL(recipel.name,'') AS "recipel.name",
+        a.toll_id AS "tollId.id",
+        IFNULL(tollId.name,'') AS "tollId.name"
+    </sql>
+    
+    <sql id="tollDetailJoins">
+        LEFT JOIN recipel_info recipel ON recipel.id = a.recipel_id
+        LEFT JOIN toll_info tollId ON tollId.id = a.toll_id
+    </sql>
+    
+    <select id="get" resultType="com.geeke.toll.entity.TollDetail">
+        SELECT 
+            <include refid="tollDetailColumns"/>
+        FROM toll_detail a
+        <include refid="tollDetailJoins"/>
+        WHERE a.id = #{id}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM toll_detail a
+        <include refid="tollDetailJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            
+            <include refid="Common.whereParams"/>
+        </where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.toll.entity.TollDetail">
+        SELECT 
+            <include refid="tollDetailColumns"/>
+        FROM toll_detail a
+        <include refid="tollDetailJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+            <otherwise>
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.toll.entity.TollDetail">
+        SELECT 
+            <include refid="tollDetailColumns"/>
+        FROM toll_detail a
+        <include refid="tollDetailJoins"/>
+        <where>
+            1=1
+            AND a.id > 0
+            
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>
+            <otherwise>
+            </otherwise>
+        </choose>
+    </select>
+      
+    <insert id="insert">
+        INSERT INTO toll_detail(
+            id,
+            recipel_id,
+            toll_id
+        ) VALUES (
+            #{id},
+            #{recipel.id},                    
+            #{tollId.id}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE toll_detail SET     
+            recipel_id = #{recipel.id},                    
+            toll_id = #{tollId.id}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        DELETE FROM toll_detail
+        <choose>
+            <when test="id !=null and id != ''">
+                WHERE id = #{id}
+            </when>
+            <otherwise>
+                WHERE toll_id = #{tollId.id}
+            </otherwise>
+        </choose>
+    </update>
+        
+    <insert id="bulkInsert" parameterType="java.util.List">
+        INSERT INTO toll_detail(
+            id,
+            recipel_id,
+            toll_id
+        ) VALUES 
+        <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
+        (
+            #{entity.id},
+            #{entity.recipel.id},                    
+            #{entity.tollId.id}
+        )
+        </foreach>
+    </insert>
+    
+    <update id="bulkUpdate" parameterType="java.util.List">    
+        UPDATE toll_detail
+        <set>           
+            <trim prefix="recipel_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.recipel.id}
+                </foreach>
+            </trim>
+            <trim prefix="toll_id=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.tollId.id}
+                </foreach>
+            </trim>
+        </set>
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+    
+    <update id="bulkDelete" parameterType="java.util.List">
+        DELETE FROM toll_detail
+        WHERE id IN
+        <foreach collection="entitys" item="entity" index="index" separator="," open="(" close=")">
+            #{entity.id}
+        </foreach>
+    </update>
+    
+</mapper>
