@@ -17,8 +17,7 @@
         a.update_by AS "updateBy",
         a.update_date AS "updateDate",
         a.del_flag AS "delFlag",
-        a.remarks AS "remarks",
-        a.patient_id AS "patientId"
+        a.remarks AS "remarks"
     </sql>
     
     <sql id="recipetemplateJoins">
@@ -123,8 +122,9 @@
             update_by,
             update_date,
             del_flag,
-            patient_id,
-            single_dosage
+            create_id
+#             patient_id,
+#             single_dosage
         ) VALUES (
             #{id},
             #{company.id},                    
@@ -137,8 +137,9 @@
             #{updateBy},
             #{updateDate},
             #{delFlag},
-            #{patientId},
-            #{singleDosage}
+                    #{createId}
+#             {patientId},
+#             {singleDosage}
         )
     </insert>
     
@@ -156,8 +157,8 @@
         update_by=#{updateBy},
         update_date=#{updateDate},
         del_flag=#{delFlag},
-        remarks=#{remarks},
-        patient_id=#{patientId}
+        remarks=#{remarks}
+#         patient_id=#{patientId}
         WHERE id = #{id}
     </update>
     
@@ -291,7 +292,7 @@
          update_by,
          update_date,
          del_flag,
-         patient_id,
+
          remarks,
          create_id
         )values(
@@ -307,7 +308,6 @@
         #{updateBy},
         #{updateDate},
         #{delFlag},
-        #{patientId},
         #{remarks},
         #{createId}
         )
@@ -321,7 +321,7 @@
         <where>
             1=1
             AND a.id > 0
-            AND a.patient_id = #{id}
+#             AND a.patient_id = #{id}
             AND a.del_flag = #{DEL_FLAG_NORMAL}
             <include refid="Common.whereParams"/>
         </where>

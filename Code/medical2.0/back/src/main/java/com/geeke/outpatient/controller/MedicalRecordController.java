@@ -1,16 +1,16 @@
 package com.geeke.outpatient.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
 import com.geeke.org.entity.Company;
 import com.geeke.outpatient.entity.*;
-import com.geeke.outpatient.service.MedicalRecordService;
-import com.geeke.outpatient.service.PatientService;
-import com.geeke.outpatient.service.RegistrationService;
-import com.geeke.outpatient.service.RemoteDiagnosisTreatmentService;
+import com.geeke.outpatient.service.*;
 import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.ResultUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -33,6 +33,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/outpatient/medicalRecord")
+@RequiredArgsConstructor
 public class MedicalRecordController extends BaseController {
 
     @Autowired
@@ -43,6 +44,11 @@ public class MedicalRecordController extends BaseController {
     private PatientService patientService;
 	@Autowired
     private RegistrationService registrationService;
+
+    private final XtZdService zdService;
+
+    private final  XtZyzhService xtZyzhService;
+
 
     @GetMapping("/{id}")
     public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
@@ -201,5 +207,53 @@ public class MedicalRecordController extends BaseController {
         String id = medicalRecordService.save(entity).getId();
         return ResponseEntity.ok(ResultUtil.successJson(id));
     }
+
+
+    /**
+     * 获取系统诊断
+     * @param searchParam
+     * @return
+     */
+    @PostMapping("/getxtzd")
+    public ResponseEntity<JSONObject> getxtzd(String searchParam,String zdType){
+        LambdaQueryWrapper<XtZd> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper
+                .eq(XtZd::getZdlx, zdType)
+                .eq(XtZd::getZt, 1)
+                .and(!StringUtils.isEmpty(searchParam),wrapper -> wrapper
+                        .like(XtZd::getZdmc, searchParam)
+                        .or()
+                        .like( XtZd::getPy, searchParam) // Py 字段模糊匹配
+                        .or()
+                        .like(XtZd::getZdcode, searchParam)
+                ); // Zdcode 字段模糊匹配
+        IPage<XtZd> page = new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(1, 30);
+        page = zdService.page(page, queryWrapper);
+        return ResponseEntity.ok(ResultUtil.successJson(page));
+    }
+
+    /**
+     * 获取系统中医证候
+     * @param searchParam
+     * @return
+     */
+    @PostMapping("/getzyzh")
+    public ResponseEntity<JSONObject> getxtzd(String searchParam){
+        LambdaQueryWrapper<XtZyzh> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper
+                .eq(XtZyzh::getZt, 1)
+                .and(!StringUtils.isEmpty(searchParam),wrapper -> wrapper
+                                .like( XtZyzh::getZhmc, searchParam)
+                                .or()
+                                .like( XtZyzh::getZhcode, searchParam)
+                                .or()
+                                .like( XtZyzh::getPy, searchParam)
+                );
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<XtZyzh> page = xtZyzhService.page(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(1, 30), queryWrapper);
+        return ResponseEntity.ok(ResultUtil.successJson(page));
+    }
+
+
+
 
 }

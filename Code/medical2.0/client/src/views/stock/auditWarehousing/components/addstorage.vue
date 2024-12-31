@@ -53,6 +53,12 @@
             >
             </el-table-column>
             <el-table-column
+              v-if="addType == 1"
+              prop="drugTracCodg"
+              label="药品追溯码"
+            >
+            </el-table-column>
+            <el-table-column
               prop="specification"
               label="规格"
               width="100"
@@ -171,6 +177,22 @@
               ></el-date-picker>
             </template>
           </el-table-column>
+          <el-table-column
+            v-if="addType == 1"
+            prop="drugTracCodg"
+            label="药品追溯码"
+          > <template slot-scope="scope">
+            <el-button :type="scope.row.completed ? 'success' : 'warning'" @click="openDialog(scope)">输入药品追溯码</el-button>
+          </template></el-table-column>
+          <el-table-column prop="specification" label="是否拆零">
+            <template slot-scope="scope"><el-switch
+              v-model="scope.row.isSplit"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              @change="updateMaxInputCount(scope.row)">
+            </el-switch>
+            </template>
+          </el-table-column>
           <el-table-column label="数量" :required="true" width="150" prop="specification">
             <template slot-scope="scope">
               <div class="quantity-box">
@@ -226,6 +248,7 @@
               <el-button
                 type="danger"
                 size="small"
+                style="white-space: nowrap;"
                 @click.native.prevent="
                   deleteRow(scope.$index, storageDetailTable)
                 "
@@ -273,6 +296,19 @@
         </div>
       </el-col>
     </el-row>
+    <!-- 点击输入追溯码后弹出框 -->
+    <el-dialog @keydown.native="handleKeydown" :modal="false"  :visible.sync="drugDialogVisible" title="输入药品追溯码" @open="focusInput" @close="resetInput">
+      <el-input
+        v-model="currentInput"
+        placeholder="请输入药品追溯码"
+        ref="inputFocus"
+      ></el-input>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="submitInput" type="primary">确定</el-button>
+        <el-button @click="drugDialogVisible = false">取消</el-button>
+      </span>
+    </el-dialog>
+
     <!-- 点击导入后弹出框 -->
     <el-dialog :title="addType===1 ?'导入药品':'导入材料'" :visible.sync="importDialogVisible" width="45%"
     :append-to-body="true"
@@ -406,8 +442,20 @@
         //系统参数配置
         systemParamConfig: "",
         systemParamConfigSearch: {
-          params: []
+          params: [{
+            columnName: "company_id",
+            queryType: "=",
+            value: currentUser.company.id
+          }
+          ]
         },
+        //追溯码弹窗控制
+        drugDialogVisible: false,
+        currentInput: '',
+        inputCount: 0, // 当前输入次数
+        maxInputCount: 0, // 最大输入次数
+        currentRow: null, // 当前操作的行
+        allInputs: [], // 所有输入的追溯码
       };
     },
     watch: {
@@ -483,6 +531,58 @@
       },
     },
     methods: {
+      handleKeydown(event) {
+        if (event.key === 'Enter') {
+          // 调用确定操作
+          this.submitInput();
+        }
+      },
+      focusInput() {
+        // 使用 ref 来访问输入框并调用 focus() 方法
+        this.$nextTick(() => {
+          this.$refs.inputFocus.focus(); // 自动聚焦输入框
+        });
+      },
+      openDialog(scope) {
+        if ( scope.row.quantity <= 0 || ! scope.row.quantity) {
+          this.$message.error('请先输入有效的数量与是否拆零！');
+          return; // 如果数量无效，停止执行
+        }
+        this.currentRow = scope.row; // 记录当前行
+        this.inputCount = 0; // 重置输入计数
+        this.allInputs = []; // 清空之前的输入
+        this.drugDialogVisible = true;
+        // 根据当前行的数量设置基础输入次数和最大输入次数
+        const quantity = this.currentRow.quantity;
+        this.maxInputCount = this.currentRow.isSplit ? this.currentRow.preparation * quantity : quantity;
+      },
+      submitInput() {
+        if (this.currentInput) {
+          this.allInputs.push(this.currentInput); // 添加当前输入
+          this.currentRow.drugTracCodg = this.allInputs.join(','); // 更新当前行的药品追溯码
+          this.currentInput = ''; // 清空输入框
+          this.inputCount++; // 增加输入计数
+
+          // 检查是否达到最大输入次数
+          if (this.inputCount >= this.maxInputCount) {
+            this.$set(this.currentRow, 'completed', true); // 设置为完成状态
+            this.drugDialogVisible = false; // 关闭对话框
+          }
+          this.$nextTick(() => {
+            this.$refs.inputFocus.focus(); // 自动聚焦输入框
+          });
+        }
+      },
+      resetInput() {
+        this.currentInput = ''; // 清空输入框
+        this.inputCount = 0; // 重置输入计数
+        this.currentRow = null; // 清空当前行记录
+      },
+      updateMaxInputCount(row) {
+        // 每次开关状态改变时更新最大输入次数
+        const quantity = row.quantity;
+        this.maxInputCount = row.isSplit ? quantity * quantity : quantity;
+      },
       //  药品
       RowClickSurchargeTable(row) {
         console.log(row, "====????");
@@ -495,6 +595,7 @@
           factoryName: "",
           factoryID: "",
           batchNumber: "",
+          drugTracCodg:"",
           producedDate: null,
           expireDate: null,
           quantity: "",
@@ -510,6 +611,7 @@
         newStorage.goodsID = row.id;
         newStorage.goodsName = row.goodsName ? row.goodsName : row.name;
         newStorage.goodsType = row.goodsType;
+        newStorage.drugTracCodg = row.drugTracCodg;
         newStorage.specification = row.specification;
         newStorage.factoryName = row.factory.name;
         newStorage.factoryID = row.factory.id;
@@ -540,6 +642,7 @@
           var newStorage = {
             goodsID: "",
             goodsName: "",
+            drugTracCodg:"",
             specification: "",
             factoryName: "",
             factoryID: "",
@@ -567,6 +670,7 @@
           newStorage.preparationUnit = this.selectGoodsTemp.preparationUnit
           newStorage.preparation = this.selectGoodsTemp.preparation
           newStorage.packNumber = this.selectGoodsTemp.packNumber
+          newStorage.drugTracCodg = this.selectGoodsTemp.drugTracCodg
           console.log(this.selectGoodsTemp, "]]]]]");
           console.log(newStorage, '[[[[[?');
           this.storageDetailTable.push(newStorage);
@@ -940,6 +1044,7 @@
             code: "",
             breed: this.otherInfo.breed,
             number: this.stuffPackNum == 0 ? this.otherInfo.totalNumber * this.drugPreparation : this.otherInfo.totalNumber * this.stuffPackNum,
+
             allBid: this.otherInfo.allBid,
             allRetailPrice: this.otherInfo.allRetailPrice,
             cancelDate: null,
@@ -992,6 +1097,7 @@
                 id: element.goodsType === 1 ? element.goodsID : null,
                 goodsName: element.goodsType === 1 ? element.goodsName : null,
               },
+              drugTracCodg:element.drugTracCodg,
               supplierStorage: null,
               stuff: {
                 // 材料名称
@@ -1015,12 +1121,13 @@
                   ? this.$moment(element.expireDate).format("YYYY-MM-DD HH:mm:ss")
                   : null, // 有效期
               number: element.goodsType == 1 ? element.quantity * element.preparation : element.quantity * element.packNumber, // 数量
+              cnt: element.goodsType == 1 ? element.quantity : element.quantity * element.packNumber, // 医保字段数量
               bid: element.inPrice, // 进价
               retailPrice: element.outPrice, // 零售价
               allBid: element.totalInPrice, // 总进价
               allRetailPrice: element.totalOutPrice, // 总零售价
               remarks: "", // 备注信息
-              leastBid: element.goodsType === 1 ? Number((element.inPrice / element.preparation).toFixed(4)) : Number((element.inPrice / element.packNumber).toFixed(4))
+              leastBid: element.goodsType === 1 ? Number((element.inPrice / element.preparation).toFixed(4)) : Number((element.inPrice / element.packNumber).toFixed(4)),
             };
             saveInfo.supplierStockList.push(detail);
           } catch (e) {

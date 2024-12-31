@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.geeke.common.persistence.DataEntity;
 import com.geeke.org.entity.Company;
 import com.geeke.sys.entity.DictItem;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
@@ -13,8 +15,9 @@ import java.math.BigDecimal;
  * @author txl
  * @version 2022-07-20
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class RecipelDetail extends DataEntity<RecipelDetail> {
-
 	private static final long serialVersionUID = 1014474470772900073L;
 	private Company company;      // 诊所id 
 	private RecipelInfo recipelInfo;      // 处方 
@@ -42,6 +45,9 @@ public class RecipelDetail extends DataEntity<RecipelDetail> {
 	private BigDecimal executions;			//执行进度
 	private int infuseType;        //输液执行状态
 	private int treatment;        //治疗执行状态
+
+	//医保字段
+	private String drugTracCodg ;//药品追溯码
 
 	public int getTreatment() {
 		return treatment;

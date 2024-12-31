@@ -4,15 +4,23 @@
       <el-card class="box-card" shadow="always" body-style="{width: '100%',height: '100%'}">
         <div slot="header" class="aside-header">
           <span>今日就诊</span>
+          <el-button icon="el-icon-plus"
+                     style="  position: absolute; top: -8px; right: -15px;" type="primary"
+                     @click="onCreateRegistration()"
+
+          >
+            快速接诊
+          </el-button>
+          <!-- 编辑窗口  -->
+          <registration-form
+            ref="registrationForm"
+            :permission="permission"
+            @save-finished="handlePatientClick()"
+
+          ></registration-form>
         </div>
         <el-row>
           <el-input placeholder="请输入患者姓名/联系方式/身份证号" v-model="SearchPatientInfo" class="input-with-select">
-            <!-- <el-select v-model="select" slot="prepend" placeholder="请选择搜索方式" style="width:100px;">
-                            <el-option label="患者姓名" value="1"></el-option>
-                            <el-option label="联系方式" value="2"></el-option>
-                            <el-option label="身份证号" value="3"></el-option>
-                            <el-option label="健康卡号" value="4"></el-option>
-                        </el-select> -->
             <el-button style="width: 100px" slot="append" icon="el-icon-search" @click="handlePatientClick">
               搜索
             </el-button>
@@ -44,7 +52,7 @@
 										<span style="margin-top: 10px">
 											{{ index + 1 }}. {{ item.patientId.name }} /
 											{{ item.patientId.gender.name }} /
-											{{ item.patientId.birthdayText }}岁
+											{{ item.patientId.age }}岁
 										</span>
                   </p>
                   <p style="
@@ -118,7 +126,7 @@
                             ">&nbsp;&nbsp;&nbsp;&nbsp;{{ index + 1 }}.
 														{{ item.patientId.name }} /
 														{{ item.patientId.gender.name }} /
-														{{ item.patientId.birthdayText }}岁</span>
+														{{ item.patientId.age }}岁</span>
                           <span style="font-size: 12px; color: #606266">{{
                               item.formatReceptionEndDate
                             }}</span>
@@ -502,20 +510,73 @@
                   </el-form-item>
                 </el-col>
               </el-row>
-              <el-row :gutter="24">
-                <el-col :span="24">
-                  <el-form-item label="西医诊断" prop="westernDiagnose">
-                    <el-input v-model="MedicalRecordModel.westernDiagnose"></el-input>
-                  </el-form-item>
-                </el-col>
-              </el-row>
-              <el-row :gutter="24">
-                <el-col :span="24">
+              <el-form-item label="西医诊断" prop="westernDiagnose">
+                <span slot="label" >
+                      西医诊断
+                    <el-popover v-model:visible="WMpopoverVisible" placement="bottom-start"
+                                width="700" trigger="manual"
+                           >
+                      <el-table :data="diagnosesList" @row-click="selectDiagnosis"
+                                style="width: 100%"  size="small">
+                        <el-table-column label="ICD10" prop="icd10" width="180"></el-table-column>
+                        <el-table-column label="诊断名称" prop="zdmc"></el-table-column>
+                        <el-table-column label="拼音" prop="py"></el-table-column>
+                      </el-table>
+                    </el-popover>
+                </span>
+                <el-input
+                  v-model="MedicalRecordModel.westernDiagnose"
+                  placeholder="输入编码名称拼音查询"
+                  @input="onInputChange('WM')"
+                  @focus="onInputChange('WM')"
+                  @blur="WMpopoverVisible = false"
+                >
+                </el-input>
+              </el-form-item>
                   <el-form-item label="中医诊断" prop="chinaDiagnose">
-                    <el-input v-model="MedicalRecordModel.chinaDiagnose"></el-input>
+                    <span slot="label" >
+                      中医诊断
+                    <el-popover v-model:visible="TCMpopoverVisible" placement="top-start"
+                                width="700" trigger="focus"
+                    >
+                      <el-table :data="diagnosesList" @row-click="selectDiagnosis"
+                                style="width: 100%"  size="small">
+                        <el-table-column label="ICD10" prop="icd10" width="180"></el-table-column>
+                        <el-table-column label="诊断名称" prop="zdmc"></el-table-column>
+                        <el-table-column label="拼音" prop="py"></el-table-column>
+                      </el-table>
+                    </el-popover>
+                </span>
+                    <el-input
+                      v-model="MedicalRecordModel.chinaDiagnose"
+                      placeholder="输入编码名称拼音查询"
+                      @input="onInputChange('TCM')"
+                      @focus="onInputChange('TCM')"
+                      @blur="TCMpopoverVisible = false">
+                    </el-input>
                   </el-form-item>
-                </el-col>
-              </el-row>
+                  <el-form-item label="中医证候" prop="chinaDiagnose">
+                    <span slot="label" >
+                      中医证候
+                    <el-popover v-model:visible="ZHpopoverVisible" placement="top-start"
+                                width="700" trigger="focus"
+                    >
+                      <el-table :data="zyzhList" @row-click="selectZH"
+                                style="width: 100%"  size="small">
+                        <el-table-column label="证候代码" prop="zhcode" width="180"></el-table-column>
+                        <el-table-column label="证候名称" prop="zhmc"></el-table-column>
+                        <el-table-column label="拼音" prop="py"></el-table-column>
+                      </el-table>
+                    </el-popover>
+                  </span>
+                    <el-input
+                      v-model="MedicalRecordModel.chinaSyndrome"
+                      placeholder="输入编码名称拼音查询"
+                      @input="onInputChange('ZYZH')"
+                      @focus="onInputChange('ZYZH')"
+                      @blur="ZHpopoverVisible = false">
+                    </el-input>
+                  </el-form-item>
               <!--<el-row :gutter="24">
                 <el-col :span="24">
                   <el-form-item label="医嘱事项" prop="doctorAdvice">
@@ -896,7 +957,8 @@
                         </el-option>
                       </el-select>-->
 
-                      <el-popover placement="top-start" v-if="
+                      <el-popover placement="top-start"
+                                  v-if="
                           !isReadOnly &&
                           item.content.recipelInfo.chargeStatus == 0 &&
                           item.content.recipelInfo.status != -1
@@ -963,9 +1025,11 @@
                           </el-table-column>
                         </el-table>
                         <el-input prefix-icon="el-icon-plus" suffix-icon="el-icon-search"
-                                  style="width: 30%" slot="reference" ref="WesternInput"
+                                  style="width: 30%" slot="reference" id="WesternInput"
                                   v-model="SearchChineseInput" @input="GetChineseTable"
-                                  @focus="GetChineseTable" placeholder="输入药品名称或拼音码"></el-input>
+                                  @focus="GetChineseTable"
+                                  @keydown.enter.native="focusNextInput('2')"
+                                  placeholder="输入药品名称或拼音码"></el-input>
                       </el-popover>
                       <el-button type="primary" v-if="!isReadOnly" style="float: right" plain
                                  @click="historyRecipel(item.type, index)">历史处方
@@ -1005,7 +1069,8 @@
                             </el-button>
                           </div>
                           <div>
-                            <el-input :disabled="
+                            <el-input
+                              :disabled="
                                 isReadOnly ||
                                 item.content.recipelInfo.chargeStatus != 0 ||
                                 item.content.recipelInfo.status == -1
@@ -1016,7 +1081,9 @@
                                   index,
                                   item
                                 )
-                              " v-model="citem.singleDosage" style="width: 80px">
+                              " v-model="citem.singleDosage" style="width: 80px"
+                              @keyup.enter.native="focusNextInput('1')"
+                            >
                               <template slot="append">{{
                                   citem.drugStuffId.pack.name
                                 }}
@@ -1044,21 +1111,26 @@
                           item.content.recipelInfo.chargeStatus != 0 ||
                           item.content.recipelInfo.status == -1
                         " v-model="item.content.recipelInfo.dosage" oninput="value=value.replace(/[^\d.]/g,'')"
-                                @input="MedicalCalculate()" style="width: 60px"></el-input>
+                                @input="MedicalCalculate()"  id ='dosageInput' style="width: 60px"
+                       @keydown.enter.native="focusNextInput('')"
+                      ></el-input>
 
                       &nbsp;剂 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;用法：
-                      <el-select :disabled="
+                      <el-select
+                         :disabled="
                           isReadOnly ||
                           item.content.recipelInfo.chargeStatus != 0 ||
                           item.content.recipelInfo.status == -1
                         " v-model="item.content.recipelInfo.recipelUse" placeholder="请选择" style="width: 110px"
-                                 @change="exchage">
+                                 @change="exchage"
+                      >
                         <el-option v-for="pitem in ChineseUseOption" :key="pitem.value"
                                    :label="pitem.name"
                                    :value="{ name: pitem.name, value: pitem.value }">
                         </el-option>
                       </el-select>
-                      <el-select :disabled="
+                      <el-select
+                          :disabled="
                           isReadOnly ||
                           item.content.recipelInfo.chargeStatus != 0 ||
                           item.content.recipelInfo.status == -1
@@ -1069,7 +1141,8 @@
                                    :value="{ name: pitem.name, value: pitem.value }">
                         </el-option>
                       </el-select>
-                      <el-select :disabled="
+                      <el-select
+                          :disabled="
                           isReadOnly ||
                           item.content.recipelInfo.chargeStatus != 0 ||
                           item.content.recipelInfo.status == -1
@@ -1083,11 +1156,17 @@
                           }">
                         </el-option>
                       </el-select>
-                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 一次&nbsp;<el-input :disabled="
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 一次&nbsp;
+                      <el-input
+                           id="singleDosageInput"
+                           @keydown.enter.native='focusNextInput("fj")'
+                           :disabled="
                           isReadOnly ||
                           item.content.recipelInfo.chargeStatus != 0 ||
                           item.content.recipelInfo.status == -1
-                        " v-model="item.content.recipelInfo.singleDosage" style="width: 60px"></el-input>&nbsp;<span
+                        " v-model="item.content.recipelInfo.singleDosage" style="width: 60px">
+                      </el-input>&nbsp;
+                      <span
                       v-if="isSpecial">ml</span><span v-else>ml</span>
                       <span style="float: right">中药金额:{{
                           item.content.recipelInfo.medicalAmount
@@ -1709,7 +1788,8 @@
                   <div style="margin-top: 10px">
                     <el-row>
                       <el-divider content-position="left">附加费</el-divider>
-                      <el-popover placement="top-start" width="550" trigger="click" v-if="
+                      <el-popover
+                          placement="top-start" width="550" trigger="focus" v-if="
                           !isReadOnly &&
                           item.content.recipelInfo.chargeStatus == 0 &&
                           item.content.recipelInfo.status != -1
@@ -1787,6 +1867,7 @@
                           </el-table-column>
                         </el-table>
                         <el-input prefix-icon="el-icon-plus" suffix-icon="el-icon-search"
+                                  id = 'fjinput'
                                   style="width: 30%" slot="reference" v-model="SearchSurchargeInput"
                                   @input="GetSurchargeTable" @focus="GetSurchargeTable"
                                   placeholder="输入附加费名称或拼音码">
@@ -3888,6 +3969,8 @@
     editSave,
     getHistoryRecipel,
     getrecordpatlist,
+    getZdList,
+    getZhList
   } from "@/api/outpatient/medicalRecord";
   import {
     listAll
@@ -3921,9 +4004,11 @@
   import {listSysParamConfigAll} from '@/api/sys/sysParamConfig';
   import {getLocalCurrentCompany} from "@/utils/auth";
   import moment from "moment";
+  import RegistrationForm from "../registration/registrationForm.vue";
 
   export default {
     components: {
+      RegistrationForm,
       UploadFile,
     },
     name: "index",
@@ -5873,6 +5958,9 @@
           patientTell: "",
           westernDiagnose: "",
           chinaDiagnose: "",
+          chinaSyndrome:"",
+          diseaseId: "",
+          syndromeId: "",
           nowHistory: "",
           beforeHistory: "",
           diagnose: "",
@@ -5950,9 +6038,17 @@
                   value: this.ChineseUseOption[0].value,
                 } :
                 {
-                  name: "",
-                  value: "",
+                  name: this.ChineseUseOption[0].name,
+                  value: this.ChineseUseOption[0].value,
                 },
+              frequency:{
+                name: this.ChineseTimeOption[0].name,
+                value: this.ChineseTimeOption[0].value,
+              },
+              takeFrequency:{
+                 name: '',
+                 value: '',
+              },
               smallType: this.RecipelSmallTypeList[0],
               chronicDisease: true,
               chinessNotes: "",
@@ -6034,8 +6130,8 @@
         this.medicalClickTabsValue = this.medicalEditTabsValue;
         console.log(this.medicalEditTabsValue, "新增");
         console.log(require("uuid").v1());
-        // 获取第一个input的焦点
-        // this.$nextTick(() => {
+        // // 获取第一个input的焦点
+        //  this.$nextTick(() => {
         //   this.$refs.singleDosage-input[0].focus();
         // });
       },
@@ -6573,6 +6669,7 @@
         });
       },
       GetChineseTable() {
+        this.popoverVisible = true;
         this.SearchChineseModel.params[1].columnName = "drug.type";
         this.SearchChineseModel.params[1].value = ["medicalType_1"];
         //判断是否输入的是英文
@@ -6844,10 +6941,6 @@
           drugStuffId: drugStuff,
           singleDosage: 0,
         };
-        console.log(
-          this.medicalClickTabsValue.content.recipelDetailEvtList,
-          "查看中药"
-        );
         this.medicalClickTabsValue.content.recipelDetailEvtList.push(
           JSON.parse(JSON.stringify(recipelDetailEvt))
         );
@@ -6855,10 +6948,14 @@
           this.MedicalCalculate();
         }, 0);
         this.$message.success("添加成功！");
-        this.$nextTick(() => {
-          this.$refs['herbMedicine'].slice(-1)[0].focus()
-          console.log("++++++++++++++++++++++", this.$refs['herbMedicine'])
-        })
+        setTimeout(()=>{
+          this.$nextTick(() => {
+            // //保持到第一个
+            // this.$refs['herbMedicine'][0].focus()
+            this.$refs['herbMedicine'].slice(-1)[0].focus()
+          })
+        },100);
+
       },
       GetChineseFee(tabData, rowData) {
         console.log(tabData);
@@ -7119,6 +7216,15 @@
           drugStuffId: drugStuff,
         };
 
+        if(row.itemName === '煎药费'){
+          let totalDosage = 0;
+          this.medicalEditTabs.forEach(item => {
+            totalDosage += Number(item.content.recipelInfo.dosage);
+          })
+          recipelDetailEvt.singleDosage = totalDosage;
+          recipelDetailEvt.allFee = recipelDetailEvt.drugStuffId.costItem.costPrice * totalDosage;
+        }
+
         if (this.medicalClickTabsValue.type == "recipelType_2") {
           this.medicalClickTabsValue.infusion.excharge.push(
             JSON.parse(JSON.stringify(recipelDetailEvt))
@@ -7132,7 +7238,9 @@
         this.$nextTick(() => {
           this.$refs['additionalCharge'].slice(-2, -1)[0].focus()
           console.log("++++++++++++++++++++++", this.$refs['additionalCharge'])
+          this.MedicalCalculate();
         })
+
       },
       getDataFilterTable(data, isExtra, item) {
         let arr = [];
@@ -7273,6 +7381,7 @@
           let recipelDetailEvtList = tabElement.content.recipelDetailEvtList ?
             tabElement.content.recipelDetailEvtList :
             [];
+          console.log('123',tabElement.content.recipelDetailEvtList )
           seq++;
           //西药处方
           if (tabElement.type === "recipelType_0") {
@@ -7623,10 +7732,10 @@
             if (rowElement.isExtra === 1) {
               detailSeq++;
               rowElement.seq = detailSeq;
-              rowElement.singleDosage =
-                rowElement.singleDosage && rowElement.singleDosage != 0 ?
-                  rowElement.singleDosage :
-                  "";
+              // rowElement.singleDosage =
+              //   rowElement.singleDosage && rowElement.singleDosage != 0 ?
+              //     rowElement.singleDosage :
+              //     "";
               if (rowElement.isUnpackSell == "1") {
                 rowElement.total = rowElement.singleDosage - 0;
                 rowElement.allFee = BigNumber(rowElement.drugStuffId.retailPrice)
@@ -7921,12 +8030,6 @@
       onMedicalHistory() {
         console.log("我是病历历史");
         this.$message.warning("开发中。。。");
-      },
-      blmbonSizeChange(val) {
-        this.blmbcurrentPage = 1;
-        this.blmbcxrc.limit = val;
-        this.blmbcxrc.offset = (this.blmbcurrentPage - 1) * val;
-        this.Getblmbtable();
       },
       blmbonSizeChange(val) {
         this.blmbcurrentPage = 1;
@@ -8542,9 +8645,104 @@
         // }
         // }
       },
+      onInputChange(zdlx) {
+        let searchParam;
+        if (zdlx === 'WM') {
+           searchParam = this.MedicalRecordModel.westernDiagnose
+        } else if (zdlx == 'TCM') {
+           searchParam = this.MedicalRecordModel.chinaDiagnose
+        } else if(zdlx == 'ZYZH'){
+          //中医证候
+          searchParam = this.MedicalRecordModel.chinaSyndrome
+          this.ZHpopoverVisible = true;
+          getZhList(searchParam.trim()).then(res => {
+            if(res.code === '100'){
+              this.zyzhList = res.data.records
+            }
+        }).catch((res) => {
+            this.showMessage(res);
+          });
+          return
+        }
+        // 防抖后触发查询，若没有输入则查询所有，若有输入则传入查询条件
+        getZdList(searchParam.trim(),zdlx).then(res => {
+          if(res.code === '100'){
+          if (zdlx === 'WM') {
+            this.WMpopoverVisible = true;
+          } else if (zdlx == 'TCM') {
+            this.TCMpopoverVisible = true;
+          }
+          this.diagnosesList = res.data.records;
+          }
+        }).catch();
+      },
+      selectDiagnosis(row) {
+        this.MedicalRecordModel.diseaseId = row.zdid;
+        if(row.zdlx === 'WM'){
+          this.MedicalRecordModel.westernDiagnose = row.zdmc;  // 将诊断名称填充到输入框
+          this.WMpopoverVisible = false;  // 关闭弹出框
+        }else if(row.zdlx === 'TCM'){
+          this.MedicalRecordModel.chinaDiagnose = row.zdmc;  // 将诊断名称填充到输入框
+          this.TCMpopoverVisible = false;  // 关闭弹出框
+        }
+        this.diagnosesList = [];
+      },
+      selectZH(row){
+        this.MedicalRecordModel.chinaSyndrome = row.zhmc;  // 将诊断名称填充到输入框
+        this.MedicalRecordModel.syndromeId = row.zhid;
+        this.ZHpopoverVisible = false;  // 关闭弹出框
+        this.zyzhList = [];
+
+     },
+      onCreateRegistration() {
+        this.$refs.registrationForm.$emit("openAddRegistrationDialog",this.permission.remove,this.permission.view);
+      },
+      focusNextInput(index) {
+        //先录入药品再回车流程
+        if(index === ''){
+          document.getElementById('singleDosageInput').focus();
+          return
+        }
+        if (index === 'fj'){
+          document.getElementById('fjinput').focus();
+          return
+        }
+      //   const nextInput = this.$refs.herbMedicine[index + 1];  // 获取下一个 input 元素
+      //   if (nextInput) {
+      //     nextInput.focus();  // 聚焦到下一个输入框
+      //   } else {
+      //     this.$nextTick(() => {
+      //       const dosageInput = document.getElementById('dosageInput');
+      //       dosageInput.focus(); // 设置剂量焦点
+      //   });
+      // }
+        //录入单个药品后回车流程
+        if(index === '1'){
+             document.getElementById('WesternInput').focus();
+        }if(index === '2'){
+          //默认
+          this.SearchChineseInput='';
+          this.RowClickChineseTable(this.ChineseMedicineTable[0]);
+          document.getElementById('WesternInput').blur();
+        }
+     }
     },
     data() {
       return {
+        permission: {
+          view: false,
+          add: false,
+          edit: false,
+          remove: false,
+          export: false,
+          skip: false,
+        },
+        //诊断证候控制
+        WMpopoverVisible: false,
+        TCMpopoverVisible:false,
+        ZHpopoverVisible:false,
+        diagnosesList: [],//诊断
+        zyzhList:[],//中医证候
         queryModel: {
           dateRange: [],
         },
@@ -9143,8 +9341,8 @@
       this.TodayActiveName = "prepare";
 
       // this.addMedicalEditTab(this.medicalTypeList[0]);
-      console.log(BigNumber(6).multipliedBy(2.8).toNumber());
-      console.log(BigNumber(6).multipliedBy("2.8").toNumber());
+
+
     },
     watch: {
       checkInventory: function (row) {
@@ -9270,6 +9468,7 @@
   }
 
   .aside-header {
+    position: relative; /* 使子元素可以相对于它定位 */
     font-weight: bold;
     line-height: 10px;
     height: 10px;

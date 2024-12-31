@@ -647,6 +647,16 @@
                         </span>
                       </template>
                     </el-table-column>
+                      <el-table-column prop="drug_trac_codg" label="药品追溯码" width="width">
+                        <template slot-scope="scope">
+<!--                          <el-input-->
+<!--                            :disabled="!(ActiveName == 'IsAll' || ActiveName == 'IsWaitingDrug')"-->
+<!--                            v-model="scope.row.drugTracCodg"-->
+<!--                            style="width:100px"-->
+<!--                          />-->
+                          <el-button  :type="scope.row.completed ? 'success' : 'warning'"  :disabled="!(ActiveName == 'IsAll' || ActiveName == 'IsWaitingDrug')" @click="openDialog(scope)">输入追溯码</el-button>
+                        </template>
+                      </el-table-column>
                       <el-table-column prop="allFee" width="width" label="应付金额">
                         <template slot-scope="scope">
                           {{ (scope.row.allFee).toFixed(2) }}元
@@ -1051,6 +1061,18 @@
         <span>共{{ allType }}种，{{ totalMoney.toFixed(2) }}元</span>
       </el-card>
     </el-main>
+    <!--  药品追溯码弹窗-->
+    <el-dialog  @keydown.native="handleKeydown" :modal="false"  :visible.sync="drugDialogVisible" title="输入药品追溯码" @open="focusInput" @close="resetInput">
+      <el-input
+        v-model="currentInput"
+        placeholder="请输入药品追溯码"
+        ref="inputFocus"
+      ></el-input>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="submitInput" type="primary">确定</el-button>
+        <el-button @click="drugDialogVisible = false">取消</el-button>
+      </span>
+    </el-dialog>
   </el-container>
 </template>
 
@@ -1174,6 +1196,7 @@ export default {
         chinaDiagnose: "无",
       },
       medicalEditTabs: [],
+      drugTracCodg:'',//追溯码
       medicalEditTabsValue: {},
       medicalClickTabsValue: {},
       //特殊诊所
@@ -1194,6 +1217,13 @@ export default {
       ChineseUseTimeOption: [],
       //西药频度下拉列表
       FrequencyOption: [],
+      //追溯码弹窗控制
+      drugDialogVisible: false,
+      currentInput: '',
+      inputCount: 0, // 当前输入次数
+      maxInputCount: 0, // 最大输入次数
+      currentRow: null, // 当前操作的行
+      allInputs: [], // 所有输入的追溯码
     };
   },
   computed: {
@@ -1258,8 +1288,55 @@ export default {
     if (specialCompany && specialCompany.id == "1088657523871555640") {
       this.isSpecial = true;
     }
+
   },
   methods: {
+    handleKeydown(event) {
+      if (event.key === 'Enter' ||event.key === 'enter'  ) {
+        // 调用回车键确定操作
+        this.submitInput();
+      }
+    },
+    focusInput() {
+      // 使用 ref 来访问输入框并调用 focus() 方法
+      this.$nextTick(() => {
+        this.$refs.inputFocus.focus(); // 自动聚焦输入框
+      });
+    },
+    openDialog(scope) {
+      this.currentRow = scope.row; // 记录当前行
+
+      this.inputCount = 0; // 重置输入计数
+      this.allInputs = []; // 清空之前的输入
+      this.drugDialogVisible = true;
+      this.maxInputCount = Math.floor(
+        scope.row.total /
+        (scope.row.drugStuffId.drug.preparation - 0)
+      )
+    },
+    submitInput() {
+      if (this.currentInput) {
+        this.allInputs.push(this.currentInput); // 添加当前输入
+        this.currentRow.drugTracCodg = this.allInputs.join(','); // 更新当前行的药品追溯码
+        this.currentInput = ''; // 清空输入框
+        this.inputCount++; // 增加输入计数
+        // 检查是否达到最大输入次数
+        // this.drugDialogVisible = this.inputCount < this.maxInputCount;
+        if (this.inputCount >= this.maxInputCount) {
+          this.$set(this.currentRow, 'completed', true); // 设置为完成状态
+          this.drugDialogVisible = false; // 关闭对话框
+        }
+      }
+    },
+    resetInput() {
+      this.currentInput = ''; // 清空输入框
+      this.inputCount = 0; // 重置输入计数
+      this.currentRow = null; // 清空当前行记录
+    },
+
+
+
+
     selectPatientChange() {
       if (!this.patientInfoRow) {
         return;
@@ -1299,6 +1376,7 @@ export default {
             item.isExtra = [];
             item.notExtra = [];
             item.recipelDetailEvtList.forEach((items) => {
+              this.$set(items, 'drugTracCodg', ''); // 药品追溯码字段
               if (items.isExtra == 1) {
                 item.isExtra.push(items);
               } else {
@@ -1636,6 +1714,8 @@ export default {
             id: items.drugStuffId.drugStuffId,
             type: items.stuffType=='4'?1:0,
             number: items.total,
+            drugTracCodg:items.drugTracCodg
+
           });
         });
       let model = {
@@ -1672,6 +1752,7 @@ export default {
             id: items.drugStuffId.drugStuffId,
             type: items.stuffType=='4'?1:0,
             number: items.total,
+            drugTracCodg:items.drugTracCodg
           });
         });
       });

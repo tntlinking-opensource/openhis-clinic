@@ -56,6 +56,23 @@
                     style="width: 80px;"></DictItemView>
                 </template>
               </el-table-column>
+              <el-table-column
+                v-if="addType == 1"
+                prop="drugTracCodg"
+                label="药品追溯码"
+              > <template slot-scope="scope">
+                <el-button :type="scope.row.completed ? 'success' : 'warning'" @click="openDrugDialog(scope)">输入追溯码</el-button>
+              </template></el-table-column>
+              <el-table-column prop="specification" label="是否拆零">
+                <template slot-scope="scope"><el-switch
+                  v-model="scope.row.isSplit"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"
+                  @change="updateMaxInputCount(scope.row)">
+                </el-switch>
+                </template>
+              </el-table-column>
+
               <el-table-column label="数量" width="250" v-if="thisType==1">
                 <template slot-scope="scope">
                   <div class="quantity-box  num-color" v-if="parseInt(scope.row.surplusStock/scope.row.drug.preparation) < scope.row.packAmount
@@ -77,10 +94,10 @@
                     </el-input>
                     <DictItemView type="medicalPackUnit" :dictValue="scope.row.packValue" style="width: 80px;">
                     </DictItemView>
-                    <el-input v-model="scope.row.preparationAmount" type="number" min="0" required="true"
+                    <el-input  v-if="scope.row.isSplit"  v-model="scope.row.preparationAmount" type="number" min="0" required="true"
                       placeholder="数量">
                     </el-input>
-                    <DictItemView type="medicalPreparationUnit" :dictValue="scope.row.preparationUnitValue"
+                    <DictItemView   v-if="scope.row.isSplit"  type="medicalPreparationUnit" :dictValue="scope.row.preparationUnitValue"
                       style="width: 80px;"></DictItemView>
                   </div>
                 </template>
@@ -103,7 +120,7 @@
                     </el-input>
                     <DictItemView type="medicalPackUnit" :dictValue="scope.row.packUnitValue" style="width: 80px;">
                     </DictItemView>
-                    <el-input v-model="scope.row.preparationAmount" type="number" min="0" required="true"
+                    <el-input v-if="scope.row.isSplit" v-model="scope.row.preparationAmount" type="number" min="0" required="true"
                       placeholder="数量">
                     </el-input>
                     <DictItemView type="medicalPreparationUnit" :dictValue="scope.row.minUnitValue"
@@ -153,6 +170,18 @@
         </el-row>
       </el-form>
     </div>
+    <!-- 点击输入追溯码后弹出框 -->
+    <el-dialog @keydown.native="handleKeydown" :modal="false"  :visible.sync="drugDialogVisible" title="输入药品追溯码" @open="focusInput" @close="resetInput">
+      <el-input
+        v-model="currentInput"
+        placeholder="请输入药品追溯码"
+        ref="inputFocus"
+      ></el-input>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="submitInput" type="primary">确定</el-button>
+        <el-button @click="drugDialogVisible = false">取消</el-button>
+      </span>
+    </el-dialog>
   </el-dialog>
 </template>
 
@@ -279,6 +308,13 @@
           columnName: "", // 排序字段名
           order: "", // 排序
         },
+        //追溯码弹窗控制
+        drugDialogVisible: false,
+        currentInput: '',
+        inputCount: 0, // 当前输入次数
+        maxInputCount: 0, // 最大输入次数
+        currentRow: null, // 当前操作的行
+        allInputs: [], // 所有输入的追溯码
       };
     },
     watch: {
@@ -315,7 +351,64 @@
       },
     },
     inject: ["fatherMethod"],
+
     methods: {
+      handleKeydown(event) {
+        if (event.key === 'Enter') {
+          // 调用确定操作
+          this.submitInput();
+        }
+      },
+      focusInput() {
+        // 使用 ref 来访问输入框并调用 focus() 方法
+        this.$nextTick(() => {
+          this.$refs.inputFocus.focus(); // 自动聚焦输入框
+        });
+      },
+      openDrugDialog(scope) {
+        console.log(scope);
+        if ( scope.row.packAmount <= 0 || ! scope.row.packAmount) {
+          this.$message.error('请先输入有效的数量与是否拆零！');
+          return; // 如果数量无效，停止执行
+        }
+        this.currentRow = scope.row; // 记录当前行
+        this.inputCount = 0; // 重置输入计数
+        this.allInputs = []; // 清空之前的输入
+        this.drugDialogVisible = true;
+        // 根据当前行的数量设置基础输入次数和最大输入次数
+        const quantity = this.currentRow.packAmount;
+        this.maxInputCount = this.currentRow.isSplit ? this.currentRow.preparation * quantity: quantity;
+      },
+      submitInput() {
+        if (this.currentInput) {
+          this.allInputs.push(this.currentInput); // 添加当前输入
+          this.currentRow.drugTracCodg = this.allInputs.join(','); // 更新当前行的药品追溯码
+          this.currentInput = ''; // 清空输入框
+          this.inputCount++; // 增加输入计数
+
+          // 检查是否达到最大输入次数
+          if (this.inputCount >= this.maxInputCount) {
+            this.$set(this.currentRow, 'completed', true); // 设置为完成状态
+            this.drugDialogVisible = false; // 关闭对话框
+          }
+          this.$nextTick(() => {
+            this.$refs.inputFocus.focus(); // 自动聚焦输入框
+          });
+        }
+      },
+      resetInput() {
+        this.currentInput = ''; // 清空输入框
+        this.inputCount = 0; // 重置输入计数
+        this.currentRow = null; // 清空当前行记录
+      },
+      updateMaxInputCount(row) {
+        this.$set(this.currentRow, 'isSplit', true); // 设置为完成状态
+        // 每次开关状态改变时更新最大输入次数
+        const quantity = row.packAmount;
+        this.maxInputCount = row.isSplit ? quantity * row.preparationAmount: quantity;
+      },
+
+
       openDialog(outboundId) {
         this.reset();
         this.outboundId = outboundId;
@@ -409,7 +502,7 @@
           stuff: row.stuff,
           occupyStock: row.occupyStock,
           surplusStock : row.surplusStock,
-          drugStuffName:row.drugStuffName
+          drugStuffName:row.drugStuffName,
         };
         //将所有值都从子对象转移到根以便于处理
         obj.factoryName = null;
@@ -498,6 +591,8 @@
                 id: this.company_id,
               },
               number: this.getNumber(element), //element.quantity,
+              cnt:   element.packAmount,        //医保数量
+              drugTracCodg:element.drugTracCodg,//医保追溯码
               supplierId: {
                 // 供应商
                 id: this.otherInfo.supplierID,
@@ -552,7 +647,7 @@
       //关闭弹框
       closeDialog() {
         this.dialogVisibleTo = false;
-        this.fatherMethod();
+        //this.fatherMethod();
         this.reset();
       },
       reset() {

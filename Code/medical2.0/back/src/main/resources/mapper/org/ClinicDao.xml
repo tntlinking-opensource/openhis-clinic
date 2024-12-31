@@ -6,6 +6,7 @@
         a.id AS "id",
         a.name AS "name",
         a.lessee_id AS "lesseeId.id",
+        a.fixmedins_code as "fixmedinsCode",
         lesseeId.user_name AS "lesseeId.userName",
         a.address_province AS "addressProvince",
         a.address_city AS "addressCity",

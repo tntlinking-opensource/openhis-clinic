@@ -8,6 +8,7 @@ import com.geeke.org.entity.ClinicOffice;
 import com.geeke.org.entity.Company;
 import com.geeke.org.entity.Department;
 import com.geeke.sys.entity.DictItem;
+import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 import java.math.BigDecimal;
@@ -17,6 +18,7 @@ import java.util.Date;
  * @author txl
  * @version 2022-06-15
  */
+@Data
 public class Registration extends DataEntity<Registration> {
 
 	private static final long serialVersionUID = 1008534118685450402L;
@@ -70,6 +72,14 @@ public class Registration extends DataEntity<Registration> {
 
 	private Date treatmentDate;  //诊疗完成时间
 	private String overlook;//是否忽略
+     /**医保字段**/
+	private  String mdtrtId ;// 医保接口唯一流水号
+	//暂定11普通门诊 12 门诊挂号 13 急诊
+    private  DictItem medType; //医疗类别
+	private  DictItem cardType; //就诊凭证类型
+	private  String iptOtpNo;// 住院/门诊号 院内唯一流水
+	private  String mdtrtCertNo;//就诊凭证号 03社保卡时才填写
+	private  String setlId;//医保结算id
 
 	public Date getPayDate() {
 		return payDate;

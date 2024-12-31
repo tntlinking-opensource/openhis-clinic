@@ -355,7 +355,11 @@ export default {
       },
       systemParamConfig:"",
       systemParamConfigSearch: {
-        params: [
+        params: [{
+          columnName: "company_id",
+          queryType: "=",
+          value: currentUser.company.id
+        }
         ]
       },
       supplierStockSearch: {

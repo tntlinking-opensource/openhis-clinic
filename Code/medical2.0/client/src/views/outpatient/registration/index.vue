@@ -6,7 +6,7 @@
     <registration-form
       ref="registrationForm"
       :permission="permission"
-      v-on:save-finished="getRegistrationList"
+      @save-finished="getRegistrationList"
     ></registration-form>
     <ys-form ref="ysForm" :permission="permission" @typeclick="rettonys"></ys-form>
     <beforehand-form ref="beforehandForm" :permission="permission" @typeclick="rettonys"></beforehand-form>

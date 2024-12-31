@@ -3,17 +3,24 @@ package com.geeke.stock.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
+import com.geeke.medicareutils.config.MedicareConfigProperties;
+import com.geeke.medicareutils.service.MdInventoryService;
 import com.geeke.stock.entity.DispensingEvt;
+import com.geeke.stock.entity.Drug;
 import com.geeke.stock.entity.StorageEvt;
 import com.geeke.stock.entity.SupplierStock;
+import com.geeke.stock.service.DrugService;
 import com.geeke.stock.service.SupplierStockService;
 import com.geeke.stock.service.SupplierStorageService;
 import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.ResultUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -23,6 +30,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/stock/supplierStock")
+@RequiredArgsConstructor
 public class SupplierStockController extends BaseController {
 
 	@Autowired
@@ -31,6 +39,15 @@ public class SupplierStockController extends BaseController {
 	@Autowired
 	private SupplierStorageService supplierStorageService;
 
+    @Autowired
+    @Lazy
+    private DrugService drugService;
+
+    private  final MedicareConfigProperties medicareConfigProperties;
+
+    @Resource
+    @Lazy
+    private  final MdInventoryService mdInventoryService;
 
     @GetMapping("/{id}")
     public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
@@ -89,8 +106,20 @@ public class SupplierStockController extends BaseController {
 
     @PostMapping(value = "inStorage")
     public ResponseEntity<JSONObject> inStorage(@RequestBody StorageEvt storageEvt) {
+        //批量入库时无药品信息添加药品信息
+        storageEvt.getSupplierStockList().forEach(item -> {
+            Drug drug = drugService.getByNameAndPrice(item.getDrug().getGoodsName(),item.getRetailPrice());
+            item.setDrug(drug);
+          }
+         );
         supplierStockService.saves(storageEvt);
         supplierStockService.savesTo(storageEvt);
+        if("true".equals(medicareConfigProperties.getCheck())){
+            //开启医保调用 药品 暂且默认 调拨入库
+            if(storageEvt.getSupplierStorage().getBreed().equals(1)){
+                mdInventoryService.updateInventoryList(storageEvt,"101");
+            }
+        }
         return ResponseEntity.ok(ResultUtil.successJson());
     }
 
@@ -105,6 +134,11 @@ public class SupplierStockController extends BaseController {
         //发药、退药
         if (null != dispensingEvt.getDispensingDetailEvtList() && !dispensingEvt.getDispensingDetailEvtList().isEmpty()) {
             supplierStockService.updateStock(dispensingEvt);
+        }
+        if("true".equals(medicareConfigProperties.getCheck())){
+            //开启医保调用 发药退药修改库存
+            mdInventoryService.updateInventoryList(dispensingEvt);
+
         }
         return ResponseEntity.ok(ResultUtil.successJson());
     }

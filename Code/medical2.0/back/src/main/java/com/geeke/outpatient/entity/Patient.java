@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.geeke.common.persistence.DataEntity;
 import com.geeke.org.entity.Company;
 import com.geeke.sys.entity.DictItem;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
@@ -14,6 +16,9 @@ import java.util.Date;
  * @author txl
  * @version 2022-06-23
  */
+
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class Patient extends DataEntity<Patient> {
 
 	private static final long serialVersionUID = 1008489176147648530L;
@@ -23,7 +28,8 @@ public class Patient extends DataEntity<Patient> {
 	private String month;		// 月
 	private Date birthday;		// 出生日期
 	private String phone;		// 联系方式
-	private String card;		// 身份证号
+	private String card;		// 证件号
+	private String cardType;		// 证件类型
 	private DictItem withPatientNexus;      // 与患者关系 
 	private String healthCardNo;		// 健康卡号
 	private String province;		// 省

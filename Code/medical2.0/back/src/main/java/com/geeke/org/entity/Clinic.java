@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.geeke.clinic.entity.ClinicVersion;
 import com.geeke.common.persistence.DataEntity;
+import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
@@ -13,6 +14,7 @@ import java.util.Date;
  * @author txl
  * @version 2022-05-19
  */
+@Data
 public class Clinic extends DataEntity<Clinic> {
 
 	private static final long serialVersionUID = 986498806151577752L;
@@ -29,6 +31,8 @@ public class Clinic extends DataEntity<Clinic> {
 	private Integer isInstitution;		// 是否为机构
 	private Date startUseDate;		// 诊所开始时间
 	private Date expireDate;		// 诊所到期时间
+
+	private  String fixmedinsCode;// 定点医疗机构代码
 
 	
 	public Clinic() {

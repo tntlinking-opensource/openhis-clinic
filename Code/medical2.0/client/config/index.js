@@ -3,10 +3,8 @@
 // see http://vuejs-templates.github.io/webpack for documentation.
 
 const path = require('path')
-
 module.exports = {
   dev: {
-
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
@@ -30,15 +28,11 @@ module.exports = {
         }
       },
       '/api': {
-        // target: 'http://36.137.36.185:7416',
-        // target: 'http://61.172.179.73:5016',
-        // target: 'http://61.172.179.48:19016',
-        // target: 'http://61.172.179.73:5016',
         target: 'http://localhost:7016',
-        // target: 'http://192.168.0.105:7016',
-        // target: 'http://36.:7016',
+        //target: 'http://hospital.zirich.com.cn/api',
+        changeOrigin: true,
         pathRewrite: {
-          '^/api': '/'
+          '^/api': ''
         }
       }
     },

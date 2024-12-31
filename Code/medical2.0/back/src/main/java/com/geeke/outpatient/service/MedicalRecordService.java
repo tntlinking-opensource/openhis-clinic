@@ -38,6 +38,7 @@ import com.geeke.utils.StringUtils;
 import com.geeke.utils.constants.ErrorEnum;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;

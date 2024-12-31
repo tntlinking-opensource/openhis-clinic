@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.geeke.admin.entity.User;
 import com.geeke.common.persistence.DataEntity;
 import com.geeke.org.entity.Company;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
@@ -15,6 +17,8 @@ import java.util.Date;
  * @author txl
  * @version 2022-06-13
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class MedicalRecord extends DataEntity<MedicalRecord> {
 
 	private static final long serialVersionUID = 1014786989773332526L;
@@ -49,9 +53,17 @@ public class MedicalRecord extends DataEntity<MedicalRecord> {
 	private String fileId;		// 上传附件
 	private String westernDiagnose; //西医诊断
 	private String chinaDiagnose; //中医诊断
+	private String diseaseId;//诊断id
+	private String chinaSyndrome;//中医证候
+	private String syndromeId;//证候id
 	private String medic; // 远程诊疗医生
 	private String department; // 远程诊疗医院
 	private String register; // 挂号
+
+	//医保字段
+	private String diagnosisCode; //诊断代码
+
+
 
 	public String getDiagnosisId() {
 		return diagnosisId;

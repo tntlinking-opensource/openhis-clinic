@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.outpatient.dao.PresDrugMapper">
+
+    <resultMap id="BaseResultMap" type="com.geeke.outpatient.entity.PresDrug">
+            <id property="medlistcodg" column="medListCodg" jdbcType="VARCHAR"/>
+            <result property="natdrugno" column="natDrugNo" jdbcType="VARCHAR"/>
+            <result property="genname" column="genname" jdbcType="VARCHAR"/>
+            <result property="prodname" column="prodname" jdbcType="VARCHAR"/>
+            <result property="regname" column="regName" jdbcType="VARCHAR"/>
+            <result property="listtype" column="listType" jdbcType="VARCHAR"/>
+            <result property="listtypename" column="listTypeName" jdbcType="VARCHAR"/>
+            <result property="specname" column="specName" jdbcType="VARCHAR"/>
+            <result property="prdrname" column="prdrName" jdbcType="VARCHAR"/>
+            <result property="aprvno" column="aprvno" jdbcType="VARCHAR"/>
+            <result property="dosformname" column="dosformName" jdbcType="VARCHAR"/>
+            <result property="minpacunt" column="minPacunt" jdbcType="VARCHAR"/>
+            <result property="minpaccnt" column="minPacCnt" jdbcType="VARCHAR"/>
+            <result property="minprepunt" column="minPrepunt" jdbcType="VARCHAR"/>
+            <result property="poolareano" column="poolareaNo" jdbcType="VARCHAR"/>
+            <result property="poolareaname" column="poolareaName" jdbcType="VARCHAR"/>
+            <result property="dualchnlflag" column="dualchnlFlag" jdbcType="CHAR"/>
+            <result property="begntime" column="begntime" jdbcType="TIMESTAMP"/>
+            <result property="endtime" column="endtime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        medListCodg,natDrugNo,genname,
+        prodname,regName,listType,
+        listTypeName,specName,prdrName,
+        aprvno,dosformName,minPacunt,
+        minPacCnt,minPrepunt,poolareaNo,
+        poolareaName,dualchnlFlag,begntime,
+        endtime
+    </sql>
+</mapper>

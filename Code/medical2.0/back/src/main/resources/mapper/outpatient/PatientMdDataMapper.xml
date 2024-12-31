@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.outpatient.dao.PatientMdDataMapper">
+
+    <resultMap id="BaseResultMap" type="com.geeke.outpatient.entity.PatientMdData">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="patientId" column="patient_id" jdbcType="BIGINT"/>
+            <result property="psnNo" column="psn_no" jdbcType="VARCHAR"/>
+            <result property="psnCertType" column="psn_cert_type" jdbcType="VARCHAR"/>
+            <result property="certno" column="certno" jdbcType="VARCHAR"/>
+            <result property="psnName" column="psn_name" jdbcType="VARCHAR"/>
+            <result property="gend" column="gend" jdbcType="VARCHAR"/>
+            <result property="naty" column="naty" jdbcType="VARCHAR"/>
+            <result property="brdy" column="brdy" jdbcType="VARCHAR"/>
+            <result property="age" column="age" jdbcType="VARCHAR"/>
+            <result property="expcontent" column="expContent" jdbcType="VARCHAR"/>
+            <result property="balc" column="balc" jdbcType="VARCHAR"/>
+            <result property="insutype" column="insutype" jdbcType="VARCHAR"/>
+            <result property="psnType" column="psn_type" jdbcType="VARCHAR"/>
+            <result property="psnInsuStas" column="psn_insu_stas" jdbcType="VARCHAR"/>
+            <result property="psnInsuDate" column="psn_insu_date" jdbcType="TIMESTAMP"/>
+            <result property="pausInsuDate" column="paus_insu_date" jdbcType="TIMESTAMP"/>
+            <result property="cvlservFlag" column="cvlserv_flag" jdbcType="VARCHAR"/>
+            <result property="insuplcAdmdvs" column="insuplc_admdvs" jdbcType="VARCHAR"/>
+            <result property="empName" column="emp_name" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,patient_id,psn_no,
+        psn_cert_type,certno,psn_name,
+        gend,naty,brdy,
+        age,expContent,balc,
+        insutype,psn_type,psn_insu_stas,
+        psn_insu_date,paus_insu_date,cvlserv_flag,
+        insuplc_admdvs,emp_name
+    </sql>
+</mapper>

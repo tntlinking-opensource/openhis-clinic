@@ -9,7 +9,7 @@
         <div class='query-form-container'>
           <el-row v-if='!moreCodition' class='search-row'>
             <el-form :model='queryModel' @submit.native.prevent label-position="left" label-width='70px' ref='queryForm' :inline-message='true'>
-                      
+
             <el-col :span="6">
               <el-form-item label='科室名称' prop='name'>
                 <el-input v-model='queryModel.name' :clearable='true' placeholder='请输入科室名称'></el-input>
@@ -51,7 +51,7 @@
                   <el-button
                     v-show="permission.add"
                     type="primary"
-                    icon="el-icon-plus"                   
+                    icon="el-icon-plus"
                     @click="onCreateClinicOffice()"
                     >添加</el-button
                   >
@@ -64,14 +64,14 @@
         <!--  搜索栏  结束 -->
 
         <!-- 工具栏 开始 -->
-        
+
         <!-- 工具栏 结束 -->
 
       <!-- 表格栏  开始 -->
       <el-row>
         <el-col :span='24'>
-          <div @mouseleave='moveTableOutside'>        
-            <el-table ref="mutipleTable" height="calc(100vh - 250px)" class='drag_table' :data='clinicOfficeList' border @sort-change='onSortChange' @header-dragend='onChangeWidth' :cell-class-name='cellClassName' :header-cell-class-name='headerCellClassName' highlight-current-row>                
+          <div @mouseleave='moveTableOutside'>
+            <el-table ref="mutipleTable"  height="calc(100vh - 250px)" class='drag_table' :data='clinicOfficeList' border @sort-change='onSortChange' @header-dragend='onChangeWidth' :cell-class-name='cellClassName' :header-cell-class-name='headerCellClassName' highlight-current-row>
               <el-table-column
               label="序号"
               type="index"
@@ -83,7 +83,7 @@
                   <span v-if='columnViews[index].showType == "Checkbox" || columnViews[index].showType == "Radio"'>
                     <li v-if='getAttrValue(row, columnViews[index].prop) == "1"' class='el-icon-check' style='color:#F56C6C;'></li>
                   </span>
-                 
+
                   <span v-else-if="columnViews[index].prop=='isLocked'">
                     <span v-if='getAttrValue(row, columnViews[index].prop) == "0"' class='el-icon-check' style='color:#F56C6C;'></span>
                     <span v-else></span>
@@ -100,27 +100,27 @@
                 </template>
               </el-table-column>
               <!--表行级操作按钮-->
-              <el-table-column label='操作' header-align='center' :width='140 + "px"' :key="Math.random()">        
+              <el-table-column label='操作' header-align='center' :width='140 + "px"' :key="Math.random()">
                 <template slot='header' slot-scope="scope">
                   <span>操作</span>
                   <view-columns-select v-model='columnViews' v-on:save-column-view='saveColumn' v-on:show-all-column='showAllColumn' v-on:show-default-column='showDefaultColumn'></view-columns-select>
                   <export-excel-button v-show='permission.export' :data='clinicOfficeList' :tHeader='getHeads()' :filterVal='getFilterVal()' :plain='true'></export-excel-button>
                 </template>
                 <template slot-scope='scope'>
-                  <OperationIcon v-show='permission.view' type='info' content='查看' placement='top-start' icon-name='el-icon-view' 
+                  <OperationIcon v-show='permission.view' type='info' content='查看' placement='top-start' icon-name='el-icon-view'
                     @click='onViewClinicOffice(scope.$index, scope.row)'></OperationIcon>
-                  <OperationIcon v-show='permission.edit' type='primary' content='编辑' placement='top-start' icon-name='el-icon-edit' 
+                  <OperationIcon v-show='permission.edit' type='primary' content='编辑' placement='top-start' icon-name='el-icon-edit'
                     @click='onEditClinicOffice(scope.$index, scope.row)'></OperationIcon>
-                  <OperationIcon v-show='permission.add' type='primary' content='复制' placement='top-start' icon-name='el-icon-document' 
+                  <OperationIcon v-show='permission.add' type='primary' content='复制' placement='top-start' icon-name='el-icon-document'
                     @click='onCopyClinicOffice(scope.$index, scope.row)'></OperationIcon>
-                  <!-- <OperationIcon v-show='permission.remove' type='danger' content='删除' placement='top-start' icon-name='el-icon-delete' 
+                  <!-- <OperationIcon v-show='permission.remove' type='danger' content='删除' placement='top-start' icon-name='el-icon-delete'
                     @click='onDeleteClinicOffice(scope.$index, scope.row)'></OperationIcon> -->
-                  <OperationIcon v-show='permission.view' type='info' content='历史记录' placement='top-start' icon-name='el-icon-info' 
+                  <OperationIcon v-show='permission.view' type='info' content='历史记录' placement='top-start' icon-name='el-icon-info'
                     @click='onShowHistory(scope.$index, scope.row)'></OperationIcon>
                 </template>
               </el-table-column>
             </el-table>
-    	  </div>	          
+    	  </div>
         </el-col>
       </el-row>
       <!-- 表格栏  结束 -->
@@ -128,7 +128,7 @@
       <el-row>
         <el-col :span='24'>
           <el-pagination
-            background     
+            background
             @size-change='onSizeChange'
             @current-change='onCurrentChange'
             :current-page.sync='currentPage'
@@ -156,7 +156,7 @@ import OperationIcon from '@/components/OperationIcon'
 import History from '@/views/components/history'
 export default {
   extends: MainUI,
-  components: { 
+  components: {
     ClinicOfficeForm,
     ExportExcelButton,
     ViewColumnsSelect,
@@ -186,7 +186,7 @@ export default {
             {
               value: '0',
               label: '否'
-            }, 
+            },
             {
               value: '1',
               label: '是'
@@ -195,7 +195,7 @@ export default {
 
 
       search: {
-        params: [],    
+        params: [],
         offset: 0,
         limit: 20,
 		columnName: '',      // 排序字段名
@@ -204,8 +204,8 @@ export default {
       currentPage: 1,
       clinicOfficeTotal: 0,
       clinicOfficeList: [],
-        
-      
+
+
       oprColumnWidth: 140,  // 操作列宽
       tableId: '1026680647570219053',
       schemeId: '1026680647570219069'
@@ -328,7 +328,7 @@ export default {
         }
         this.resetLoad()
       } catch(error) {
-        this.outputError(error) 
+        this.outputError(error)
       }
     },
     onViewClinicOffice(index, row) {
@@ -389,7 +389,7 @@ export default {
           }
           this.resetLoad()
         }).catch(error => {
-          this.outputError(error)  
+          this.outputError(error)
         })
       }).catch(() => {})
     },
@@ -405,7 +405,7 @@ export default {
       this.getClinicOfficeList()
     },
     initOptions(This) {
-    } 
+    }
   },
   watch: {
     clinicOfficeList(val){
@@ -413,7 +413,7 @@ export default {
         this.$nextTick(() => {
             this.$refs.mutipleTable.doLayout();
         });
-      } 
+      }
     }
   },
   updated(){
@@ -441,6 +441,7 @@ export default {
  }
 /deep/ th.gutter:last-of-type {
   height: 0 !important;
+
 }
  // 设置表格body的高度
  /deep/.el-table__body-wrapper {
@@ -453,6 +454,7 @@ export default {
  .el-table__fixed-right {
       height: 100% !important;
   }
+   overflow: auto;
 }
 </style>
 <style scoped>

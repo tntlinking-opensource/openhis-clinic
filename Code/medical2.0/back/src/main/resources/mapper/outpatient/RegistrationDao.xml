@@ -320,7 +320,11 @@
             subscribe_project,
             retreats_date,
             return_date,
-            treatment_date
+            treatment_date,
+            mdtrt_id,
+            med_type,
+            ipt_otp_no,
+            setl_id
         ) VALUES (
             #{id},
             #{company.id},                    
@@ -369,7 +373,12 @@
             #{subscribeProject},
             #{retreatsDate},
             #{returnDate},
-            #{treatmentDate}
+            #{treatmentDate},
+            #{mdtrtId},
+            #{medType.value},
+            #{iptOtpNo},
+            #{setlId}
+
         )
     </insert>
     
@@ -416,7 +425,11 @@
             subscribe_project=#{subscribeProject},
             retreats_date=#{retreatsDate},
             return_date=#{returnDate},
-            treatment_date=#{treatmentDate}
+            treatment_date=#{treatmentDate},
+            mdtrt_id=#{mdtrtId},
+            med_type=#{medType.value},
+            ipt_otp_no=#{iptOtpNo},
+            setl_id=#{setlId}
         WHERE id = #{id}
     </update>
 
@@ -479,7 +492,11 @@
             subscribe_project,
             retreats_date,
             return_date,
-            treatment_date
+            treatment_date,
+            mdtrt_id,
+            med_type,
+            ipt_otp_no,
+            setl_id
         ) VALUES 
         <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
         (
@@ -525,7 +542,11 @@
             #{entity.subscribeProject},
             #{entity.retreatsDate},
             #{entity.returnDate},
-            #{entity.treatmentDate}
+            #{entity.treatmentDate},
+            #{entity.mdtrtId},
+            #{entity.medType.value},
+            #{entity.iptOtpNo},
+            #{entity.setlId}
         )
         </foreach>
     </insert>

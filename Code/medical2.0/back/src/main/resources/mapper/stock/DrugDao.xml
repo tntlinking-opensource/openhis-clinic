@@ -1006,4 +1006,10 @@
             where a.code=#{ypdm} and a.company_id=#{companyId}
 
     </select>
+    <select id="getByNameAndPrice" resultType="com.geeke.stock.entity.Drug">
+        select   *
+        FROM drug a
+        where a.goods_name=#{name} and a.price=#{retailPrice} and a.company_id=#{companyId}
+
+    </select>
 </mapper>

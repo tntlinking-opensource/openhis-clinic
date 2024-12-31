@@ -8,12 +8,16 @@ import com.geeke.admin.service.UserService;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
 import com.geeke.common.data.Parameter;
+import com.geeke.config.exception.CommonJsonException;
+import com.geeke.medicareutils.config.MedicareConfigProperties;
 import com.geeke.org.entity.Department;
 import com.geeke.org.service.ClinicOfficeService;
 import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.ResultUtil;
 import com.geeke.utils.SessionUtils;
 import com.geeke.utils.StringUtils;
+import com.geeke.utils.constants.ErrorEnum;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +33,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/admin/user")
+@RequiredArgsConstructor
 public class UserController extends BaseController {
 
 	@Autowired
@@ -37,6 +42,8 @@ public class UserController extends BaseController {
     private UserExtService userExtService;
     @Autowired
     private ClinicOfficeService clinicOfficeService;
+
+    private final MedicareConfigProperties medicareConfigProperties;
 
     @GetMapping("/{id}")
     public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
@@ -132,6 +139,7 @@ public class UserController extends BaseController {
     public ResponseEntity<JSONObject> update(@RequestParam("entity") String strUser,
                                              @RequestParam("fileIdUploads") MultipartFile[] fileIdUploads,  // 文件: 用户图片
                                              @RequestParam("deleteIds")String strDeleteIds) throws java.io.IOException  {
+
         User user = JSONObject.parseObject(strUser, User.class);
         user.setLoginName(user.getPhone());
         String[] deleteIds = JSONObject.parseObject(strDeleteIds, String[].class);
@@ -141,6 +149,9 @@ public class UserController extends BaseController {
   
     @PostMapping(value = "delete")
     public ResponseEntity<JSONObject> delete(@RequestBody User entity) {
+        if(medicareConfigProperties.getIsDemo().equals("true")){
+            throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "演示系统请勿删除用户！"));
+        }
         int all = userService.countClinicIdByPhone(entity.getPhone());
         userService.delete(entity,all);
         return ResponseEntity.ok(ResultUtil.successJson(all));
@@ -170,6 +181,9 @@ public class UserController extends BaseController {
     @PutMapping("/{id}/loginPassword")
     public ResponseEntity<JSONObject> changeLoginPassword(@PathVariable("id") String id, String password) {
         int rows = 0;
+         if(medicareConfigProperties.getIsDemo().equals("true")){
+             throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "演示系统请勿修改密码！"));
+         }
         if(!StringUtils.isBlank(id)) {
             rows = userService.changeLoginPassword(id, password);
         }

@@ -1,5 +1,6 @@
 package com.geeke.sys.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.geeke.admin.dao.UserDao;
 import com.geeke.admin.entity.User;
 import com.geeke.common.constants.ActionConstants;
@@ -61,7 +62,6 @@ public class LoginService extends CrudService<UserDao, User> {
         SessionUtils.setLoginTenantId(tenantId);
         // 保存登录日志
         this.saveAction(this.createAction(ActionConstants.ACTION_LOGIN, user));
-
         return HttpStatus.OK;
     }
 

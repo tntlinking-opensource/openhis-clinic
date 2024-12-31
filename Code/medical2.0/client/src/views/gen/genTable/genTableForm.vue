@@ -18,10 +18,10 @@
           </el-tabs>
         </el-col>
       </el-row>
-    </div>    
-    
-    <el-form :model='bizFormModel' :rules='formRules' 
-      ref='genTableForm' label-width='120px' label-position='right' class='edit-form'>    
+    </div>
+
+    <el-form :model='bizFormModel' :rules='formRules'
+      ref='genTableForm' label-width='120px' label-position='right' class='edit-form'>
     <!-- 主表单  开始-->
       <div v-show='tabIndex=="1"'>
       <el-row>
@@ -29,7 +29,7 @@
           <el-form-item label='名称' prop='name'>
              <el-input v-if='dialogProps.action == "view" || dialogProps.action == "edit"' :disabled=true v-model='bizFormModel.name'></el-input>
              <el-select v-else v-model='bizFormModel' value-key='name' @change='onTableChange' filterable clearable placeholder='请选择名称'>
-               <el-option v-for='st in st_List' :key='st.name' :label='st.name + " : " + st.comments' :value='st'></el-option>    
+               <el-option v-for='st in st_List' :key='st.name' :label='st.name + " : " + st.comments' :value='st'></el-option>
             </el-select>
           </el-form-item>
         </el-col>
@@ -49,7 +49,7 @@
           <el-form-item label='关联父表' prop='parentTable.id'>
             <el-input v-if='dialogProps.action == "view"' :disabled=true v-model='bizFormModel.parentTable.name'></el-input>
             <el-select v-else v-model='bizFormModel.parentTable' value-key='id' filterable clearable placeholder='请选择关联父表' @clear='bizFormModel.parentTable={"id": null,"name": null}'>
-               <el-option v-for='parentTable in parentTable_List' :key='parentTable.id' :label='parentTable.name + " : " + parentTable.comments' :value='parentTable'></el-option>    
+               <el-option v-for='parentTable in parentTable_List' :key='parentTable.id' :label='parentTable.name + " : " + parentTable.comments' :value='parentTable'></el-option>
             </el-select>
           </el-form-item>
         </el-col>
@@ -59,7 +59,7 @@
           <el-form-item label='父表外键' prop='parentTableFk'>
             <el-input v-if='dialogProps.action == "view"' :disabled=true v-model='bizFormModel.parentTableFk'></el-input>
             <el-select v-else v-model='bizFormModel.parentTableFk' @change='onFkChange' value-key='name' filterable clearable placeholder='请选择父表外键'>
-               <el-option v-for='parentTableFk in parentTableFk_List' :key='parentTableFk.name' :label='parentTableFk.name + " : " + parentTableFk.comments' :value='parentTableFk.name'></el-option>    
+               <el-option v-for='parentTableFk in parentTableFk_List' :key='parentTableFk.name' :label='parentTableFk.name + " : " + parentTableFk.comments' :value='parentTableFk.name'></el-option>
             </el-select>
           </el-form-item>
         </el-col>
@@ -78,15 +78,15 @@
       </el-row>
       <el-row>
         <el-col>
-          <el-form-item label='筛选条件' prop='filter'>        
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.filter' type='textarea'  
+          <el-form-item label='筛选条件' prop='filter'>
+            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.filter' type='textarea'
               :maxlength='2000' :placeholder='dialogProps.action == "view"? "" : "请输入筛选条件"'  ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
       </div>
                <!-- 主表单  结束-->
-    
+
     <!--子表：   约束字段 开始-->
       <div v-show='tabIndex=="2"'>
       <el-row>
@@ -124,13 +124,13 @@
           <el-tooltip class='item' effect='light' content='删除' placement='top-start'>
             <i class='el-icon-delete' style='color:#F56C6C;cursor:pointer;'
               @click='onDeleteRow(scope.$index, bizFormModel.constraintList)'></i>
-          </el-tooltip>         
+          </el-tooltip>
         </template>
-      </el-table-column>          
+      </el-table-column>
     </el-table>
-    <el-button v-if='dialogProps.action != "view"' type='primary' 
+    <el-button v-if='dialogProps.action != "view"' type='primary'
       @click='onAddConstraintRow(bizFormModel.constraintList)'>添加</el-button>
-        </el-col>        
+        </el-col>
       </el-row>
       </div>
       <!--子表：   约束字段 结束-->
@@ -155,10 +155,10 @@
         <template slot-scope='{row,$index}'>
           <el-form-item v-if='dialogProps.action != "view" && row === genTableColumnCurrentRow' :prop="`genTableColumnList.${$index}.javaType`" :rules='formRules.genTableColumn_javaType' label-width=0>
             <el-select v-model='row.javaType' value-key='value' @change='onJavaTypeChange' filterable clearable placeholder='请选择JAVA类型' @focus='setCurrentFocus(row)'>
-              <el-option v-for='javaType in javaType_GenTableColumn_List' :key='javaType.value' :label='javaType.name' :value='javaType'></el-option>    
+              <el-option v-for='javaType in javaType_GenTableColumn_List' :key='javaType.value' :label='javaType.name' :value='javaType'></el-option>
             </el-select>
           </el-form-item>
-          <span v-else>{{row.javaType.name}}</span> 
+          <span v-else>{{row.javaType.name}}</span>
         </template>
       </el-table-column>
         <el-table-column v-if='tabIndex=="4"' key='customType.id' prop='customType.id' label='自定义类型' min-width='180px' header-align='center'>
@@ -166,10 +166,10 @@
         <template slot-scope='{row,$index}'>
           <el-form-item v-if='dialogProps.action != "view" && row === genTableColumnCurrentRow' :prop="`genTableColumnList.${$index}.customType`" :rules='formRules.genTableColumn_customType' label-width=0>
             <el-select v-model='row.customType' value-key='id' filterable clearable placeholder='请选择自定义类型' @focus='setCurrentFocus(row)'>
-              <el-option v-for='customType in customType_GenTableColumn_List' :key='customType.id' :label='customType.name' :value='customType'></el-option>    
+              <el-option v-for='customType in customType_GenTableColumn_List' :key='customType.id' :label='customType.name' :value='customType'></el-option>
             </el-select>
           </el-form-item>
-          <span v-else>{{row.customType.name}}</span> 
+          <span v-else>{{row.customType.name}}</span>
         </template>
       </el-table-column>
         <el-table-column v-if='tabIndex=="4"' key='javaField' prop='javaField' label='属性名' min-width='180px' header-align='center'>
@@ -258,10 +258,10 @@
         <template slot-scope='{row,$index}'>
           <el-form-item v-if='dialogProps.action != "view" && row === genTableColumnCurrentRow' :prop="`genTableColumnList.${$index}.queryType`" :rules='formRules.genTableColumn_queryType' label-width=0>
             <el-select v-model='row.queryType' value-key='value' filterable clearable placeholder='请选择查询方式' @focus='setCurrentFocus(row)'>
-              <el-option v-for='queryType in queryType_GenTableColumn_List' :key='queryType.value' :label='queryType.name' :value='queryType'></el-option>    
+              <el-option v-for='queryType in queryType_GenTableColumn_List' :key='queryType.value' :label='queryType.name' :value='queryType'></el-option>
             </el-select>
           </el-form-item>
-          <span v-else>{{row.queryType.name}}</span> 
+          <span v-else>{{row.queryType.name}}</span>
         </template>
       </el-table-column>
         <el-table-column v-if='tabIndex=="5"' key='queryVal' prop='queryVal' label='查询条件' min-width='180px' header-align='center'>
@@ -278,10 +278,10 @@
         <template slot-scope='{row,$index}'>
           <el-form-item v-if='dialogProps.action != "view" && row === genTableColumnCurrentRow' :prop="`genTableColumnList.${$index}.showType`" :rules='formRules.genTableColumn_showType' label-width=0>
             <el-select v-model='row.showType' value-key='value' filterable clearable placeholder='请选择控件' @focus='setCurrentFocus(row)'>
-              <el-option v-for='showType in showType_GenTableColumn_List' :key='showType.value' :label='showType.name' :value='showType'></el-option>    
+              <el-option v-for='showType in showType_GenTableColumn_List' :key='showType.value' :label='showType.name' :value='showType'></el-option>
             </el-select>
           </el-form-item>
-          <span v-else>{{row.showType.name}}</span> 
+          <span v-else>{{row.showType.name}}</span>
         </template>
       </el-table-column>
         <el-table-column v-if='tabIndex=="6"' key='interaction' prop='interaction' label='联动变量' min-width='200px' header-align='center'>
@@ -301,7 +301,7 @@
           </el-form-item>
           <span v-else>{{row.interactionVal}}</span>
         </template>
-      </el-table-column>      
+      </el-table-column>
         <el-table-column v-if='tabIndex=="6"' key='parameters' prop='parameters' label='联动参数' min-width='200px' header-align='center'>
         <template slot='header' slot-scope='{row,$index}'>联动参数</template>
         <template slot-scope='{row,$index}'>
@@ -325,31 +325,31 @@
           <el-tooltip class='item' effect='light' content='删除' placement='top-start'>
             <i class='el-icon-delete' style='color:#F56C6C;cursor:pointer;'
               @click='onDeleteRow(scope.$index, bizFormModel.genTableColumnList)'></i>
-          </el-tooltip>         
+          </el-tooltip>
         </template>
-      </el-table-column>          
+      </el-table-column>
     </el-table>
-    <el-button v-if='dialogProps.action != "view"' type='primary' 
+    <el-button v-if='dialogProps.action != "view"' type='primary'
       @click='onAddGenTableColumnRow(bizFormModel.genTableColumnList)'>添加</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onRefreshColumn()'>刷新</el-button>      
-        </el-col>        
+      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onRefreshColumn()'>刷新</el-button>
+        </el-col>
       </el-row>
       </div>
       <!--子表：   业务表字段 结束-->
     </el-form>
-        
+
     <!-- 按钮  开始-->
     <span slot='footer' class='dialog-footer'>
-      <el-button v-if='dialogProps.action != "view"' :disabled="flage" type='primary'  @click='onSubmit("genTableForm")'>保 存</el-button>    
+      <el-button v-if='dialogProps.action != "view"' :disabled="flage" type='primary'  @click='onSubmit("genTableForm")'>保 存</el-button>
       <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
       <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
-    </span> 
+    </span>
     <!-- 按钮 结束-->
   </el-dialog>
 </template>
 
 <script>
-import { listSchemaColumnAll } from '@/api/gen/schemaColumn'  
+import { listSchemaColumnAll } from '@/api/gen/schemaColumn'
 import { listSchemaTableAll } from '@/api/gen/schemaTable'
 import { listSchemaConstraintAll } from '@/api/gen/schemaConstraint'
 import { validatenull } from '@/utils/validate'
@@ -369,7 +369,7 @@ export default {
   components: {
     StringMultiSelect,
     OperationIcon
-  },  
+  },
   data() {
     return {
       tabIndex: '1',
@@ -389,7 +389,7 @@ export default {
         visible: false,
         action: '',
         title: '',
-        
+
       },
       formRules: {
         // 主表验证
@@ -422,14 +422,14 @@ export default {
       },
     constraintCurrentRow: {},     // 子表 约束字段 当前选择行
     genTableColumnCurrentRow: {},     // 子表 业务表字段 当前选择行
-    }    
+    }
   },
   props: {
     // 权限
     permission: {
       type: Object
     }
-  },    
+  },
   methods: {
     setCurrentFocus(row) {
       if (this.$refs.genTable) {
@@ -460,7 +460,7 @@ export default {
         this.resetLoad()
       }).catch(error => {
         this.flage=false
-        this.outputError(error)         
+        this.outputError(error)
       })
     },
     onAddConstraintRow(tableData) {
@@ -521,7 +521,7 @@ export default {
         tableData.splice(index, 1)
     },
     onDialogClose() {
-      this.dialogProps.visible = false  
+      this.dialogProps.visible = false
     },
     onDialogOpen() {
       this.$nextTick(() => {
@@ -535,18 +535,18 @@ export default {
     },
     initFormModel(parent) {
       return {
-        'name': '',   // 名称        	
-        'comments': '',   // 说明        	
-        'className': '',   // 实体类名称        	
+        'name': '',   // 名称
+        'comments': '',   // 说明
+        'className': '',   // 实体类名称
         'parentTable': {     // 关联父表
           'id': null,
           'name': null,
         },
         'parentTableFk': '',   // 父表外键
-        'isAssociation': '',   // 是关联表        	
+        'isAssociation': '',   // 是关联表
         'filter': '',   // 筛选条件
-        'orderColumns': '',     	
-        'remarks': '',   // 备注信息        	
+        'orderColumns': '',
+        'remarks': '',   // 备注信息
 
         constraintList: [],       // 子表列表
         genTableColumnList: [],       // 子表列表
@@ -561,7 +561,7 @@ export default {
       this.st_List = []
       listSchemaTableAll(st_search).then(responseData => {
         this.st_List = responseData.data
-      })  
+      })
       let parentTable_search = {
         params: []
       }
@@ -569,7 +569,7 @@ export default {
       listGenTableAll(parentTable_search).then(responseData => {
         this.parentTable_List = responseData.data
       })
-      //和列表共用  
+      //和列表共用
       if(!validatenull(This) && !validatenull(This.genTableColumnList)){
         this.parentTableFk_List = This.genTableColumnList
         this.orderColumns_List = this.genOderColumns(This.genTableColumnList)
@@ -610,7 +610,7 @@ export default {
       })
       let interaction_search = {
         params: []
-      }    
+      }
     },
     setRowClassName({row, rowIndex}) {
       row.sort = (rowIndex + 1) * 10
@@ -651,9 +651,9 @@ export default {
           } else {
             this.showMessage(columnRespData.code != 100 ? columnRespData : constraintRespData)
           }
-          this.loading = false           
+          this.loading = false
         } catch(error) {
-          this.outputError(error)        
+          this.outputError(error)
         }
       }
     },
@@ -734,7 +734,7 @@ export default {
         this.bizFormModel = genTable
         // this.initOptions()
         this.dialogProps.visible = true
-      })    
+      })
       this.$on('openEditGenTableDialog', function(genTable) {
         this.dialogProps.action = 'edit'
         this.dialogProps.title = '修改业务表'
@@ -761,13 +761,13 @@ export default {
         this.bizFormModel.id = null
         for (var i = 0; i <= this.bizFormModel.constraintList.length - 1; i++) {
             this.bizFormModel.constraintList[i].id = null
-        }        
+        }
         for (var i = 0; i <= this.bizFormModel.genTableColumnList.length - 1; i++) {
             this.bizFormModel.genTableColumnList[i].id = null
-        }        
+        }
         this.dialogProps.visible = true
-      })      
+      })
     })
-  }  
+  }
 }
 </script>

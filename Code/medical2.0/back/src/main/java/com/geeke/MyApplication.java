@@ -20,6 +20,7 @@ import javax.servlet.Servlet;
  */
 @SpringBootApplication
 @ImportResource("classpath:ureport-console-context.xml")
+@MapperScan("com.geeke.**.dao")
 public class MyApplication extends SpringBootServletInitializer {
 
     public static void main(String[] args) {

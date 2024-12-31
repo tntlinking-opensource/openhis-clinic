@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.outpatient.dao.XtZyzhMapper">
+
+    <resultMap id="BaseResultMap" type="com.geeke.outpatient.entity.XtZyzh">
+            <result property="zhid" column="zhId" jdbcType="INTEGER"/>
+            <result property="organizeid" column="OrganizeId" jdbcType="VARCHAR"/>
+            <result property="zhcode" column="zhCode" jdbcType="VARCHAR"/>
+            <result property="zhmc" column="zhmc" jdbcType="VARCHAR"/>
+            <result property="py" column="py" jdbcType="VARCHAR"/>
+            <result property="wb" column="wb" jdbcType="VARCHAR"/>
+            <result property="creatorcode" column="CreatorCode" jdbcType="INTEGER"/>
+            <result property="createtime" column="CreateTime" jdbcType="VARCHAR"/>
+            <result property="lastmodifytime" column="LastModifyTime" jdbcType="VARCHAR"/>
+            <result property="lastmodifiercode" column="LastModifierCode" jdbcType="VARCHAR"/>
+            <result property="px" column="px" jdbcType="VARCHAR"/>
+            <result property="zt" column="zt" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        zhId,OrganizeId,zhCode,
+        zhmc,py,wb,
+        CreatorCode,CreateTime,LastModifyTime,
+        LastModifierCode,px,zt
+    </sql>
+</mapper>

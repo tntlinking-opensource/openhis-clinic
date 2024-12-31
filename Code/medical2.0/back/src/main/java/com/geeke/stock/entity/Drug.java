@@ -5,6 +5,8 @@ import com.geeke.basicdata.entity.ManufactureFactory;
 import com.geeke.common.persistence.DataEntity;
 import com.geeke.org.entity.Company;
 import com.geeke.sys.entity.DictItem;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
@@ -14,6 +16,8 @@ import java.math.BigDecimal;
  * @author txl
  * @version 2022-06-07
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class Drug extends DataEntity<Drug> {
 
 	private static final long serialVersionUID = 1004078055755374623L;
@@ -64,6 +68,9 @@ public class Drug extends DataEntity<Drug> {
 
 	private String indate;          //有效期
 	private MedicinalStockControl stock;
+
+	/*医保字段*/
+	private  String rxFlag;//是否处方 0  1
 
     public String getSyncId() {
         return syncId;

@@ -45,7 +45,7 @@ import java.util.Optional;
 
 @Service("drugService")
 @Transactional(readOnly = true)
-public class DrugService extends CrudService<DrugDao, Drug> {
+public class DrugService extends CrudService<DrugDao, Drug>  {
     @Autowired
     SequenceService sequenceService;
     @Autowired
@@ -417,6 +417,28 @@ public class DrugService extends CrudService<DrugDao, Drug> {
         if (total > 0) {
             list = dao.listPages(pageRequest);
         }
+        //获取到当前药品后去库存明细中获取其进价并算出其成本合计
+        if (!CollectionUtils.isEmpty(list)) {
+            for (Drug drug : list) {
+                //根据动态库存获取成本合计
+                BigDecimal totalCost = medicinalStorageControlService.getByDrugOrStuffId(drug.getId());
+                if (!Objects.isNull(drug.getStock()) && !Objects.isNull(drug.getStock().getStorageStock())) {
+                    String inventory =
+                            drug.getStock().getStorageStock().subtract((drug.getStock().getUsedStock().add(drug.getStock().getReimburseStock()))).stripTrailingZeros().toPlainString();
+                    drug.setInventory(Integer.parseInt(inventory));
+                } else {
+                    drug.setInventory(0);
+                }
+                if (!Objects.isNull(totalCost)) {
+                    drug.setBid(totalCost);
+                } else {
+                    drug.setBid(new BigDecimal("0"));
+                }
+            }
+        }
+
+
+
         return new Page<>(total, list);
     }
 
@@ -470,5 +492,16 @@ public class DrugService extends CrudService<DrugDao, Drug> {
 
     public Drug getByCode(String ypdm, String companyId) {
         return  drugDao.getByCode(ypdm,companyId);
+    }
+
+
+    /**
+     * 根据名称和零售价查询药品导入
+     * @param name
+     * @param retailPrice
+     * @return
+     */
+    public Drug getByNameAndPrice(String name, BigDecimal retailPrice) {
+        return  drugDao.getByNameAndPrice(name,retailPrice, SessionUtils.getUserJson().getString("companyId"));
     }
 }

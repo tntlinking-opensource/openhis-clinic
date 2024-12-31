@@ -1,6 +1,9 @@
 package com.geeke.toll.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.geeke.admin.entity.User;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
 import com.geeke.common.data.PageRequest;
@@ -15,8 +18,14 @@ import com.geeke.cure.entity.InspectionCheckInfo;
 import com.geeke.cure.service.InspectionCheckDetailService;
 import com.geeke.cure.service.InspectionCheckInfoService;
 import com.geeke.cure.service.InspectionCheckService;
+import com.geeke.medicareutils.config.MedicareConfigProperties;
+import com.geeke.medicareutils.domain.respo.MdFeeDetail;
+import com.geeke.medicareutils.service.MdInventoryService;
+import com.geeke.medicareutils.service.MdPsnDataService;
+import com.geeke.medicareutils.service.MdRegistrationService;
 import com.geeke.member.entity.MemberManagement;
 import com.geeke.member.service.MemberManagementDetailService;
+import com.geeke.org.entity.ClinicOffice;
 import com.geeke.org.entity.Company;
 import com.geeke.org.service.CompanyService;
 import com.geeke.outpatient.dao.RecipelDetailDao;
@@ -36,6 +45,7 @@ import com.geeke.treatment.service.CostItemService;
 import com.geeke.treatment.service.impl.CostItemPackageService;
 import com.geeke.utils.*;
 import com.geeke.utils.constants.ErrorEnum;
+import lombok.RequiredArgsConstructor;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -49,6 +59,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -65,6 +76,7 @@ import java.util.stream.Collectors;
  
 @Service("tollInfoService")
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
     @Autowired
     private PatientService patientService;
@@ -126,6 +138,17 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
     @Autowired
     private RecipelDetailDao recipelDetailDao;
 
+
+    private  final MedicareConfigProperties medicareConfigProperties;
+
+    private final PatientMdDataService patientMdDataService;
+
+    private final MdRegistrationService mdRegistrationService;
+
+    private final MdInventoryService mdInventoryService;
+
+    private  final MdPsnDataService mdPsnDataService;
+
     @Override
     @Transactional(readOnly = false)
     public TollInfo save(TollInfo tollInfo) {
@@ -144,6 +167,7 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
     @Transactional(readOnly = false)
     public void saveToll(TollEvt tollEvt,String type) {
         Company company = SessionUtils.getUser().getCompany();
+        String seltId="";//医保结算id付费后存入挂号表
         //正在进行盘点时不能进行收费
         List<InventoryVerification> inventoryVerifications = inventoryVerificationService.getByCompanyId(company.getId());
        if("amountStatus_1".equals(tollEvt.getTollInfo().getAmountStatus().getValue())) {
@@ -204,11 +228,17 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
                     tollSave = this.save(tollInfo);
 
                     //预占用库存
-                    this.medicinalStorageControlService.preOccupyStock(retail);
+                    medicinalStorageControlService.preOccupyStock(retail);
+                    //开启医保时对零售库存进行处理
+                    if("true".equals(medicareConfigProperties.getCheck())){
+                        //获取药品扣减信息
+                        mdInventoryService.updateInventoryList(tollEvt.getRecipelInfos().get(0));
+                    }
                 }else {
                     tollInfo.setPatient(patient);
                     //保存收费
                     List<RecipelInfoEvt> recipelInfos = recipelInfoEvts;
+                    JSONArray array = new JSONArray();
                     for (RecipelInfoEvt recipelInfoEvt : recipelInfos) {
                         RecipelInfo recipelInfo = recipelInfoEvt.getRecipelInfo();
                         recipelInfo = recipelInfoService.get(recipelInfo.getId());
@@ -224,8 +254,8 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
                         newTollInfo.setMedical(medicalRecordService.get(tollInfo.getMedical().getId()));
                         newTollInfo.setRecipel(recipelInfo);
                         newTollInfo.setAmountReceivable(recipelInfo.getFee());
-                        newTollInfo.setAmountReceived(this.getAmountReceived(recipelInfo,tollInfo));
-//                        newTollInfo.setAmountReceived(tollInfo.getAmountReceived());
+                        //newTollInfo.setAmountReceived(this.getAmountReceived(recipelInfo,tollInfo));
+                         newTollInfo.setAmountReceived(tollInfo.getAmountReceived());
                         newTollInfo.setAmountDiscounted(newTollInfo.getAmountReceivable().subtract(newTollInfo.getAmountReceived()));
                         DictItem tollType = newTollInfo.getTollType();
 
@@ -248,7 +278,56 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
                         }
                         newTollInfo.setTollType(tollType);
                         tollSave = this.save(newTollInfo);
-
+                        //开启医保接口时并上传收费信息
+                        if(medicareConfigProperties.getCheck().equals("true")){
+                            JSONObject data = new JSONObject();
+                            //挂号、患者医保信息
+                            registration = registrationService.get(tollInfo.getMedical().getRegistration().getId());
+                            PatientMdData patientMdData = patientMdDataService.getOne(new LambdaQueryWrapper<PatientMdData>().eq(PatientMdData::getPatientId, registration.getPatientId().getId()));
+                            //挂号科室信息
+                            ClinicOffice clinicOffice = registration.getClinicOffice();
+                            //开单医生信息
+                            User doctor = registration.getDoctor();// 医生
+                            //费用明细流水号
+                            data.put("feedetl_sn",tollSave.getId());
+                            data.put("mdtrt_id",registration.getMdtrtId());
+                            data.put("psn_no",patientMdData.getPsnNo());
+                            data.put("chrg_bchno",tollSave.getTollNumber());
+                            if(Objects.nonNull(tollSave.getRecipel())){
+                                //处方号
+                                data.put("rxno",tollSave.getRecipel().getCode());
+                                //TODO 外购处方标志
+                                data.put("rxd_circ_flag","0");
+                            }
+                            data.put("fee_ocur_time",tollSave.getRecipel().getCreateDate());
+                            data.put("med_list_codg",""); //Todo 医疗机构目录编码
+                            data.put("medins_list_codg",""); //Todo 医药机构目录编码
+                            data.put("det_item_fee_sumamt", recipelInfoEvt.getRecipelInfo().getFee()); // 明细项目费用总额，数值型，必填
+                            data.put("cnt",recipelInfoEvt.getRecipelDetailEvtList().get(0).getTotal()); // 数量，数值型，必填 T
+                            data.put("pric", recipelInfoEvt.getRecipelDetailEvtList().get(0).getUnitPrice()); // 单价，数值型，必填 /
+                            data.put("sin_dos_dscr",""); // 单次剂量描述，字符型
+                            data.put("used_frqu_dscr", ""); // 使用频次描述，字符型
+                            data.put("prd_days", recipelInfoEvt.getRecipelDetailEvtList().get(0).getDays().getValue()); // 周期天数，数值型
+                            data.put("medc_way_dscr", ""); // 用药途径描述，字符型
+                            data.put("bilg_dept_codg", clinicOffice.getCode()); // 开单科室编码，字符型，必填
+                            data.put("bilg_dept_name", clinicOffice.getName()); // 开单科室名称，字符型，必填
+                            data.put("bilg_dr_codg", doctor.getUserExt().getPracPsnCode()); // 开单医生编码，字符型，必填
+                            data.put("bilg_dr_name", doctor.getName()); // 开单医生姓名，字符型，必填
+                            data.put("acord_dept_codg", clinicOffice.getCode()); // 受单科室编码，字符型，必填
+                            data.put("acord_dept_name", clinicOffice.getName()); // 受单科室名称，字符型，必填
+                            data.put("orders_dr_code", doctor.getUserExt().getPracPsnCode()); // 受单医生编码，字符型，必填
+                            data.put("orders_dr_name", doctor.getName()); // 受单医生姓名，字符型，必填
+                            data.put("hosp_appr_flag", "1"); // 医院审批标志，字符型，必填
+                            //
+                            data.put("tcmdrug_used_way", ""); // 中药使用方式，字符型，必填
+                            data.put("etip_flag", ""); // 外检标志，字符型，必填
+                            data.put("etip_hosp_code", ""); // 外检医院编码，字符型
+                            data.put("dscg_tkdrug_flag", ""); // 出院带药标志，字符型，必填
+                            data.put("matn_fee_flag", ""); // 生育费用标志，字符型
+                            data.put("comb_no", ""); // 组套编号，字符型
+                            data.put("expContent", ""); // 字段扩展，字符型
+                            array.add(data);
+                        }
                         //收完费后如果是诊疗项目并且体验卡不为空时进行修改
                         MemberManagement memberManagement = tollEvt.getMemberManagement();
                         if(!ObjectUtils.isEmpty(memberManagement)){
@@ -267,6 +346,16 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
                             deduction(recipelInfo);
 
                         }
+                    }
+                    if(medicareConfigProperties.getCheck().equals("true")){
+                        //门诊费用明细上传 2204
+                        MdFeeDetail mdFeeDetail = mdRegistrationService.upRegistrationMoneyInfo(array);
+                        //门诊预结算 2206
+                        mdRegistrationService.processOutpatientPreSettlement(registration,mdFeeDetail,tollSave.getTollNumber(),"1");
+                        //门诊结算 2207
+                        JSONObject jsonObject = mdRegistrationService.executeOutpatientPreSettlement(registration, mdFeeDetail, tollSave.getTollNumber(), "1");
+                        seltId = jsonObject.getJSONObject("setlinfo").getString("setl_id");
+
                     }
                 }
             }
@@ -339,7 +428,16 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
                         medicinalStorageControlService.goBackFee(recipelInfo);
                     }
                 }
-
+                //医保退费
+                if(medicareConfigProperties.getCheck().equals("true")){
+                    //退费的挂号信息
+                    registration = registrationService.get(tollInfo.getMedical().getRegistration().getId());
+                    //获取即时医保人员信息
+                    mdPsnDataService.getAndSetPsnData(registration);
+                    PatientMdData psnData = patientMdDataService.getOne(new LambdaQueryWrapper<PatientMdData>().eq(PatientMdData::getPatientId, registration.getPatientId().getId()));
+                    //门诊结算撤销 2208
+                    mdRegistrationService.revokeOutpatientSettlement(registration.getSetlId(),psnData.getPsnNo(),registration.getMdtrtId());
+                }
             }
             //挂号支付方式，收费状态
             if (null == registration) {
@@ -367,6 +465,7 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
             }else if ("amountStatus_2".equals(tollInfo.getAmountStatus().getValue())) {
                 registration.setretreatsDate(new Date());
             }
+            registration.setSetlId(seltId);
             registrationService.save(registration);
         }
     }
@@ -446,7 +545,7 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
 
     //保存检验检测
     @Transactional(readOnly = false)
-    private void addInspectionCheck(RecipelInfo recipelInfo) {
+    public void addInspectionCheck(RecipelInfo recipelInfo) {
         //通过处方id，去获取诊疗项目
         List<CostItem> costItems = costItemService.getByRecipelInfo(recipelInfo);
         //判断诊疗项目是否为检验检查

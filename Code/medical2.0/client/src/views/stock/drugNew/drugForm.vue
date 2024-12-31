@@ -1403,6 +1403,7 @@
         });
         this.$on("openEditDrugDialog", function (drug) {
           if ((drug.stock.storageStock - drug.stock.usedStock - drug.stock.reimburseStock) > 0) {
+
             this.dialogProps.action = "view";
           } else {
             this.dialogProps.action = "edit";

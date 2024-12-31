@@ -41,7 +41,10 @@
         a.update_date AS "updateDate",
         a.del_flag AS "delFlag",
         a.western_diagnose AS "westernDiagnose",
-        a.china_diagnose AS "chinaDiagnose"
+        a.china_diagnose AS "chinaDiagnose",
+        a.china_syndrome As "chinaSyndrome",
+        a.disease_id AS "diseaseId",
+        a.syndrome_id AS "syndromeId"
     </sql>
     
     <sql id="medicalRecordJoins">
@@ -150,7 +153,10 @@
             update_date,
             del_flag,
             western_diagnose,
-            china_diagnose
+            china_diagnose,
+            china_syndrome,
+            disease_id,
+            syndrome_id
         ) VALUES (
             #{id},
             #{company.id},                    
@@ -188,8 +194,12 @@
             #{updateDate},
             #{delFlag},
             #{westernDiagnose},
-            #{chinaDiagnose}
+            #{chinaDiagnose},
+            #{chinaSyndrome},
+            #{diseaseId},
+            #{syndromeId}
         )
+
     </insert>
     
     <update id="update">
@@ -226,6 +236,9 @@
             update_date = #{updateDate},
             western_diagnose = #{westernDiagnose},
             china_diagnose = #{chinaDiagnose}
+            ,china_syndrome = #{chinaSyndrome}
+            ,syndrome_id = #{syndromeId}
+            ,disease_id = #{diseaseId}
         WHERE id = #{id}
     </update>
     

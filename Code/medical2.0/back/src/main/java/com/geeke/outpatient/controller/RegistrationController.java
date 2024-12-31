@@ -6,6 +6,9 @@ import com.geeke.admin.service.UserService;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
 import com.geeke.config.exception.CommonJsonException;
+import com.geeke.medicareutils.config.MedicareConfigProperties;
+import com.geeke.medicareutils.service.MdPsnDataService;
+import com.geeke.medicareutils.service.MdRegistrationService;
 import com.geeke.outpatient.entity.*;
 import com.geeke.common.data.Parameter;
 import com.geeke.outpatient.service.RecipelDetailService;
@@ -17,6 +20,7 @@ import com.geeke.utils.ResultUtil;
 import com.geeke.utils.SessionUtils;
 import com.geeke.utils.StringUtils;
 import com.geeke.utils.constants.ErrorEnum;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
@@ -32,6 +36,7 @@ import java.util.logging.Handler;
  */
 @RestController
 @RequestMapping(value = "/outpatient/registration")
+@RequiredArgsConstructor
 public class RegistrationController extends BaseController {
 
     @Autowired
@@ -45,6 +50,13 @@ public class RegistrationController extends BaseController {
 
     @Autowired
     private RecipelDetailService recipelDetailService;
+
+    private final MdRegistrationService mdRegistrationService;
+
+    private final MdPsnDataService mdPsnDataService;
+
+    private final MedicareConfigProperties medicareConfigProperties;
+
 
     @GetMapping("/{id}")
     public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
@@ -110,6 +122,11 @@ public class RegistrationController extends BaseController {
         } else {
             res = registrationService.refundRegistrationPay(id, status, refundRegistrationPayType, refundRegistrationRemarks, exitNumberDate);
         }
+        if ("true".equals(medicareConfigProperties.getCheck())){
+            //开启医保退号
+            Registration registration = registrationService.get(id);
+            mdRegistrationService.revokeRegistrationInfo(registration);
+        }
         return ResponseEntity.ok(ResultUtil.successJson(res));
     }
 
@@ -149,7 +166,7 @@ public class RegistrationController extends BaseController {
         Page<Registration> result = registrationService.listPage(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
         String companyId = null;
         if (result.getTotal() != 0) {
-            if (result.getRows().size() != 0) {
+            if (!result.getRows().isEmpty()) {
 
                 for (Registration row : result.getRows()) {
                     companyId = row.getCompany().getId();
@@ -176,6 +193,16 @@ public class RegistrationController extends BaseController {
         if(Objects.equals(entity.getCreateBy(),"微信")){
             id = registrationService.wxSave(entity).getId();
         }else {
+            //开启医保接口
+            if("true".equals(medicareConfigProperties.getCheck())){
+                //保存用户医保信息
+                if (mdPsnDataService.getAndSetPsnData(entity)) {
+                    //医保挂号
+                    JSONObject registrationInfo = mdRegistrationService.getRegistrationInfo(entity);
+                    entity.setMdtrtId(registrationInfo.getString("mdtrtId"));
+                    entity.setIptOtpNo(registrationInfo.getString("iptOtpNo"));
+                }
+            }
             id = registrationService.save(entity).getId();
         }
 

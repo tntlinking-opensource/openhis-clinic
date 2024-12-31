@@ -1,10 +1,13 @@
 package com.geeke.stock.entity;
 
+import lombok.Data;
+
 /**
  * 入库Evt
  * @author txl
  * @version 2022-06-07
  */
+@Data
 public class DispensingDetailEvt {
 
     private static final long serialVersionUID = 1005591224273698910L;
@@ -15,6 +18,9 @@ public class DispensingDetailEvt {
     //  0|1 药品|材料
     private String type;
     private Integer number;
+    //医保字段
+    private String drugTracCodg;   //药品追溯码
+
 
     public String getRecipelInfoId() {
         return recipelInfoId;

@@ -1,34 +1,66 @@
-# Compiled class file
-*.class
-
-# Log files
-*.log
-
-# IntelliJ IDEA project files
-.idea/
-
-# Gradle specific files
-.gradle/
-
-# Maven specific files
+HELP.md
 target/
-classes/
-target/classes/
-
-node_modules/
-Code/medical2.0/client/node_modules/
-
-# Spring Boot specific files
-spring-boot-starter-parent.iml
-mvnw
-mvnw.cmd
-src/main/resources/application.properties
-
-# IDE-specific files
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+ 
+ 
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+.svn
+.git.
+.gitee
+.github
+ 
+# Eclipse
+.project
+.classpath
+.settings/
+ 
+ 
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+ 
+# Maven
+target/
+ 
+### IntelliJ IDEA ###
+.idea
+*.iws
 *.iml
 *.ipr
-*.iws
-out/
-
-
-
+ 
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+ 
+### VS Code ###
+.vscode/
+ 
+ 
+# Log file
+*.log
+log/
+logs/
+ 
+# others
+*.zip
+*.tar
+*.tar.gz
+*.pid
+*.orig
+temp/

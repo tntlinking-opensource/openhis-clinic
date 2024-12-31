@@ -36,6 +36,14 @@
         </el-row>
         <el-row>
           <el-col :span='24/1'>
+            <el-form-item label='医疗机构编码' prop='fixmedinsCode'>
+              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.fixmedinsCode' :maxlength='100'
+                        :placeholder='dialogProps.action == "view"? "" : "如未开启医保则输入:000"' autofocus></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span='24/1'>
             <el-form-item label='地址(省)' prop='addressProvince'>
               <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.addressProvince' :maxlength='10'
                         :placeholder='dialogProps.action == "view"? "" : "请输入地址(省)"'></el-input>
@@ -190,6 +198,9 @@
           'name': [
             {required: true, message: '请输入诊所名称', trigger: 'blur'}
           ],
+          'fixmedinsCode': [
+            {required: true, message: '请输入医疗机构代码', trigger: 'blur'}
+          ],
           'lesseeId.id': [
             {required: true, message: '请选择租户', trigger: 'change'}
           ],
@@ -269,6 +280,7 @@
             'id': validatenull(This) || validatenull(This.lesseeId) ? null : This.lesseeId.id,
             'name': validatenull(This) || validatenull(This.lesseeId) ? null : This.lesseeId.name,
           },
+          'fixmedinsCode':'' ,//医疗机构编码
           'addressProvince': '',   // 地址(省)
           'addressCity': '',   // 地址(市)
           'addressRegion': '',   // 地址(区)

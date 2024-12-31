@@ -22,7 +22,7 @@ const loadLink = function(url, rel, type, callback) {
       fn();
     }
   }
-  
+
   link.setAttribute("rel", rel)
   link.setAttribute("type", type)
   link.setAttribute("href", url)
@@ -77,7 +77,7 @@ const loadDataViewer = function() {
     loadJS('static/lib/jspdf@2.5.1/jspdf.umd.min.js', function(){
       prevCount = prevCount - 1
     })
-    
+
     // @antv/g2plot
     loadJS('static/lib/@antv/g2plot@2.4.8/g2plot.min.js', function(){
       prevCount = prevCount - 1

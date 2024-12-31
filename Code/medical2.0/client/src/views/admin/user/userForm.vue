@@ -80,6 +80,29 @@
         </el-row>
         <el-row>
           <!-- <el-col :span="24 / 2">
+            <el-form-item label="民族" prop="userExt.nation">
+              <el-input
+                v-model="bizFormModel.userExt.nation"
+                :maxlength="128"
+                :placeholder="'请输入民族'"
+              ></el-input>
+            </el-form-item>
+          </el-col> -->
+          <el-col :span="24 / 2">
+            <el-form-item label="执业编码" prop="pracPsnCode">
+              <el-input
+                :disabled="dialogProps.action == 'view'"
+                v-model="bizFormModel.userExt.pracPsnCode"
+                :maxlength="11"
+                :placeholder="
+                  dialogProps.action == 'view' ? '' : '请输入执业编码'
+                "
+              ></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <!-- <el-col :span="24 / 2">
             <el-form-item label="出生日期" prop="userExt.birthday">
               <el-date-picker
                 v-model="bizFormModel.userExt.birthday"
@@ -749,7 +772,6 @@ export default {
           sex: "", //性别
           nation: "", // 民族
           birthday: "", // 出生日期
-
           description: "", // 介绍
           isDuty: "", // 是否在职
           creditType: "", // 证件类型
@@ -759,6 +781,7 @@ export default {
           jobType: "", // 职业类型
           startWorkTime: "", // 开始时间
           endWorkTime: "", //结束时间
+          pracPsnCode:"" ,//执业编码
         },
         userHeader: "", // 用户头像回显
         name: "", // 用户名

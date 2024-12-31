@@ -66,9 +66,6 @@ public class AuthController {
     @Autowired
     private PersonalThemeService personalThemeService;
 
-    @Autowired
-    private RedisProperties redisProperties;
-
     /**
      * 登陆前检查所处诊所
      *
@@ -101,7 +98,6 @@ public class AuthController {
     public ResponseEntity<?> getToken(HttpServletRequest request, String loginName, String password, String companyId) {
         Map<String, Object> response = null;
         List<String> idList = new ArrayList<>();
-        System.err.println(redisProperties);
         try {
             //登陆
             HttpStatus httpStatus = loginService.authLogin(loginName, password, companyId);
@@ -127,7 +123,6 @@ public class AuthController {
                 SessionUtils.setLoginTenantId(companyId);
                 SessionUtils.setLoginTenant(user.getCompany());
             }
-
             //更新用户，返回当前登陆人信息
             response = getLoginUserInfo(request, user, companyId);
         } catch (Exception e) {

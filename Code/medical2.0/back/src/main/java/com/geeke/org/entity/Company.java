@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.geeke.clinic.entity.ClinicVersion;
 import com.geeke.common.persistence.TreeEntity;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
@@ -13,6 +15,8 @@ import java.util.Date;
  * @author lys
  * @version 2022-05-25
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class Company extends TreeEntity<Company> {
 
 	private static final long serialVersionUID = 41040096140492800L;
@@ -28,6 +32,8 @@ public class Company extends TreeEntity<Company> {
 	private Company lesseeId;      // 租户
 	private String contactName;
 	private String tenantryId; // 租户id
+
+	private  String fixmedinsCode;// 定点医疗机构代码
 
 	public String getTenantryId() {
 		return tenantryId;

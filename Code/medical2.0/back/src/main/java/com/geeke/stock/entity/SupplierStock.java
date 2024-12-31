@@ -5,6 +5,9 @@ import com.geeke.stock.entity.Supplier;
 import com.geeke.stock.entity.Drug;
 import com.geeke.stock.entity.SupplierStorage;
 import com.geeke.stock.entity.Stuff;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import com.geeke.basicdata.entity.ManufactureFactory;
 import java.util.Date;
@@ -19,14 +22,16 @@ import com.geeke.common.persistence.DataEntity;
  * @author txl
  * @version 2022-06-09
  */
-public class SupplierStock extends DataEntity<SupplierStock> {
+@EqualsAndHashCode(callSuper = true)
+@Data
+public class SupplierStock extends DataEntity<SupplierStock>  {
 
 	private static final long serialVersionUID = 1005591224273698934L;
 	private Company company;      // 诊所id 
 	private Supplier supplierId;      // 供应商 
 	private Drug drug;      // 药品名称 
-	private SupplierStorage supplierStorage;      // 入库单id 
-	private Stuff stuff;      // 材料名称 
+	private SupplierStorage supplierStorage;      // 入库单id
+	private Stuff stuff;      // 材料名称
 	private String norms;		// 规格
 	private ManufactureFactory factory;      // 厂家 
 	private String batchNo;		// 批号
@@ -41,6 +46,11 @@ public class SupplierStock extends DataEntity<SupplierStock> {
 	private int initial;     //初始库存
 	private String cancellation;  //作废标记
 	private MedicinalStorageControl medicinalStorageControl;
+
+	/** 医保字段 */
+	private  String drugtracinfo; //追溯码节点信息
+	private  String drugTracCodg;//药品追溯码
+	private  String cnt;//医报数量
 	
 	public SupplierStock() {
 		super();
@@ -90,10 +100,6 @@ public class SupplierStock extends DataEntity<SupplierStock> {
         return stuff;
     }
 
-    public void setStuff(Stuff stuff) {
-        this.stuff = stuff;
-    }
-    
 	@Length(min=0, max=64, message="规格长度必须介于 0 和 64 之间")
 	public String getNorms() {
 		return norms;

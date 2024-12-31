@@ -2,14 +2,18 @@ package com.geeke.org.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.geeke.common.persistence.DataEntity;
+import lombok.Data;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+
 /**
  * 科室信息Entity
  * @author ch
  * @version 2022-06-14
  */
+@Data
 public class ClinicOffice extends DataEntity<ClinicOffice> {
 
     private static final long serialVersionUID = 1026680647570219053L;
@@ -19,6 +23,17 @@ public class ClinicOffice extends DataEntity<ClinicOffice> {
     private String sort;		// 排序
     private String category;		// 科室大类
     private String address;		// 地址
+    private String itro;         //简介
+    private String deptResperName;//科室负责人
+    private String deptResperTel;//科室负责人电话
+    private LocalDateTime deptEstbdat;//科室成立日期
+    private String aprvBedCnt;//批准床位数量
+    private String poolareaNo;//统筹区编号
+    private String drPsncnt;//医师人数
+    private String pharPsncnt;//药师人数
+    private String nursPsncnt;//护士人数
+    private String tecnPsncnt;//技师人数
+
     private String isDefault;   //默认科室
     private String isRegister;   //是否为登记科室
 

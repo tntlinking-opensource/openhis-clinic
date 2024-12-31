@@ -7,6 +7,7 @@
         a.company_id AS "company.id",
         IFNULL(company.name,'') AS "company.name",
         company.ids AS "company.ids",
+        IFNULL(company.fixmedins_code,'') AS "company.fixmedins_code",
         IFNULL(company.full_name, '') AS "company.fullName",
         IFNULL(company.code, '') AS "company.code",
         a.department_id AS "department.id",
@@ -28,6 +29,7 @@
         a.del_flag AS "delFlag",
         a.is_admin AS "isAdmin",
         a.is_wxuser AS "isWxuser"
+
     </sql>
 
     <sql id="userJoins">

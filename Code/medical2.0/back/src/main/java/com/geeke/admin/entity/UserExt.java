@@ -2,12 +2,14 @@ package com.geeke.admin.entity;
 
 import com.geeke.common.persistence.DataEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 用户扩展Entity
  * @author ch
  * @version 2021-08-25
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class UserExt extends DataEntity<UserExt>{
 
@@ -27,5 +29,7 @@ public class UserExt extends DataEntity<UserExt>{
     private String description;		// 描述信息
     private String startWorkTime;		// 诊所开始工作时间
     private String endWorkTime;		// 诊所结束时间
+    //医保字段
+     private String pracPsnCode;//执业人员编码
 
 }

@@ -77,6 +77,20 @@
         </el-row>
         <el-row>
           <el-col :span="24 / 1">
+            <el-form-item label="科室类别" prop="category">
+              <el-input
+                :disabled="dialogProps.action == 'view'"
+                v-model="bizFormModel.category"
+                :maxlength="128"
+                :placeholder="
+                  dialogProps.action == 'view' ? '' : '请输入医保科室类别代码'
+                "
+              ></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24 / 1">
             <el-form-item label="科室名称" prop="name">
               <el-input
                 :disabled="dialogProps.action == 'view'"
@@ -91,13 +105,13 @@
         </el-row>
         <el-row>
           <el-col :span="24 / 1">
-            <el-form-item label="科室大类" prop="category">
+            <el-form-item label="简介" prop="itro">
               <el-input
                 :disabled="dialogProps.action == 'view'"
-                v-model="bizFormModel.category"
+                v-model="bizFormModel.itro"
                 :maxlength="128"
                 :placeholder="
-                  dialogProps.action == 'view' ? '' : '请输入科室大类'
+                  dialogProps.action == 'view' ? '' : '请输入简介'
                 "
               ></el-input>
             </el-form-item>
@@ -105,16 +119,138 @@
         </el-row>
         <el-row>
           <el-col :span="24 / 1">
-            <el-form-item label="地址" prop="address">
+            <el-form-item label="科室负责人姓名" prop="dept_resper_name">
               <el-input
                 :disabled="dialogProps.action == 'view'"
-                v-model="bizFormModel.address"
-                :maxlength="255"
-                :placeholder="dialogProps.action == 'view' ? '' : '请输入地址'"
+                v-model="bizFormModel.dept_resper_name"
+                :maxlength="128"
+                :placeholder="
+                  dialogProps.action == 'view' ? '' : '请输入负责人姓名'
+                "
               ></el-input>
             </el-form-item>
           </el-col>
         </el-row>
+        <el-row>
+          <el-col :span="24 / 1">
+            <el-form-item label="科室负责人电话" prop="dept_resper_tel">
+              <el-input
+                :disabled="dialogProps.action == 'view'"
+                v-model="bizFormModel.dept_resper_tel"
+                :maxlength="128"
+                :placeholder="
+                  dialogProps.action == 'view' ? '' : '请输入负责人电话'
+                "
+              ></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24 / 1">
+            <el-form-item label="科室成立日期" prop="dept_estbdat">
+              <el-date-picker :disabled='dialogProps.action == "view"' v-model='bizFormModel.dept_estbdat'
+                              type='datetime' value-format='yyyy-MM-dd HH:mm:ss'
+                              :placeholder='dialogProps.action == "view"? "" : "请输入科室成立日期"'></el-date-picker>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24 / 1">
+            <el-form-item label="批准床位数量" prop="aprv_bed_cnt">
+              <el-input
+                :disabled="dialogProps.action == 'view'"
+                v-model="bizFormModel.aprv_bed_cnt"
+                :maxlength="128"
+                :placeholder="
+                  dialogProps.action == 'view' ? '' : '请输入批准数量'
+                "
+              ></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24 / 1">
+            <el-form-item label="统筹区编号" prop="poolarea_no">
+              <el-input
+                :disabled="dialogProps.action == 'view'"
+                v-model="bizFormModel.poolarea_no"
+                :maxlength="128"
+                :placeholder="
+                  dialogProps.action == 'view' ? '' : '请输入统筹区编号'
+                "
+              ></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24 / 1">
+            <el-form-item label="医师人数" prop="dr_psncnt">
+              <el-input
+                :disabled="dialogProps.action == 'view'"
+                v-model="bizFormModel.dr_psncnt"
+                :maxlength="128"
+                :placeholder="
+                  dialogProps.action == 'view' ? '' : '请输入医师人数'
+                "
+              ></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24 / 1">
+            <el-form-item label="药师人数" prop="phar_psncnt">
+              <el-input
+                :disabled="dialogProps.action == 'view'"
+                v-model="bizFormModel.phar_psncnt"
+                :maxlength="128"
+                :placeholder="
+                  dialogProps.action == 'view' ? '' : '请输入药师人数'
+                "
+              ></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24 / 1">
+            <el-form-item label="护士人数" prop="nurs_psncnt">
+              <el-input
+                :disabled="dialogProps.action == 'view'"
+                v-model="bizFormModel.nurs_psncnt"
+                :maxlength="128"
+                :placeholder="
+                  dialogProps.action == 'view' ? '' : '请输入护士人数'
+                "
+              ></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24 / 1">
+            <el-form-item label="技师人数" prop="tecn_psncnt">
+              <el-input
+                :disabled="dialogProps.action == 'view'"
+                v-model="bizFormModel.tecn_psncnt"
+                :maxlength="128"
+                :placeholder="
+                  dialogProps.action == 'view' ? '' : '请输入技师人数'
+                "
+              ></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+<!--        <el-row>-->
+<!--          <el-col :span="24 / 1">-->
+<!--            <el-form-item label="地址" prop="address">-->
+<!--              <el-input-->
+<!--                :disabled="dialogProps.action == 'view'"-->
+<!--                v-model="bizFormModel.address"-->
+<!--                :maxlength="255"-->
+<!--                :placeholder="dialogProps.action == 'view' ? '' : '请输入地址'"-->
+<!--              ></el-input>-->
+<!--            </el-form-item>-->
+<!--          </el-col>-->
+<!--        </el-row>-->
         <el-row>
           <el-col :span="24 / 1">
             <el-form-item label="是否为登记科室" prop="isRegister">
@@ -208,7 +344,7 @@ export default {
         visible: false,
         action: "",
         title: "",
-       
+
       },
       formRules: {
         "company.id": [
@@ -216,6 +352,17 @@ export default {
         ],
         code: [{ required: true, message: "请输入科室编号", trigger: "blur" }],
         name: [{ required: true, message: "请输入科室名称", trigger: "blur" }],
+        // category: [{ required: true, message: "请输入医保科室类别代码", trigger: "blur" }], // 科室类别
+        // itro: [{ required: true, message: "请输入简介", trigger: "blur" }], // 简介
+        // dept_resper_name: [{ required: true, message: "请输入负责人姓名", trigger: "blur" }], // 负责人
+        // dept_resper_tel: [{ required: true, message: "请输入负责人电话", trigger: "blur" }], // 负责人电话
+        // dept_estbdat: [{ required: true, message: "请输入成立时间", trigger: "blur" }], // 成立时间
+        // aprv_bed_cnt: [{ required: true, message: "请输入批准床位数", trigger: "blur"}], // 批准床位数
+        // poolarea_no: [{ required: true, message: "请输入统筹区编号", trigger: "blur" }], // 统筹区编号
+        // dr_psncnt: [{ required: true, message: "请输入医生人数", trigger: "blur", type: 'number' }], // 医生人数
+        // phar_psncnt: [{ required: true, message: "请输入药房人数", trigger: "blur", type: 'number' }], // 药房人数
+        // nurs_psncnt: [{ required: true, message: "请输入护士人数", trigger: "blur", type: 'number' }], // 护士人数
+        // tecn_psncnt: [{ required: true, message: "请输入技师人数", trigger: "blur", type: 'number' }] // 技师人数
       },
     };
   },
@@ -293,8 +440,18 @@ export default {
         isLocked: "0", // 禁用（0：未禁用；1：禁用）
         name: "", // 科室名称
         sort: "0", // 排序
-        category: "", // 科室大类
-        address: "", // 地址
+        category: "", // 科室类别
+        itro:"",//简介
+        dept_resper_name: "",//负责人
+        dept_resper_tel:"",//负责人电话
+        dept_estbdat:"",//成立时间
+        aprv_bed_cnt:"",//批准床位数
+        poolarea_no:"",//统筹区编号
+        dr_psncnt:0,//医生人数
+        phar_psncnt:0,//药房人数
+        nurs_psncnt:0,//护士人数
+        tecn_psncnt:0//技师人数
+        // address: "", // 地址
       };
     },
     initOptions(This) {

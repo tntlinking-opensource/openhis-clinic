@@ -2,6 +2,7 @@ package com.geeke.outpatient.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -48,14 +49,14 @@ public class RecipetemplateService extends CrudService<RecipetemplateDao, Recipe
     private DrugService drugService;
 
     public void allSave(Recipetemplate recipetemplate){
-        if(recipetemplate.getId()=="" || recipetemplate.getId()==null){
+        if(Objects.equals(recipetemplate.getId(), "") || recipetemplate.getId()==null){
             this.saveTemplate(recipetemplate);
         }else {
             this.updateTemplate(recipetemplate);
         }
     }
     @Transactional(readOnly = false)
-    private void updateTemplate(Recipetemplate recipetemplate) {
+    public void updateTemplate(Recipetemplate recipetemplate) {
         JSONObject userObj = SessionUtils.getUserJson();
         if (userObj != null && StringUtils.isNotBlank(userObj.getString("id"))) {
             recipetemplate.setUpdateBy(userObj.getString("name"));

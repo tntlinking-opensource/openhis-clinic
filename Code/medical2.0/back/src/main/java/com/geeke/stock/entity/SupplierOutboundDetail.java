@@ -3,6 +3,8 @@ package com.geeke.stock.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.geeke.common.persistence.DataEntity;
 import com.geeke.org.entity.Company;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -12,6 +14,8 @@ import java.text.DecimalFormat;
  * @author txl
  * @version 2022-06-02/
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class SupplierOutboundDetail extends DataEntity<SupplierOutboundDetail> {
 
 	private static final long serialVersionUID = -2281869736391969854L;
@@ -25,6 +29,9 @@ public class SupplierOutboundDetail extends DataEntity<SupplierOutboundDetail> {
 	private MedicinalStorageControl medicinalStorage;  //动态库存明细
 	private  String remark;//备注
 	private SupplierStock supplierStock;
+	//医保字段
+	private  String cnt;//医报数量
+	private  String drugTracCodg;
 
 	public Company getCompany() {
 		return company;

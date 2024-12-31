@@ -1,14 +1,24 @@
 package com.geeke.outpatient.service;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.geeke.common.service.CrudService;
 import com.geeke.config.exception.CommonJsonException;
+import com.geeke.medicareutils.config.MedicareConfigProperties;
+import com.geeke.medicareutils.service.MdPsnDataService;
+import com.geeke.medicareutils.util.MdRequestUtil;
 import com.geeke.outpatient.dao.PatientDao;
+import com.geeke.outpatient.dao.PatientMdDataMapper;
 import com.geeke.outpatient.entity.Patient;
+import com.geeke.outpatient.entity.PatientMdData;
 import com.geeke.utils.IdGen;
 import com.geeke.utils.ResultUtil;
 import com.geeke.utils.SessionUtils;
 import com.geeke.utils.constants.ErrorEnum;
 import com.google.common.collect.Maps;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +38,12 @@ import java.util.Objects;
  
 @Service("patientService")
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class PatientService extends CrudService<PatientDao, Patient>{
     @Autowired
     private PatientDao patientDao;
+
+
     @Override
     @Transactional(readOnly = false)
     public Patient save(Patient patient) {
@@ -82,8 +95,8 @@ public class PatientService extends CrudService<PatientDao, Patient>{
            }
        }
 
-        Patient patientTemp = super.save(patient);
-        return patientTemp;
+
+        return super.save(patient);
     }
 
     @Transactional(readOnly = false)

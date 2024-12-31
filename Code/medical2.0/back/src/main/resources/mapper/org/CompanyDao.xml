@@ -6,6 +6,7 @@
         a.id AS "id",
         a.parent_id AS "parent.id",
         IFNULL(parent.name,'') AS "parent.name",
+        IFNULL(a.fixmedins_code,'') AS "fixmedinsCode",
         a.full_name AS "fullName",
         a.ids AS "ids",
         a.name AS "name",

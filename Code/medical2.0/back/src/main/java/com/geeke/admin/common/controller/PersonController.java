@@ -4,10 +4,14 @@ package com.geeke.admin.common.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.geeke.admin.entity.User;
 import com.geeke.admin.service.UserService;
+import com.geeke.config.exception.CommonJsonException;
+import com.geeke.medicareutils.config.MedicareConfigProperties;
 import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.JwtUtils;
 import com.geeke.utils.ResultUtil;
 import com.geeke.utils.SessionUtils;
+import com.geeke.utils.constants.ErrorEnum;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController()
 @RequestMapping("/person")
+@RequiredArgsConstructor
 public class PersonController extends BaseController {
 
     @Autowired
@@ -23,6 +28,8 @@ public class PersonController extends BaseController {
 
     @Autowired
     private JwtUtils jwtUtils;
+
+    private final MedicareConfigProperties medicareConfigProperties;
 
     
     @GetMapping("/me")
@@ -36,6 +43,9 @@ public class PersonController extends BaseController {
     
     @PutMapping("/me")
     public ResponseEntity<JSONObject> updateCurrentUser(@RequestBody User userDetail) {
+        if(medicareConfigProperties.getIsDemo().equals("true")){
+            throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "演示系统不允许修改密码！"));
+        }
     	String id = this.userService.updatePersonAndPass(userDetail);
         return ResponseEntity.ok(ResultUtil.successJson(id));
     }

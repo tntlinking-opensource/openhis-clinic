@@ -61,7 +61,9 @@
         IFNULL(storage.used_stock,'') AS 'medicinalStorageControl.usedStock',
         IFNULL(storage.occupy_stock,'') AS 'medicinalStorageControl.occupyStock',
         IFNULL(storage.surplus_stock,'') AS 'medicinalStorageControl.surplusStock',
-        IFNULL(storage.reimburse_stock,'') AS 'medicinalStorageControl.reimburseStock'
+        IFNULL(storage.reimburse_stock,'') AS 'medicinalStorageControl.reimburseStock',
+        IFNULL(a.drugtracinfo,'') as "drugtracinfo",
+        IFNULL(a.drug_trac_codg,'') as "drugTracCodg"
     </sql>
     
     <sql id="supplierStockJoins">
@@ -169,7 +171,9 @@
             update_date,
             del_flag,
             initial,
-            cancellation
+            cancellation,
+            drugtracinfo,
+            drug_trac_codg
         ) VALUES (
             #{id},
             #{company.id},                    
@@ -195,7 +199,9 @@
             #{updateDate},
             #{delFlag},
             #{initial},
-            #{cancellation}
+            #{cancellation},
+            #{drugtracinfo},
+            #{drugTracCodg}
         )
     </insert>
     

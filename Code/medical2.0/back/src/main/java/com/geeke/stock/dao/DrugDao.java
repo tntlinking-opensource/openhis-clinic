@@ -6,6 +6,7 @@ import com.geeke.stock.entity.Drug;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -48,4 +49,6 @@ public interface DrugDao extends CrudDao<Drug> {
     int checkCompanyAndCode(@Param("companyId") String companyId, @Param("code") String code);
 
     Drug getByCode(String ypdm, String companyId);
+
+    Drug getByNameAndPrice(String name, BigDecimal retailPrice, String companyId);
 }

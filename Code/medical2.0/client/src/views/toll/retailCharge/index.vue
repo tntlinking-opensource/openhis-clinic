@@ -8,7 +8,7 @@
 
                 </el-tab-pane>
                 <el-tab-pane label="零售材料" name="1">
-                    
+
                 </el-tab-pane>
             </el-tabs>
         </div>
@@ -25,7 +25,7 @@
         class="edit-form"
         >
             <h4>患者信息</h4>
-            <div class="patientMessage"> 
+            <div class="patientMessage">
                 <el-row>
                     <el-col :span='24/4'>
                          <el-form-item label="患者姓名" prop="name">
@@ -63,7 +63,7 @@
                             :placeholder="
                                 '请输入出生日期'
                             "
-                            
+
                             ></el-date-picker>
 
                         </el-form-item>
@@ -72,7 +72,7 @@
                     <el-form-item label="年龄" prop="age">
                         <el-col :span="24 / 2">
                         <el-input
-                        
+
                             v-model="bizFormModel.age"
                             :maxlength="20"
                             :placeholder="
@@ -86,7 +86,7 @@
                         </el-col>
                         <el-col :span="24 / 2">
                         <el-input
-                            
+
                             v-model="bizFormModel.month"
                             :maxlength="20"
                             :placeholder="'月'"
@@ -136,7 +136,7 @@
                         </el-col>
                 </el-row>
             </div>
-        
+
         <h4>药品信息</h4>
         <!-- 关于药品 -->
          <el-popover
@@ -237,7 +237,7 @@
                 :height="300"
                 border
                 highlight-current-row
-            >   
+            >
                <el-table-column
                 prop="drug.goodsName"
                 label="药品名称"
@@ -314,6 +314,12 @@
                     }}
                 </template>
                 </el-table-column>
+                    <el-table-column
+                      prop="drugTracCodg"
+                      label="药品追溯码"
+                    > <template slot-scope="scope">
+                      <el-button :type="scope.row.completed ? 'success' : 'warning'" @click="openDrugDialog(scope)">输入追溯码</el-button>
+                    </template></el-table-column>
                 <el-table-column
                 prop=""
                 label="数量">
@@ -323,10 +329,11 @@
                     @input="compute(scope.row)"
                     oninput="value=value.replace(/[^\d.]/g,'')"
                     >
-                         
+
                     </el-input>
                 </template>
                 </el-table-column>
+
                  <el-table-column
                 prop="type"
                 label="单位">
@@ -336,7 +343,7 @@
                     v-if="scope.row.drug.isUnpackSell=='0'"
                     v-model="scope.row.drug.pack.name"
                     >
-                        
+
                     </el-input>
                      <el-select
                               v-else
@@ -374,7 +381,7 @@
             </div>
 
             <!-- 总框 -->
-              
+
             <div class="statistical_box">
                 <div style="padding-top:0px;margin-top:20px;">
                     <div style="float:left;">
@@ -387,7 +394,7 @@
                   </el-form-item>
                 </div>
             </div>
-              
+
         </el-form>
         </div>
 
@@ -403,7 +410,7 @@
         class="edit-form"
         >
             <h4>患者信息</h4>
-            <div class="patientMessage"> 
+            <div class="patientMessage">
                 <el-row>
                     <el-col :span='24/4'>
                          <el-form-item label="患者姓名" prop="name">
@@ -441,7 +448,7 @@
                             :placeholder="
                                 '请输入出生日期'
                             "
-                            
+
                             ></el-date-picker>
 
                         </el-form-item>
@@ -450,7 +457,7 @@
                     <el-form-item label="年龄" prop="age">
                         <el-col :span="24 / 2">
                         <el-input
-                        
+
                             v-model="stuffBizFormModel.age"
                             :maxlength="20"
                             :placeholder="
@@ -464,7 +471,7 @@
                         </el-col>
                         <el-col :span="24 / 2">
                         <el-input
-                            
+
                             v-model="stuffBizFormModel.month"
                             :maxlength="20"
                             :placeholder="'月'"
@@ -514,7 +521,7 @@
                         </el-col>
                 </el-row>
             </div>
-        
+
         <h4>材料信息</h4>
         <!-- 关于材料 -->
          <el-popover
@@ -613,7 +620,7 @@
                 :height="300"
                 border
                 highlight-current-row
-            >   
+            >
                <el-table-column
                 prop="stuff.name"
                 label="材料名称"
@@ -634,7 +641,7 @@
                 prop="stuff.factory.name"
                 label="生产厂商"
                 ></el-table-column>
-               
+
                 <el-table-column label="包装价" >
                 <template slot-scope="scope">
                     {{ scope.row.stuff.priceOutSell +"/" +scope.row.stuff.packUnit.name }}
@@ -686,7 +693,7 @@
                     @input="compute(scope.row)"
                     oninput="value=value.replace(/[^\d.]/g,'')"
                     >
-                         
+
                     </el-input>
                 </template>
                 </el-table-column>
@@ -699,7 +706,7 @@
                     v-if="scope.row.stuff.isUnpackSell=='0'"
                     v-model="scope.row.stuff.packUnit.name"
                     >
-                        
+
                     </el-input>
                      <el-select
                               v-else
@@ -737,7 +744,7 @@
             </div>
 
             <!-- 总框 -->
-              
+
             <div class="statistical_box">
                 <div style="padding-top:0px;margin-top:20px;">
                     <div style="float:left;">
@@ -750,9 +757,20 @@
                   </el-form-item>
                 </div>
             </div>
-              
+
         </el-form>
         </div>
+      <el-dialog @keydown.native="handleKeydown" :modal="false"  :visible.sync="drugDialogVisible" title="输入药品追溯码" @open="focusInput" @close="resetInput">
+        <el-input
+          v-model="currentInput"
+          placeholder="请输入药品追溯码"
+          ref="inputFocus"
+        ></el-input>
+        <span slot="footer" class="dialog-footer">
+        <el-button @click="submitInput" type="primary">确定</el-button>
+        <el-button @click="drugDialogVisible = false">取消</el-button>
+      </span>
+      </el-dialog>
 
 
         <!-- 确认收费弹出框 -->
@@ -778,7 +796,7 @@
         </div>
         <el-form ref="chargeForm" :model="totalAllFee" label-width="80px">
           <el-row>
-            
+
             <el-col :span="8">
               <el-form-item label="折扣">
                 <el-input
@@ -920,10 +938,70 @@ export default {
             meno:"",            //备注
             amountPaid:0, //实付金额
             amountOfChange:0,//找补金额
+           //追溯码弹窗控制
+           drugDialogVisible: false,
+           currentInput: '',
+           inputCount: 0, // 当前输入次数
+           maxInputCount: 0, // 最大输入次数
+           currentRow: null, // 当前操作的行
+           allInputs: [], // 所有输入的追溯码
         }
     },
     methods:{
+      handleKeydown(event) {
+        if (event.key === 'Enter') {
+          // 调用确定操作
+          this.submitInput();
+        }
+      },
+      focusInput() {
+        // 使用 ref 来访问输入框并调用 focus() 方法
+        this.$nextTick(() => {
+          this.$refs.inputFocus.focus(); // 自动聚焦输入框
+        });
+      },
+      openDrugDialog(scope) {
+        if ( scope.row.number <= 0 || ! scope.row.number) {
+          this.$message.error('请先输入有效的数量与是否拆零！');
+          return; // 如果数量无效，停止执行
+        }
+        this.currentRow = scope.row; // 记录当前行
+        this.inputCount = 0; // 重置输入计数
+        this.allInputs = []; // 清空之前的输入
+        this.drugDialogVisible = true;
+        // 根据当前行的数量设置基础输入次数和最大输入次数
+        const quantity = this.currentRow.number;
+        this.maxInputCount = this.currentRow.isSplit ? this.currentRow.preparation * quantity: quantity;
+      },
 
+      submitInput() {
+        if (this.currentInput) {
+          this.allInputs.push(this.currentInput); // 添加当前输入
+          this.currentRow.drugTracCodg = this.allInputs.join(','); // 更新当前行的药品追溯码
+          this.currentInput = ''; // 清空输入框
+          this.inputCount++; // 增加输入计数
+
+          // 检查是否达到最大输入次数
+          if (this.inputCount >= this.maxInputCount) {
+            this.$set(this.currentRow, 'completed', true); // 设置为完成状态
+            this.drugDialogVisible = false; // 关闭对话框
+          }
+          this.$nextTick(() => {
+            this.$refs.inputFocus.focus(); // 自动聚焦输入框
+          });
+        }
+      },
+      resetInput() {
+        this.currentInput = ''; // 清空输入框
+        this.inputCount = 0; // 重置输入计数
+        this.currentRow = null; // 清空当前行记录
+      },
+      updateMaxInputCount(row) {
+        this.$set(this.currentRow, 'isSplit', true); // 设置为完成状态
+        // 每次开关状态改变时更新最大输入次数
+        const quantity = row.packAmount;
+        this.maxInputCount = row.isSplit ? quantity * row.preparationAmount: quantity;
+      },
         //整体收费取消
         chargeFormCancel(){
         this.chargeDialogVisible = false
@@ -936,7 +1014,7 @@ export default {
         inputAmountPaid(){
         this.amountOfChange = 0
         let amount = this.amountPaid?this.amountPaid:0
-        if(amount>0){ 
+        if(amount>0){
             this.amountOfChange = (this.amountPaid - this.practicalTotalAllFee).toFixed(2)
         }
         },
@@ -960,9 +1038,11 @@ export default {
                         preparationUnit:item.drug.preparationUnit,
                         pack:item.drug.pack,
                         isUnpackSell:item.drug.isUnpackSell,
-                        durg:item.drug
+                        durg:item.drug,
+                        drugTracCodg:item.drugTracCodg
                     },
                     total:item.total,
+                    drugTracCodg:item.drugTracCodg,//医保追溯码
                     allFee:item.allFee,
                     isExtra:0,
                     seq:count+=1,
@@ -1010,7 +1090,7 @@ export default {
            // return
             saveTollTollInfo(model,null).then((res)=>{
                 if (res.code == 100) {
-            
+
                     this.$message.success("操作成功！");
                     this.chargeDialogVisible = false;
                     this.bizFormModel = this.initPatientModel()
@@ -1033,8 +1113,8 @@ export default {
                             this.$refs.stuffBizFormModel.resetFields();
                         })
                     }
-                    
-                  
+
+
                 }
             }).catch((error)=>{
                 this.outputError(error)
@@ -1085,21 +1165,21 @@ export default {
            if(this.activeName=='0'){
                 if(!this.bizFormModel.birthday){
                 this.bizFormModel.age="";
-                this.bizFormModel.month="" 
+                this.bizFormModel.month=""
                 return
                 };
             const duration =  this.$moment.duration(this.$moment().diff(this.bizFormModel.birthday));
             this.bizFormModel.age = duration.years();
-            this.bizFormModel.month = duration.months();     
+            this.bizFormModel.month = duration.months();
            }else{
                 if(!this.stuffBizFormModel.birthday){
                 this.stuffBizFormModel.age="";
-                this.stuffBizFormModel.month="" 
+                this.stuffBizFormModel.month=""
                 return
                 };
             const stuffation =  this.$moment.duration(this.$moment().diff(this.stuffBizFormModel.birthday));
             this.stuffBizFormModel.age = stuffation.years();
-            this.stuffBizFormModel.month = stuffation.months();     
+            this.stuffBizFormModel.month = stuffation.months();
            }
         },
 
@@ -1132,14 +1212,14 @@ export default {
                     }
                     //进行表格中的数量校验
                     this.DrugList.forEach((item)=>{
-                       
+
                         if(item.number==null||item.number==0){
                             this.$message.error("请填写"+item.drug.goodsName+"的数量")
                             flage = true
                         }
                     })
                     if(flage){
-                         
+
                         return
                     }
                     //  if(!this.StuffList.length>0){
@@ -1148,20 +1228,20 @@ export default {
                     // }
                     // //进行表格中的数量校验
                     // this.StuffList.forEach((item)=>{
-                       
+
                     //     if(item.number==null||item.number==0){
                     //         this.$message.error("请填写"+item.stuff.name+"的数量")
                     //         flage = true
                     //     }
                     // })
                     // if(flage){
-                         
+
                     //     return
                     // }
 
                     this.GetAmountReceived()
                      this.chargeDialogVisible=true
-                     
+
                // alert('submit!');
                 } else {
                 console.log('error submit!!');
@@ -1178,14 +1258,14 @@ export default {
                     }
                     //进行表格中的数量校验
                     this.StuffList.forEach((item)=>{
-                       
+
                         if(item.number==null||item.number==0){
                             this.$message.error("请填写"+item.stuff.name+"的数量")
                             flage = true
                         }
                     })
                     if(flage){
-                         
+
                         return
                     }
                     this.GetAmountReceived()
@@ -1197,7 +1277,7 @@ export default {
                 }
             });
              }
-           
+
         },
 
         // 进行删除操作
@@ -1216,7 +1296,7 @@ export default {
            if(this.activeName=='0'){
                this.DrugList.forEach((item)=>{
                 let type = item.type.value.split("_")[0]
-                
+
                 if(type === 'medicalPackUnit'){
                     item.allFee = BigNumber(item.number>0?item.number:0).multipliedBy(item.drug.price).toNumber()
                     item.total = item.number*item.drug.preparation
@@ -1231,7 +1311,7 @@ export default {
            }else{
                this.StuffList.forEach((item)=>{
                    let type = item.type.value.split("_")[0]
-                
+
                 if(type === 'medicalPackUnit'){
                     item.allFee = BigNumber(item.number>0?item.number:0).multipliedBy(item.stuff.priceOutSell).toNumber()
                     item.total = item.number*item.stuff.packNumber
@@ -1331,7 +1411,7 @@ export default {
                     this.stuffBizFormModel = {...this.stuffBizFormModel,...this.StuffPatientForModel}
                 }
             }
-           
+
         },
 
         //初始化获取字典数据
@@ -1378,7 +1458,7 @@ export default {
                     search.params[1].value =
                     this.SearchDrugInput.toUpperCase();
                     search.params[1].columnName = "drug.pinyin_code";
-                    
+
                 } else {
                     search.params[1].value = this.SearchWesternInput;
                     search.params[1].columnName = "drug.goods_name";
@@ -1450,12 +1530,12 @@ export default {
             SearchModel.params.push({
                     columnName: "stuff.status",
                     queryType: "=",
-                    value: '1',   
+                    value: '1',
             })
             SearchModel.params.push({
                     columnName: "stuff.del_flag",
                     queryType: "=",
-                    value: '0',  
+                    value: '0',
             })
             listAll(SearchModel).then((responseData) => {
                 if (responseData.code == 100) {
@@ -1481,10 +1561,11 @@ export default {
             row.number = null
             row.allFee = null
             row.type = row.drug.pack
+            row.drugTracCodg = null
             this.DrugList.push(JSON.parse(JSON.stringify(row)));
             this.$message.success("添加药品成功")
         },
-        
+
         //材料点击
         RowClickStuffTable(row){
             let flag = false

@@ -763,9 +763,9 @@
                         </template>
                       </el-table-column>
                       <el-table-column prop="allFee" width="width" label="应付金额">
-                        <template slot-scope="scope">
-                          {{ (scope.row.allFee).toFixed(2) }}元
-                        </template>
+                          <template slot-scope="scope">
+                            {{ (scope.row.allFee).toFixed(2) }}元
+                          </template>
                       </el-table-column>
                       <el-table-column prop="actualPayment" width="width" label="实付金额">
                           <template slot-scope="scope" v-if="chargeStatusActiveName !== '1'">
@@ -1200,11 +1200,21 @@
               </el-form-item>
             </el-col>
             <el-col :span="8" :offset="1" v-if="!diagnosis">
-              <el-form-item label="减免金额">
+              <el-form-item label="折扣金额">
                 <el-input
                   v-model="amountOfRemission"
-                  placeholder="减免金额"
+                  placeholder="折扣金额"
                   disabled
+                >
+                  <template slot="append">元</template>
+                </el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="8" :offset="-1" v-if="!diagnosis">
+              <el-form-item label="减免金额">
+                <el-input
+                  v-model="reductionAmount"
+                  placeholder="减免金额"
                   @input="GetAmountReceived"
                 >
                   <template slot="append">元</template>
@@ -1769,8 +1779,10 @@
         diagnosis: null,  //远程诊疗信息 诊断
         memberCopy: [],  //本次使用次数暂存
         saveMember: {},  //保存会员体验卡
-        amountOfRemission: "0",  //减免金额
+        amountOfRemission: "0",  //折扣金额
+        reductionAmount:'0',   // 减免金额
         signleAmountOfRemission: "0", //单独收费
+
         amountPaid: 0, //实付金额
         amountOfChange: 0,//找补金额
 
@@ -2158,10 +2170,11 @@
 
       //整体收费取消
       chargeFormCancel() {
-        this.addresseeDialogVisible = false,
+        this.addresseeDialogVisible = false
         this.selectPatientChange()
         this.chargeDialogVisible = false
         this.chargeForm.discount = 10
+        this.reductionAmount = 0
         this.amountPaid = 0
         this.amountOfRemission = 0
         this.amountOfChange = 0
@@ -3118,8 +3131,8 @@
           console.log("i == " + Number((this.medicalEditTabsValue.content.recipelDetailEvtList[i].allFee * discount * 0.1).toFixed(2)))
           this.chargeForm.amountReceived += Number((this.medicalEditTabsValue.content.recipelDetailEvtList[i].allFee * discount * 0.1).toFixed(2))
         }
-        this.signleAmountOfRemission = (this.chargeForm.amountReceivable - this.chargeForm.amountReceived).toFixed(2)
-        this.chargeForm.amountReceived = this.chargeForm.amountReceived.toFixed(2)
+        this.signleAmountOfRemission = Number(this.chargeForm.amountReceivable - this.chargeForm.amountReceived).toFixed(2)
+        this.chargeForm.amountReceived = Number(this.chargeForm.amountReceived-this.reductionAmount).toFixed(2)
 
 
         this.amountOfRemission = (this.chargeForm.amountReceivable - this.chargeForm.amountReceived).toFixed(2)

@@ -103,7 +103,7 @@ router.afterEach((to, from) => {
     });
   }
   // 更新到state
-  
+
   if (router.app.$store) {
     router.app.$store.dispatch('setBreadcurmbItems', breadCrumbItems)
   }

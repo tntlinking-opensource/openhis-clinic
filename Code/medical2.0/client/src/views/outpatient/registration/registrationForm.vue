@@ -148,7 +148,7 @@
           </el-row>
           <el-row>
             <el-col :span="24 / 2">
-              <el-form-item label="身份证号" prop="card">
+              <el-form-item label="证件号码" prop="card">
                 <el-input
                   :disabled="dialogProps.action != 'add'"
                   v-model="bizFormModel.card"
@@ -157,6 +157,47 @@
                     dialogProps.action == 'view' ? '' : '请输入身份证号'
                   "
                   @input="getBirthday"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="24 / 2">
+              <el-form-item label="就诊凭证类型" prop="cardType.name">
+                <el-input
+                  v-if="dialogProps.action == 'view'"
+                  :disabled="true"
+                  v-model="bizFormModel.cardType.name"
+                ></el-input>
+                <el-select
+                  v-else
+                  v-model="bizFormModel.cardType"
+                  value-key="value"
+                  filterable
+                  clearable
+                  placeholder="请选择证件类型"
+                  @clear="
+                    bizFormModel.medType = {
+                      value: null,
+                      name: null,
+                    }
+                  "
+                >
+                  <el-option
+                    v-for="cardType in cardTypeList"
+                    :key="cardType.value"
+                    :label="cardType.name"
+                    :value="cardType"
+                  ></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="24 / 2" v-if="bizFormModel.cardType.value === '03'">
+              <el-form-item
+                label="社会保障卡号" prop="mdtrtCertNo">
+                <el-input
+                  :disabled="dialogProps.action == 'view'"
+                  v-model="bizFormModel.mdtrtCertNo"
+                  :maxlength="45"
+                  :placeholder="dialogProps.action == 'view' ? '' : '请输入社会保障卡号'"
                 ></el-input>
               </el-form-item>
             </el-col>
@@ -449,6 +490,36 @@
                 </el-select>
               </el-form-item>
             </el-col>
+            <el-col :span="24 / 2">
+              <el-form-item label="医保医疗类型" prop="medType.name">
+                <el-input
+                  v-if="dialogProps.action == 'view'"
+                  :disabled="true"
+                  v-model="bizFormModel.medType.name"
+                ></el-input>
+                <el-select
+                  v-else
+                  v-model="bizFormModel.medType"
+                  value-key="value"
+                  filterable
+                  clearable
+                  placeholder="请选择医疗类型"
+                  @clear="
+                    bizFormModel.medType = {
+                      value: null,
+                      name: null,
+                    }
+                  "
+                >
+                  <el-option
+                    v-for="medType in medTypeList"
+                    :key="medType.value"
+                    :label="medType.name"
+                    :value="medType"
+                  ></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
           </el-row>
         </div>
         <div class="registrationItemBox">
@@ -675,28 +746,6 @@ export default {
     OperationIcon,
   },
   data() {
-    //身份证校验
-    const isCnNewID = (rule, value, callback) => {
-      var arrExp = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];//加权因子
-      var arrValid = [1, 0, "X", 9, 8, 7, 6, 5, 4, 3, 2];//校验码
-      if (/^\d{17}\d|x$/i.test(value)) {
-        var sum = 0, idx;
-        for (var i = 0; i < value.length - 1; i++) {
-          // 对前17位数字与权值乘积求和
-          sum += parseInt(value.substr(i, 1), 10) * arrExp[i];
-        }
-        // 计算模（固定算法）
-        idx = sum % 11;
-        // 检验第18为是否与校验码相等
-        if (arrValid[idx] == value.substr(17, 1).toUpperCase()) {
-          callback()
-        } else {
-          callback("身份证格式有误")
-        }
-      } else {
-        callback("身份证格式有误")
-      }
-    }
     return {
       setDisabled: {
         disabledDate(time) {
@@ -728,6 +777,8 @@ export default {
       doctor_List: [], // 医生
       select_doctor: [],
       treatType_List: [], // 治疗类型
+      medTypeList: [],//医疗类型
+      cardTypeList:[],//证件类型
       source_List: [], // 来源
       payType_List: [], // 支付方式
       status_List: [], // 状态
@@ -762,15 +813,18 @@ export default {
         "treatType.name": [
           { required: true, message: "请选择治疗类型", trigger: "change" },
          ],
+        // "medType.name": [
+        //   { required: true, message: "请选择医疗类型", trigger: "change" },
+        // ],
         // "doctor.name": [
         //   { required: true, message: "请选择医生", trigger: "change" },
         // ],
         "clinicOffice.id": [
           { required: true, message: "请选择科室", trigger: "change" },
         ],
-        "birthday": [
-          {required: true, message: "请选择出生日期", trigger: "change"},
-        ],
+        // "birthday": [
+        //   {required: true, message: "请选择出生日期", trigger: "change"},
+        // ],
         //  phone: [{ required: true, message: "请输入联系方式", trigger: "blur" }],
         age: [{required: true, message: "请输入年龄", trigger: "blur"}],
         name: [{required: true, message: "请输入姓名", trigger: "change"}],
@@ -914,30 +968,6 @@ export default {
       this.savePatient();
     },
     onSubmit(formName) {
-      let flageCard = false
-      //校验身份证号码
-      if (this.bizFormModel.card) {
-        var arrExp = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];//加权因子
-        var arrValid = [1, 0, "X", 9, 8, 7, 6, 5, 4, 3, 2];//校验码
-        if (/^\d{17}\d|x$/i.test(this.bizFormModel.card)) {
-          var sum = 0, idx;
-          for (var i = 0; i < this.bizFormModel.card.length - 1; i++) {
-            // 对前17位数字与权值乘积求和
-            sum += parseInt(this.bizFormModel.card.substr(i, 1), 10) * arrExp[i];
-          }
-          // 计算模（固定算法）
-          idx = sum % 11;
-          // 检验第18为是否与校验码相等
-          if (arrValid[idx] == this.bizFormModel.card.substr(17, 1).toUpperCase()) {
-            flageCard = true
-          } else {
-            flageCard = false
-          }
-        } else {
-          flageCard = false
-        }
-      }
-
       // if(!flageCard){
       //   this.$message.error("身份证号码不正确，请重新输入")
       //   return;
@@ -1083,7 +1113,8 @@ export default {
         phone: "", // 联系方式
         nation: "", // 民族
         occupation: "", // 职业
-        card: "", // 身份证号
+        card: "", // 证件号
+        cardType:"",//证件类型
         workplace: "", // 工作单位
         withPatientNexus: {
           // 与患者关系
@@ -1114,6 +1145,7 @@ export default {
           name: "",
           value: ""
         },
+        mdtrtCertNo:"",
         patientId: {
           // 父表 患者
           id:
@@ -1128,11 +1160,21 @@ export default {
 
         doctor: {
           // 医生
-          id: this.view ? currentUser.id : null,
-          name: this.view ? currentUser.name : null,
+          id:  currentUser.id ,
+          name:  currentUser.name
         },
         treatType: {
           // 治疗类型
+          value: null,
+          name: null,
+        },
+        medType: {
+          // 治疗类型
+          value: null,
+          name: null,
+        },
+        cardType: {
+          // 证件类型
           value: null,
           name: null,
         },
@@ -1148,8 +1190,8 @@ export default {
         temperature: "", // 体温
         isGoHigharea: "0", // 是否去过疫区
         highArea: "", // 疫区地点
-        freeRegistrationFee: "0", // 免挂号费
-        registrationFee: 0, // 挂号费
+        freeRegistrationFee: this.view ? '0': '1', // 免挂号费
+        registrationFee:  0, // 挂号费
         practicleRegistrationFee: 0, //实际支付的挂号费
         practicalRegistrationPayRemarks: "", //实际支付备注
         refundRegistrationPayType: {
@@ -1330,6 +1372,51 @@ export default {
         this.treatType_List = responseData.data;
       });
 
+      //医疗类型
+      let medType_search = {
+        params: [
+          {
+            columnName: "dict_type_id",
+            queryType: "=",
+            value: "2256779862649512118",
+          },
+        ],
+      };
+      // 字段对应表上filter条件
+      medType_search.params.push.apply(medType_search.params, []);
+      // 数据权限: 字典项sys_dict_item
+      this.pushDataPermissions(
+        medType_search.params,
+        this.$route.meta.routerId,
+        "4005"
+      );
+      this. medTypeList.splice(0, this.medTypeList.length);
+      listDictItemAll(medType_search).then((responseData) => {
+        this.medTypeList = responseData.data;
+      });
+      //证件类型
+      let card_search = {
+        params: [
+          {
+            columnName: "dict_type_id",
+            queryType: "=",
+            value: "2266033438408286209",
+          },
+        ],
+      };
+      // 字段对应表上filter条件
+      card_search.params.push.apply(medType_search.params, []);
+      // 数据权限: 字典项sys_dict_item
+      this.pushDataPermissions(
+        card_search.params,
+        this.$route.meta.routerId,
+        "4005"
+      );
+      this.cardTypeList.splice(0, this.medTypeList.length);
+      listDictItemAll(card_search).then((responseData) => {
+        this.cardTypeList = responseData.data;
+      });
+
       //病人来源
       let source_search = {
         params: [
@@ -1426,7 +1513,7 @@ export default {
     },
     // 获取默认挂号费
     async pageInit() {
-      listSysParamConfigAll(this.search).then(responseData => {
+      listSysParamConfigAll({params:[this.search]}).then(responseData => {
         if(responseData.code == 100) {
           if (responseData.data.length >= 1){
             responseData.data.forEach(data=>{
@@ -1436,6 +1523,9 @@ export default {
               }
             })
             this.bizFormModel.registrationFee = this.sysParamConfigForm.registrationFee
+            if(this.bizFormModel.freeRegistrationFee === '1'){
+              this.bizFormModel.registrationFee = 0
+            }
             console.log("看看默认挂号费" + this.bizFormModel.registrationFee)
             console.log("看看这是啥" + JSON.stringify(this.currentUser))
           }else {
@@ -1577,7 +1667,7 @@ export default {
         console.log("是否页面跳转="+remove)
         console.log("是否默然当前用户为医生="+JSON.stringify(view))
         this.remove = remove;
-        if (view != null){
+        if (view == null){
 
         }
         this.view = view;
@@ -1597,6 +1687,7 @@ export default {
         this.tabIndex = "1";
         this.dialogProps.visible = true;
         this.pageInit()
+
       });
       this.$on("openCopyRegistrationDialog", function (registration) {
         this.dialogProps.action = "add";

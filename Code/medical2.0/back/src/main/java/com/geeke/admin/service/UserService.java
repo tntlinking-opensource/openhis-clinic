@@ -12,6 +12,7 @@ import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
 import com.geeke.common.service.CrudService;
 import com.geeke.config.exception.CommonJsonException;
+import com.geeke.medicareutils.config.MedicareConfigProperties;
 import com.geeke.org.entity.Clinic;
 import com.geeke.org.entity.Company;
 import com.geeke.org.service.CompanyService;
@@ -23,6 +24,7 @@ import com.geeke.utils.*;
 import com.geeke.utils.constants.ErrorEnum;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import lombok.RequiredArgsConstructor;
 import org.apache.shiro.crypto.hash.Md5Hash;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,7 @@ import java.util.stream.Collectors;
  
 @Service("userService")
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class UserService extends CrudService<UserDao, User>{
 
     @Autowired
@@ -57,6 +60,8 @@ public class UserService extends CrudService<UserDao, User>{
     private CompanyService companyService;
     @Autowired
     private UserExtDao userExtDao;
+
+    private final MedicareConfigProperties medicareConfigProperties;
 
     @Override
     public User get(String id) {
@@ -270,14 +275,16 @@ public class UserService extends CrudService<UserDao, User>{
 //        }
 
         String id = super.save(user).getId();
-        if (StringUtils.isNoneBlank(id)) {
+        if (StringUtils.isNoneBlank(id) && medicareConfigProperties.getIsDemo().equals("true")) {
             // 设置加密字段   密码
             if(user.getLoginPasswordUpdate()) {
+                if(medicareConfigProperties.getIsDemo().equals("true")){
+                    throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "演示系统请勿修改密码！"));
+                }
                 Md5Hash md5 = new Md5Hash(user.getLoginPassword(), user.getId(), 6);
                 String md5Password = md5.toHex();
                 dao.updateLoginPassword(user.getId(), md5Password);
             }
-
             List<Parameter> params = null;
             PageRequest pageRequest;
             /* 处理子表     用户角色 */
@@ -407,8 +414,13 @@ public class UserService extends CrudService<UserDao, User>{
     
         int rows = dao.updateLoginPassword(id, md5Password);
         return rows;
-    }      
+    }
 
+//    public static void main(String[] args) {
+//        Md5Hash md5 = new Md5Hash("383520","2315020615616021158" , 6);
+//        String md5Password = md5.toHex();
+//        System.out.println(md5Password);
+//    }
     /**
      * 生成操作日志
      * @param actionTypeId  操作类型Id

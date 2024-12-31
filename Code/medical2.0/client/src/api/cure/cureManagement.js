@@ -21,27 +21,27 @@ export const listRecipelInfoAll = (search) =>
     })
 
 
-export const saveCureManagement = (cureManagement) => 
+export const saveCureManagement = (cureManagement) =>
     request({
         url: '/cure/cureManagement/save',
         method: 'post',
         data: cureManagement
     })
-  
+
 export const deleteRecipelInfo = (recipelInfo) =>
     request({
         url: '/outpatient/recipelInfo/delete',
         method: 'post',
         data: recipelInfo
     })
-    
+
 export const bulkInsertRecipelInfo = (recipelInfos) =>
     request({
         url: '/outpatient/recipelInfo/bulkInsert',
         method: 'post',
         data: recipelInfos
     })
-    
+
 export const bulkUpdateRecipelInfo = (recipelInfos) =>
     request({
         url: '/outpatient/recipelInfo/bulkUpdate',
@@ -55,7 +55,7 @@ export const bulkDeleteRecipelInfo = (recipelInfos) =>
         method: 'post',
         data: recipelInfos
     })
-    
+
 export const invalidStatus = (id) =>
     request({
         url: `/outpatient/recipelInfo/invalid?id=${id}`,

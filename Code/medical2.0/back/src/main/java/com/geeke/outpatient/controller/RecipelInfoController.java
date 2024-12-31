@@ -79,6 +79,12 @@ public class RecipelInfoController extends BaseController {
         return ResponseEntity.ok(ResultUtil.successJson(res));
     }
 
+    @GetMapping("/invalid/{id}")
+    public ResponseEntity<JSONObject> invalid(@PathVariable String id) {
+        int res = recipelInfoService.invalid(id);
+        return ResponseEntity.ok(ResultUtil.successJson(res));
+    }
+
 
 
 }

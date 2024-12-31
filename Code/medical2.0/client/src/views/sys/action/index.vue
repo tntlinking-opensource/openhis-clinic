@@ -40,7 +40,7 @@
                   <el-tooltip  effect="light" content="更多" placement="top-start">
                     <el-button type="primary" icon="el-icon-d-arrow-right" @click='onMoreCodition()' :plain='true'></el-button>
                   </el-tooltip>
-                </el-button-group> 
+                </el-button-group>
               </el-col>
             </el-form>
           </el-row>
@@ -163,7 +163,7 @@ export default {
         'status': 0,
         'remarks': '',    //备注信息
         createBy:'',      //创建人
-        createDate:[],  //创建时间
+        createDate:undefined,  //创建时间
       },
       search: {
         params: [],

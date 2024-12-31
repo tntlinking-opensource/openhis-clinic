@@ -3,7 +3,7 @@
     <!-- 历史记录  -->
     <History :bussObject='curentRow' ></History>
     <!-- 编辑窗口  -->
-    <patient-form ref='patientForm' :permission='permission' v-on:save-finished='getPatientList()'></patient-form>
+    <patient-form ref='patientForm' :permission='permission' @save-finished='getPatientList()'></patient-form>
     <el-card class="page-container">
         <!--  搜索栏  开始 -->
         <div class='query-form-container'>

@@ -399,9 +399,9 @@ export default {
         age: [{required: true, message: "请输入年龄", trigger: "blur"}],
         month: [{required: true, message: "请输入月", trigger: "blur"}],
         // phone: [{ required: true, message: "请输入联系方式", trigger: "blur" }],
-        "birthday": [
-          {required: true, message: "请选择出生日期", trigger: "change"},
-        ],
+        // "birthday": [
+        //   {required: true, message: "请选择出生日期", trigger: "change"},
+        // ],
         // "card": [
         //   { required: true, message: '请输入身份证号码', trigger: 'blur' },
         //   { min:18,max:18, message: "请输入18位身份证号码", trigger: "blur" },

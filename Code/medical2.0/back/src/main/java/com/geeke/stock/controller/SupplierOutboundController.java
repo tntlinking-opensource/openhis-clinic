@@ -3,12 +3,16 @@ package com.geeke.stock.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
+import com.geeke.medicareutils.config.MedicareConfigProperties;
+import com.geeke.medicareutils.service.MdInventoryService;
+import com.geeke.medicareutils.util.MdRequestUtil;
 import com.geeke.stock.entity.InventoryVerification;
 import com.geeke.stock.entity.OutboundEvt;
 import com.geeke.stock.entity.SupplierOutbound;
 import com.geeke.stock.service.SupplierOutboundService;
 import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.ResultUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,10 +28,15 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "/stock/supplierOutbound")
+@RequiredArgsConstructor
 public class SupplierOutboundController extends BaseController {
 
     @Autowired
     private SupplierOutboundService supplierOutboundService;
+
+    private final MedicareConfigProperties medicareConfigProperties;
+
+    private final MdInventoryService mdInventoryService;
 
     @PostMapping(value = {"list", ""})
     public ResponseEntity<JSONObject> listPage(@RequestBody SearchParams searchParams) {
@@ -45,6 +54,10 @@ public class SupplierOutboundController extends BaseController {
     @PostMapping(value = "save")
     public ResponseEntity<JSONObject> save(@RequestBody OutboundEvt entity) {
         String id = supplierOutboundService.save(entity).getId();
+        if("true".equals(medicareConfigProperties.getCheck())){
+            //开启医保接口 出库
+             mdInventoryService.updateInventoryList(entity);
+        }
         return ResponseEntity.ok(ResultUtil.successJson(id));
     }
 

@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import qs from "qs";
 
 export const getMedicalRecordById = (id) =>
     request({
@@ -100,4 +101,22 @@ export const getHistoryRecipel = (search) =>
         url: '/outpatient/medicalRecord/recordpat/'+id,
         method: 'get',
     })
-    
+
+export const getZdList = (searchParam,zdType) =>
+  request({
+    url: '/outpatient/medicalRecord/getxtzd',
+    method: 'post',
+    data:qs.stringify({
+      searchParam,
+      zdType
+    })
+  })
+
+export const getZhList = (searchParam) =>
+  request({
+    url: '/outpatient/medicalRecord/getzyzh',
+    method: 'post',
+    data:qs.stringify({
+      searchParam,
+    })
+  })

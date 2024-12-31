@@ -49,6 +49,8 @@ Object.keys(filters).forEach(key => {
 
 // 报表
 import i18n from '@/views/report/lang'
+import Vue from "vue";
+Vue.config.devtools = true;
 
 /* eslint-disable no-new */
 let vm = new Vue({

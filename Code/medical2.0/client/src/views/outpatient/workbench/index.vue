@@ -13,7 +13,7 @@
             </div>
           </div>
         <div v-for="(item,index) in TobeseenList.slice(0, 3)" :key="index" class="text" >
-          <a  @click="skiptobeseen(item.patientId.id,'djz')"  class="cara1">{{ index + 1 }}. {{ item.patientId.name }} / {{ item.patientId.gender.name }} / {{ item.patientId.birthdayText }}岁</a>
+          <a  @click="skiptobeseen(item.patientId.id,'djz')"  class="cara1">{{ index + 1 }}. {{ item.patientId.name }} / {{ item.patientId.gender.name }} / {{ item.patientId.age}}岁</a>
           <span class="cara2"><a @click="skiptobeseen(item.patientId.id,'djz')" >就诊</a>
           <a @click="btnoverlook(item.id,'djz')"  style="margin-left:5px;">忽略</a></span></div>
       </el-card>

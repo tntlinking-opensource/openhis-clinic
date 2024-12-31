@@ -5,6 +5,7 @@ import com.geeke.common.data.Page;
 import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
 import com.geeke.common.service.CrudService;
+import com.geeke.medicareutils.service.MdRegistrationService;
 import com.geeke.outpatient.dao.MedicalRecordDao;
 import com.geeke.outpatient.dao.RecipelInfoDao;
 import com.geeke.outpatient.dao.RegistrationDao;
@@ -13,6 +14,7 @@ import com.geeke.sys.entity.Action;
 import com.geeke.utils.IdGen;
 import com.geeke.utils.SessionUtils;
 import com.geeke.utils.StringUtils;
+import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
  
 @Service("registrationService")
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class RegistrationService extends CrudService<RegistrationDao, Registration>{
     @Autowired
     private RegistrationDao registrationDao;
@@ -41,6 +44,9 @@ public class RegistrationService extends CrudService<RegistrationDao, Registrati
 
     @Autowired
     private MedicalRecordService medicalRecordService;
+
+    //医保挂号
+    private final MdRegistrationService mdRegistrationService;
 
     @Transactional(readOnly = false)
     public int updateStatus(String id,String status,String departmentId,String doctorId)
@@ -68,6 +74,7 @@ public class RegistrationService extends CrudService<RegistrationDao, Registrati
         if(i>0){
 
         }
+
         return i;
     }
 

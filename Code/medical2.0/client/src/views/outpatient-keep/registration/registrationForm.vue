@@ -125,7 +125,7 @@
                   v-model="bizFormModel.card"
                   :maxlength="45"
                   :placeholder="
-                    dialogProps.action == 'view' ? '' : '请输入身份证号'
+                    dialogProps.action == 'view' ? '' : '请输入证件号'
                   "
                 ></el-input>
               </el-form-item>
@@ -158,7 +158,7 @@
                 ></el-date-picker>
               </el-form-item>
             </el-col> -->
-            
+
             <el-col :span="24 / 2">
               <el-form-item label="与患者关系" prop="withPatientNexus">
                 <el-input
@@ -306,6 +306,36 @@
                     :key="treatType.value"
                     :label="treatType.name"
                     :value="treatType"
+                  ></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="24 / 2">
+              <el-form-item label="医疗类型" prop="medType.name">
+                <el-input
+                  v-if="dialogProps.action == 'view'"
+                  :disabled="true"
+                  v-model="bizFormModel.medType.name"
+                ></el-input>
+                <el-select
+                  v-else
+                  v-model="bizFormModel.medType"
+                  value-key="value"
+                  filterable
+                  clearable
+                  placeholder="请选择医疗类型"
+                  @clear="
+                    bizFormModel.medType = {
+                      value: null,
+                      name: null,
+                    }
+                  "
+                >
+                  <el-option
+                    v-for="medType in medTypeList"
+                    :key="medType.value"
+                    :label="medType.name"
+                    :value="medType"
                   ></el-option>
                 </el-select>
               </el-form-item>
@@ -603,6 +633,7 @@ export default {
       patientId_List: [], // 患者
       doctor_List: [], // 医生
       treatType_List: [], // 治疗类型
+      medTypeList: [],//医疗类型
       source_List: [], // 来源
       payType_List: [], // 支付方式
       status_List: [], // 状态
@@ -806,6 +837,12 @@ export default {
           value: null,
           name: null,
         },
+        medType: {
+          // 治疗类型
+          value: null,
+          name: null,
+        },
+
         receptionStartDate: "", // 接诊开始时间
         source: {
           // 来源
@@ -983,6 +1020,31 @@ export default {
       listDictItemAll(treatType_search).then((responseData) => {
         this.treatType_List = responseData.data;
       });
+
+      //医疗类型
+      let medType_search = {
+        params: [
+          {
+            columnName: "dict_type_id",
+            queryType: "=",
+            value: "2256779862649512118",
+          },
+        ],
+      };
+      // 字段对应表上filter条件
+      medType_search.params.push.apply(medType_search.params, []);
+      // 数据权限: 字典项sys_dict_item
+      this.pushDataPermissions(
+        medType_search.params,
+        this.$route.meta.routerId,
+        "4005"
+      );
+      this. medTypeList.splice(0, this.medTypeList.length);
+      listDictItemAll(medType_search).then((responseData) => {
+        this.medTypeList = responseData.data;
+      });
+
+
 
       //病人来源
       let source_search = {

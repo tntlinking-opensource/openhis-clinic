@@ -23,7 +23,8 @@
         a.update_by AS "updateBy",
         a.update_date AS "updateDate",
         a.del_flag AS "delFlag",
-        a.company_id AS "companyId"
+        a.company_id AS "companyId",
+        a.prac_psn_code AS "pracPsnCode"
     </sql>
 
     <sql id="userExtJoins">
@@ -129,7 +130,8 @@
         update_by,
         update_date,
         del_flag,
-        company_id
+        company_id,
+        prac_psn_code
         ) VALUES (
         #{id},
         #{userId},
@@ -151,7 +153,8 @@
         #{updateBy},
         #{updateDate},
         #{delFlag},
-        #{companyId}
+        #{companyId},
+        #{pracPsnCode}
         )
     </insert>
 
@@ -171,6 +174,7 @@
         description = #{description},
         start_work_time = #{startWorkTime},
         end_work_time = #{endWorkTime},
+        prac_psn_code = #{pracPsnCode},
         update_by = #{updateBy},
         update_date = #{updateDate}
         WHERE id = #{id}
@@ -206,7 +210,8 @@
         update_by,
         update_date,
         del_flag,
-        company_id
+        company_id,
+        prac_psn_code
         ) VALUES
         <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
             (
@@ -230,7 +235,8 @@
             #{entity.updateBy},
             #{entity.updateDate},
             #{entity.delFlag},
-            #{entity.companyId}
+            #{entity.companyId},
+            #{entity.pracPsnCode}
             )
         </foreach>
     </insert>
@@ -301,6 +307,11 @@
             <trim prefix="end_work_time=case" suffix="end,">
                 <foreach collection="entitys" item="entity" index="index">
                     when id=#{entity.id} then #{entity.endWorkTime}
+                </foreach>
+            </trim>
+            <trim prefix="prac_psn_code=case" suffix="end,">
+                <foreach collection="entitys" item="entity" index="index">
+                    when id=#{entity.id} then #{entity.pracPsnCode}
                 </foreach>
             </trim>
             <trim prefix="update_by=case" suffix="end,">
