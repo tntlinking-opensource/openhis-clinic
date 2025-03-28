@@ -3,13 +3,10 @@ package com.geeke.medicareutils.util;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.geeke.admin.entity.User;
+import com.geeke.medicareutils.db.entity.YbjkLogcontent;
 import com.geeke.medicareutils.config.MedicareConfigProperties;
 import com.geeke.medicareutils.domain.reqpo.RequestData;
-import com.geeke.org.entity.ClinicOffice;
-import com.geeke.outpatient.entity.MedicalRecord;
-import com.geeke.outpatient.entity.PatientMdData;
+import com.geeke.medicareutils.db.service.YbjkLogcontentService;
 import com.geeke.utils.SessionUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -20,7 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -38,6 +35,10 @@ public class MdRequestUtil {
     private  final RestTemplate restTemplate;
     //采用redis存储签到流水号
     private final StringRedisTemplate stringRedisTemplate;
+    //电子处方需加密集合
+    private final static List<String> INFO_LIST = Arrays.asList("Ld7801","Ld7802","Ld7101","Ld7104","Ld7202","Ld7102","Ld7805","Ld7804","Ld7806");
+    //日志表
+    private  final YbjkLogcontentService ybjkLogcontentService;
 
 
     /**
@@ -51,9 +52,46 @@ public class MdRequestUtil {
         headers.setContentType(MediaType.APPLICATION_JSON);
         String requestData = createRequestData(infoNo,jsonObject);
         HttpEntity<String> request = new HttpEntity<>(JSON.toJSONString(requestData) ,headers);
+        //日志信息
+        YbjkLogcontent ybjkLogcontent = new YbjkLogcontent();
+        ybjkLogcontent.setTradinumber(infoNo);
+        ybjkLogcontent.setHisid(jsonObject.getString(jsonObject.getString("ipt_otp_no")) != null ? jsonObject.getString("ipt_otp_no") : "0");
+        ybjkLogcontent.setInhead(requestData);
+        ybjkLogcontent.setBegindate(LocalDateTime.now());
+        //发送医保请求
         String response = restTemplate.postForObject(medicareConfigProperties.getUrl(), request,String.class);
+        ybjkLogcontent.setEnddate(LocalDateTime.now());
+        ybjkLogcontent.setOuthead(response);
+        ybjkLogcontent.setOutcontent(JSONObject.parseObject(response).getString("output"));
+        ybjkLogcontent.setErrormsg(JSONObject.parseObject(response).getString("err_msg"));
+        //医保信息日志存储
+        ybjkLogcontentService.save(ybjkLogcontent);
         return JSONObject.parseObject(response).getJSONObject("output");
     }
+
+
+    /**
+     * 电子处方上传
+     * @param infoNo
+     * @param jsonObject
+     * @return
+     */
+    public JSONObject dzcfUpload(String infoNo,JSONObject jsonObject) {
+        // 设置请求头
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String requestData = createRequestData(infoNo,jsonObject);
+        HttpEntity<String> request = new HttpEntity<>(JSON.toJSONString(requestData) ,headers);
+        //发送医保请求
+        String response = restTemplate.postForObject(medicareConfigProperties.getUrl(), request,String.class);
+        //加密密文返回解密
+        String encData=SMUtil.decrypt (JSONObject.parseObject(response).getJSONObject("output").getString("encData"),medicareConfigProperties.getAppId(),medicareConfigProperties.getAppSecret());
+        JSONObject.parseObject(response).getJSONObject("output").put("data",encData);
+        //医保信息日志存储
+        return JSONObject.parseObject(response).getJSONObject("output");
+    }
+
+
 
 
     /**
@@ -107,7 +145,7 @@ public class MdRequestUtil {
         //获取定点医疗机构代码与名称
         String FixmedinsCode = SessionUtils.getUserJson().getJSONObject("company").getString("fixmedinsCode");
         String FixmedinsName = SessionUtils.getUserJson().getJSONObject("company").getString("name");
-        requestData.setInfno("5101");
+        requestData.setInfno(infoNo);
         //顺序号(4)
         String orderNum =  "1234";
         //发送方id
@@ -128,13 +166,13 @@ public class MdRequestUtil {
         //签名类型  建议SM2、SM3
         requestData.setSigntype("value9");
         //接口版本号
-        requestData.setInfver("value9");
+        requestData.setInfver("V1.0");
         //1-经办人；2-自助终端；3-移动终端
         requestData.setOpter_type("value10");
         //传入经办人/终端编号
-        requestData.setOpter("value11");
+        requestData.setOpter("000000");
         //经办人姓名
-        requestData.setOpter_name("value12");
+        requestData.setOpter_name("管理员");
         //接口交易时间
         requestData.setInf_time(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         //设置定点医疗机构代码
@@ -143,12 +181,36 @@ public class MdRequestUtil {
         requestData.setFixmedins_name(FixmedinsName);
         //签到接口
         //从redis中获取签到流水号
-        requestData.setSign_no(stringRedisTemplate.opsForValue().get("sign_no"));
         if(infoNo.equals("9001")){
             requestData.setSign_no("");
+        }else{
+            String signNo = stringRedisTemplate.opsForValue().get("sign_no");
+            if (signNo == null) {
+                JSONObject signNoData = new JSONObject();
+                //TODO 签到参数待定
+                getMedicareSignNo("9001",signNoData);  // 调用方法生成签到流水号
+            }
+            requestData.setSign_no(signNo);
         }
-        // 设置 input.data数据
-        JSONObject json = (JSONObject) JSON.toJSON(requestData);
+        //主请求参数
+        JSONObject json = (JSONObject) JSONObject.toJSON(requestData);
+        // 设置 input数据
+        if(INFO_LIST.contains(infoNo)){
+            //电子处方需加密数据
+            jsonObject.put("appid", medicareConfigProperties.getAppId());
+            jsonObject.put("encType","SM4");
+            jsonObject.put("signType","SM2");
+            //当前时间戳
+            json.put("timestamp",LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+            //原始请求参数
+            JSONObject data = jsonObject.getJSONObject("data");
+            String encData = SMUtil.encrypt(data.toJSONString(), medicareConfigProperties.getAppId(), medicareConfigProperties.getAppSecret());
+            String signData = SMUtil.sign(jsonObject, medicareConfigProperties.getAppSecret(), medicareConfigProperties.getPrivateKey());
+            jsonObject.put("encData",encData);
+            jsonObject.put("signData",signData);
+            //删除原始请求参数
+            jsonObject.remove("data");
+        }
         json.put("input",jsonObject);
         return json.toJSONString();
     }
@@ -164,8 +226,16 @@ public class MdRequestUtil {
         HttpEntity<String> request = new HttpEntity<>(requestData ,headers);
         String response = restTemplate.postForObject(medicareConfigProperties.getUrl(), request,String.class);
         if(infoNo.equals("9001")){
-            //保存8小时签到码
-            stringRedisTemplate.opsForValue().set("sign_no",JSONObject.parseObject(response).getString("sign_no"),8, TimeUnit.HOURS);
+            //保存当天24点之前签到码
+            //
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime endOfDay = now.toLocalDate().atStartOfDay().plusDays(1);
+            // 计算当前时间到24点的秒数
+            long remainingTimeInSeconds = Duration.between(now, endOfDay).getSeconds();
+            // 保存签到码并设置过期时间为当天24点之前
+            stringRedisTemplate.opsForValue().set("sign_no",
+                    JSONObject.parseObject(response).getString("sign_no"),
+                    remainingTimeInSeconds, TimeUnit.SECONDS);
         }
         if(infoNo.equals("9002")){
             //删除签到码

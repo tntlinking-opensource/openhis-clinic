@@ -10,8 +10,12 @@ import com.geeke.common.data.Page;
 import com.geeke.common.data.Parameter;
 import com.geeke.config.exception.CommonJsonException;
 import com.geeke.medicareutils.config.MedicareConfigProperties;
+import com.geeke.medicareutils.service.MdPsnDataService;
+import com.geeke.medicareutils.util.YbWebApiUtil;
+import com.geeke.org.entity.ClinicOffice;
 import com.geeke.org.entity.Department;
 import com.geeke.org.service.ClinicOfficeService;
+import com.geeke.outpatient.entity.Registration;
 import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.ResultUtil;
 import com.geeke.utils.SessionUtils;
@@ -44,6 +48,9 @@ public class UserController extends BaseController {
     private ClinicOfficeService clinicOfficeService;
 
     private final MedicareConfigProperties medicareConfigProperties;
+
+    private final MdPsnDataService mdPsnDataService;
+
 
     @GetMapping("/{id}")
     public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
@@ -129,7 +136,7 @@ public class UserController extends BaseController {
         Department department = new Department();
         department.setId(departmentId);
         user.setDepartment(department);
-
+        user.getUserExt().setOfficeCode(clinicOfficeService.listAll(list, "").get(0).getCode());
         String[] deleteIds = JSONObject.parseObject(strDeleteIds, String[].class);
         String id = userService.save(user,fileIdUploads,deleteIds).getId();
         return ResponseEntity.ok(ResultUtil.successJson(id));
@@ -141,6 +148,11 @@ public class UserController extends BaseController {
                                              @RequestParam("deleteIds")String strDeleteIds) throws java.io.IOException  {
 
         User user = JSONObject.parseObject(strUser, User.class);
+        List<Parameter> list = new ArrayList<>();
+        list.add(new Parameter("company_id", "=", user.getCompany().getId()));
+        list.add(new Parameter("name", "=", user.getUserExt().getOffice()));
+        ClinicOffice clinicOffice = clinicOfficeService.listAll(list, "").get(0);
+        user.getUserExt().setOfficeCode(clinicOffice.getCode());
         user.setLoginName(user.getPhone());
         String[] deleteIds = JSONObject.parseObject(strDeleteIds, String[].class);
         String id = userService.update(user,fileIdUploads,deleteIds).getId();
@@ -188,5 +200,21 @@ public class UserController extends BaseController {
             rows = userService.changeLoginPassword(id, password);
         }
         return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }        
+    }
+
+
+
+    @PostMapping("/test")
+    public ResponseEntity<JSONObject> test() {
+        Registration registration = new Registration();
+
+        registration.setId("2266033438408286216");
+
+        mdPsnDataService.getAndSetPsnData(registration);
+
+        return null;
+    }
+
+
+
 }

@@ -475,7 +475,7 @@
                          location_number,
                          inventory_limit,
                          inventory_floor,
-                         indate,sync_id)
+                         indate,sync_id,ypgg)
         VALUES (#{id},
                 #{goodsName},
                 #{company.id},
@@ -516,7 +516,7 @@
                 #{inventoryLimit},
                 #{inventoryFloor},
                 #{indate},
-                #{syncId})
+                #{syncId}, #{ypgg})
     </insert>
 
     <update id="update">
@@ -553,7 +553,8 @@
             location_number      = #{locationNumber},
             inventory_limit      = #{inventoryLimit},
             inventory_floor      = #{inventoryFloor},
-            indate               = #{indate}
+            indate               = #{indate},
+            ypgg = #{ypgg}
         WHERE id = #{id}
     </update>
 
@@ -606,7 +607,8 @@
         location_number,
         inventory_limit,
         inventory_floor,
-        indate
+        indate,
+        ypgg
         ) VALUES
         <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
             (
@@ -650,6 +652,7 @@
             #{entity.inventoryLimit},
             #{entity.inventoryFloor},
             #{entity.indate}
+            ,#{entity.ypgg})
             )
         </foreach>
     </insert>

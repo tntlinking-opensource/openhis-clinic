@@ -19,6 +19,9 @@ public class PresDrug implements Serializable {
      * 医疗目录编码
      */
     @TableId
+    private String Id;
+
+
     private String medlistcodg;
 
     /**
@@ -110,6 +113,12 @@ public class PresDrug implements Serializable {
      * 结束时间 (格式：yyyy-MM-dd HH:mm:ss)
      */
     private Date endtime;
+
+
+    /**
+     * 结束时间 (格式：yyyy-MM-dd HH:mm:ss)
+     */
+    private Float drugprice;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

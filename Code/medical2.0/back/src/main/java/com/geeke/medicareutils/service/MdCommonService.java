@@ -1,7 +1,6 @@
 package com.geeke.medicareutils.service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.geeke.outpatient.entity.MedicalRecord;
 import com.geeke.outpatient.entity.Registration;
 
 public interface MdCommonService {
@@ -12,14 +11,15 @@ public interface MdCommonService {
      * 【2208】门诊结算撤销、【2304】住院结算、【2305】住院结算撤销、【2401】入院办理、
      * 【2304A】住院结算；
      */
-    JSONObject reversalData(String psnNo,String omsgid,String oinfno);
+    String reversalData_2601(String psnNo, String omsgid, String oinfno);
 
 
     /**
      * 电子病历上传 4701
      * @return
      */
-    JSONObject upMedicalRecord(Registration registration);
+    String upMedicalRecord_4701(Registration registration);
+
 
 
 

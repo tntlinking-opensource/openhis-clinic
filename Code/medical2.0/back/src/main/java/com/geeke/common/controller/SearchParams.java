@@ -10,6 +10,7 @@ import com.geeke.config.exception.CommonJsonException;
 import com.geeke.utils.ResultUtil;
 import com.geeke.utils.StringUtils;
 import com.geeke.utils.constants.ErrorEnum;
+import lombok.Data;
 import org.apache.commons.collections.CollectionUtils;
 
 /**
@@ -17,6 +18,7 @@ import org.apache.commons.collections.CollectionUtils;
  * @author alec
  *
  */
+@Data
 public class SearchParams implements Serializable {
     /**
 	 * 
@@ -26,6 +28,7 @@ public class SearchParams implements Serializable {
     private int limit = 10;
     private String columnName; // 排序字段名（别名）
 	private String order; // 排序
+	private String ypType;//电子处方
 	private static String[] ORDER_LIST = {"desc", "asc", ""}; // 排序符号
 	private static String[] LOGIC_LIST = {"and", "or", ""}; // 逻辑操作符
 	private static String[] QUERY_TYPE_LIST = {"(", ")", "=", "<=>", "between", "left_like",

@@ -19,7 +19,7 @@ public class MdDirServiceImpl implements MdDirService {
      * @return
      */
     @Override
-    public JSONObject upDirData() {
+    public JSONObject upDirData_3301() {
         JSONObject data = new JSONObject();
         data.put("fixmedins_hilist_id", ""); // 定点医药机构目录编号
         data.put("fixmedins_hilist_name", ""); // 定点医药机构目录名称
@@ -48,7 +48,7 @@ public class MdDirServiceImpl implements MdDirService {
      * @return
      */
     @Override
-    public JSONObject delDirData() {
+    public JSONObject delDirData_3302() {
         JSONObject data = new JSONObject();
         data.put("fixmedins_code", SessionUtils.getUserJson().getJSONObject("company").getString("fixmedinsCode"));
         data.put("fixmedins_hilist_name", "");

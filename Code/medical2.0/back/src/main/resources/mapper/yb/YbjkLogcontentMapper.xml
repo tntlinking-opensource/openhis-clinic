@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.medicareutils.db.dao.YbjkLogcontentMapper">
+
+    <resultMap id="BaseResultMap" type="com.geeke.medicareutils.db.entity.YbjkLogcontent">
+            <id property="innumbier" column="inNumbier" jdbcType="DECIMAL"/>
+            <result property="tradinumber" column="tradiNumber" jdbcType="VARCHAR"/>
+            <result property="hisid" column="hisId" jdbcType="VARCHAR"/>
+            <result property="begindate" column="beginDate" jdbcType="TIMESTAMP"/>
+            <result property="enddate" column="endDate" jdbcType="TIMESTAMP"/>
+            <result property="inhead" column="inHead" jdbcType="VARCHAR"/>
+            <result property="incontent" column="inContent" jdbcType="VARCHAR"/>
+            <result property="outhead" column="OutHead" jdbcType="VARCHAR"/>
+            <result property="outcontent" column="outContent" jdbcType="VARCHAR"/>
+            <result property="errormsg" column="errorMsg" jdbcType="VARCHAR"/>
+            <result property="stateid" column="stateId" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        inNumbier,tradiNumber,hisId,
+        beginDate,endDate,inHead,
+        inContent,OutHead,outContent,
+        errorMsg,stateId
+    </sql>
+</mapper>

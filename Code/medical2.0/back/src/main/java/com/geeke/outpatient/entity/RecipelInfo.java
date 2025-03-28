@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.geeke.common.persistence.DataEntity;
 import com.geeke.org.entity.Company;
 import com.geeke.sys.entity.DictItem;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
@@ -15,6 +17,8 @@ import java.util.Date;
  * @author txl
  * @version 2022-07-20
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class RecipelInfo extends DataEntity<RecipelInfo> {
 
 	private static final long serialVersionUID = 1014474470772900008L;
@@ -59,6 +63,9 @@ public class RecipelInfo extends DataEntity<RecipelInfo> {
 	private Integer notShow; //目前针对门诊-工作台-不合格处方查询，是否显示 0 不显示 1 显示
 	private String diagnosisId; // 远程诊疗记录id
 	private String chinessNotes; //中药备注
+	/**医保字段*/
+	private  Boolean isPre; // 是否电子处方
+	private  String hiRxno; // 医保电子处方号
 
 	public String getDiagnosisId() {
 		return diagnosisId;

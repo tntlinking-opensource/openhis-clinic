@@ -428,6 +428,11 @@ export default {
           queryType: '=',
           value: currentUser.company.id
         })
+        this.search.params.push({
+          columnName: 'recipelInfo.is_pre',
+          queryType:  '=',
+          value:'0'
+        })
         // 数据权限: 处方审查
         this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
         let [listReviewRespData, listPermissionRespData] = await Promise.all([

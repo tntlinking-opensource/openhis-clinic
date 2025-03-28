@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.geeke.basicdata.entity.ManufactureFactory;
 import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
 import com.geeke.common.service.CrudService;
@@ -37,7 +38,9 @@ import com.geeke.utils.SessionUtils;
 import com.geeke.utils.StringUtils;
 import com.geeke.utils.constants.ErrorEnum;
 import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -120,6 +123,9 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
 
     @Autowired
     private RemoteDiagnosisTreatmentService remoteDiagnosisTreatmentService;
+
+    @Autowired
+    private PresDrugService presDrugService;
 
     @Transactional(readOnly = false)
     public MedicalRecord save(MedicalRecord medicalRecord,
@@ -339,6 +345,7 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
                 List<RecipelDetail> recipelDetails = recipelDetailService.listAll(parameters, "");
                 if (!CollectionUtils.isEmpty(recipelDetails)) {
                     for (RecipelDetail recipelDetail : recipelDetails) {
+                        recipelDetail.setRecipelInfo(recipelInfo);
                         recipelDetail.setDrugStuffId(this.getDrugStuffEvt(recipelDetail));
                     }
                 }
@@ -527,36 +534,29 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
         //盘点时不能进行完成接诊的操作
         Company company = SessionUtils.getUser().getCompany();
         List<InventoryVerification> inventoryVerifications = inventoryVerificationService.getByCompanyId(company.getId());
-        if(!CollectionUtils.isEmpty(inventoryVerifications)){
+        if (!CollectionUtils.isEmpty(inventoryVerifications)) {
             throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "正在执行盘点操作,无法进行接诊"));
         }
         //普通接诊
-        if (InstantPatient.NORMAL.getCode() == receptionEvt.getType())
-        {
-            if (!org.springframework.util.StringUtils.hasText(receptionEvt.getId()))
-            {
+        if (InstantPatient.NORMAL.getCode() == receptionEvt.getType()) {
+            if (!org.springframework.util.StringUtils.hasText(receptionEvt.getId())) {
                 throw new RuntimeException("登记接诊信息不能为空.");
             }
             Registration registration = this.registrationService.get(receptionEvt.getId());
-            if (Objects.isNull(registration))
-            {
+            if (Objects.isNull(registration)) {
                 throw new RuntimeException("登记接诊信息不存在.");
             }
-            if (!(Objects.equals(registration.getStatus().getValue(), "registrationStatus_0") || Objects.equals(registration.getStatus().getValue(), "registrationStatus_1")))
-            {
+            if (!(Objects.equals(registration.getStatus().getValue(), "registrationStatus_0") || Objects.equals(registration.getStatus().getValue(), "registrationStatus_1"))) {
                 throw new RuntimeException("登记接诊信息不是[待接诊]或[已完成接诊]状态.");
             }
-            if (!org.springframework.util.StringUtils.hasText(receptionEvt.getMedicalRecord().getFileId()))
-            {
+            if (!org.springframework.util.StringUtils.hasText(receptionEvt.getMedicalRecord().getFileId())) {
                 receptionEvt.getMedicalRecord().setFileId(IdGen.uuid());
             }
-            if (!ArrayUtils.isEmpty(fileIdUploads))
-            {
+            if (!ArrayUtils.isEmpty(fileIdUploads)) {
                 //保存上传附件信息
                 this.sysFileService.changeAndSaveSysFileList(fileIdUploads, receptionEvt.getMedicalRecord().getFileId());
             }
-            if (!ArrayUtils.isEmpty(delFileIds))
-            {
+            if (!ArrayUtils.isEmpty(delFileIds)) {
                 //删除需要作废的附件信息
                 this.sysFileService.delete(delFileIds);
             }
@@ -571,16 +571,19 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
             if (ArrayUtils.isNotEmpty(medicalFiles)) {
                 this.sysFileService.changeAndSaveSysFileList(medicalFiles, receptionEvt.getRegistration().getId());
             }
-            //保存处方信息
+                //保存处方信息
             this.saveRecipelInfoEvt(receptionEvt.getRecipelInfoEvtList(), receptionEvt.getId());
 
             //更新保存登记信息
-            if (Objects.equals(registration.getStatus().getValue(), "registrationStatus_0"))
-            {
+            if (Objects.equals(registration.getStatus().getValue(), "registrationStatus_0")) {
                 DictItem statusDictItem = new DictItem();
                 statusDictItem.setValue("registrationStatus_1");
                 registration.setStatus(statusDictItem);
                 registration.setReceptionEndDate(new Date());
+            }
+            if(receptionEvt.getRecipelInfoEvtList().get(0).getRecipelInfo().getIsPre()!=null&&receptionEvt.getRecipelInfoEvtList().size() == 1 && receptionEvt.getRecipelInfoEvtList().get(0).getRecipelInfo().getIsPre()){
+                //单号单电子处方设置号结束就诊流程
+                registration.setIsPre("1");
             }
             registration.setTreatType(receptionEvt.getRegistration().getTreatType());
             registration.setInfectType(receptionEvt.getRegistration().getInfectType());
@@ -591,23 +594,17 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
             registration.setMorbidityTime(receptionEvt.getRegistration().getMorbidityTime());
             receptionEvt.setRegistration(this.registrationService.save(registration));
             receptionEvt.setId(receptionEvt.getRegistration().getId());
-        }
-        else if (InstantPatient.INSTANT.getCode() == receptionEvt.getType() || InstantPatient.RETAIL.getCode() == receptionEvt.getType())
-        {
-            if (!org.springframework.util.StringUtils.hasText(receptionEvt.getId()))
-            {
+        } else if (InstantPatient.INSTANT.getCode() == receptionEvt.getType() || InstantPatient.RETAIL.getCode() == receptionEvt.getType()) {
+            if (!org.springframework.util.StringUtils.hasText(receptionEvt.getId())) {
                 receptionEvt.setId(IdGen.uuid());
             }
             Registration registration = this.registrationService.get(receptionEvt.getId());
-            if (Objects.isNull(registration))
-            {
-                if (Objects.isNull(receptionEvt.getPatient()))
-                {
+            if (Objects.isNull(registration)) {
+                if (Objects.isNull(receptionEvt.getPatient())) {
                     throw new RuntimeException("[患者基础信息]不能为空.");
                 }
                 //处理基础信息（即患者信息）
-                if (!org.springframework.util.StringUtils.hasText(receptionEvt.getPatient().getId()) || Objects.isNull(this.patientService.get(receptionEvt.getPatient().getId())))
-                {
+                if (!org.springframework.util.StringUtils.hasText(receptionEvt.getPatient().getId()) || Objects.isNull(this.patientService.get(receptionEvt.getPatient().getId()))) {
                     receptionEvt.getPatient().setId(null);
                     receptionEvt.setPatient(this.patientService.saveSuper(receptionEvt.getPatient()));
                 }
@@ -637,8 +634,7 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
                     DictItem statusDictItem = new DictItem();
                     statusDictItem.setValue("registrationStatus_1");
                     registrationEntity.setStatus(statusDictItem);
-                }
-                else if (InstantPatient.RETAIL.getCode() == receptionEvt.getType()) {
+                } else if (InstantPatient.RETAIL.getCode() == receptionEvt.getType()) {
                     //TODO: 治疗类型   默认初诊
                     DictItem dictItem = new DictItem();
                     dictItem.setValue("treatType_0");
@@ -666,17 +662,14 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
                 registration.setInfectType(receptionEvt.getRegistration().getInfectType());
                 receptionEvt.setRegistration(this.registrationService.save(registration));
 
-                if (!org.springframework.util.StringUtils.hasText(receptionEvt.getMedicalRecord().getFileId()))
-                {
+                if (!org.springframework.util.StringUtils.hasText(receptionEvt.getMedicalRecord().getFileId())) {
                     receptionEvt.getMedicalRecord().setFileId(IdGen.uuid());
                 }
-                if (!ArrayUtils.isEmpty(fileIdUploads))
-                {
+                if (!ArrayUtils.isEmpty(fileIdUploads)) {
                     //保存上传附件信息
                     this.sysFileService.changeAndSaveSysFileList(fileIdUploads, receptionEvt.getMedicalRecord().getFileId());
                 }
-                if (!ArrayUtils.isEmpty(delFileIds))
-                {
+                if (!ArrayUtils.isEmpty(delFileIds)) {
                     //删除需要作废的附件信息
                     this.sysFileService.delete(delFileIds);
                 }
@@ -703,6 +696,7 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
             //throw new RuntimeException("处方信息不能为空.");
         }
 
+
         Registration registration = this.registrationService.get(registrationId);
         for (int i = 0; i < recipelInfoEvtList.size(); i++) {
             RecipelInfoEvt recipelInfoEvt = recipelInfoEvtList.get(i);
@@ -710,71 +704,129 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
             if (ObjectUtil.isNull(recipelInfo.getChronicDisease()) || !StrUtil.equals("recipelType_0",recipelInfo.getRecipelType().getValue())) {
                 recipelInfo.setChronicDisease(Boolean.FALSE);
             }
-            // 设置应付价格默认为0
-            for (RecipelDetail recipelDetail:recipelInfoEvt.getRecipelDetailEvtList()){
-                recipelDetail.setActualPayment(BigDecimal.valueOf(0.00));
+            if (ObjectUtil.isNull(recipelInfo.getChronicDisease()) || !StrUtil.equals("recipelType_0",recipelInfo.getRecipelType().getValue())) {
+                recipelInfo.setIsPre(Boolean.FALSE);
             }
-            List<RecipelDetail> recipelDetailEvtList = recipelInfoEvt.getRecipelDetailEvtList();
-            if (CollectionUtils.isEmpty(recipelDetailEvtList))
-            {
-                throw new RuntimeException("[" + recipelInfo.getName() + "]明细不能为空.");
-            }
-            if (org.springframework.util.StringUtils.hasText(recipelInfo.getId())) {
-                RecipelInfo queryRecipelInfo = this.recipelInfoService.get(recipelInfo.getId());
-                if (Objects.isNull(queryRecipelInfo)) {
-                    recipelInfo.setId(null);
+            if( recipelInfo.getIsPre()!= null && recipelInfo.getIsPre()){
+                //电子处方特殊处理
+                List<RecipelDetail> recipelDetailEvtList = recipelInfoEvt.getRecipelDetailEvtList();
+                if (CollectionUtils.isEmpty(recipelDetailEvtList)) {
+                    throw new RuntimeException("[" + recipelInfo.getName() + "]明细不能为空.");
                 }
-                //作废处方编辑保存不处理
-                if (Objects.nonNull(queryRecipelInfo) && Objects.equals(queryRecipelInfo.getStatus(), -1))
-                {
-                    continue;
+                if (org.springframework.util.StringUtils.hasText(recipelInfo.getId())) {
+                    RecipelInfo queryRecipelInfo = this.recipelInfoService.get(recipelInfo.getId());
+                    if (Objects.isNull(queryRecipelInfo)) {
+                        recipelInfo.setId(null);
+                    }
+                    //作废处方编辑保存不处理
+                    if (Objects.nonNull(queryRecipelInfo) && Objects.equals(queryRecipelInfo.getStatus(), -1)) {
+                        continue;
+                    }
+                    //接诊完成，且收费完成或退费的不处理
+                    if (Objects.nonNull(queryRecipelInfo) && Objects.equals(queryRecipelInfo.getStatus(), 1)
+                            && (Objects.equals(queryRecipelInfo.getChargeStatus(), 1) || Objects.equals(queryRecipelInfo.getChargeStatus(), -1))) {
+                        continue;
+                    }
                 }
-                //接诊完成，且收费完成或退费的不处理
-                if (Objects.nonNull(queryRecipelInfo) && Objects.equals(queryRecipelInfo.getStatus(), 1)
-                        && (Objects.equals(queryRecipelInfo.getChargeStatus(), 1) || Objects.equals(queryRecipelInfo.getChargeStatus(), -1))) {
-                    continue;
+
+                if (!org.springframework.util.StringUtils.hasText(recipelInfo.getId())) {
+                    String recipelNo = serialNoUtils.generateSerialNo(org.apache.commons.lang3.StringUtils.EMPTY);
+                    recipelInfo.setCode(recipelNo);
                 }
-            }
-
-            if (!org.springframework.util.StringUtils.hasText(recipelInfo.getId()))
-            {
-                String recipelNo = serialNoUtils.generateSerialNo(org.apache.commons.lang3.StringUtils.EMPTY);
-                recipelInfo.setCode(recipelNo);
-            }
-
-            recipelInfo.setRegistration(registration);
-            recipelInfo.setSeq(i+1);
-            recipelInfo.setStatus(1);
-            if (Objects.equals(registration.getSource().getValue(), "registrationSource_3")) {
-                recipelInfo.setChargeStatus(1);
-                recipelInfo.setIsPay("1");  //?是否付款是否前台传
-            }
-            else
-            {
-                recipelInfo.setChargeStatus(0);
-                recipelInfo.setIsPay("0");
-            }
-
-            //保存处方主表
-            RecipelInfo recipelInfoEntity = this.recipelInfoService.save(recipelInfo);
-
-            List<RecipelDetail> recipelDetails = this.recipelDetailService.getByRecipelInfoId(recipelInfoEntity.getId());
-            if (!CollectionUtils.isEmpty(recipelDetails)) {
-                this.recipelDetailService.batchDelete(recipelDetails);
-            }
-            for (int k = 0; k < recipelDetailEvtList.size(); k++) {
-                RecipelDetail recipelDetail = recipelDetailEvtList.get(k);
-                recipelDetail.setId(null);
-                recipelDetail.setRecipelInfo(recipelInfoEntity);
-                recipelDetail.setMinTotal(recipelDetail.getTotal());
-                if(recipelDetail.getInfuseGroup()!=null){
-                    recipelDetail.setStuffType("2");
+                recipelInfo.setRegistration(registration);
+                recipelInfo.setSeq(i + 1);
+                recipelInfo.setStatus(1);
+                if (Objects.equals(registration.getSource().getValue(), "registrationSource_3")) {
+                    recipelInfo.setChargeStatus(1);
+                    recipelInfo.setIsPay("1");  //?是否付款是否前台传
+                } else {
+                    recipelInfo.setChargeStatus(0);
+                    recipelInfo.setIsPay("0");
                 }
-                this.recipelDetailService.save(recipelDetail);
-            }
+                //设置处方收费与发药状态 电子处方不走后续流程
+                recipelInfo.setChargeStatus(2);
+                recipelInfo.setIsPay("2");
+                recipelInfo.setDispensionStatus(2);
 
-            //TODO:动态库存操作
-            this.medicinalStorageControlService.preOccupyStock(recipelInfoEntity);
+                //保存处方主表
+                RecipelInfo recipelInfoEntity = this.recipelInfoService.save(recipelInfo);
+                //保存处方详情表
+                List<RecipelDetail> recipelDetails = this.recipelDetailService.getByRecipelInfoId(recipelInfoEntity.getId());
+                if (!CollectionUtils.isEmpty(recipelDetails)) {
+                    this.recipelDetailService.batchDelete(recipelDetails);
+                }
+                for (RecipelDetail recipelDetail : recipelDetailEvtList) {
+                    //应付实付都为0
+                    recipelDetail.setActualPayment(BigDecimal.valueOf(0.00));
+                    recipelDetail.setAllFee(BigDecimal.valueOf(0.00));
+                    recipelDetail.setId(null);
+                    recipelDetail.setRecipelInfo(recipelInfoEntity);
+                    recipelDetail.setMinTotal(recipelDetail.getTotal());
+                    if (recipelDetail.getInfuseGroup() != null) {
+                        recipelDetail.setStuffType("2");
+                    }
+                    this.recipelDetailService.save(recipelDetail);
+                }
+            } else {
+                // 设置应付价格默认为0
+                for (RecipelDetail recipelDetail : recipelInfoEvt.getRecipelDetailEvtList()) {
+                    recipelDetail.setActualPayment(BigDecimal.valueOf(0.00));
+                }
+                List<RecipelDetail> recipelDetailEvtList = recipelInfoEvt.getRecipelDetailEvtList();
+                if (CollectionUtils.isEmpty(recipelDetailEvtList)) {
+                    throw new RuntimeException("[" + recipelInfo.getName() + "]明细不能为空.");
+                }
+                if (org.springframework.util.StringUtils.hasText(recipelInfo.getId())) {
+                    RecipelInfo queryRecipelInfo = this.recipelInfoService.get(recipelInfo.getId());
+                    if (Objects.isNull(queryRecipelInfo)) {
+                        recipelInfo.setId(null);
+                    }
+                    //作废处方编辑保存不处理
+                    if (Objects.nonNull(queryRecipelInfo) && Objects.equals(queryRecipelInfo.getStatus(), -1)) {
+                        continue;
+                    }
+                    //接诊完成，且收费完成或退费的不处理
+                    if (Objects.nonNull(queryRecipelInfo) && Objects.equals(queryRecipelInfo.getStatus(), 1)
+                            && (Objects.equals(queryRecipelInfo.getChargeStatus(), 1) || Objects.equals(queryRecipelInfo.getChargeStatus(), -1))) {
+                        continue;
+                    }
+                }
+
+                if (!org.springframework.util.StringUtils.hasText(recipelInfo.getId())) {
+                    String recipelNo = serialNoUtils.generateSerialNo(org.apache.commons.lang3.StringUtils.EMPTY);
+                    recipelInfo.setCode(recipelNo);
+                }
+
+                recipelInfo.setRegistration(registration);
+                recipelInfo.setSeq(i + 1);
+                recipelInfo.setStatus(1);
+                if (Objects.equals(registration.getSource().getValue(), "registrationSource_3")) {
+                    recipelInfo.setChargeStatus(1);
+                    recipelInfo.setIsPay("1");  //?是否付款是否前台传
+                } else {
+                    recipelInfo.setChargeStatus(0);
+                    recipelInfo.setIsPay("0");
+                }
+                //保存处方主表
+                RecipelInfo recipelInfoEntity = this.recipelInfoService.save(recipelInfo);
+
+                List<RecipelDetail> recipelDetails = this.recipelDetailService.getByRecipelInfoId(recipelInfoEntity.getId());
+                if (!CollectionUtils.isEmpty(recipelDetails)) {
+                    this.recipelDetailService.batchDelete(recipelDetails);
+                }
+                for (RecipelDetail recipelDetail : recipelDetailEvtList) {
+                    recipelDetail.setId(null);
+                    recipelDetail.setRecipelInfo(recipelInfoEntity);
+                    recipelDetail.setMinTotal(recipelDetail.getTotal());
+                    if (recipelDetail.getInfuseGroup() != null) {
+                        recipelDetail.setStuffType("2");
+                    }
+                    this.recipelDetailService.save(recipelDetail);
+                }
+
+                //TODO:动态库存操作
+                this.medicinalStorageControlService.preOccupyStock(recipelInfoEntity);
+            }
         }
     }
 
@@ -972,6 +1024,7 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
                     {
                         for (RecipelDetail recipelDetail:recipelDetailList)
                         {
+                            recipelDetail.setRecipelInfo(recipelInfo);
                             recipelDetail.setDrugStuffId(this.getDrugStuffEvt(recipelDetail));
 
                         }
@@ -994,16 +1047,55 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
         String stuffType = recipelDetail.getStuffType();        // 物料类型:0-西药 1-中药  2-输液 3-诊疗项目  4-材料
         if ("0".equals(stuffType) || "1".equals(stuffType) || "2".equals(stuffType)) {
             //中药、西药、输液处方查询药品信息
-            Drug drug = this.drugService.get(recipelDetail.getDrugStuffId().getDrugStuffId());
-            drugStuffEvt.setDrugStuffId(drug.getId());
-            drugStuffEvt.setName(drug.getGoodsName());
-            drugStuffEvt.setPrice(drug.getPrice());
-            drugStuffEvt.setRetailPrice(drug.getRetailPrice());
-            drugStuffEvt.setIsUnpackSell(drug.getIsUnpackSell());
-            drugStuffEvt.setDosisUnit(drug.getDosisUnit());
-            drugStuffEvt.setPreparationUnit(drug.getPreparationUnit());
-            drugStuffEvt.setPack(drug.getPack());
-            drugStuffEvt.setDrug(drug);
+            PresDrug presDrug = presDrugService.getById(recipelDetail.getDrugStuffId().getDrugStuffId());
+            if( recipelDetail.getRecipelInfo().getIsPre() != null &&
+                    recipelDetail.getRecipelInfo().getIsPre() &&
+                    presDrug != null ){
+                //电子处方药品
+                drugStuffEvt.setDrugStuffId(presDrug.getId());
+                drugStuffEvt.setName(presDrug.getRegname());
+                drugStuffEvt.setPrice(BigDecimal.valueOf(0));
+                drugStuffEvt.setRetailPrice(BigDecimal.valueOf(0));
+                drugStuffEvt.setIsUnpackSell("0");
+                DictItem  dosisUnit = new DictItem();
+                DictItem  PreparationUnit = new DictItem();
+                DictItem  Pack = new DictItem();
+                DictItem  type = new DictItem();
+                ManufactureFactory factory = new ManufactureFactory();
+                type.setValue("medicalType_0");
+                dosisUnit.setName("");
+                dosisUnit.setValue("");
+                PreparationUnit.setName(presDrug.getMinprepunt());
+                PreparationUnit.setValue("");
+                Pack.setName(presDrug.getMinpacunt());
+                Pack.setValue("");
+                factory.setName(presDrug.getPrdrname());
+                drugStuffEvt.setDosisUnit(dosisUnit);
+                drugStuffEvt.setPreparationUnit(PreparationUnit);
+                drugStuffEvt.setPack(Pack);
+                Drug drug  = new Drug();
+                drug.setDosis(presDrug.getSpecname());
+                drug.setDosisUnit(dosisUnit);
+                drug.setPreparationUnit(PreparationUnit);
+                drug.setPreparation(presDrug.getMinpaccnt());
+                drug.setPack(Pack);
+                drug.setFactory(factory);
+                drug.setIsUnpackSell("0");
+                drug.setType(type);
+                drug.setGoodsName(presDrug.getRegname());
+                drugStuffEvt.setDrug(drug);
+            }else{
+                Drug drug = this.drugService.get(recipelDetail.getDrugStuffId().getDrugStuffId());
+                drugStuffEvt.setDrugStuffId(drug.getId());
+                drugStuffEvt.setName(drug.getGoodsName());
+                drugStuffEvt.setPrice(drug.getPrice());
+                drugStuffEvt.setRetailPrice(drug.getRetailPrice());
+                drugStuffEvt.setIsUnpackSell(drug.getIsUnpackSell());
+                drugStuffEvt.setDosisUnit(drug.getDosisUnit());
+                drugStuffEvt.setPreparationUnit(drug.getPreparationUnit());
+                drugStuffEvt.setPack(drug.getPack());
+                drugStuffEvt.setDrug(drug);
+            }
         } else if ("3".equals(stuffType)) {
             //查询诊疗项目信息
             CostItem costItem = this.costItemService.get(recipelDetail.getDrugStuffId().getDrugStuffId());

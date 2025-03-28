@@ -2,6 +2,7 @@ package com.geeke.outpatient.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.geeke.outpatient.entity.XtZd;
+import org.mapstruct.Mapper;
 
 
 /**
@@ -10,6 +11,7 @@ import com.geeke.outpatient.entity.XtZd;
 * @createDate 2024-11-22 14:26:05
 * @Entity com.geeke.outpatient.entity.XtZd
 */
+@Mapper
 public interface XtZdMapper extends BaseMapper<XtZd> {
 
 

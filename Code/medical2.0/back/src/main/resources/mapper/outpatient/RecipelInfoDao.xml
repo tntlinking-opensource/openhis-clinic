@@ -52,7 +52,8 @@
         a.infuse_type AS "infuseType",
         a.chronic_disease AS "chronicDisease",
         a.chiness_notes AS "chinessNotes",
-        a.not_show AS "notShow"
+        a.not_show AS "notShow",
+        a.is_pre AS "isPre"
     </sql>
     
     <sql id="recipelInfoJoins">
@@ -179,7 +180,8 @@
             cure_type,
             infuse_type,
             chronic_disease,
-            chiness_notes
+            chiness_notes,
+            is_pre
         ) VALUES (
             #{id},
             #{name},
@@ -223,7 +225,8 @@
             #{cureType},
             #{infuseType},
             #{chronicDisease},
-            #{chinessNotes}
+            #{chinessNotes},
+            #{isPre}
         )
     </insert>
     
@@ -267,7 +270,8 @@
             infuse_type=#{infuseType},
             chronic_disease=#{chronicDisease},
             not_show=#{notShow},
-            chiness_notes =#{chinessNotes}
+            chiness_notes =#{chinessNotes},
+            is_pre=#{isPre}
         WHERE id = #{id}
     </update>
     
@@ -323,7 +327,8 @@
             cure_type,
             infuse_type,
             chronic_disease,
-            chiness_notes
+            chiness_notes,
+                                 is_pre
         ) VALUES 
         <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
         (
@@ -369,7 +374,8 @@
             #{entity.cureType},
             #{entity.infuseType},
             #{entity.chronicDisease},
-            #{entity.chinessNotes}
+            #{entity.chinessNotes},
+            #{entity.isPre}
             )
         </foreach>
     </insert>
@@ -616,6 +622,7 @@
         left join patient patient on patient.id=registration.patient_id
         <where>
             a.status=1
+            and a.is_pre != '1'
             <if test="order!=null and order!=''">
                 AND a.registration_id in (SELECT id FROM registration WHERE patient_id=(SELECT patient_id FROM registration WHERE id=#{order}) )
             </if>

@@ -219,8 +219,9 @@
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
-            <version>3.3.0</version>
+            <version>3.5.0</version>
         </dependency>
+
         <!--<dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
@@ -292,6 +293,7 @@
             <version>2.2.9</version>
         </dependency>
 
+
         <!--导出 Excel 表-->
        <!-- <dependency>
             <groupId>org.apache.poi</groupId>
@@ -334,6 +336,12 @@
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
             <version>5.8.16</version>
+        </dependency>
+<!--        加密-->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.70</version> <!-- 根据最新版本进行调整 -->
         </dependency>
         <!--必须放在最后-->
         <dependency>

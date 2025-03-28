@@ -334,6 +334,11 @@ export default {
           queryType: '=',
           value: this.queryModel.recipelType.value
         })
+      this.search.params.push({
+        columnName: 'recipelInfo.is_pre',
+        queryType:  '=',
+        value:'0'
+      })
       if (this.queryModel.recipelStatus && this.queryModel.recipelStatus !== "") {
         this.search.params.push(...this.createQueryObjects(this.queryModel.recipelStatus.value))
       }

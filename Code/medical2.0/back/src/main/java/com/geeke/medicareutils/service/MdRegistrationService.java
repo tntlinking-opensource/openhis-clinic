@@ -1,11 +1,7 @@
 package com.geeke.medicareutils.service;
 
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.geeke.medicareutils.domain.respo.MdFeeDetail;
-import com.geeke.medicareutils.domain.respo.MdPsnDiseData;
-import com.geeke.medicareutils.domain.respo.MdPsnVisitData;
-import com.geeke.outpatient.entity.MedicalRecord;
 import com.geeke.outpatient.entity.Registration;
 
 import java.time.LocalDateTime;
@@ -18,14 +14,14 @@ public interface MdRegistrationService {
      * 门诊医保挂号
      * @return
      */
-    JSONObject getRegistrationInfo(Registration registration);
+    String  getRegistrationInfo_2201(Registration registration);
 
     /**
      * 门诊挂号取消
      * @param registration
      * @return
      */
-    JSONObject revokeRegistrationInfo(Registration registration);
+    String revokeRegistrationInfo_2202(Registration registration);
 
 
     /**
@@ -33,124 +29,139 @@ public interface MdRegistrationService {
      * @param registration
      * @return
      */
-    JSONObject upRegistrationInfo(Registration registration);
+    String upRegistrationInfo_2203(Registration registration);
 
 
     /**
      * 门诊就诊信息上传 2203A
+     *
      * @param registration
      * @return
      */
-    JSONObject upRegistrationInfoList(Registration registration);
+    String upRegistrationInfoList_2203A(Registration registration);
 
 
     /**
      * 门诊费用明细信息上传 2204
+     *
      * @param
      * @return
      */
-    MdFeeDetail upRegistrationMoneyInfo(JSONArray jsonArray);
+    String upRegistrationMoneyInfo_2204(JSONArray jsonArray);
 
     /**
      * 门诊费用明细撤销明细 2205
+     *
      * @param
      * @return
      */
-    JSONObject revokeRegistrationMoneyInfo(String mdtrtId,String chrgBchno,String psnNo,String expContent);
+    String revokeRegistrationMoneyInfo_2205(String mdtrtId, String chrgBchno, String psnNo, String expContent);
 
 
 
     /**
      * 门诊预结算 2206
+     *
      * @param registration 挂号信息
-     * @param mdFeeDetail 收费信息
+     * @param mdFeeDetail  收费信息
      * @return
      */
-    JSONObject processOutpatientPreSettlement (Registration registration, MdFeeDetail mdFeeDetail,String chrgBchno,String acctUsedFlag);
+    String processOutpatientPreSettlement_2206(Registration registration, MdFeeDetail mdFeeDetail, String chrgBchno, String acctUsedFlag);
 
 
     /**
      * 门诊结算 2207
+     *
      * @param registration 挂号信息
      * @param mdFeeDetail  费用明细输出
-     * @param chrgBchno  收费批次号
+     * @param chrgBchno    收费批次号
      * @param acctUsedFlag 是否自费
      * @return
      */
-    JSONObject executeOutpatientPreSettlement(Registration registration, MdFeeDetail mdFeeDetail,String chrgBchno,String acctUsedFlag);
+    String executeOutpatientPreSettlement_2207(Registration registration, MdFeeDetail mdFeeDetail, String chrgBchno, String acctUsedFlag);
 
     /**
      * 门诊结算撤销  2208
+     *
      * @param setlId
      * @param psnNo
      * @param mdtrtId
      * @return
      */
-    JSONObject revokeOutpatientSettlement(String setlId,String  psnNo,String mdtrtId);
+    String revokeOutpatientSettlement_2208(String setlId, String  psnNo, String mdtrtId);
 
 
     /**
      * 就诊信息查询
+     *
      * @param registration
      * @param begntime
      * @param endtime
      * @return
      */
-    MdPsnVisitData getPsnVisitData(Registration registration, LocalDateTime begntime, LocalDateTime endtime);
+    String getPsnVisitData_5201(Registration registration, LocalDateTime begntime, LocalDateTime endtime);
 
     /**
      * 诊断信息查询
+     *
      * @param registration
      * @return
      */
-    MdPsnDiseData getPsnDiseData(Registration registration);
+    String getPsnDiseData_5202(Registration registration);
 
     /**
      * 结算信息查询
+     *
      * @return
      */
-    JSONObject getSettlementInfo(String psnNo,String setlId,String mdtrtId);
+    String getSettlementInfo_5203(String psnNo, String setlId, String mdtrtId);
 
     /**
      * 费用明细查询
+     *
      * @param psnNo
      * @param setlId
      * @param mdtrtId
      * @return
      */
-    JSONObject getExpenseDetails(String psnNo,String setlId,String mdtrtId);
+    String getExpenseDetails_5204(String psnNo, String setlId, String mdtrtId);
 
     /**
      * 门急诊诊疗记录
+     *
      * @param registration 挂号信息
      * @return
      */
-    JSONObject getEmergencyOutpatientRecords(Registration registration);
+    String getEmergencyOutpatientRecords_4301(Registration registration);
 
     /**
      * 明细审核事前分析服务
+     *
      * @param registration
      * @return
      */
-    JSONObject analyzeDetailReviewPreCheck(Registration registration);
+    String analyzeDetailReviewPreCheck_3301(Registration registration);
 
     /**
      * 明细审核事中分析服务
+     *
      * @param registration 3102
      * @return
      */
-    JSONObject analyzeDetailReviewDuringProcess(Registration registration);
+    String analyzeDetailReviewDuringProcess_3102(Registration registration);
 
 
     /**
      * 医药机构费用结算对总账
+     *
      * @return
      */
-    JSONObject matchPharmacyCostsWithGeneralLedger();
+    String matchPharmacyCostsWithGeneralLedger_3201();
 
-    /** 医药机构费用结算对明细账
-
+    /**
+     * 医药机构费用结算对明细账
+     *
      * @return
      */
-    JSONObject  matchPharmacyCostsWithDetailAccounts();
+    String matchPharmacyCostsWithDetailAccounts_3202();
 }

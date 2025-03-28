@@ -607,6 +607,7 @@
           preparationUnit: {},
           preparation: 0,
           packNumber: 0,
+          type:{},
         };
         newStorage.goodsID = row.id;
         newStorage.goodsName = row.goodsName ? row.goodsName : row.name;
@@ -620,6 +621,7 @@
         newStorage.preparationUnit = row.preparationUnit
         newStorage.preparation = row.preparation - 0;
         newStorage.packNumber = row.packNumber;
+        newStorage.type = row.type;
         this.drugPreparation = row.preparation - 0;
         if (row.packNumber != undefined) {
           this.stuffPackNum = row.packNumber;
@@ -658,6 +660,7 @@
             preparationUnit: {},
             preparation: 0,
             packNumber: 0,
+            type:{},
           };
           newStorage.goodsID = this.selectGoodsTemp.goodsID;
           newStorage.goodsName = this.selectGoodsTemp.goodsName;
@@ -671,6 +674,7 @@
           newStorage.preparation = this.selectGoodsTemp.preparation
           newStorage.packNumber = this.selectGoodsTemp.packNumber
           newStorage.drugTracCodg = this.selectGoodsTemp.drugTracCodg
+          newStorage.type = this.selectGoodsTemp.type;
           console.log(this.selectGoodsTemp, "]]]]]");
           console.log(newStorage, '[[[[[?');
           this.storageDetailTable.push(newStorage);

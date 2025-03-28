@@ -353,8 +353,8 @@
         <include refid="supplierStorageColumns"/>
         FROM supplier_storage a
         <include refid="supplierStorageJoins"/>
-        lEFT JOIN drug d on d.id=ss.drug_id
-        left JOIN stuff s on s.id=ss.stuff_id
+        LEFT JOIN drug d on d.id=ss.drug_id
+        LEFT JOIN stuff s on s.id=ss.stuff_id
         <trim prefix="where" prefixOverrides="and|or">
             <if test="companyId != null and companyId != ''">
                 a.company_id=#{companyId}

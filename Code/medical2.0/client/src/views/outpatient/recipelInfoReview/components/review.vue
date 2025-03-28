@@ -384,6 +384,11 @@ export default {
         queryType: '=',
         value: this.loginCompany.parent.id
       })
+      his.search.params.push({
+        columnName: 'recipelInfo.is_pre',
+        queryType:  '=',
+        value:'0'
+      })
       // 数据权限
       this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
       listRecipelInfoReviewPage(this.search).then(responseData => {
@@ -454,6 +459,11 @@ export default {
           columnName: 'company.parent_id',
           queryType: '=',
           value: this.loginCompany.parent.id
+        })
+        this.search.params.push({
+          columnName: 'recipelInfo.is_pre',
+          queryType:  '=',
+          value:'0'
         })
         // 数据权限: 处方审查
         this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
@@ -573,7 +583,10 @@ export default {
             value: this.loginCompany.parent.id,
           },
         ]}
-      // 字段对应表上filter条件
+      // 字段对应表上filter条件是否机构非机构只允许查询自己诊所
+      // if(){
+      //
+      // }
       company_search.params.push.apply(company_search.params, [])
       // 数据权限: 字典项sys_dict_item
       this.pushDataPermissions(company_search.params, this.$route.meta.routerId, '1014474470772899974')

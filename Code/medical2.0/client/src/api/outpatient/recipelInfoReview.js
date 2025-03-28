@@ -59,6 +59,34 @@ export const getPrescriptionStatistics = (param) =>
     method: 'get'
   })
 
+
+//处方撤销
+export const cancelElectronicPrescription = (recipelInfoReview, undoRea) =>
+  request({
+    url: '/outpatient/review/pre/revoke',
+    method: 'post',
+    data: recipelInfoReview,  // 请求体
+    params: {
+      undoRea: undoRea       // 查询参数
+    }
+  });
+
+//取药查询
+export const getMdMedicineInfo = (recipelInfoReview) =>
+  request({
+    url: '/outpatient/review/pre/getMdMedicineInfo',
+    method: 'post',
+    data: recipelInfoReview,  // 请求体
+  });
+
+//审核查询
+export const getMdExamineInfo = (recipelInfoReview) =>
+  request({
+    url: '/outpatient/review/pre/getMdExamineInfo',
+    method: 'post',
+    data: recipelInfoReview,  // 请求体
+  });
+
 /*export const bulkInsertRecipelInfoReview = (RecipelInfoReviews) =>
     request({
         url: '/outpatient/review/bulkInsert',

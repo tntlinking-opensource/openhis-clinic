@@ -45,8 +45,10 @@ public class RecipelDetail extends DataEntity<RecipelDetail> {
 	private BigDecimal executions;			//执行进度
 	private int infuseType;        //输液执行状态
 	private int treatment;        //治疗执行状态
+	private int drugOrder;        //药品顺序
 
 	//医保字段
+	private PresDrug presDrug; //电子处方药品
 	private String drugTracCodg ;//药品追溯码
 
 	public int getTreatment() {
@@ -109,14 +111,7 @@ public class RecipelDetail extends DataEntity<RecipelDetail> {
 		this.singleDosage = singleDosage;
 	}
 	
-	
-	public Integer getTotal() {
-		return total;
-	}
-	public void setTotal(Integer total) {
-		this.total = total;
-	}
-	
+
 	
 	public BigDecimal getAllFee() {
 		return allFee;

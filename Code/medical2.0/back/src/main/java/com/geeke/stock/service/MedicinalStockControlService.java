@@ -1,15 +1,21 @@
 package com.geeke.stock.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
 import com.geeke.common.persistence.DataEntity;
 import com.geeke.common.service.CrudService;
 import com.geeke.org.service.CompanyService;
+import com.geeke.outpatient.entity.PresDrug;
+import com.geeke.outpatient.service.PresDrugService;
 import com.geeke.stock.dao.MedicinalStockControlDao;
 import com.geeke.stock.entity.Drug;
 import com.geeke.stock.entity.MedicinalStockControl;
 import com.geeke.stock.entity.Stuff;
 import com.geeke.utils.StringUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +35,7 @@ import java.util.Optional;
 
 @Service("medicinalStockControlService")
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class MedicinalStockControlService extends CrudService<MedicinalStockControlDao, MedicinalStockControl>{
     @Autowired
     private MedicinalStockControlDao dao;
@@ -39,6 +46,9 @@ public class MedicinalStockControlService extends CrudService<MedicinalStockCont
 
     @Autowired
     private CompanyService companyService;
+
+    private final PresDrugService presDrugService;
+
 
     public static final Boolean enable = Boolean.TRUE;
 
@@ -233,4 +243,16 @@ public class MedicinalStockControlService extends CrudService<MedicinalStockCont
 
         return dao.listAlls(pageRequest);
     }
+
+
+    public List<MedicinalStockControl>  listPreAll(List<Parameter> parameters,String orderby) {
+        Optional<Parameter> cartOptional = parameters.stream().filter(item -> item.getColumnName().equals("`company_id`")).findFirst();
+        parameters.remove(0);
+        String id = (String) cartOptional.get().getValue();
+        String institution = companyService.getInstitution(id);
+        PageRequest pageRequest = new PageRequest(parameters, orderby, id, institution);
+        return dao.listPreAll(pageRequest);
+    }
+
+
 }

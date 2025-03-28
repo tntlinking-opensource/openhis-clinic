@@ -77,6 +77,9 @@ public class ShiroConfiguration {
         //院版获取诊所信息放行
         filterChainDefinitionMap.put("/hosdata/HosCollectData/listAll", "anon");
 
+        filterChainDefinitionMap.put("/admin/user/test", "anon");
+
+
 //        //测试放行
 //        filterChainDefinitionMap.put("/hosdata/HosCollectData/listAll", "anon");
 //        filterChainDefinitionMap.put("/hosdata/HosCollectData/getHosDrugs", "anon");
@@ -165,18 +168,32 @@ public class ShiroConfiguration {
 	
     @Bean
     public StatelessSessionManager sessionManager(SessionDAO sessionDAO) {
-    	StatelessSessionManager sessionManager = new StatelessSessionManager();
-    	sessionManager.setSessionDAO(sessionDAO);
-        // 会话验证器调度时间
-        // sessionManager.setSessionValidationInterval(1800000);
-        // 定时检查失效的session
-        sessionManager.setSessionValidationSchedulerEnabled(true);
-        // 是否在会话过期后会调用SessionDAO的delete方法删除会话 默认true
+//    	StatelessSessionManager sessionManager = new StatelessSessionManager();
+//    	sessionManager.setSessionDAO(sessionDAO);
+//        // 会话验证器调度时间
+//        // sessionManager.setSessionValidationInterval(1800000);
+//        // 定时检查失效的session
+//        sessionManager.setSessionValidationSchedulerEnabled(true);
+//        // 是否在会话过期后会调用SessionDAO的delete方法删除会话 默认true
+//        sessionManager.setDeleteInvalidSessions(true);
+//        sessionManager.setSessionIdUrlRewritingEnabled(false);
+//        // sessionManager.setSessionIdCookie(wapsession());
+//        sessionManager.setSessionIdCookieEnabled(true);
+
+        StatelessSessionManager sessionManager = new StatelessSessionManager();
+        sessionManager.setSessionDAO(sessionDAO);
+// 禁用会话验证器调度时间
+        sessionManager.setSessionValidationSchedulerEnabled(false);
+// 禁用会话超时设置，这样会话永不过期
+        sessionManager.setGlobalSessionTimeout(-1); // -1表示永不过期
+// 是否在会话过期后调用 SessionDAO 的删除方法，保持为 true 不会影响过期
         sessionManager.setDeleteInvalidSessions(true);
+// 禁用 URL 重写
         sessionManager.setSessionIdUrlRewritingEnabled(false);
-        // sessionManager.setSessionIdCookie(wapsession());
+// 启用会话 ID Cookie
         sessionManager.setSessionIdCookieEnabled(true);
         return sessionManager;
+
     }
     
     // ************************** redis管理用户会话 结束*******************

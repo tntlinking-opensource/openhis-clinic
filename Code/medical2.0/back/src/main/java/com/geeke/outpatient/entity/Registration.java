@@ -80,6 +80,7 @@ public class Registration extends DataEntity<Registration> {
 	private  String iptOtpNo;// 住院/门诊号 院内唯一流水
 	private  String mdtrtCertNo;//就诊凭证号 03社保卡时才填写
 	private  String setlId;//医保结算id
+	private  String isPre;//单电子处方号不走后续流程
 
 	public Date getPayDate() {
 		return payDate;

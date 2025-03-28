@@ -67,6 +67,8 @@ public class RecipelInfoReviewService extends CrudService<RecipelInfoReviewDao, 
         List<RecipelDetail> recipelDetailList = this.recipelDetailService.listAll(parameters, org.apache.commons.lang3.StringUtils.EMPTY);
         if (CollUtil.isNotEmpty(recipelDetailList)) {
             recipelDetailList.forEach(recipelDetail -> {
+
+                recipelDetail.setRecipelInfo(recipelInfoReview.getRecipelInfo());
                 recipelDetail.setDrugStuffId(medicalRecordService.getDrugStuffEvt(recipelDetail));
             });
         }

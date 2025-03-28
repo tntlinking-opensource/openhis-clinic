@@ -46,7 +46,8 @@
         a.stuff_type AS "stuffType",
         a.min_total AS "minTotal",
         a.executions AS "executions",
-        a.infuse_type AS "infuseType"
+        a.infuse_type AS "infuseType",
+        a.drug_order as "drugOrder"
     </sql>
 
     <sql id="recipelDetailJoins">
@@ -95,7 +96,7 @@
                 ORDER BY ${order}
             </when>
             <otherwise>
-                ORDER BY a.update_date DESC
+                ORDER BY a.drug_order DESC
             </otherwise>
         </choose>
         LIMIT #{limit} OFFSET #{offset}
@@ -142,7 +143,7 @@
                 ORDER BY ${order}
             </when>
             <otherwise>
-                ORDER BY a.update_date DESC
+                ORDER BY a.drug_order asc
             </otherwise>
         </choose>
     </select>
@@ -179,7 +180,8 @@
                                    stuff_type,
                                    min_total,
                                    executions,
-                                   infuse_type)
+                                   infuse_type,
+                                   drug_order)
         VALUES (#{id},
                 #{company.id},
                 #{recipelInfo.id},
@@ -211,7 +213,9 @@
                 #{stuffType},
                 #{minTotal},
                 #{executions},
-                #{infuseType})
+                #{infuseType},
+                #{drugOrder})
+
     </insert>
 
     <update id="update">
@@ -241,7 +245,8 @@
             stuff_type           = #{stuffType},
             min_total            = #{minTotal},
             executions           = #{executions},
-            infuse_type=#{infuseType}
+            infuse_type=#{infuseType},
+            drug_order = #{drugOrder}
         WHERE id = #{id}
     </update>
 
@@ -299,7 +304,8 @@
         stuff_type,
         min_total,
         executions,
-        infuse_type
+        infuse_type,
+        drug_order
         ) VALUES
         <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
             (
@@ -334,7 +340,8 @@
             #{entity.stuffType},
             #{entity.minTotal},
             #{entity.executions},
-            #{entity.infuseType}
+            #{entity.infuseType},
+             #{entity.drugOrder}
             )
         </foreach>
     </insert>

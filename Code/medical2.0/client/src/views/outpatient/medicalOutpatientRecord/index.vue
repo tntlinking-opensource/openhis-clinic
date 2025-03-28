@@ -689,7 +689,7 @@
                               }}
                             </template>
                           </el-table-column>
-                          <el-table-column prop="surplusStock" label="可用库存" width="100">
+                          <el-table-column  v-if="!item.content.recipelInfo.isPre" prop="surplusStock" label="可用库存" width="100">
                             <template slot-scope="scope">
                               {{
                                 Math.floor(
@@ -717,9 +717,11 @@
                         <el-input prefix-icon="el-icon-plus" suffix-icon="el-icon-search"
                                   style="width: 30%" slot="reference" ref="WesternInput"
                                   v-model="SearchWesternInput" @input="GetWesternTable"
-                                  @focus="GetWesternTable" placeholder="输入药品名称或拼音码"></el-input>
+                                  @focus="GetWesternTable(item.content.recipelInfo.isPre)" placeholder="输入药品名称或拼音码"></el-input>
 
                       </el-popover>
+
+
                       <el-checkbox style="margin-left: 20px;" v-model="item.content.recipelInfo.chronicDisease"
                                    :disabled="isReadOnly ||
                                    item.content.recipelInfo.chargeStatus != 0 ||
@@ -727,6 +729,14 @@
                         是否慢病{{
                           item.content.recipelInfo.chronicDisease ? "(慢病处方最多可开" + systemParamConfig.chronicDays + "天)" : "(非慢病处方最多可开" + systemParamConfig.normalDays + "天)"
                         }}
+                      </el-checkbox>
+                      <el-checkbox style="margin-left: 20px;" v-model="item.content.recipelInfo.isPre"
+                                   :disabled="isReadOnly ||
+                                   item.content.recipelInfo.chargeStatus != 0 ||
+                                   item.content.recipelInfo.status == -1"
+                                   @change="DeleteMedicalRow('','',item)"
+                      >
+                        是否电子处方
                       </el-checkbox>
                       <el-button type="primary" v-if="!isReadOnly" style="float: right" plain
                                  @click="historyRecipel(item.type, index)">历史处方
@@ -742,8 +752,9 @@
                                  @click="saveTemplate(item.type, index)">存为模板
                       </el-button>
                     </el-row>
-                    <el-row>
-                      <el-table :data="
+<!--                    处方详细-->
+                    <el-row  >
+                      <el-table   :data="
                           getDataFilterTable(
                             item.content.recipelDetailEvtList,
                             0,
@@ -856,7 +867,15 @@
                             </el-select> -->
                           </template>
                         </el-table-column>
-                        <el-table-column prop="total" label="总量" align="center">
+                        <el-table-column v-if="item.content.recipelInfo.isPre" prop="total" label="总量" align="center">
+                          <template slot-scope="scope">
+                            <el-input-number v-model="scope.row.total" :min='0'
+                                             :disabled="isReadOnly || item.content.recipelInfo.chargeStatus != 0 || item.content.recipelInfo.status == -1"
+                                             :controls="false" >
+                            </el-input-number>
+                          </template>
+                        </el-table-column>
+                        <el-table-column v-if="!item.content.recipelInfo.isPre" prop="total" label="总量" align="center">
                           <template slot-scope="scope">
                             {{
                               Math.floor(scope.row.total / scope.row.drugStuffId.drug.preparation) > 0
@@ -902,7 +921,7 @@
                                       }}
                           </template>
                         </el-table-column> -->
-                        <el-table-column prop="isUnpackSell" label="单价"
+                        <el-table-column v-if="!item.content.recipelInfo.isPre"  prop="isUnpackSell" label="单价"
                                          align="center">
                           <template slot-scope="scope">
                             <el-select v-model="scope.row.isUnpackSell" :disabled="
@@ -916,7 +935,7 @@
                                   scope.row.drugStuffId.pack.name
                                 " :value="0"></el-option>
                               <el-option :label="
-                                  (scope.row.drugStuffId.retailPrice).toFixed(4) +
+                                  (scope.row.drugStuffId.retailPrice) +
                                   '/' +
                                   scope.row.drugStuffId.preparationUnit.name
                                 " :value="1"></el-option>
@@ -924,7 +943,7 @@
                           </template>
                         </el-table-column>
 
-                        <el-table-column prop="allFee" label="金额" align="center">
+                        <el-table-column  v-if="!item.content.recipelInfo.isPre"  prop="allFee" label="金额" align="center">
                         </el-table-column>
                         <el-table-column v-if="
                             !isReadOnly &&
@@ -1026,8 +1045,8 @@
                         </el-table>
                         <el-input prefix-icon="el-icon-plus" suffix-icon="el-icon-search"
                                   style="width: 30%" slot="reference" id="WesternInput"
-                                  v-model="SearchChineseInput" @input="GetChineseTable"
-                                  @focus="GetChineseTable"
+                                  v-model="SearchChineseInput" @input="GetChineseTable(item.content.recipelInfo.isPre)"
+                                  @focus="GetChineseTable(item.content.recipelInfo.isPre)"
                                   @keydown.enter.native="focusNextInput('2')"
                                   placeholder="输入药品名称或拼音码"></el-input>
                       </el-popover>
@@ -5678,7 +5697,7 @@
                 .catch();
               allQueryMedicalRecord(this.registration.id).then((responseData) => {
                 let arr = responseData.data;
-                console.log(arr, "这是怎么回事");
+                console.log(arr, "这是怎么回事1");
                 if (responseData.code == 100) {
                   let recipelInfoEvtList = responseData.data.recipelInfoEvtList;
                   recipelInfoEvtList.forEach((element) => {
@@ -6008,11 +6027,15 @@
         });
 
         let isFollowUp =
-          this.MedicalRecordModel.registration.treatType.value === "treatType_0" ?
+          (this.MedicalRecordModel.registration.treatType &&
+            this.MedicalRecordModel.registration.treatType.value === "treatType_0") ?
             0 :
             1;
+
         let isFollowUpTo =
-          this.MedicalRecordModel.registration.infectType.value === "infectType_0" ?
+          (this.MedicalRecordModel.registration.infectType &&
+            this.MedicalRecordModel.registration.infectType.value === "infectType_0") ||
+          !this.MedicalRecordModel.registration.infectType ?
             0 :
             1;
         let recipelInfoEvt = {};
@@ -6511,7 +6534,10 @@
         //this.GetWesternTable();
         //this.GetChineseTable();
       },
-      GetWesternTable() {
+      GetWesternTable(type) {
+        if(type === undefined){
+         type = false;
+        }
         this.SearchWesternModel.params[1].columnName = "drug.type";
         this.SearchWesternModel.params[1].value = [
           "medicalType_0",
@@ -6528,23 +6554,29 @@
           this.SearchWesternModel.params[2].value = this.SearchWesternInput;
           this.SearchWesternModel.params[2].columnName = "drug.goods_name";
         }
-
-        this.SearchWesternModel.params.push({
-          columnName: "surplus_stock",
-          queryType: ">",
-          value: 0,
-        });
-        this.SearchWesternModel.params.push({
-          columnName: "drug.status",
-          queryType: "=",
-          value: "1",
-        });
-        this.SearchWesternModel.params.push({
-          columnName: "drug.del_flag",
-          queryType: "=",
-          value: "0",
-        });
-        listAll(this.SearchWesternModel)
+// 检查是否已存在字段，若不存在才添加
+        if (!this.SearchChineseModel.params.some(param => param.columnName === "surplus_stock")) {
+          this.SearchWesternModel.params.push({
+            columnName: "surplus_stock",
+            queryType: ">",
+            value: 0,
+          });
+        }
+        if (!this.SearchWesternModel.params.some(param => param.columnName === "drug.status")) {
+          this.SearchWesternModel.params.push({
+            columnName: "drug.status",
+            queryType: "=",
+            value: "1",
+          });
+        }
+        if (!this.SearchWesternModel.params.some(param => param.columnName === "drug.del_flag")) {
+          this.SearchWesternModel.params.push({
+            columnName: "drug.del_flag",
+            queryType: "=",
+            value: "0",
+          });
+        }
+        listAll(this.SearchWesternModel,type)
           .then((responseData) => {
             if (responseData.code == 100) {
               // responseData.data.forEach((element) => {
@@ -6595,7 +6627,10 @@
         //   this.outputError(error)
         // })
       },
-      GetInfusionTable(index) {
+      GetInfusionTable(type) {
+        if(type === undefined){
+          type = false;
+        }
         this.SearchWesternModel.params[1].columnName = "drug.type";
         this.SearchWesternModel.params[1].value = [
           "medicalType_0",
@@ -6614,22 +6649,29 @@
           this.SearchWesternModel.params[2].columnName = "drug.goods_name";
         }
 
-        this.SearchWesternModel.params.push({
-          columnName: "surplus_stock",
-          queryType: ">",
-          value: 0,
-        });
-        this.SearchWesternModel.params.push({
-          columnName: "drug.status",
-          queryType: "=",
-          value: "1",
-        });
-        this.SearchWesternModel.params.push({
-          columnName: "drug.del_flag",
-          queryType: "=",
-          value: "0",
-        });
-        listAll(this.SearchWesternModel).then((responseData) => {
+        // 检查是否已存在字段，若不存在才添加
+        if (!this.SearchChineseModel.params.some(param => param.columnName === "surplus_stock")) {
+          this.SearchChineseModel.params.push({
+            columnName: "surplus_stock",
+            queryType: ">",
+            value: 0,
+          });
+        }
+        if (!this.SearchWesternModel.params.some(param => param.columnName === "drug.status")) {
+          this.SearchWesternModel.params.push({
+            columnName: "drug.status",
+            queryType: "=",
+            value: "1",
+          });
+        }
+        if (!this.SearchWesternModel.params.some(param => param.columnName === "drug.del_flag")) {
+          this.SearchWesternModel.params.push({
+            columnName: "drug.del_flag",
+            queryType: "=",
+            value: "0",
+          });
+        }
+        listAll(this.SearchWesternModel,type).then((responseData) => {
           if (responseData.code == 100) {
             // responseData.data.forEach((element) => {
             //     let isUnpackSell = element.isUnpackSell; //允许拆零销售
@@ -6668,7 +6710,10 @@
           }
         });
       },
-      GetChineseTable() {
+      GetChineseTable(type) {
+        if(type === undefined){
+          type = false;
+        }
         this.popoverVisible = true;
         this.SearchChineseModel.params[1].columnName = "drug.type";
         this.SearchChineseModel.params[1].value = ["medicalType_1"];
@@ -6683,23 +6728,29 @@
           this.SearchChineseModel.params[2].value = this.SearchChineseInput;
           this.SearchChineseModel.params[2].columnName = "drug.goods_name";
         }
-
-        this.SearchChineseModel.params.push({
-          columnName: "surplus_stock",
-          queryType: ">",
-          value: 0,
-        });
-        this.SearchWesternModel.params.push({
-          columnName: "drug.status",
-          queryType: "=",
-          value: "1",
-        });
-        this.SearchWesternModel.params.push({
-          columnName: "drug.del_flag",
-          queryType: "=",
-          value: "0",
-        });
-        listAll(this.SearchChineseModel).then((responseData) => {
+        // 检查是否已存在字段，若不存在才添加
+        if (!this.SearchChineseModel.params.some(param => param.columnName === "surplus_stock")) {
+          this.SearchChineseModel.params.push({
+            columnName: "surplus_stock",
+            queryType: ">",
+            value: 0,
+          });
+        }
+        if (!this.SearchWesternModel.params.some(param => param.columnName === "drug.status")) {
+          this.SearchWesternModel.params.push({
+            columnName: "drug.status",
+            queryType: "=",
+            value: "1",
+          });
+        }
+        if (!this.SearchWesternModel.params.some(param => param.columnName === "drug.del_flag")) {
+          this.SearchWesternModel.params.push({
+            columnName: "drug.del_flag",
+            queryType: "=",
+            value: "0",
+          });
+        }
+        listAll(this.SearchChineseModel, type).then((responseData) => {
           if (responseData.code == 100) {
             this.ChineseMedicineTable = responseData.data;
           }
@@ -6860,6 +6911,12 @@
 
       //点击西药表格后的删除按钮删除指定下标的数据
       DeleteMedicalRow(index, row, item) {
+        if(item!=null && item.content.recipelInfo.isPre){
+          //电子处方切换删除所有
+          this.medicalClickTabsValue.content.recipelDetailEvtList.splice
+          (0, this.medicalClickTabsValue.content.recipelDetailEvtList.length);
+          return
+        }
         // console.log(
         //   this.chineseTest,
         //   "就是"
@@ -7248,6 +7305,8 @@
           arr.push(data);
         } else if (data.length >= 1) {
           for (let i = 0; i < data.length; i++) {
+            data[i].drugOrder = i+1;
+            //data[i].total = data[i].minTotal
             if (data[i].isExtra == 0 && data[i].drugStuffId.drug) {
               if (data[i].drugStuffId.drug.type.value == "medicalType_0") {
                 //   if(data[i].singleDosage==0&&data[i].singleDosage==" "&&data[i].drugStuffId.drug.singleDosage){

@@ -7,13 +7,13 @@ import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
 import com.geeke.config.exception.CommonJsonException;
 import com.geeke.medicareutils.config.MedicareConfigProperties;
+import com.geeke.medicareutils.domain.respo.Output_2201;
 import com.geeke.medicareutils.service.MdPsnDataService;
 import com.geeke.medicareutils.service.MdRegistrationService;
 import com.geeke.outpatient.entity.*;
 import com.geeke.common.data.Parameter;
 import com.geeke.outpatient.service.RecipelDetailService;
 import com.geeke.outpatient.service.RegistrationService;
-import com.geeke.outpatient.service.ReportFileService;
 import com.geeke.sys.controller.BaseController;
 import com.geeke.toll.service.TollInfoService;
 import com.geeke.utils.ResultUtil;
@@ -27,7 +27,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.logging.Handler;
 
 /**
  * 挂号信息Controller
@@ -125,7 +124,7 @@ public class RegistrationController extends BaseController {
         if ("true".equals(medicareConfigProperties.getCheck())){
             //开启医保退号
             Registration registration = registrationService.get(id);
-            mdRegistrationService.revokeRegistrationInfo(registration);
+            mdRegistrationService.revokeRegistrationInfo_2202(registration);
         }
         return ResponseEntity.ok(ResultUtil.successJson(res));
     }
@@ -187,8 +186,6 @@ public class RegistrationController extends BaseController {
 
     @PostMapping(value = "save")
     public ResponseEntity<JSONObject> save(@RequestBody Registration entity) {
-        System.out.println(entity);
-
         String id ="";
         if(Objects.equals(entity.getCreateBy(),"微信")){
             id = registrationService.wxSave(entity).getId();
@@ -198,9 +195,10 @@ public class RegistrationController extends BaseController {
                 //保存用户医保信息
                 if (mdPsnDataService.getAndSetPsnData(entity)) {
                     //医保挂号
-                    JSONObject registrationInfo = mdRegistrationService.getRegistrationInfo(entity);
-                    entity.setMdtrtId(registrationInfo.getString("mdtrtId"));
-                    entity.setIptOtpNo(registrationInfo.getString("iptOtpNo"));
+                    String registrationInfo = mdRegistrationService.getRegistrationInfo_2201(entity);
+                    Output_2201 output_2201 = JSONObject.parseObject(registrationInfo, Output_2201.class);
+                    entity.setMdtrtId(output_2201.getData().getMdtrt_id());
+                    entity.setIptOtpNo(output_2201.getData().getIpt_otp_no());
                 }
             }
             id = registrationService.save(entity).getId();

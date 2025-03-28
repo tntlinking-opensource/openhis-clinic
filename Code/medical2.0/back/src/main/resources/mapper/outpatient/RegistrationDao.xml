@@ -8,6 +8,7 @@
         IFNULL(company.name,'') AS "company.name",
         a.department_id AS "clinicOffice.id",
         IFNULL(clinicOffice.name,'') AS "clinicOffice.name",
+        IFNULL(clinicOffice.code,'') AS "clinicOffice.code",
         a.patient_id AS "patientId.id",
         IFNULL(patientId.name,'') AS "patientId.name",
 <!--        IFNULL(patientId.name,'') AS "patientId.name",-->
@@ -67,7 +68,12 @@
         a.retreats_date AS "retreatsDate",
         a.return_date AS "returnDate",
         a.treatment_date AS "treatmentDate",
-        a.morbidity_time AS "morbidityTime"
+        a.morbidity_time AS "morbidityTime",
+        a.mdtrt_id as "mdtrtId",
+        a.med_type as "medType",
+        a.setl_id as "setlId",
+        a.card_type as "cardType",
+        a.is_pre as "isPre"
     </sql>
     
     <sql id="registrationJoins">
@@ -95,7 +101,7 @@
         SELECT COUNT(*) FROM registration a
         <include refid="registrationJoins"/>
         <where>
-            1=1
+            AND a.is_pre is null
             AND a.id > 0
             and a.status != 'registrationStatus_4'
             AND a.del_flag = #{DEL_FLAG_NORMAL}
@@ -119,6 +125,8 @@
         LEFT JOIN recipel_detail rd on ri.id=rd.recipel_info_id
         LEFT JOIN cost_item ci on ci.id=rd.drug_stuff_id
         <where>
+            AND a.is_pre is null
+            and
             ri.status=1
             <if test="chargeStatus!=3">
                 AND ri.charge_status = #{chargeStatus}
@@ -168,7 +176,6 @@
         FROM registration a
         <include refid="registrationJoins"/>
         <where>
-            1=1
             AND a.id > 0
             and a.status != 'registrationStatus_4'
             AND a.del_flag = #{DEL_FLAG_NORMAL}
@@ -203,7 +210,7 @@
         LEFT JOIN recipel_detail rd on ri.id=rd.recipel_info_id
         LEFT JOIN cost_item ci on ci.id=rd.drug_stuff_id
         WHERE
-            ri.status=1
+            ri.status=1  AND a.is_pre is null
         <if test="chargeStatus!=3">
             AND ri.charge_status = #{chargeStatus}
         </if>
@@ -255,7 +262,7 @@
         FROM registration a
         <include refid="registrationJoins"/>
         <where>
-            1=1
+            AND a.is_pre is null
             AND a.id > 0
             and a.status != 'registrationStatus_4'
             AND a.del_flag = #{DEL_FLAG_NORMAL}
@@ -324,7 +331,9 @@
             mdtrt_id,
             med_type,
             ipt_otp_no,
-            setl_id
+            setl_id,
+            card_type,
+            is_pre
         ) VALUES (
             #{id},
             #{company.id},                    
@@ -377,8 +386,9 @@
             #{mdtrtId},
             #{medType.value},
             #{iptOtpNo},
-            #{setlId}
-
+            #{setlId},
+            #{cardType.value},
+            #{isPre}
         )
     </insert>
     
@@ -429,7 +439,9 @@
             mdtrt_id=#{mdtrtId},
             med_type=#{medType.value},
             ipt_otp_no=#{iptOtpNo},
-            setl_id=#{setlId}
+            setl_id=#{setlId},
+            card_type=#{cardType.value} ,
+            is_pre=#{isPre}
         WHERE id = #{id}
     </update>
 
@@ -496,7 +508,9 @@
             mdtrt_id,
             med_type,
             ipt_otp_no,
-            setl_id
+            setl_id,
+            card_type,
+            is_pre
         ) VALUES 
         <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
         (
@@ -546,7 +560,9 @@
             #{entity.mdtrtId},
             #{entity.medType.value},
             #{entity.iptOtpNo},
-            #{entity.setlId}
+            #{entity.setlId},
+            #{entity.cardType.value},
+            #{entity.isPre}
         )
         </foreach>
     </insert>

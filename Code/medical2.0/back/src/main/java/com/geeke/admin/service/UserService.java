@@ -74,7 +74,9 @@ public class UserService extends CrudService<UserDao, User>{
         params.add(new Parameter("user_id", "=", user.getId()));
         params.add(new Parameter("company_id","=",SessionUtils.getLoginTenantId()));
         pageRequest = new PageRequest(params);
-        user.setUserRoleList(userRoleDao.listAll(pageRequest));        
+        user.setUserRoleList(userRoleDao.listAll(pageRequest));
+        UserExt userExt = userExtDao.getUserExtByUserId(user.getId(),SessionUtils.getLoginTenantId());
+        user.setUserExt(userExt);
         return user;
     }
 
@@ -275,7 +277,7 @@ public class UserService extends CrudService<UserDao, User>{
 //        }
 
         String id = super.save(user).getId();
-        if (StringUtils.isNoneBlank(id) && medicareConfigProperties.getIsDemo().equals("true")) {
+        if (StringUtils.isNoneBlank(id)) {
             // 设置加密字段   密码
             if(user.getLoginPasswordUpdate()) {
                 if(medicareConfigProperties.getIsDemo().equals("true")){
@@ -417,10 +419,10 @@ public class UserService extends CrudService<UserDao, User>{
     }
 
 //    public static void main(String[] args) {
-//        Md5Hash md5 = new Md5Hash("383520","2315020615616021158" , 6);
+//        Md5Hash md5 = new Md5Hash("xzadmin","2381775797649613588" , 6);
 //        String md5Password = md5.toHex();
 //        System.out.println(md5Password);
-//    }
+ //   }
     /**
      * 生成操作日志
      * @param actionTypeId  操作类型Id

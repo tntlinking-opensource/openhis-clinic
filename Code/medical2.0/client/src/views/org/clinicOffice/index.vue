@@ -71,7 +71,7 @@
       <el-row>
         <el-col :span='24'>
           <div @mouseleave='moveTableOutside'>
-            <el-table ref="mutipleTable"  height="calc(100vh - 250px)" class='drag_table' :data='clinicOfficeList' border @sort-change='onSortChange' @header-dragend='onChangeWidth' :cell-class-name='cellClassName' :header-cell-class-name='headerCellClassName' highlight-current-row>
+            <el-table ref="mutipleTable"  min-height="calc(100vh - 250px)" class='drag_table' :data='clinicOfficeList' border @sort-change='onSortChange' @header-dragend='onChangeWidth' :cell-class-name='cellClassName' :header-cell-class-name='headerCellClassName' highlight-current-row>
               <el-table-column
               label="序号"
               type="index"

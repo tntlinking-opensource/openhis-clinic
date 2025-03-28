@@ -25,6 +25,7 @@ public class UserExt extends DataEntity<UserExt>{
     private String creditNum;		// 证件号码
     private String post;		// 职位
     private String office;		// 科室名称
+    private String officeCode;		// 科室代码
     private String jobType;		// 职业类型
     private String description;		// 描述信息
     private String startWorkTime;		// 诊所开始工作时间

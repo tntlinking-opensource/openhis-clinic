@@ -23,6 +23,8 @@ public interface MedicinalStockControlDao extends CrudDao<MedicinalStockControl>
 
     List<MedicinalStockControl> listAlls(PageRequest pageRequest);
 
+    List<MedicinalStockControl> listPreAll(PageRequest pageRequest);
+
 
 
 }

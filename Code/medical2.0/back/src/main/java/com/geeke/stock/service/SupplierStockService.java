@@ -310,9 +310,9 @@ public class SupplierStockService extends CrudService<SupplierStockDao, Supplier
 //                if(id!=null){
 //                    if(entity.getDrug().getId()!=null){
 //                        //则获取对应的药品库存
-//                        drugService.updateInventory(entity.getNumber(),entity.getDrug().getId());
+//                        drugService.updateInventory_3502(entity.getNumber(),entity.getDrug().getId());
 //                    }else if (entity.getStuff().getId()!=null){
-//                        stuffService.updateInventory(entity.getNumber(),entity.getStuff().getId());
+//                        stuffService.updateInventory_3502(entity.getNumber(),entity.getStuff().getId());
 //                    }
 //                }
             }

@@ -22,6 +22,12 @@ public class PatientMdData implements Serializable {
     @TableId
     private Long id;
 
+
+    /**
+     * 组织id
+     */
+    private Long OrganizeId;
+
     /**
      * 患者id
      */
@@ -95,12 +101,12 @@ public class PatientMdData implements Serializable {
     /**
      * 个人参保日期
      */
-    private Date psnInsuDate;
+    private String psnInsuDate;
 
     /**
      * 暂停参保日期
      */
-    private Date pausInsuDate;
+    private String pausInsuDate;
 
     /**
      * 公务员标志

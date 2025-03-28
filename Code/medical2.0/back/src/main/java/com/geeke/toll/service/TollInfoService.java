@@ -59,7 +59,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -232,7 +231,7 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
                     //开启医保时对零售库存进行处理
                     if("true".equals(medicareConfigProperties.getCheck())){
                         //获取药品扣减信息
-                        mdInventoryService.updateInventoryList(tollEvt.getRecipelInfos().get(0));
+                        mdInventoryService.updateInventoryList_3502A(tollEvt.getRecipelInfos().get(0));
                     }
                 }else {
                     tollInfo.setPatient(patient);
@@ -348,13 +347,16 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
                         }
                     }
                     if(medicareConfigProperties.getCheck().equals("true")){
+                        //门诊信息上传 2203A
+                        mdRegistrationService.upRegistrationInfo_2203(registration);
                         //门诊费用明细上传 2204
-                        MdFeeDetail mdFeeDetail = mdRegistrationService.upRegistrationMoneyInfo(array);
-                        //门诊预结算 2206
-                        mdRegistrationService.processOutpatientPreSettlement(registration,mdFeeDetail,tollSave.getTollNumber(),"1");
-                        //门诊结算 2207
-                        JSONObject jsonObject = mdRegistrationService.executeOutpatientPreSettlement(registration, mdFeeDetail, tollSave.getTollNumber(), "1");
-                        seltId = jsonObject.getJSONObject("setlinfo").getString("setl_id");
+//                        MdFeeDetail mdFeeDetail = mdRegistrationService.upRegistrationMoneyInfo_2204(array);
+//                        //门诊预结算 2206
+//                        mdRegistrationService.processOutpatientPreSettlement_2206(registration,mdFeeDetail,tollSave.getTollNumber(),"1");
+//                        //门诊结算 2207
+//                        JSONObject jsonObject = mdRegistrationService.executeOutpatientPreSettlement_2207(registration, mdFeeDetail, tollSave.getTollNumber(), "1");
+//                        //结算id
+//                        seltId = jsonObject.getJSONObject("setlinfo").getString("setl_id");
 
                     }
                 }
@@ -436,7 +438,7 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
                     mdPsnDataService.getAndSetPsnData(registration);
                     PatientMdData psnData = patientMdDataService.getOne(new LambdaQueryWrapper<PatientMdData>().eq(PatientMdData::getPatientId, registration.getPatientId().getId()));
                     //门诊结算撤销 2208
-                    mdRegistrationService.revokeOutpatientSettlement(registration.getSetlId(),psnData.getPsnNo(),registration.getMdtrtId());
+                    mdRegistrationService.revokeOutpatientSettlement_2208(registration.getSetlId(),psnData.getPsnNo(),registration.getMdtrtId());
                 }
             }
             //挂号支付方式，收费状态
@@ -481,7 +483,7 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
 //                Integer number = dispensing.getNumber();
 //                supplierStock.setNumber(supplierStock.getNumber()+number);
 //                supplierStockService.save(supplierStock);
-//                stuffService.updateInventory(number,supplierStock.getStuff().getId());
+//                stuffService.updateInventory_3502(number,supplierStock.getStuff().getId());
 //            }
              medicinalStorageControlService.materialRefund(recipelInfo);
             //修改发药信息表
@@ -512,7 +514,7 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
 //                            int initalNumber = total;
 //                            supplierStock.setNumber(number-total);
 //                            supplierStockService.save(supplierStock);
-//                            stuffService.updateInventory(0-initalNumber,supplierStock.getStuff().getId());
+//                            stuffService.updateInventory_3502(0-initalNumber,supplierStock.getStuff().getId());
 //                            total = 0;
 //                            //保存发药明细表
 //                            dispensing.setId("");
@@ -525,7 +527,7 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
 //                            total = total-number;
 //                            supplierStock.setNumber(0);
 //                            supplierStockService.save(supplierStock);
-//                            stuffService.updateInventory(0-number,supplierStock.getStuff().getId());
+//                            stuffService.updateInventory_3502(0-number,supplierStock.getStuff().getId());
 //                            //保存发药明细表
 //                            dispensing.setId("");
 //                            dispensing.setSupplierStock(supplierStock);

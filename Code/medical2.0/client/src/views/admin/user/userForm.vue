@@ -182,36 +182,36 @@
             </el-form-item>
           </el-col>
           <el-col :span="24 / 2">
-            <el-form-item label="职位" prop="userExt.post">
-              <!-- <el-select
+            <el-form-item label="医保职称" prop="userExt.post">
+              <el-select
                 v-model="bizFormModel.userExt.post"
-                placeholder="请选择职位"
+                placeholder="医保职称"
               >
-                <el-option label="职位1" value="职位1"> </el-option>
-                <el-option label="职位2" value="职位2"> </el-option>
-              </el-select> -->
-              <el-input
-                v-model="bizFormModel.userExt.post"
-                :placeholder="'请输入职位'"
-              ></el-input>
+                <!-- 医生相关的选项 -->
+                <el-option v-if="bizFormModel.userExt.jobType === '医生'" label="主任医师" value="231"></el-option>
+                <el-option v-if="bizFormModel.userExt.jobType === '医生'" label="副主任医师" value="232"></el-option>
+                <el-option v-if="bizFormModel.userExt.jobType === '医生'" label="主诊医师" value="233"></el-option>
+                <el-option v-if="bizFormModel.userExt.jobType === '医生'" label="医师" value="234"></el-option>
+                <el-option v-if="bizFormModel.userExt.jobType === '医生'" label="医士" value="235"></el-option>
+
+                <!-- 药师相关的选项 -->
+                <el-option v-if="bizFormModel.userExt.jobType === '药师'" label="执业药师" value="1"></el-option>
+                <el-option v-if="bizFormModel.userExt.jobType === '药师'" label="主管药师" value="2.3"></el-option>
+                <el-option v-if="bizFormModel.userExt.jobType === '药师'" label="主任药师" value="2.1"></el-option>
+                <el-option v-if="bizFormModel.userExt.jobType === '药师'" label="副主任药师" value="2.2"></el-option>
+                <el-option v-if="bizFormModel.userExt.jobType === '药师'" label="药师" value="2.4"></el-option>
+                <el-option v-if="bizFormModel.userExt.jobType === '药师'" label="药士" value="2.5"></el-option>
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col>
             <el-form-item label="类别" prop="userExt.jobType">
-              <el-radio v-model="bizFormModel.userExt.jobType" label="医生"
-                >医生</el-radio
-              >
-              <el-radio v-model="bizFormModel.userExt.jobType" label="护士"
-                >护士</el-radio
-              >
-              <el-radio v-model="bizFormModel.userExt.jobType" label="药师"
-                >药师</el-radio
-              >
-              <el-radio v-model="bizFormModel.userExt.jobType" label="其它"
-                >其它</el-radio
-              >
+              <el-radio v-model="bizFormModel.userExt.jobType" label="医生">医生</el-radio>
+              <el-radio v-model="bizFormModel.userExt.jobType" label="药师">药师</el-radio>
+              <el-radio v-model="bizFormModel.userExt.jobType" label="护士">护士</el-radio>
+              <el-radio v-model="bizFormModel.userExt.jobType" label="其它">其它</el-radio>
             </el-form-item>
           </el-col>
         </el-row>
@@ -493,9 +493,9 @@ export default {
         // "userExt.creditType": [
         //   { required: true, message: "请选择证件类型", trigger: "change" },
         // ],
-        "userExt.post": [
-          { required: true, message: "请选择职位", trigger: "blur" },
-        ],
+        // "userExt.post": [
+        //   { required: true, message: "请选择职位", trigger: "blur" },
+        // ],
         "userExt.office": [
           { required: true, message: "请选择科室", trigger: "change" },
         ],
@@ -777,6 +777,7 @@ export default {
           creditType: "", // 证件类型
           creditNum: "", // 证件号码
           post: "", // 职位
+          postCode:"" ,//职位代码
           office: "", // 科室名称
           jobType: "", // 职业类型
           startWorkTime: "", // 开始时间

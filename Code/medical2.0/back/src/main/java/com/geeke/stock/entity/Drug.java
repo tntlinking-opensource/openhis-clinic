@@ -68,7 +68,7 @@ public class Drug extends DataEntity<Drug> {
 
 	private String indate;          //有效期
 	private MedicinalStockControl stock;
-
+    private  String ypgg ;
 	/*医保字段*/
 	private  String rxFlag;//是否处方 0  1
 

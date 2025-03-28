@@ -109,7 +109,9 @@ public class SupplierStockController extends BaseController {
         //批量入库时无药品信息添加药品信息
         storageEvt.getSupplierStockList().forEach(item -> {
             Drug drug = drugService.getByNameAndPrice(item.getDrug().getGoodsName(),item.getRetailPrice());
-            item.setDrug(drug);
+            if(drug != null){
+                item.setDrug(drug);
+            }
           }
          );
         supplierStockService.saves(storageEvt);
@@ -117,7 +119,7 @@ public class SupplierStockController extends BaseController {
         if("true".equals(medicareConfigProperties.getCheck())){
             //开启医保调用 药品 暂且默认 调拨入库
             if(storageEvt.getSupplierStorage().getBreed().equals(1)){
-                mdInventoryService.updateInventoryList(storageEvt,"101");
+                mdInventoryService.updateInventoryList_3502A(storageEvt,"101");
             }
         }
         return ResponseEntity.ok(ResultUtil.successJson());
@@ -137,7 +139,7 @@ public class SupplierStockController extends BaseController {
         }
         if("true".equals(medicareConfigProperties.getCheck())){
             //开启医保调用 发药退药修改库存
-            mdInventoryService.updateInventoryList(dispensingEvt);
+            mdInventoryService.updateInventoryList_3502A(dispensingEvt);
 
         }
         return ResponseEntity.ok(ResultUtil.successJson());

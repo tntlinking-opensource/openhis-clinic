@@ -8,11 +8,8 @@ import com.geeke.outpatient.entity.RecipelInfoEvt;
 import com.geeke.stock.entity.*;
 import com.geeke.stock.service.DrugService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.Arrays;
 
 /**
@@ -25,9 +22,6 @@ public class MdInventoryServiceImpl implements MdInventoryService {
 
     private final MdRequestUtil mdRequestUtil;
 
-
-    @Resource
-    @Lazy
     private final DrugService drugService;
     /**
      * 商品盘存上传  3501
@@ -35,7 +29,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return
      */
     @Override
-    public JSONObject uploadInventory() {
+    public JSONObject uploadInventory_3501() {
         JSONObject invinfo = new JSONObject();
         invinfo.put("med_list_codg", ""); // 医疗目录编码
         invinfo.put("fixmedins_hist_id", ""); // 定点医药机构目录编号
@@ -64,7 +58,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return
      */
     @Override
-    public JSONObject uploadInventoryList() {
+    public JSONObject uploadInventoryList_3501A() {
         JSONArray array = new  JSONArray();
         JSONObject invinfo = new JSONObject();
         invinfo.put("med_list_codg", ""); // 医疗目录编码
@@ -99,7 +93,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return
      */
     @Override
-    public JSONObject updateInventory(StorageEvt storageEvt,String invChgType) {
+    public JSONObject updateInventory_3502(StorageEvt storageEvt, String invChgType) {
         JSONObject invinfo = new JSONObject();
         SupplierStock supplierStock = storageEvt.getSupplierStockList().get(0);
         //TODO
@@ -145,7 +139,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return result节点：retRslt 1：成功，0：失败  msgRslt：失败原因
      */
     @Override
-    public JSONObject updateInventoryList(StorageEvt storageEvt,String invChgType) {
+    public JSONObject updateInventoryList_3502A(StorageEvt storageEvt, String invChgType) {
         JSONArray array = new JSONArray();
         storageEvt.getSupplierStockList().forEach(supplierStock -> {
             Drug drug = drugService.get(supplierStock.getDrug().getId());
@@ -194,7 +188,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return
      */
     @Override
-    public JSONObject updateInventoryList(DispensingEvt dispensingEvt) {
+    public JSONObject updateInventoryList_3502A(DispensingEvt dispensingEvt) {
         JSONArray array = new JSONArray();
         dispensingEvt.getDispensingDetailEvtList().forEach(detailEvt -> {
             JSONObject invinfo = new JSONObject();
@@ -251,7 +245,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return
      */
     @Override
-    public JSONObject updateInventoryList(OutboundEvt outboundEvt) {
+    public JSONObject updateInventoryList_3502A(OutboundEvt outboundEvt) {
         JSONArray array = new JSONArray();
         outboundEvt.getSupplierOutboundDetailList().forEach(supplierStock -> {
             Drug drug = drugService.get(supplierStock.getDrug().getId());
@@ -300,7 +294,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @param recipelInfoEvt@return
      */
     @Override
-    public JSONObject updateInventoryList(RecipelInfoEvt recipelInfoEvt) {
+    public JSONObject updateInventoryList_3502A(RecipelInfoEvt recipelInfoEvt) {
         JSONArray array = new JSONArray();
         recipelInfoEvt.getRecipelDetailEvtList().forEach(supplierStock -> {
             Drug drug = drugService.get(supplierStock.getDrugStuffId().getDrug().getId());
@@ -349,7 +343,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return result节点：retRslt 1：成功，0：失败  msgRslt：失败原因
      */
     @Override
-    public JSONObject createPurchaseOrder() {
+    public JSONObject createPurchaseOrder_3503() {
         JSONObject purcinfo = new JSONObject();
         purcinfo.put("med_list_codg", ""); // 医疗目录编码
         purcinfo.put("fixmedins_hist_id", ""); // 定点医药机构目录编号
@@ -383,7 +377,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return result节点：retRslt 1：成功，0：失败  msgRslt：失败原因
      */
     @Override
-    public JSONObject createPurchaseOrderList() {
+    public JSONObject createPurchaseOrderList_3503A() {
         JSONObject purcinfo = new JSONObject();
         purcinfo.put("med_list_codg", ""); // 医疗目录编码
         purcinfo.put("fixmedins_hist_id", ""); // 定点医药机构目录编号
@@ -419,7 +413,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return result节点：retRslt 1：成功，0：失败  msgRslt：失败原因
      */
     @Override
-    public JSONObject createPurchaseReturnOrder() {
+    public JSONObject createPurchaseReturnOrder_3504() {
         JSONObject purcinfo = new JSONObject();
         purcinfo.put("med_list_codg", ""); // 医疗目录编码
         purcinfo.put("fixmedins_hist_id", ""); // 定点医药机构目录编号
@@ -449,7 +443,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return 输出节点 purcinfoErrDetail
      */
     @Override
-    public JSONObject createPurchaseReturnOrderList() {
+    public JSONObject createPurchaseReturnOrderList_3504A() {
         JSONObject purcinfo = new JSONObject();
         purcinfo.put("med_list_codg", ""); // 医疗目录编码
         purcinfo.put("fixmedins_hist_id", ""); // 定点医药机构目录编号
@@ -481,7 +475,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return
      */
     @Override
-    public JSONObject createSaleOrder() {
+    public JSONObject createSaleOrder_3505() {
         JSONObject selinfo = new JSONObject();
 
         selinfo.put("med_list_codg", "");          // 医疗目录编码
@@ -538,7 +532,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return
      */
     @Override
-    public JSONObject createSaleOrderList() {
+    public JSONObject createSaleOrderList_3505A() {
         JSONObject selinfo = new JSONObject();
         JSONArray array = new JSONArray();
         selinfo.put("med_list_codg", "");          // 医疗目录编码
@@ -599,7 +593,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return
      */
     @Override
-    public JSONObject createSaleReturnOrder() {
+    public JSONObject createSaleReturnOrder_3506() {
         JSONObject selinfo = new JSONObject();
         selinfo.put("med_list_codg", ""); // 医疗目录编码
         selinfo.put("fixmedins_hilist_id", ""); // 定点医药机构目录编号
@@ -637,7 +631,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return
      */
     @Override
-    public JSONObject createSaleReturnOrderList() {
+    public JSONObject createSaleReturnOrderList_3506A() {
         JSONObject selinfo = new JSONObject();
         JSONArray array  = new JSONArray();
         selinfo.put("med_list_codg", ""); // 医疗目录编码
@@ -680,7 +674,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return
      */
     @Override
-    public JSONObject removeProductRecord() {
+    public JSONObject removeProductRecord_3507() {
         JSONObject data =  new JSONObject();
         data.put("fixmedins_bchno","");
         data.put("inv_data_type","");
@@ -714,7 +708,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return
      */
     @Override
-    public JSONObject getInventoryInfo() {
+    public JSONObject getInventoryInfo_3508() {
         JSONObject data = new JSONObject();
         data.put("fixmedins_code", ""); // 定点医药机构编号
         data.put("medins_list_codg", ""); // 医药机构目录编码
@@ -752,7 +746,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return
      */
     @Override
-    public JSONObject getInventoryChangeRecords() {
+    public JSONObject getInventoryChangeRecords_3509() {
         JSONObject data = new JSONObject();
         data.put("fixmedins_code", ""); // 定点医药机构编号
         data.put("medins_list_codg", ""); // 医药机构目录编码
@@ -789,7 +783,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return
      */
     @Override
-    public JSONObject getProcurementRecords() {
+    public JSONObject getProcurementRecords_3510() {
         JSONObject data = new JSONObject();
         data.put("fixmedins_code", ""); // 定点医药机构编号
         data.put("medins_list_codg", ""); // 医药机构目录编码
@@ -836,7 +830,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return
      */
     @Override
-    public JSONObject getSalesRecords() {
+    public JSONObject getSalesRecords_3511() {
         JSONObject data = new JSONObject();
         data.put("fixmedins_code", ""); // 定点医药机构编号
         data.put("medins_list_cod", ""); // 医药机构目录编码
@@ -889,7 +883,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return
      */
     @Override
-    public JSONObject getInboundDetails() {
+    public JSONObject getInboundDetails_3512() {
         JSONObject data = new JSONObject();
         data.put("fixmedins_code", ""); // 定点医药机构编号
         data.put("medins_list_codg", ""); // 医药机构目录编码
@@ -909,7 +903,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
      * @return
      */
     @Override
-    public JSONObject getSalesDetails() {
+    public JSONObject getSalesDetails_3513() {
         JSONObject data = new JSONObject();
         data.put("fixmedins_code", "");  // 定点医药机构编号 (必填)
         data.put("medins_list_codg", ""); // 医药机构目录编码 (选填)

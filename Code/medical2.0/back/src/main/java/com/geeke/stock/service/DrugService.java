@@ -77,8 +77,10 @@ public class DrugService extends CrudService<DrugDao, Drug>  {
         if (StringUtils.isBlank(drug.getId())){
             String sn = sequenceService.generate(SessionUtils.getUser().getCompanyId(), "medical_code", drug);
             drug.setCode(sn);
+            //添加药品gg字段
         }
-
+        String ypgg = drug.getDosis() + drug.getDosisUnit().getName()+ "*" + drug.getPreparation() + drug.getPreparationUnit().getName()+"/" + drug.getPack().getName();
+        drug.setYpgg(ypgg);
         Drug drugTemp = super.save(drug);
         this.medicinalStockControlService.initStock(drugTemp);
         return drugTemp;
@@ -391,7 +393,7 @@ public class DrugService extends CrudService<DrugDao, Drug>  {
         List<Drug> drugList = this.dao.repeat(drug);
 
         //如果新增则为0，修改条数是1但是ID不一样则不重复
-        if (ObjUtil.isNull(drug.getId()) && drugList.size() == 1 && drugList.get(0).getId().equals(drug.getId())) {
+        if (drugList.size() == 1 && drugList.get(0).getId().equals(drug.getId())) {
             return 0;
         } else {
             return drugList.size();

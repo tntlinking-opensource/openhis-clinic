@@ -11,14 +11,24 @@ import org.springframework.stereotype.Component;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "spring.medicare")
-public class MedicareConfigProperties {
+public  class MedicareConfigProperties {
     //是否开启医保接口
     private String check;
     //省份
     private String province;
     //医保接口地址
     private String url;
+    //医保中间件接口地址
+    private String webUrl;
+    //APPID
+    private String appId;
+    //应用密钥
+    private String appSecret;
+    //私钥
+    private String privateKey;
 
-    //是否演示环境
+    //端口号
+    private String webPort;
+
     private String isDemo;
 }

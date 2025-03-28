@@ -1,8 +1,6 @@
 package com.geeke.medicareutils.service;
 
 import com.alibaba.fastjson.JSONObject;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 
 public interface MdDirService {
@@ -11,13 +9,13 @@ public interface MdDirService {
      * 目录对照上传
      * @return
      */
-    JSONObject upDirData();
+    JSONObject upDirData_3301();
 
     /**
      * 目录对照撤销
      * @return
      */
-    JSONObject delDirData();
+    JSONObject delDirData_3302();
 
 
 }

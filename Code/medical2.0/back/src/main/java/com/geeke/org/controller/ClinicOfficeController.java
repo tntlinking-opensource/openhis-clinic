@@ -63,10 +63,10 @@ public class ClinicOfficeController extends BaseController {
         if (properties.getCheck().equals("true")) {
             //添加
             if (StringUtils.isBlank(entity.getId())) {
-              mdcompanyService.upCompanyData(entity,"3401");
+              mdcompanyService.upCompanyData_3401_3402(entity,"3401");
             } else {
                 //修改
-                mdcompanyService.upCompanyData(entity,"3402");
+                mdcompanyService.upCompanyData_3401_3402(entity,"3402");
             }
         }
         String id = clinicOfficeService.save(entity).getId();

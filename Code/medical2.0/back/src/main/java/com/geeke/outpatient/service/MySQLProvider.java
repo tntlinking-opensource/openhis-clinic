@@ -52,7 +52,7 @@ public class MySQLProvider implements ReportProvider {
         ByteArrayInputStream stream = null;
         if (null != reportFile) {
             try {
-                stream = new ByteArrayInputStream(reportFile.getContent().getBytes(StandardCharsets.UTF_8));
+                stream = new ByteArrayInputStream(reportFile.getContent().getBytes(StandardCharsets.ISO_8859_1));
             } catch (Exception e) {
                 throw new ReportException(e);
             }

@@ -79,9 +79,9 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
             MedicinalStorageControl medicinalStorageControl = new MedicinalStorageControl();
             medicinalStorageControl.setCompany(supplierStock.getCompany());
             medicinalStorageControl.setStorageId(supplierStock.getId());
-            if (Objects.nonNull(supplierStock.getDrug()))
+            if (Objects.nonNull(supplierStock.getDrug()) && StringUtils.isNotBlank(supplierStock.getDrug().getId()))
             {
-                Drug drug = drugService.get(supplierStock.getDrug().getId());
+                Drug drug = this.drugService.get(supplierStock.getDrug().getId());
                 if (Objects.isNull(drug) || StringUtils.isBlank(drug.getId()))
                 {
                     throw new RuntimeException("入库失败,获取入库的药品基础维护信息失败！");

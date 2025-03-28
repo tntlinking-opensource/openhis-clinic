@@ -57,7 +57,7 @@
     
     <sql id="recipellnfoReviewJoins">
      LEFT JOIN org_company company on recipelInfo.company_id = company.id
-     LEFT JOIN registration registration on recipelInfo.registration_id = registration.id
+     INNER JOIN registration registration on recipelInfo.registration_id = registration.id
      LEFT JOIN medical_record medicalRecord on registration.id = medicalRecord.registration_id
      LEFT JOIN clinic_office clinicOffice on registration.department_id = clinicOffice.id
      LEFT JOIN sys_user doctor ON doctor.id = registration.doctor_id
@@ -80,6 +80,7 @@
     </select>
     <select id="getByRecipelInfoId" resultType="com.geeke.outpatient.entity.RecipelInfoReview">
         SELECT
+          recipelInfo.is_pre    AS "recipelInfo.isPre",
             <include refid="recipellnfoReviewColumns"/>
         FROM recipel_info recipelInfo
          left join recipel_info_review a on recipelInfo.id = a.recipel_info_id
@@ -156,6 +157,7 @@
             review_result,
             review_content,
             reviewer_name,
+            reviewer_id,
             review_status,
             remarks,
             create_by,
@@ -169,6 +171,7 @@
             #{reviewResult},
             #{reviewContent},
             #{reviewerName},
+            #{reviewerId},
             #{reviewStatus},
             #{remarks},
             #{createBy},
@@ -213,6 +216,7 @@
            review_result = #{reviewResult},
            review_content = #{reviewContent},
            reviewer_name = #{reviewerName},
+           reviewer_id = #{reviewerId},
            review_status = #{reviewStatus},
             update_by = #{updateBy},
             update_date = #{updateDate}

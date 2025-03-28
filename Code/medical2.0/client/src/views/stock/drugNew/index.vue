@@ -166,7 +166,7 @@
               class="drag_table"
               :data="drugList"
               border
-              height="calc(100vh - 254px)"
+              min-height="calc(100vh - 254px)"
               @sort-change="onSortChange"
               @header-dragend="onChangeWidth"
               :cell-class-name="cellClassName"
@@ -239,7 +239,7 @@
                 prop="stockNumber"
                 label="规格"
                 sortable="custom"
-                width="80px"
+                width="120px"
               >
                 <template slot-scope="scope">
                   <span>{{

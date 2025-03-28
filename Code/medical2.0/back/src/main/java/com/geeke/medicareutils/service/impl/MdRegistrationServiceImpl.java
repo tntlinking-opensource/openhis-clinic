@@ -6,10 +6,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.geeke.admin.entity.User;
 import com.geeke.medicareutils.domain.respo.MdFeeDetail;
-import com.geeke.medicareutils.domain.respo.MdPsnDiseData;
-import com.geeke.medicareutils.domain.respo.MdPsnVisitData;
 import com.geeke.medicareutils.service.MdRegistrationService;
-import com.geeke.medicareutils.util.MdRequestUtil;
+import com.geeke.medicareutils.util.YbWebApiUtil;
 import com.geeke.org.entity.ClinicOffice;
 import com.geeke.outpatient.entity.MedicalRecord;
 import com.geeke.outpatient.entity.PatientMdData;
@@ -34,7 +32,9 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class MdRegistrationServiceImpl implements MdRegistrationService {
 
-    private final MdRequestUtil mdRequestUtil;
+//    private final MdRequestUtil mdRequestUtil;
+
+    private final YbWebApiUtil mdRequestUtil;
 
     private final PatientMdDataService patientMdDataService;
     @Lazy
@@ -52,7 +52,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
      * @return
      */
     @Override
-    public JSONObject getRegistrationInfo(Registration registration) {
+    public String getRegistrationInfo_2201(Registration registration) {
         Map<String,Object> data = new HashMap<>();
         //获取患者医保信息
         PatientMdData patientMdData = patientMdDataService.getOne( new LambdaQueryWrapper<PatientMdData>().eq(PatientMdData::getPatientId,registration.getPatientId().getId()));
@@ -72,7 +72,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
         //门诊唯一流水号
         data.put("ipt_otp_no",registration.getId());
         //医师编码
-        data.put("atddr_no",doctor.getUserExt().getCreditNum());
+        data.put("atddr_no",doctor.getUserExt().getPracPsnCode());
         //医师姓名
         data.put("dr_name",doctor.getName());
         data.put("dept_code",clinicOffice.getCode());
@@ -81,11 +81,11 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
         data.put("expContent","");
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("data", JSON.toJSON(data));
-        return mdRequestUtil.getMedicareData("2201",jsonObject);
+        return mdRequestUtil.getMedicareData("2201",jsonObject.toJSONString());
     }
 
     @Override
-    public JSONObject revokeRegistrationInfo(Registration registration) {
+    public String revokeRegistrationInfo_2202(Registration registration) {
         //获取患者医保信息
         PatientMdData patientMdData = patientMdDataService.getOne( new LambdaQueryWrapper<PatientMdData>().eq(PatientMdData::getPatientId,registration.getPatientId().getId()));
         Map<String,Object> data = new HashMap<>();
@@ -95,16 +95,16 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
         data.put("expContent","");
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("data", JSON.toJSON(data));
-        return mdRequestUtil.getMedicareData("2202",jsonObject);
+        return mdRequestUtil.getMedicareData("2202",jsonObject.toJSONString());
     }
 
     /**
-     * 门诊就诊信息上传
+     * 门诊就诊信息上传 2203
      * @param registration
      * @return
      */
     @Override
-    public JSONObject upRegistrationInfo(Registration registration) {
+    public String upRegistrationInfo_2203(Registration registration) {
         //单行就诊信息
         JSONObject data = new JSONObject();
         //诊断多行数据
@@ -136,39 +136,39 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
         data.put("expContent", "");
 
         //诊断参数
-        JSONObject array = new JSONObject();
+        JSONObject object = new JSONObject();
         //诊断类别 1西医诊断 2中医主病诊断 3中医主证诊断 4手术操作 5.安病种付费病种 TODO 只允许一个诊断
         if (Objects.nonNull(medicalRecord.getWesternDiagnose())) {
             //西医
-            array.put("diag_type", "1");
-            array.put("diag_name", medicalRecord.getWesternDiagnose());
+            object.put("diag_type", "1");
+            object.put("diag_name", medicalRecord.getWesternDiagnose());
 
         }
         if (Objects.nonNull(medicalRecord.getChinaDiagnose())) {
             //中医
-            array.put("diag_type", "2");
-            array.put("diag_name", medicalRecord.getChinaDiagnose());
+            object.put("diag_type", "2");
+            object.put("diag_name", medicalRecord.getChinaDiagnose());
         }
-        array.put("diag_srt_no", "0");
-        array.put("diag_dept", clinicOffice.getName());
-        array.put("dise_dor_no", doctor.getUserExt().getPracPsnCode());
-        array.put("dise_dor_name", doctor.getUserExt().getName());
-        array.put("diag_time", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(medicalRecord.getCreateDate()));
+        object.put("diag_srt_no", "1");
+        object.put("diag_dept", clinicOffice.getName());
+        object.put("dise_dor_no", doctor.getUserExt().getPracPsnCode());
+        object.put("dise_dor_name", doctor.getUserExt().getName());
+        object.put("diag_time", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(medicalRecord.getCreateDate()));
         //TODO 默认有效 1, 0无效
-        array.put("vali_flag", "1");
-        jsonArray.add(array);
+        object.put("vali_flag", "1");
+        jsonArray.add(object);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("mdtrtinfo", data);
         jsonObject.put("diseinfo", jsonArray);
-        return mdRequestUtil.getMedicareData("2203", jsonObject);
+        return mdRequestUtil.getMedicareData("2203", jsonObject.toJSONString());
     }
 
     /**
      * @param registration
-     * @return  门诊信息上传A 2203A
+     * @return 门诊信息上传A 2203A
      */
     @Override
-    public JSONObject upRegistrationInfoList(Registration registration) {
+    public String upRegistrationInfoList_2203A(Registration registration) {
         // 创建外层 JSONObject
         JSONObject jsonObject = new JSONObject();
 
@@ -189,6 +189,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
         mdtrtinfo.put("med_type", registration.getMedType());
         mdtrtinfo.put("begntime", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
         mdtrtinfo.put("main_cond_dscr", "");
+
         mdtrtinfo.put("dise_codg", "");
         mdtrtinfo.put("dise_name", "");
         mdtrtinfo.put("birctrl_type", "");
@@ -203,7 +204,17 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
         // 创建 diseinfo 数组
         JSONArray diseinfoArray = new JSONArray();
         JSONObject diseinfo = new JSONObject();
-        diseinfo.put("diag_type", "1");
+        if (Objects.nonNull(medicalRecord.getWesternDiagnose())) {
+            //西医
+            diseinfo.put("diag_type", "1");
+            diseinfo.put("diag_name", medicalRecord.getWesternDiagnose());
+
+        }
+        if (Objects.nonNull(medicalRecord.getChinaDiagnose())) {
+            //中医
+            diseinfo.put("diag_type", "2");
+            diseinfo.put("diag_name", medicalRecord.getChinaDiagnose());
+        }
         diseinfo.put("diag_srt_no", "1");
         diseinfo.put("diag_code", medicalRecord.getDiagnosisCode()); //诊断代码
         diseinfo.put("diag_name", medicalRecord.getDiagnose());
@@ -218,19 +229,20 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
 
         // 将 diseinfoArray 添加到主对象
         jsonObject.put("diseinfo", diseinfoArray);
-        return mdRequestUtil.getMedicareData("2203A", jsonObject);
+        return mdRequestUtil.getMedicareData("2203A", jsonObject.toJSONString());
     }
 
     /**
      * 门诊费用明细信息上传  2204
+     *
      * @param
      * @return
      */
     @Override
-    public MdFeeDetail upRegistrationMoneyInfo(JSONArray jsonArray) {
+    public String upRegistrationMoneyInfo_2204(JSONArray jsonArray) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("feedetail",jsonArray);
-        return JSONObject.parseObject(mdRequestUtil.getMedicareData("2204", jsonObject).getString("result"), MdFeeDetail.class);
+        return mdRequestUtil.getMedicareData("2204", jsonObject.toJSONString());
     }
 
     /**
@@ -243,7 +255,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
      * @return
      */
     @Override
-    public JSONObject revokeRegistrationMoneyInfo(String mdtrtId, String chrgBchno, String psnNo, String expContent) {
+    public String revokeRegistrationMoneyInfo_2205(String mdtrtId, String chrgBchno, String psnNo, String expContent) {
         JSONObject data = new JSONObject();
         data.put("mdtrt_id", mdtrtId);
         data.put("chrg_bchno", chrgBchno);//000则取消全部
@@ -251,7 +263,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
         data.put("expContent", expContent);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("data", data);
-        return mdRequestUtil.getMedicareData("2205", jsonObject);
+        return mdRequestUtil.getMedicareData("2205", jsonObject.toJSONString());
     }
 
     /**
@@ -262,7 +274,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
      * @return
      */
     @Override
-    public JSONObject processOutpatientPreSettlement(Registration registration, MdFeeDetail mdFeeDetail,String chrgBchno,String acctUsedFlag) {
+    public String processOutpatientPreSettlement_2206(Registration registration, MdFeeDetail mdFeeDetail, String chrgBchno, String acctUsedFlag) {
         JSONObject data = new JSONObject();
         JSONObject jsonObject = new JSONObject();
         PatientMdData patientMdData = patientMdDataService.getOne(new LambdaQueryWrapper<PatientMdData>().eq(PatientMdData::getPatientId, registration.getPatientId().getId()));
@@ -283,7 +295,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
         data.put("insutype",patientMdData.getInsutype());
         data.put("expContent","");
         jsonObject.put("data",data);
-        return mdRequestUtil.getMedicareData("2206",jsonObject);
+        return mdRequestUtil.getMedicareData("2206",jsonObject.toJSONString());
     }
 
     /**
@@ -295,7 +307,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
      * @param acctUsedFlag
      */
     @Override
-    public JSONObject executeOutpatientPreSettlement(Registration registration, MdFeeDetail mdFeeDetail, String chrgBchno, String acctUsedFlag) {
+    public String executeOutpatientPreSettlement_2207(Registration registration, MdFeeDetail mdFeeDetail, String chrgBchno, String acctUsedFlag) {
         JSONObject data = new JSONObject();
         JSONObject jsonObject = new JSONObject();
         PatientMdData patientMdData = patientMdDataService.getOne(new LambdaQueryWrapper<PatientMdData>().eq(PatientMdData::getPatientId, registration.getPatientId().getId()));
@@ -323,7 +335,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
         data.put("inscp_scp_amt", mdFeeDetail.getInscpScpAmt());
         data.put("expContent","");
         jsonObject.put("data",data);
-        return mdRequestUtil.getMedicareData("2207",jsonObject);
+        return mdRequestUtil.getMedicareData("2207",jsonObject.toJSONString());
     }
 
     /**
@@ -332,26 +344,27 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
      * @return
      */
     @Override
-    public JSONObject revokeOutpatientSettlement(String setlId,String psnNo,String mdtrtId ) {
+    public String revokeOutpatientSettlement_2208(String setlId, String psnNo, String mdtrtId ) {
              JSONObject data = new JSONObject();
              JSONObject jsonObject = new JSONObject();
              data.put("setl_id",setlId);
              data.put("psn_no",psnNo);
              data.put("mdtrt_id",mdtrtId);
              jsonObject.put("data",data);
-        return mdRequestUtil.getMedicareData("2208",jsonObject);
+        return mdRequestUtil.getMedicareData("2208",jsonObject.toJSONString());
     }
 
 
     /**
      * 人员就诊信息
+     *
      * @param registration
      * @param begntime
      * @param endtime
      * @return
      */
     @Override
-    public MdPsnVisitData getPsnVisitData(Registration registration, LocalDateTime begntime, LocalDateTime endtime) {
+    public String getPsnVisitData_5201(Registration registration, LocalDateTime begntime, LocalDateTime endtime) {
         JSONObject data = new JSONObject();
         PatientMdData patientMdData = patientMdDataService.getOne(new LambdaQueryWrapper<PatientMdData>().eq(PatientMdData::getPatientId, registration.getPatientId().getId()));
         data.put("psn_no",patientMdData.getPsnNo());
@@ -360,18 +373,18 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
         data.put("med_type",registration.getMedType().getValue());
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("data", JSON.toJSON(data));
-        return   JSONObject.parseObject(mdRequestUtil.getMedicareData("5201",jsonObject).getString("mdtrtinfo"),MdPsnVisitData.class) ;
+        return   mdRequestUtil.getMedicareData("5201",jsonObject.toJSONString()) ;
     }
 
     @Override
-    public MdPsnDiseData getPsnDiseData(Registration registration) {
+    public String getPsnDiseData_5202(Registration registration) {
         JSONObject data = new JSONObject();
         PatientMdData patientMdData = patientMdDataService.getOne(new LambdaQueryWrapper<PatientMdData>().eq(PatientMdData::getPatientId, registration.getPatientId().getId()));
         data.put("psn_no",patientMdData.getPsnNo());
         data.put("mdtrt_id",registration.getMdtrtId());
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("data", JSON.toJSON(data));
-        return  JSONObject.parseObject(mdRequestUtil.getMedicareData("5202",jsonObject).getString("diseinfo"),MdPsnDiseData.class);
+        return  mdRequestUtil.getMedicareData("5202",jsonObject.toJSONString());
     }
 
     /**
@@ -383,14 +396,14 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
      * @return
      */
     @Override
-    public JSONObject getSettlementInfo(String psnNo, String setlId, String mdtrtId) {
+    public String getSettlementInfo_5203(String psnNo, String setlId, String mdtrtId) {
         JSONObject data = new JSONObject();
         JSONObject jsonObject = new JSONObject();
         data.put("setl_id",setlId);
         data.put("psn_no",psnNo);
         data.put("mdtrt_id",mdtrtId);
         jsonObject.put("data",data);
-        return mdRequestUtil.getMedicareData("5203",jsonObject);
+        return mdRequestUtil.getMedicareData("5203",jsonObject.toJSONString());
 
     }
 
@@ -403,14 +416,14 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
      * @return
      */
     @Override
-    public JSONObject getExpenseDetails(String psnNo, String setlId, String mdtrtId) {
+    public String getExpenseDetails_5204(String psnNo, String setlId, String mdtrtId) {
         JSONObject data = new JSONObject();
         JSONObject jsonObject = new JSONObject();
         data.put("setl_id",setlId);
         data.put("psn_no",psnNo);
         data.put("mdtrt_id",mdtrtId);
         jsonObject.put("data",data);
-        return mdRequestUtil.getMedicareData("5204",jsonObject);
+        return mdRequestUtil.getMedicareData("5204",jsonObject.toJSONString());
     }
 
     /**
@@ -420,7 +433,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
      * @return
      */
     @Override
-    public JSONObject getEmergencyOutpatientRecords(Registration registration) {
+    public String getEmergencyOutpatientRecords_4301(Registration registration) {
         JSONObject rgstinfo = new JSONObject();
         JSONObject caseinfo = new JSONObject();
         JSONObject diseinfo = new JSONObject();
@@ -504,7 +517,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
         jsonObject.put("diseinfo", diseinfo);
         jsonObject.put("rxinfo", rxinfo);
 
-        return mdRequestUtil.getMedicareData("4301", jsonObject);
+        return mdRequestUtil.getMedicareData("4301", jsonObject.toJSONString());
     }
 
     /**
@@ -514,7 +527,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
      * @return
      */
     @Override
-    public JSONObject analyzeDetailReviewPreCheck(Registration registration) {
+    public String analyzeDetailReviewPreCheck_3301(Registration registration) {
         //患者医保信息
         PatientMdData patientMdData = patientMdDataService.getOne(new LambdaQueryWrapper<PatientMdData>().eq(PatientMdData::getPatientId, registration.getPatientId().getId()));
         //患者科室信息
@@ -639,7 +652,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
         data.put("syscode", null);
         JSONObject  jsonObject = new JSONObject();
         jsonObject.put("data", data);
-        return mdRequestUtil.getMedicareData("3301", jsonObject);
+        return mdRequestUtil.getMedicareData("3301", jsonObject.toJSONString());
     }
 
     /**
@@ -649,7 +662,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
      * @return
      */
     @Override
-    public JSONObject analyzeDetailReviewDuringProcess(Registration registration) {
+    public String analyzeDetailReviewDuringProcess_3102(Registration registration) {
         JSONObject jsonObject = new JSONObject();
         JSONObject patientDto = new JSONObject();
         //患者医保信息
@@ -774,7 +787,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
         data.put("trig_scen", "");
         data.put("syscode", "");
         jsonObject.put("data", data);
-         return mdRequestUtil.getMedicareData("3102", jsonObject);
+         return mdRequestUtil.getMedicareData("3102", jsonObject.toJSONString());
     }
 
     /**
@@ -783,7 +796,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
      * @return
      */
     @Override
-    public JSONObject matchPharmacyCostsWithGeneralLedger() {
+    public String matchPharmacyCostsWithGeneralLedger_3201() {
         return null;
     }
 
@@ -794,7 +807,7 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
      * @return
      */
     @Override
-    public JSONObject matchPharmacyCostsWithDetailAccounts() {
+    public String matchPharmacyCostsWithDetailAccounts_3202() {
         return null;
     }
 }

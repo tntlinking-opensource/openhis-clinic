@@ -17,6 +17,7 @@ public class XtZyzh implements Serializable {
     /**
      * 
      */
+    @TableId
     private Integer zhid;
 
     /**

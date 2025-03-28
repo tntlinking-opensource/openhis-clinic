@@ -5,8 +5,6 @@ import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
 import com.geeke.medicareutils.config.MedicareConfigProperties;
 import com.geeke.medicareutils.service.MdInventoryService;
-import com.geeke.medicareutils.util.MdRequestUtil;
-import com.geeke.stock.entity.InventoryVerification;
 import com.geeke.stock.entity.OutboundEvt;
 import com.geeke.stock.entity.SupplierOutbound;
 import com.geeke.stock.service.SupplierOutboundService;
@@ -16,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 出库单Controller
@@ -56,7 +52,7 @@ public class SupplierOutboundController extends BaseController {
         String id = supplierOutboundService.save(entity).getId();
         if("true".equals(medicareConfigProperties.getCheck())){
             //开启医保接口 出库
-             mdInventoryService.updateInventoryList(entity);
+             mdInventoryService.updateInventoryList_3502A(entity);
         }
         return ResponseEntity.ok(ResultUtil.successJson(id));
     }

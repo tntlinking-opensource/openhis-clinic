@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.geeke.admin.entity.User;
 import com.geeke.medicareutils.service.MdCommonService;
 import com.geeke.medicareutils.util.MdRequestUtil;
+import com.geeke.medicareutils.util.YbWebApiUtil;
 import com.geeke.org.entity.ClinicOffice;
 import com.geeke.outpatient.entity.MedicalRecord;
 import com.geeke.outpatient.entity.Patient;
@@ -23,7 +24,9 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class MdCommonServiceImpl implements MdCommonService {
 
-     private final MdRequestUtil mdRequestUtil;
+     //private final MdRequestUtil mdRequestUtil;
+
+     private  final YbWebApiUtil mdRequestUtil;
 
      private  final MedicalRecordService medicalRecordService;
 
@@ -41,18 +44,18 @@ public class MdCommonServiceImpl implements MdCommonService {
      * @param oinfno 原交易编号
      */
     @Override
-    public JSONObject reversalData(String psnNo,String omsgid,String oinfno) {
+    public String reversalData_2601(String psnNo, String omsgid, String oinfno) {
         JSONObject data =  new JSONObject();
         data.put("psn_no",psnNo);
         data.put("omsgid",omsgid);
         data.put("oinfno",oinfno);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("data",data);
-        return mdRequestUtil.getMedicareData("2601",jsonObject);
+        return mdRequestUtil.getMedicareData("2601",jsonObject.toJSONString());
     }
 
     @Override
-    public JSONObject upMedicalRecord(Registration registration) {
+    public String upMedicalRecord_4701(Registration registration) {
         //获取人员病历信息
         List< MedicalRecord> record = medicalRecordService.getByOrder(registration.getId());
         MedicalRecord medicalRecord = record.get(0);
@@ -221,7 +224,7 @@ public class MdCommonServiceImpl implements MdCommonService {
         //病程记录
         jsonObject.put("coursrinfo",coursrinfo);
 
-        return mdRequestUtil.getMedicareData("4701",jsonObject);
+        return mdRequestUtil.getMedicareData("4701",jsonObject.toJSONString());
     }
 
 

@@ -1,6 +1,8 @@
 package com.geeke.outpatient.entity;
 
 import com.geeke.common.persistence.DataEntity;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Date;
 
@@ -9,13 +11,17 @@ import java.util.Date;
  * @author lc
  * @version 2023-10-09
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class RecipelInfoReview extends DataEntity<RecipelInfoReview> {
     private RecipelInfo recipelInfo; //处方信息
     private MedicalRecord medicalRecord; //病例信息
-    private Integer reviewResult = 1; // 审查结果：1表示合理，0表示不合理
+    private Integer reviewResult = 2; // 审查结果：1表示合理，0表示不合理
     private String reviewContent = ""; // 审查内容
     private String reviewerName = ""; // 审查人的名字,审查时间取createDate
-    private Integer reviewStatus = 0; // 审查状态：0表示未审查，1表示已审查
+    private Integer reviewStatus = 0; // 审查状态：0表示未审查，1表示已审查 ;2已撤销
+    private String reviewerId ; //审查人ID
+
 
     public MedicalRecord getMedicalRecord() {
         return medicalRecord;

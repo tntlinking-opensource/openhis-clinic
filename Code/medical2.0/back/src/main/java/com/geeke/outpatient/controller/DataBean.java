@@ -81,6 +81,10 @@ public class DataBean {
     private MedicalRecordService medicalRecordService;
     @Resource
     private DispensingService dispensingService;
+
+    @Resource
+    private PresDrugService presDrugService;
+
     /**
      * @return 组装处方其他信息
      */
@@ -139,6 +143,7 @@ public class DataBean {
         //处方id
         String recipelInfoId = (String) parameters.get("recipelInfoId");
         List<RecipelDetail> detailList = recipelDetailDao.getByRecipelInfoId(recipelInfoId);
+        RecipelInfo recipelInfo = recipelInfoService.get(recipelInfoId);
         BigDecimal count = new BigDecimal(0);
         if (null != detailList && !detailList.isEmpty()) {
             for (RecipelDetail recipelDetail : detailList) {
@@ -148,26 +153,51 @@ public class DataBean {
                     continue;
                 }
                 if ("0".equals(recipelDetail.getStuffType())) {
-                    Drug drug = drugService.get(recipelDetail.getDrugStuffId().getDrugStuffId());
-                    RecipelDetailEvt recipelDetailEvt = new RecipelDetailEvt();
-                    recipelDetailEvt.setName(drug.getGoodsName());
-                    recipelDetailEvt.setNorms("("+drug.getDosis() + drug.getDosisUnit().getName() + "*" + drug.getPreparation() + drug.getPreparationUnit().getName()+")");
-                    recipelDetailEvt.setNum(recipelDetail.getTotal() + drug.getPreparationUnit().getName());
-                    recipelDetailEvt.setPrice(recipelDetail.getAllFee() + "元");
-                    String daysName = recipelDetail.getDays() != null && recipelDetail.getDays().getName() != null
-                            ? recipelDetail.getDays().getName()
-                            : "0";
-                    recipelDetailEvt.setDays(daysName + "天");
-                    recipelDetailEvt.setFrequency(recipelDetail.getFrequency().getRemarks() + "\t" + (daysName + "天"));
-                    recipelDetailEvt.setUse("Sig："+recipelDetail.getWesternMedicineUse().getName());
-                    recipelDetailEvt.setUseText("(" + recipelDetail.getSingleDosage() + drug.getDosisUnit().getName()+")/次");
-                    outList.add(recipelDetailEvt);
-                    //无赖之举
-                    RecipelDetailEvt recipelDetailEvt1 = new RecipelDetailEvt();
-                    recipelDetailEvt1.setName(recipelDetailEvt.getUse());
-                    recipelDetailEvt1.setNorms(recipelDetailEvt.getUseText());
-                    recipelDetailEvt1.setNum(recipelDetailEvt.getFrequency());
-                    outList.add(recipelDetailEvt1);
+                    if(recipelInfo.getIsPre()){
+                        //电子处方药品
+                         PresDrug drug = presDrugService.getById(recipelDetail.getDrugStuffId().getDrugStuffId());
+                        RecipelDetailEvt recipelDetailEvt = new RecipelDetailEvt();
+                        recipelDetailEvt.setName(drug.getRegname());
+                        recipelDetailEvt.setNorms(drug.getSpecname() +'*'+drug.getMinpaccnt()+drug.getMinprepunt()+'/'+drug.getMinpacunt());
+                        recipelDetailEvt.setNum(recipelDetail.getTotal() + drug.getMinpacunt());
+                        recipelDetailEvt.setPrice(0 + "元");
+                        String daysName = recipelDetail.getDays() != null && recipelDetail.getDays().getName() != null
+                                ? recipelDetail.getDays().getName()
+                                : "0";
+                        recipelDetailEvt.setDays(daysName + "天");
+                        recipelDetailEvt.setFrequency(recipelDetail.getFrequency().getName() + "\t" + (daysName + "天"));
+                        recipelDetailEvt.setUse("Sig："+recipelDetail.getWesternMedicineUse().getName());
+                        recipelDetailEvt.setUseText("(" + recipelDetail.getSingleDosage() + drug.getMinprepunt()+")/次");
+                        outList.add(recipelDetailEvt);
+                        //无赖之举
+                        RecipelDetailEvt recipelDetailEvt1 = new RecipelDetailEvt();
+                        recipelDetailEvt1.setName(recipelDetailEvt.getUse());
+                        recipelDetailEvt1.setNorms(recipelDetailEvt.getUseText());
+                        recipelDetailEvt1.setNum(recipelDetailEvt.getFrequency());
+                        outList.add(recipelDetailEvt1);
+                    }else{
+                        Drug drug = drugService.get(recipelDetail.getDrugStuffId().getDrugStuffId());
+                        RecipelDetailEvt recipelDetailEvt = new RecipelDetailEvt();
+                        recipelDetailEvt.setName(drug.getGoodsName());
+                        recipelDetailEvt.setNorms("("+drug.getDosis() + drug.getDosisUnit().getName() + "*" + drug.getPreparation() + drug.getPreparationUnit().getName()+")");
+                        recipelDetailEvt.setNum(recipelDetail.getTotal() + drug.getPreparationUnit().getName());
+                        recipelDetailEvt.setPrice(recipelDetail.getAllFee() + "元");
+                        String daysName = recipelDetail.getDays() != null && recipelDetail.getDays().getName() != null
+                                ? recipelDetail.getDays().getName()
+                                : "0";
+                        recipelDetailEvt.setDays(daysName + "天");
+                        recipelDetailEvt.setFrequency(recipelDetail.getFrequency().getName() + "\t" + (daysName + "天"));
+                        recipelDetailEvt.setUse("Sig："+recipelDetail.getWesternMedicineUse().getName());
+                        recipelDetailEvt.setUseText("(" + recipelDetail.getSingleDosage() + drug.getDosisUnit().getName()+")/次");
+                        outList.add(recipelDetailEvt);
+                        //无赖之举
+                        RecipelDetailEvt recipelDetailEvt1 = new RecipelDetailEvt();
+                        recipelDetailEvt1.setName(recipelDetailEvt.getUse());
+                        recipelDetailEvt1.setNorms(recipelDetailEvt.getUseText());
+                        recipelDetailEvt1.setNum(recipelDetailEvt.getFrequency());
+                        outList.add(recipelDetailEvt1);
+                    }
+
                 }
             }
         }

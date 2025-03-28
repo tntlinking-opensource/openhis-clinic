@@ -8,7 +8,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 慢病处方详情Entity
@@ -164,6 +166,34 @@ public class ChronicDiseaseEvt implements Serializable {
 		this.chinaDiagnose = "中医诊断：" + medicalRecord.getChinaDiagnose();
 		this.createDate = "开具日期：" + DateUtil.formatDateTime(medicalRecord.getCreateDate());
 		this.doctor = "医师：" + medicalRecord.getDoctor().getName();
+	}
+	public Map<String, Object> toMap() {
+		Map<String, Object> map = new HashMap<>();
+		map.put("febbe", febbe);
+		map.put("name", name);
+		map.put("gender", gender);
+		map.put("age", age);
+		map.put("temperature", temperature);
+		map.put("registrationId", registrationId);
+		map.put("clinicOffice", clinicOffice);
+		map.put("westernDiagnose", westernDiagnose);
+		map.put("chinaDiagnose", chinaDiagnose);
+		map.put("concurrentDisease", concurrentDisease);
+		map.put("doctorAdvice", doctorAdvice);
+		map.put("createDate", createDate);
+		map.put("doctor", doctor);
+		map.put("amount", amount);
+		map.put("tollCollector", tollCollector);
+		map.put("injectionFee", injectionFee);
+		map.put("deploy", deploy);
+		map.put("dispensing", dispensing);
+		map.put("patientOpinion", patientOpinion);
+		map.put("signature", signature);
+		map.put("address", address);
+		map.put("clinicName", clinicName);
+		map.put("smallType", smallType);
+		map.put("tips", tips);
+		return map;
 	}
 
 }

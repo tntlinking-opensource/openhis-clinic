@@ -1,6 +1,11 @@
 package com.geeke.stock.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
+
+import com.geeke.basicdata.entity.ManufactureFactory;
+import com.geeke.outpatient.entity.PresDrug;
+import com.geeke.stock.entity.Drug;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,9 +51,18 @@ public class MedicinalStockControlController extends BaseController {
     
     @PostMapping(value = "listAll")
     public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
-        List<MedicinalStockControl> result = medicinalStockControlService.listAlls(searchParams.getParams(), searchParams.getOrderby());
+        List<MedicinalStockControl> result = null;
+        if("false".equals(searchParams.getYpType()) ) {
+           result = medicinalStockControlService.listAlls(searchParams.getParams(), searchParams.getOrderby());
+
+        }else{
+         result =    medicinalStockControlService.listPreAll(searchParams.getParams(), searchParams.getOrderby());
+
+        }
         return ResponseEntity.ok(ResultUtil.successJson(result));
     }
+
+
 
     @PostMapping(value = "save")
     public ResponseEntity<JSONObject> save(@RequestBody MedicinalStockControl entity) {
