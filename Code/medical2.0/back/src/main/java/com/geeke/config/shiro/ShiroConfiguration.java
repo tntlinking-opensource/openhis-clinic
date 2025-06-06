@@ -185,7 +185,7 @@ public class ShiroConfiguration {
 // 禁用会话验证器调度时间
         sessionManager.setSessionValidationSchedulerEnabled(false);
 // 禁用会话超时设置，这样会话永不过期
-        sessionManager.setGlobalSessionTimeout(-1); // -1表示永不过期
+        sessionManager.setGlobalSessionTimeout(1000000000); // -1表示永不过期
 // 是否在会话过期后调用 SessionDAO 的删除方法，保持为 true 不会影响过期
         sessionManager.setDeleteInvalidSessions(true);
 // 禁用 URL 重写

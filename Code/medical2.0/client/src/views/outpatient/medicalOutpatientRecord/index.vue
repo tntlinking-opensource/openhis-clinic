@@ -716,7 +716,7 @@
                         </el-table>
                         <el-input prefix-icon="el-icon-plus" suffix-icon="el-icon-search"
                                   style="width: 30%" slot="reference" ref="WesternInput"
-                                  v-model="SearchWesternInput" @input="GetWesternTable"
+                                  v-model="SearchWesternInput" @input="GetWesternTable(item.content.recipelInfo.isPre)"
                                   @focus="GetWesternTable(item.content.recipelInfo.isPre)" placeholder="输入药品名称或拼音码"></el-input>
 
                       </el-popover>
@@ -6554,14 +6554,14 @@
           this.SearchWesternModel.params[2].value = this.SearchWesternInput;
           this.SearchWesternModel.params[2].columnName = "drug.goods_name";
         }
-// 检查是否已存在字段，若不存在才添加
-        if (!this.SearchChineseModel.params.some(param => param.columnName === "surplus_stock")) {
+        if (!this.SearchWesternModel.params.some(param => param.columnName === "surplus_stock")) {
           this.SearchWesternModel.params.push({
             columnName: "surplus_stock",
             queryType: ">",
             value: 0,
           });
         }
+// 避免重复添加 "drug.status"
         if (!this.SearchWesternModel.params.some(param => param.columnName === "drug.status")) {
           this.SearchWesternModel.params.push({
             columnName: "drug.status",
@@ -6569,6 +6569,7 @@
             value: "1",
           });
         }
+// 避免重复添加 "drug.del_flag"
         if (!this.SearchWesternModel.params.some(param => param.columnName === "drug.del_flag")) {
           this.SearchWesternModel.params.push({
             columnName: "drug.del_flag",
@@ -6576,7 +6577,8 @@
             value: "0",
           });
         }
-        listAll(this.SearchWesternModel,type)
+// 检查是否已存在字段，若不存在才添加
+                listAll(this.SearchWesternModel,type)
           .then((responseData) => {
             if (responseData.code == 100) {
               // responseData.data.forEach((element) => {
@@ -7306,7 +7308,9 @@
         } else if (data.length >= 1) {
           for (let i = 0; i < data.length; i++) {
             data[i].drugOrder = i+1;
-            //data[i].total = data[i].minTotal
+            if(data[i].minTotal != undefined){
+              data[i].total = data[i].minTotal
+            }
             if (data[i].isExtra == 0 && data[i].drugStuffId.drug) {
               if (data[i].drugStuffId.drug.type.value == "medicalType_0") {
                 //   if(data[i].singleDosage==0&&data[i].singleDosage==" "&&data[i].drugStuffId.drug.singleDosage){

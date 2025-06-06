@@ -919,7 +919,7 @@
               this.outputError(error);
             });
         }
-        this.inventory = null
+        this.inventory = 0
       },
       async onEditDrug(index, row) {
         await this.SurplusStock(row)

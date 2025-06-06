@@ -23,8 +23,7 @@
         <span v-else><b>材料名称：</b></span>
         <el-popover
           placement="right"
-          v-if="!IsOnlyRead"
-          width="600"
+          width="700"
           trigger="click"
           popper-class="popover"
         >
@@ -50,12 +49,6 @@
             <el-table-column
               prop="type.name"
               :label="addType == 1 ? '药品类型' : '材料类型'"
-            >
-            </el-table-column>
-            <el-table-column
-              v-if="addType == 1"
-              prop="drugTracCodg"
-              label="药品追溯码"
             >
             </el-table-column>
             <el-table-column
@@ -344,7 +337,7 @@
 </template>
 
 <script>
-  import {listDrugAll} from "@/api/stock/drug";
+  import {listDrugAll,listByCompanyDrugPage} from "@/api/stock/drug";
   import {listSysParamConfigAll} from '@/api/sys/sysParamConfig';
   import {listStuffAll, listStuffPage, listDrug} from "@/api/stock/stuff";
   import {saveSupplierStockList} from "@/api/stock/supplierStock";

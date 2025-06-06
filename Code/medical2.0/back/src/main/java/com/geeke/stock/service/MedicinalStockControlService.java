@@ -14,6 +14,7 @@ import com.geeke.stock.dao.MedicinalStockControlDao;
 import com.geeke.stock.entity.Drug;
 import com.geeke.stock.entity.MedicinalStockControl;
 import com.geeke.stock.entity.Stuff;
+import com.geeke.utils.SessionUtils;
 import com.geeke.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -234,6 +235,7 @@ public class MedicinalStockControlService extends CrudService<MedicinalStockCont
         return this.dao.getByDrugOrStuffId(drugOrStuffId,companyId);
     }
 
+    //查询租户下库存
     public List<MedicinalStockControl> listAlls(List<Parameter> parameters, String orderby) {
         Optional<Parameter> cartOptional = parameters.stream().filter(item -> item.getColumnName().equals("`company_id`")).findFirst();
         parameters.remove(0);
@@ -243,6 +245,20 @@ public class MedicinalStockControlService extends CrudService<MedicinalStockCont
 
         return dao.listAlls(pageRequest);
     }
+
+    /**
+     * 只查询本诊所下库存 2025.4.2
+     * @param parameters
+     * @param orderby
+     * @return
+     */
+    public List<MedicinalStockControl> listAllByCompany(List<Parameter> parameters, String orderby) {
+
+        PageRequest pageRequest = new PageRequest(parameters, orderby, SessionUtils.getLoginTenantId());
+
+        return dao.listAlls(pageRequest);
+    }
+
 
 
     public List<MedicinalStockControl>  listPreAll(List<Parameter> parameters,String orderby) {

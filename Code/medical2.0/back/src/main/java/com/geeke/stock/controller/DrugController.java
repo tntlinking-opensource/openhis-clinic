@@ -100,13 +100,14 @@ public class DrugController extends BaseController {
     }
 
 
-
-
-
-
+    /**
+     * 只查询自己诊所下的药品
+     * @param searchParams
+     * @return
+     */
     @PostMapping(value = "listAll")
     public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
-        List<Drug> result = drugService.listAlls(searchParams.getParams(), searchParams.getOrderby());
+        List<Drug> result = drugService.listAllDrug(searchParams.getParams(), searchParams.getOrderby());
         return ResponseEntity.ok(ResultUtil.successJson(result));
     }
 

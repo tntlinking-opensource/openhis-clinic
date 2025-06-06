@@ -153,7 +153,7 @@ public class DataBean {
                     continue;
                 }
                 if ("0".equals(recipelDetail.getStuffType())) {
-                    if(recipelInfo.getIsPre()){
+                    if(recipelInfo.getIsPre() != null&&recipelInfo.getIsPre()){
                         //电子处方药品
                          PresDrug drug = presDrugService.getById(recipelDetail.getDrugStuffId().getDrugStuffId());
                         RecipelDetailEvt recipelDetailEvt = new RecipelDetailEvt();

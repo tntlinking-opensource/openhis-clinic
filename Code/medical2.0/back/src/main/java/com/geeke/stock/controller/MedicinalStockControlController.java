@@ -53,8 +53,7 @@ public class MedicinalStockControlController extends BaseController {
     public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
         List<MedicinalStockControl> result = null;
         if("false".equals(searchParams.getYpType()) ) {
-           result = medicinalStockControlService.listAlls(searchParams.getParams(), searchParams.getOrderby());
-
+           result = medicinalStockControlService.listAllByCompany(searchParams.getParams(), searchParams.getOrderby());
         }else{
          result =    medicinalStockControlService.listPreAll(searchParams.getParams(), searchParams.getOrderby());
 

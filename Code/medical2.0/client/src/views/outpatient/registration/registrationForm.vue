@@ -490,36 +490,36 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="24 / 2">
-              <el-form-item label="医保医疗类型" prop="medType.name">
-                <el-input
-                  v-if="dialogProps.action == 'view'"
-                  :disabled="true"
-                  v-model="bizFormModel.medType.name"
-                ></el-input>
-                <el-select
-                  v-else
-                  v-model="bizFormModel.medType"
-                  value-key="value"
-                  filterable
-                  clearable
-                  placeholder="请选择医疗类型"
-                  @clear="
-                    bizFormModel.medType = {
-                      value: null,
-                      name: null,
-                    }
-                  "
-                >
-                  <el-option
-                    v-for="medType in medTypeList"
-                    :key="medType.value"
-                    :label="medType.name"
-                    :value="medType"
-                  ></el-option>
-                </el-select>
-              </el-form-item>
-            </el-col>
+<!--            <el-col :span="24 / 2">-->
+<!--              <el-form-item label="医保医疗类型" prop="medType.name">-->
+<!--                <el-input-->
+<!--                  v-if="dialogProps.action == 'view'"-->
+<!--                  :disabled="true"-->
+<!--                  v-model="bizFormModel.medType.name"-->
+<!--                ></el-input>-->
+<!--                <el-select-->
+<!--                  v-else-->
+<!--                  v-model="bizFormModel.medType"-->
+<!--                  value-key="value"-->
+<!--                  filterable-->
+<!--                  clearable-->
+<!--                  placeholder="请选择医疗类型"-->
+<!--                  @clear="-->
+<!--                    bizFormModel.medType = {-->
+<!--                      value: null,-->
+<!--                      name: null,-->
+<!--                    }-->
+<!--                  "-->
+<!--                >-->
+<!--                  <el-option-->
+<!--                    v-for="medType in medTypeList"-->
+<!--                    :key="medType.value"-->
+<!--                    :label="medType.name"-->
+<!--                    :value="medType"-->
+<!--                  ></el-option>-->
+<!--                </el-select>-->
+<!--              </el-form-item>-->
+<!--            </el-col>-->
           </el-row>
         </div>
         <div class="registrationItemBox">
@@ -941,6 +941,8 @@ export default {
         this.doSave();
         return;
       }
+      //医保默认为普通门诊
+      this.bizFormModel.medType.value='11'
 
       savePatient(this.bizFormModel)
         .then((responseData) => {

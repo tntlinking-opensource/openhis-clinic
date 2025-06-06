@@ -32,8 +32,19 @@ public class Company extends TreeEntity<Company> {
 	private Company lesseeId;      // 租户
 	private String contactName;
 	private String tenantryId; // 租户id
-
+    //医保配置
 	private  String fixmedinsCode;// 定点医疗机构代码
+	private  String fixmedinsName; //定点医疗机构名称
+	private  String mdtrtareaAdmvs;//就医地区编码
+	//电子处方配置
+	private String appId; // appid
+	private String appSecret; //密钥
+	private String privateKey; //私钥
+	private String publicKey;  //公钥
+
+
+
+
 
 	public String getTenantryId() {
 		return tenantryId;

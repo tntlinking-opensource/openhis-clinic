@@ -44,12 +44,10 @@ spring:
     check: false #开启医保配置
     province:     #医保省份
     url:          #接口地址
-    web-url:  http://127.0.0.1:8101/api/YibaoWeb    #采用医保中间件访问
-    isDemo: true #是否演示环境
+    #web-url: http://prescription-service:8101/api/YibaoWeb    #部署地址采用医保中间件访问与docker中服务名称部署相对应
+    web-url: http://127.0.0.1:8101/api/YibaoWeb    #中间件地址
+    isDemo: false #是否演示环境
     #电子处方
-    app-id: 000000000000 #appid
-    app-secret: 00000000 #密钥
-    private-key: 00000000 #私钥
     web-port: 7020  #前端端口号用于访问打印处方单
 logging:
   level:

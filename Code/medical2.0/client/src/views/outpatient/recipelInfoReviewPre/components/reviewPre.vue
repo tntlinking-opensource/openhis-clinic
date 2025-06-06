@@ -150,8 +150,11 @@
                 <span v-if="scope.row.reviewStatus == 1" style="color:green">
                   已审查
                 </span>
-                <span v-else style="color:orange">
-                  未审查
+                <span v-else-if="scope.row.reviewStatus == 2"  style="color:orange">
+                  已撤销
+                </span>
+                <span v-else style="color:red">
+                   未审查
                 </span>
               </template>
             </el-table-column>

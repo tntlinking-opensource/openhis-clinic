@@ -116,8 +116,10 @@
             1=1
             AND a.id > 0
             AND a.del_flag = #{DEL_FLAG_NORMAL}
-            and if(company.is_institution=0, company.id = #{id}, (company.id = #{institution} or
-            company.id = #{id}) )
+            <if test="institution != null and institution != ''">
+                and if(company.is_institution=0, company.id = #{id}, (company.id = #{institution} or
+                company.id = #{id}) )
+            </if>
             <include refid="Common.whereParams"/>
         </where>
     </select>
@@ -232,8 +234,10 @@
             1=1
             AND a.id > 0
             AND a.del_flag = #{DEL_FLAG_NORMAL}
-            and if(company.is_institution=0, company.id = #{id}, (company.id = #{institution} or
-            company.id = #{id}) )
+            <if test="institution != null and institution != ''">
+                and if(company.is_institution=0, company.id = #{id}, (company.id = #{institution} or
+                company.id = #{id}) )
+            </if>
             <include refid="Common.whereParams"/>
         </where>
         group by
@@ -294,7 +298,9 @@
             AND a.id > 0
             AND a.status = 1
             AND a.del_flag = #{DEL_FLAG_NORMAL}
+          <if test="institution != null">
             and (company.id = #{institution} or company.id = #{id})
+          </if>
             <include refid="Common.whereParams"/>
         </where>
         <choose>

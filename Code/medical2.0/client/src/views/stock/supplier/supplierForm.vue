@@ -1,14 +1,14 @@
 <template>
-  <el-dialog :title='dialogProps.title' :visible.sync='dialogProps.visible' :close-on-click-modal='false' width='50%' 
+  <el-dialog :title='dialogProps.title' :visible.sync='dialogProps.visible' :close-on-click-modal='false' width='50%'
     @open='onDialogOpen()' v-loading='loading'>
     <div slot='title' class='dialog-header'>
       {{ dialogProps.title }}
       <OperationIcon v-show='dialogProps.action == "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
     </div>
 
-    <el-form :model='bizFormModel' :rules='formRules' 
-      ref='supplierForm' label-width='120px' label-position='right' class='edit-form' style="marginTop: 10px">  
-      <div class="tab-item" v-show='tabIndex=="1"'>  
+    <el-form :model='bizFormModel' :rules='formRules'
+      ref='supplierForm' label-width='120px' label-position='right' class='edit-form' style="marginTop: 10px">
+      <div class="tab-item" v-show='tabIndex=="1"'>
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='名称' prop='name' >
@@ -32,7 +32,7 @@
             <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.phone' :maxlength='45' :placeholder='dialogProps.action == "view"? "" : "请输入电话"' ></el-input>
           </el-form-item>
         </el-col>
-               
+
       </el-row>
               <el-row>
         <el-col :span='24/2'>
@@ -54,7 +54,7 @@
          </el-col>
       </el-row>
               <el-row>
-     
+
           <el-form-item label='所在地区' prop='' >
              <v-distpicker :disabled='dialogProps.action == "view"' :province="province" :city="city" :area="area"  @province="onChangeProvince" @city="onChangeCity" @area="onChangeArea"></v-distpicker>
           </el-form-item>
@@ -91,7 +91,7 @@
       <el-button v-if='dialogProps.action != "view"' :disabled="flage" type='primary' :plain='true' @click='onSubmit("supplierForm")'>保 存</el-button>
       <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
       <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
-    </span>    
+    </span>
   </el-dialog>
 </template>
 <script>
@@ -108,13 +108,13 @@ export default {
   components: {
     OperationIcon,
     VDistpicker
-  },  
+  },
   data() {
     return {
       bizFormModel: this.initFormModel(),
       tabIndex: '1',
       //省市区三级联动
-      province : '',
+      eprovinc : '',
       city : '',
       area : '',
       value:'1',
@@ -122,7 +122,7 @@ export default {
        dialogProps: {
         visible: false,
         action: '',
-        title: '',       
+        title: '',
       },
       formRules: {
         'name': [
@@ -132,14 +132,14 @@ export default {
             { required: true, message: '请选择供应商类型', trigger: 'change' }
           ],
       }
-    }    
+    }
   },
   props: {
     // 权限
     permission: {
       type: Object
     }
-  },  
+  },
   methods: {
     onSubmit(formName) {
       this.flage=true
@@ -178,7 +178,7 @@ export default {
       this.initOptions(this.bizFormModel)
     },
     onDialogClose() {
-      this.dialogProps.visible = false  
+      this.dialogProps.visible = false
     },
     onDialogOpen() {
       this.$nextTick(() => {
@@ -209,20 +209,20 @@ export default {
     // 获取到省市区三级联动的值
     onChangeProvince(data) {
         this.province=data.value
-       
+
     },
     onChangeCity(data){
       this.city=data.value
-    
+
     },
     onChangeArea(data){
       this.area=data.value
-     
+
     },
      //输入框拼音码
      pinyinInput(value){
        this.bizFormModel.pinyinCode=pinyin.getCamelChars(value)
-       
+
      },
   },
   watch: {
@@ -274,7 +274,7 @@ export default {
         this.dialogProps.visible = true
       })
     })
-  }  
+  }
 }
 </script>
 <style lang="scss">

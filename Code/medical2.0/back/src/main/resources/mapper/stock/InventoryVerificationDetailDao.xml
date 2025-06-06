@@ -294,25 +294,42 @@
         profit_and_loss_price,
         medicinal_storage_id
         ) VALUES
-        <foreach collection="medicinalStorageControls" item="item" open="" separator="," close="" index="index">
-            (
-            #{item.inventoryVerificationDetailId},
-            #{item.inventoryVerification.company.id},
-            #{item.inventoryVerification.id},
-            null,
-            #{item.stuff.id},
-            #{item.storageStock},
-            #{item.storageStock},
-            0,
-            #{item.inventoryVerification.createBy},
-            #{item.inventoryVerification.createDate},
-            #{item.inventoryVerification.updateBy},
-            #{item.inventoryVerification.updateDate},
-            null,
-            0,
-            #{item.id}
-            )
-        </foreach>
+            INSERT INTO inventory_verification_detail(
+            id,
+            company_id,
+            inventory_verification_id,
+            drug_id,
+            stuff_id,
+            current_inventory,
+            check_inventory,
+            profit_and_loss,
+            create_by,
+            create_date,
+            update_by,
+            update_date,
+            remarks,
+            profit_and_loss_price,
+            medicinal_storage_id
+            ) VALUES
+            <foreach collection="medicinalStorageControls" item="item" separator=",">
+                (
+                #{item.inventoryVerificationDetailId},
+                #{item.inventoryVerification.company.id},
+                #{item.inventoryVerification.id},
+                null,
+                #{item.stuff.id},
+                #{item.storageStock},
+                #{item.storageStock},
+                0,
+                #{item.inventoryVerification.createBy},
+                #{item.inventoryVerification.createDate},
+                #{item.inventoryVerification.updateBy},
+                #{item.inventoryVerification.updateDate},
+                null,
+                0,
+                #{item.id}
+                )
+            </foreach>
     </insert>
 
     <update id="bulkUpdate" parameterType="java.util.List">    

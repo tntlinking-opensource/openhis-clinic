@@ -36,14 +36,6 @@
         </el-row>
         <el-row>
           <el-col :span='24/1'>
-            <el-form-item label='医疗机构编码' prop='fixmedinsCode'>
-              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.fixmedinsCode' :maxlength='100'
-                        :placeholder='dialogProps.action == "view"? "" : "如未开启医保则输入:000"' autofocus></el-input>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span='24/1'>
             <el-form-item label='地址(省)' prop='addressProvince'>
               <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.addressProvince' :maxlength='10'
                         :placeholder='dialogProps.action == "view"? "" : "请输入地址(省)"'></el-input>
@@ -87,6 +79,70 @@
             <el-form-item label='执业许可科目' prop='licenseSubject'>
               <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.licenseSubject' :maxlength='100'
                         :placeholder='dialogProps.action == "view"? "" : "请输入执业许可科目"'></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          医保配置参数
+        </el-row>
+        <el-row>
+          <el-col :span='24/1'>
+            <el-form-item label='医疗机构编码' prop='fixmedinsCode'>
+              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.fixmedinsCode' :maxlength='100'
+                        autofocus></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <!-- 定点医疗机构名称 -->
+          <el-col :span='24/1'>
+            <el-form-item label='医疗机构名称' prop='fixmedinsName'>
+              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.fixmedinsName' :maxlength='100'></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <!-- 就医地区编码 -->
+          <el-col :span='24/1'>
+            <el-form-item label='就医地区编码' prop='mdtrtareaAdmvs'>
+              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.mdtrtareaAdmvs' :maxlength='100'></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <!-- appId -->
+          <el-col :span='24/1'>
+            <el-form-item label='密钥Id' prop='appId'>
+              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.appId' :maxlength='100'></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <!-- appSecret -->
+          <el-col :span='24/1'>
+            <el-form-item label='密钥Key' prop='appSecret'>
+              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.appSecret' :maxlength='100'></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <!-- privateKey -->
+          <el-col :span='24/1'>
+            <el-form-item label='机构私钥' prop='privateKey'>
+              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.privateKey' :maxlength='100'></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-row>
+          <!-- publicKey -->
+          <el-col :span='24/1'>
+            <el-form-item label='医保中心公钥' prop='publicKey'>
+              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.publicKey' :maxlength='100'></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -280,7 +336,6 @@
             'id': validatenull(This) || validatenull(This.lesseeId) ? null : This.lesseeId.id,
             'name': validatenull(This) || validatenull(This.lesseeId) ? null : This.lesseeId.name,
           },
-          'fixmedinsCode':'' ,//医疗机构编码
           'addressProvince': '',   // 地址(省)
           'addressCity': '',   // 地址(市)
           'addressRegion': '',   // 地址(区)
@@ -303,7 +358,14 @@
           'startUseDate': '',   // 诊所开始时间
           'expireDate': '',   // 诊所到期时间
           'remarks': '',   // 备注信息
-
+          //医保配置信息
+          'fixmedinsCode':'' ,//医疗机构编码
+          'fixmedinsName': '',   // 医疗机构名称
+          'mdtrtareaAdmvs': '',  // 就医地区编码
+          'appId': '',           // 电子处方 AppId
+          'appSecret': '',       // 电子处方 AppSecret
+          'privateKey': '',      // 电子处方 私钥
+          'publicKey': '',       // 电子处方 公钥
         }
       },
       initOptions(This) {

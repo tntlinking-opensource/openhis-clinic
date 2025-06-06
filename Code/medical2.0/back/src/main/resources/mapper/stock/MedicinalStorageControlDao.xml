@@ -475,6 +475,7 @@
         AND a.del_flag=0
         AND a.storage_stock>0
         AND a.drug_stuff_id = #{drugOrStuffId}
+        AND a.company_id = #{companyId}
     </select>
 
     <select id="getByDrugOrStuffIds" resultType="java.math.BigDecimal">

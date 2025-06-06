@@ -44,7 +44,7 @@ public class CurrentInventoryService {
 
     @Transactional(readOnly = false)
     public HashMap<String, BigDecimal> getAllDrugs(List<Parameter> params, String orderby) {
-        List<Drug> drugs = drugService.listAlls(params, orderby);
+        List<Drug> drugs = drugService.listAllDrug(params, orderby);
         BigDecimal totalPrice = new BigDecimal("0");
         BigDecimal totalSellingPrice = new BigDecimal("0");
         for (Drug drug : drugs) {

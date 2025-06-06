@@ -107,6 +107,17 @@ public class DrugService extends CrudService<DrugDao, Drug>  {
         return new Page<>(total, list);
     }
 
+    /**
+     * 入库时查询自己诊所所有药品信息 2025.4.2
+     * @param parameters
+     * @param orderby
+     * @return
+     */
+    public List<Drug> listAllDrug(List<Parameter> parameters, String orderby) {
+        PageRequest pageRequest = new PageRequest(parameters, orderby);
+
+        return dao.listAlls(pageRequest);
+    }
 
 
     public List<Drug> listAlls(List<Parameter> parameters, String orderby) {
@@ -155,7 +166,49 @@ public class DrugService extends CrudService<DrugDao, Drug>  {
         return drugs;
     }
 
+    /**
+     * 2025.4.2 @update
+     * 获取本诊所下所有库存
+     * @return
+     */
+    public Page<Drug> getDrugNew(List<Parameter> params, int offset, int limit, String orderby) {
+        PageRequest pageRequest = new PageRequest(offset, limit, params, orderby,SessionUtils.getLoginTenantId());
+        int total = this.dao.count(pageRequest);
+        List<Drug> list = null;
+        if (total > 0) {
+            list = this.dao.listPages(pageRequest);
+        }
+        //获取到当前药品后去库存明细中获取其进价并算出其成本合计
+        if (!CollectionUtils.isEmpty(list)) {
+            for (Drug drug : list) {
+                //根据动态库存获取成本合计
+                BigDecimal totalCost = medicinalStorageControlService.getByDrugOrStuffId(drug.getId());
+                if (!Objects.isNull(drug.getStock()) && !Objects.isNull(drug.getStock().getStorageStock())) {
+                    String inventory =
+                            drug.getStock().getStorageStock().subtract((drug.getStock().getUsedStock().add(drug.getStock().getReimburseStock()))).stripTrailingZeros().toPlainString();
+                    drug.setInventory(Integer.parseInt(inventory));
+                } else {
+                    drug.setInventory(0);
+                }
+                if (!Objects.isNull(totalCost)) {
+                    drug.setBid(totalCost);
+                } else {
+                    drug.setBid(new BigDecimal("0"));
+                }
+            }
+        }
 
+        return new Page((long) total, list);
+    }
+
+    /**
+     * 获取租户所有库存 诊所共用
+     * @param params
+     * @param offset
+     * @param limit
+     * @param orderby
+     * @return
+     */
     public Page<Drug> getDrug(List<Parameter> params, int offset, int limit, String orderby) {
         Optional<Parameter> cartOptional = params.stream().filter(item -> item.getColumnName().equals("`company_id`")).findFirst();
         params.remove(0);
@@ -409,11 +462,7 @@ public class DrugService extends CrudService<DrugDao, Drug>  {
 
 
     public Page<Drug> listByCompany(List<Parameter> params, int offset, int limit, String orderby) {
-
-        Optional<Parameter> cartOptional = params.stream().filter(item -> item.getColumnName().equals("`company_id`")).findFirst();
-        params.remove(0);
-        String id = (String) cartOptional.get().getValue();
-        PageRequest pageRequest = new PageRequest(offset, limit, params, orderby, id);
+        PageRequest pageRequest = new PageRequest(offset, limit, params, orderby,SessionUtils.getLoginTenantId());
         int total = dao.count(pageRequest);
         List<Drug> list = null;
         if (total > 0) {

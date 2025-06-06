@@ -372,6 +372,7 @@
                 and s.create_date &lt;= #{endTime}
             </if>
         </trim>
-        GrOUP BY a.id
+        GROUP BY a.id
+        ORder BY a.create_date DESC
     </select>
 </mapper>

@@ -7,6 +7,12 @@
         a.parent_id AS "parent.id",
         IFNULL(parent.name,'') AS "parent.name",
         IFNULL(a.fixmedins_code,'') AS "fixmedinsCode",
+         IFNULL(a.fixmedins_name,'') AS "fixmedinsName",
+     IFNULL(a.mdtrtarea_admvs,'') AS "mdtrtareaAdmvs",
+     IFNULL(a.app_id,'') AS "appId",
+     IFNULL(a.app_secret,'') AS "appSecret",
+     IFNULL(a.private_key,'') AS "privateKey",
+     IFNULL(a.public_key,'') AS "publicKey",
         a.full_name AS "fullName",
         a.ids AS "ids",
         a.name AS "name",
@@ -243,36 +249,49 @@
             status,
             start_use_date,
             expire_date,
-            contact_name
+            contact_name,
+            fixmedins_name,             -- 新增 fixmedins_name
+            mdtrtarea_admvs,            -- 新增 mdtrtarea_admvs
+            app_id,                     -- 新增 app_id
+            app_secret,                 -- 新增 app_secret
+            private_key,                -- 新增 private_key
+            public_key                  -- 新增 public_key
         ) VALUES (
-            #{id},
-            #{parent.id},
-            #{fixmedinsCode},
-            #{fullName},
-            #{ids},
-            #{name},
-            #{code},
-            #{sort},
-            #{addressProvince},
-            #{createBy},
-            #{addressCity},
-            #{createDate},
-            #{addressRegion},
-            #{updateBy},
-            #{address},
-            #{updateDate},
-            #{phoneNumber},
-            #{remarks},
-            #{licenseSubject},
-            #{delFlag},
-            #{fileId},
-            #{version.id},                    
-            #{isInstitution},
-            #{status},
-            #{startUseDate},
-            #{expireDate},
-            #{contactName}
-        )
+                     #{id},
+                     #{parent.id},
+                     #{fixmedinsCode},
+                     #{fullName},
+                     #{ids},
+                     #{name},
+                     #{code},
+                     #{sort},
+                     #{addressProvince},
+                     #{createBy},
+                     #{addressCity},
+                     #{createDate},
+                     #{addressRegion},
+                     #{updateBy},
+                     #{address},
+                     #{updateDate},
+                     #{phoneNumber},
+                     #{remarks},
+                     #{licenseSubject},
+                     #{delFlag},
+                     #{fileId},
+                     #{version.id},
+                     #{isInstitution},
+                     #{status},
+                     #{startUseDate},
+                     #{expireDate},
+                     #{contactName},
+                     #{fixmedinsName},          -- 新增 fixmedinsName
+                     #{mdtrtareaAdmvs},         -- 新增 mdtrtareaAdmvs
+                     #{appId},                  -- 新增 appId
+                     #{appSecret},              -- 新增 appSecret
+                     #{privateKey},             -- 新增 privateKey
+                     #{publicKey}               -- 新增 publicKey
+                 )
+
     </insert>
     
     <update id="update">
@@ -296,7 +315,13 @@
             status = #{status},
             start_use_date = #{startUseDate},
             expire_date = #{expireDate},
-            contact_name = #{contactName}
+            contact_name = #{contactName},
+            fixmedins_name = #{fixmedinsName},            -- 新增 fixmedins_name
+            mdtrtarea_admvs = #{mdtrtareaAdmvs},          -- 新增 mdtrtarea_admvs
+            app_id = #{appId},                            -- 新增 app_id
+            app_secret = #{appSecret},                    -- 新增 app_secret
+            private_key = #{privateKey},                  -- 新增 private_key
+            public_key = #{publicKey}
         WHERE id = #{id}
     </update>
     

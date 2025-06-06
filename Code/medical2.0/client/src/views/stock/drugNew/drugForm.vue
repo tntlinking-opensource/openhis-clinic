@@ -35,7 +35,7 @@
             <el-col :span="24 / 2">
               <el-form-item label="药品名称" prop="goodsName">
                 <el-input
-                  :disabled="dialogProps.action == 'view' || bizFormModel.syncId"
+                  :disabled="dialogProps.action == 'view' "
                   v-model="bizFormModel.goodsName"
                   @input="pinyinInput"
                   :maxlength="128"
@@ -49,7 +49,7 @@
             <el-col :span="24 / 2">
               <el-form-item label="别名" prop="brandName">
                 <el-input
-                  :disabled="dialogProps.action == 'view' || bizFormModel.syncId"
+                  :disabled="dialogProps.action == 'view' "
                   v-model="bizFormModel.brandName"
                   :maxlength="128"
                   :placeholder="
@@ -79,7 +79,7 @@
                 ></el-input>
                 <el-select
                   v-else
-                  :disabled="bizFormModel.syncId"
+
                   v-model="bizFormModel.type"
                   value-key="value"
                   filterable
@@ -107,7 +107,7 @@
             <el-col :span="24 / 2">
               <el-form-item label="药品来源" prop="source">
                 <el-input
-                  :disabled="dialogProps.action == 'view' || bizFormModel.syncId"
+                  :disabled="dialogProps.action == 'view' "
                   v-model="bizFormModel.source"
                   :maxlength="128"
                   :placeholder="
@@ -125,7 +125,7 @@
                 ></el-input>
                 <el-select
                   v-else
-                  :disabled="bizFormModel.syncId"
+
                   v-model="bizFormModel.nature"
                   value-key="value"
                   filterable
@@ -159,7 +159,7 @@
                 <el-select
                   v-else
                   v-model="bizFormModel.factory"
-                  :disabled="bizFormModel.syncId"
+
                   value-key="id"
                   filterable
                   clearable
@@ -183,7 +183,7 @@
             <el-col :span="24 / 2">
               <el-form-item label="国药准字" prop="standardCode">
                 <el-input
-                  :disabled="dialogProps.action == 'view' || bizFormModel.syncId"
+                  :disabled="dialogProps.action == 'view' "
                   v-model="bizFormModel.standardCode"
                   :maxlength="64"
                   :placeholder="
@@ -197,7 +197,7 @@
             <el-col :span="24 / 2">
               <el-form-item label="本位码" prop="bitCode">
                 <el-input
-                  :disabled="dialogProps.action == 'view' || bizFormModel.syncId"
+                  :disabled="dialogProps.action == 'view' "
                   v-model="bizFormModel.bitCode"
                   :maxlength="64"
                   :placeholder="
@@ -209,7 +209,7 @@
             <el-col :span="24 / 2">
               <el-form-item label="条形码" prop="barCode">
                 <el-input
-                  :disabled="dialogProps.action == 'view' || bizFormModel.syncId"
+                  :disabled="dialogProps.action == 'view' "
                   v-model="bizFormModel.barCode"
                   :maxlength="64"
                   :placeholder="
@@ -223,7 +223,7 @@
             <el-col :span="24 / 2">
               <el-form-item label="医保编码" prop="insuranceCode">
                 <el-input
-                  :disabled="dialogProps.action == 'view' || bizFormModel.syncId"
+                  :disabled="dialogProps.action == 'view' "
                   v-model="bizFormModel.insuranceCode"
                   :maxlength="64"
                   :placeholder="
@@ -247,7 +247,7 @@
         <el-row>
           <el-col :span="24 / 2">
             <el-form-item label='是否启用' prop='status'>
-              <el-switch :disabled="(dialogProps.action == 'view' && updateType=='0') || bizFormModel.syncId" v-model='value'
+              <el-switch :disabled="(dialogProps.action == 'view' && updateType=='0') " v-model='value'
                          active-color='#13ce66' inactive-color='#dbdfe6' active-value='1'
                          inactive-value='0'></el-switch>
             </el-form-item>
@@ -264,7 +264,7 @@
               <el-form-item label="剂量" prop="dosis" style="display:flex;align-item:center">
                 <el-input
                   style="width:100px"
-                  :disabled="dialogProps.action == 'view' || bizFormModel.syncId"
+                  :disabled="dialogProps.action == 'view' "
                   v-model="bizFormModel.dosis"
                   :maxlength="45"
                   :placeholder="
@@ -282,7 +282,7 @@
                 ></el-input>
                 <el-select
                   v-else
-                  :disabled="bizFormModel.syncId"
+
                   v-model="bizFormModel.dosisUnit"
                   value-key="value"
                   filterable
@@ -311,7 +311,7 @@
               <el-form-item label="制剂" prop="preparation" label-width="50px" style="display:flex;align-item:center">
                 <el-input
                   style="width:100px"
-                  :disabled="dialogProps.action == 'view' || bizFormModel.syncId"
+                  :disabled="dialogProps.action == 'view' "
                   v-model="bizFormModel.preparation"
                   :maxlength="45"
                   :placeholder="
@@ -329,7 +329,7 @@
                 ></el-input>
                 <el-select
                   v-else
-                  :disabled="bizFormModel.syncId"
+
                   v-model="bizFormModel.preparationUnit"
                   value-key="value"
                   filterable
@@ -364,7 +364,7 @@
                 ></el-input>
                 <el-select
                   v-else
-                  :disabled="bizFormModel.syncId"
+
                   v-model="bizFormModel.pack"
                   value-key="value"
                   filterable
@@ -478,7 +478,7 @@
             <el-col :span="24 / 6">
               <el-form-item style="margin-letf:-1000px" label="允许拆零销售" prop="isUnpackSell">
                 <el-switch
-                  :disabled="(dialogProps.action == 'view' && updateType=='0') || bizFormModel.syncId"
+                  :disabled="(dialogProps.action == 'view' && updateType=='0') "
                   v-model="bizFormModel.isUnpackSell"
                   active-color="#13ce66"
                   inactive-color="#dbdfe6"
@@ -535,7 +535,7 @@
                   }
                 "
                   v-model="bizFormModel.retailPrice"
-                  :disabled="(bizFormModel.isUnpackSell === '0') || bizFormModel.syncId"
+                  :disabled="(bizFormModel.isUnpackSell === '0') "
                   currency="CNY"
                   :precision="2"
                 >
@@ -569,7 +569,7 @@
                   v-model="bizFormModel.chineseMedicineUse"
                   value-key="value"
                   filterable
-                  :disabled="bizFormModel.syncId"
+
                   clearable
                   placeholder="请选择"
                   @clear="
@@ -589,7 +589,7 @@
                 <el-select
                   v-else-if="bizFormModel.type.value!='medicalType_1'"
                   v-model="bizFormModel.westernMedicineUse"
-                  :disabled="bizFormModel.syncId"
+
                   value-key="value"
                   filterable
                   clearable
@@ -629,7 +629,7 @@
                   </el-input>
                   <el-input
                     v-else
-                    :disabled="bizFormModel.syncId"
+
                     placeholder="请输入"
                     v-model="bizFormModel.singleDosage"
                     style="width:80px;float:left;"
@@ -670,7 +670,7 @@
                 <el-select
                   v-else
                   v-model="bizFormModel.frequency"
-                  :disabled="bizFormModel.syncId"
+
                   value-key="value"
                   filterable
                   clearable
@@ -701,7 +701,7 @@
                 <el-select
                   v-else
                   v-model="bizFormModel.days"
-                  :disabled="bizFormModel.syncId"
+
                   value-key="value"
                   filterable
                   clearable
@@ -741,7 +741,7 @@
                 <el-input
                   v-else
                   placeholder="请输入"
-                  :disabled="bizFormModel.syncId"
+
                   v-model="bizFormModel.total"
                   style="width:90px"
                   @focus="
@@ -777,7 +777,7 @@
             <el-col :span="24 / 3">
               <el-form-item label="有效期预警" prop="indate">
                 <el-input
-                  :disabled="(dialogProps.action == 'view'&&updateType=='0') || bizFormModel.syncId"
+                  :disabled="(dialogProps.action == 'view'&&updateType=='0') "
                   v-model="bizFormModel.indate"
                   :maxlength="64"
                   placeholder="请输入预警天数"
@@ -789,7 +789,7 @@
             <el-col :span="24 / 3">
               <el-form-item label="库存下限" prop="inventoryFloor">
                 <el-input
-                  :disabled="(dialogProps.action == 'view'&&updateType=='0') || bizFormModel.syncId"
+                  :disabled="(dialogProps.action == 'view'&&updateType=='0') "
                   v-model="bizFormModel.inventoryFloor"
                   :maxlength="64"
                   placeholder="请输入库存下限"
@@ -802,7 +802,7 @@
             <el-col :span="24 / 3">
               <el-form-item label="库存上限" prop="inventoryLimit">
                 <el-input
-                  :disabled="(dialogProps.action == 'view'&&updateType=='0') || bizFormModel.syncId"
+                  :disabled="(dialogProps.action == 'view'&&updateType=='0') "
                   v-model="bizFormModel.inventoryLimit"
                   :maxlength="64"
                   placeholder="请输入库存上限"
@@ -817,7 +817,7 @@
             <el-col :span="24 / 3">
               <el-form-item label="货位号" prop="locationNumber">
                 <el-input
-                  :disabled="(dialogProps.action == 'view'&&updateType=='0') || bizFormModel.syncId"
+                  :disabled="(dialogProps.action == 'view'&&updateType=='0') "
                   v-model="bizFormModel.locationNumber"
                   :maxlength="64"
                   placeholder="请输入货位号"
@@ -1402,11 +1402,7 @@
           this.dialogProps.visible = true;
         });
         this.$on("openEditDrugDialog", function (drug) {
-          if ((drug.stock.storageStock - drug.stock.usedStock - drug.stock.reimburseStock) > 0) {
-            this.dialogProps.action = "view";
-          } else {
             this.dialogProps.action = "edit";
-          }
           this.dialogProps.title = "修改药品信息";
           this.bizFormModel = {...this.initFormModel(), ...drug};
           this.initOptions(this.bizFormModel);

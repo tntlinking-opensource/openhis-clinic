@@ -180,7 +180,9 @@
             1=1
             AND a.id > 0
             AND a.del_flag = #{DEL_FLAG_NORMAL}
+         <if test="institution != null and institution != ''">
             and (company.id = #{institution} or company.id = #{id})
+         </if>
             <include refid="Common.whereParams"/>
         </where>
         <choose>

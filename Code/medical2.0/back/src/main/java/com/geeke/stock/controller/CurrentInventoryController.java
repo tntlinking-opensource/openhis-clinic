@@ -51,7 +51,7 @@ public class CurrentInventoryController extends BaseController {
 	//获取药品
     @PostMapping("getDrug")
     public ResponseEntity<JSONObject> getDrug(@RequestBody SearchParams searchParams){
-        Page<Drug> drugList = drugService.getDrug(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
+        Page<Drug> drugList = drugService.getDrugNew(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
         return ResponseEntity.ok(ResultUtil.successJson(drugList));
     }
     //获取材料
