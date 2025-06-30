@@ -55,7 +55,6 @@ public class MedicinalStockControlController extends BaseController {
         if("false".equals(searchParams.getYpType()) || "0".equals(searchParams.getYpType()) ) {
            result = medicinalStockControlService.listAllByCompany(searchParams.getParams(), searchParams.getOrderby());
         }else{
-
          result =    medicinalStockControlService.listPreAll(searchParams.getParams(), searchParams.getOrderby());
         }
         return ResponseEntity.ok(ResultUtil.successJson(result));
