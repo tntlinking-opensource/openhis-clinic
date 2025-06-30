@@ -52,7 +52,7 @@ public class MedicinalStockControlController extends BaseController {
     @PostMapping(value = "listAll")
     public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
         List<MedicinalStockControl> result = null;
-        if("false".equals(searchParams.getYpType()) ) {
+        if("false".equals(searchParams.getYpType()) || "0".equals(searchParams.getYpType()) ) {
            result = medicinalStockControlService.listAllByCompany(searchParams.getParams(), searchParams.getOrderby());
         }else{
          result =    medicinalStockControlService.listPreAll(searchParams.getParams(), searchParams.getOrderby());

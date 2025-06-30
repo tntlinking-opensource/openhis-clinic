@@ -30,6 +30,7 @@ module.exports = {
       '/api': {
         target: 'http://localhost:7016',
         //target: 'http://hospital.zirich.com.cn/api',
+        //target:"http://192.168.68.224:7016",
         changeOrigin: true,
         pathRewrite: {
           '^/api': ''

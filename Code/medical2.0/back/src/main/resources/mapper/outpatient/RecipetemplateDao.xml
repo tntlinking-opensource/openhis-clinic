@@ -17,8 +17,8 @@
         a.update_by AS "updateBy",
         a.update_date AS "updateDate",
         a.del_flag AS "delFlag",
-        a.remarks AS "remarks",
-        a.patient_id AS "patientId"
+        a.remarks AS "remarks"
+
     </sql>
     
     <sql id="recipetemplateJoins">
@@ -123,8 +123,7 @@
             update_by,
             update_date,
             del_flag,
-            patient_id,
-            single_dosage
+
         ) VALUES (
             #{id},
             #{company.id},                    
@@ -136,9 +135,8 @@
             #{createDate},
             #{updateBy},
             #{updateDate},
-            #{delFlag},
-            #{patientId},
-            #{singleDosage}
+            #{delFlag}
+
         )
     </insert>
     
@@ -156,8 +154,7 @@
         update_by=#{updateBy},
         update_date=#{updateDate},
         del_flag=#{delFlag},
-        remarks=#{remarks},
-        patient_id=#{patientId}
+        remarks=#{remarks}
         WHERE id = #{id}
     </update>
     
@@ -291,7 +288,6 @@
          update_by,
          update_date,
          del_flag,
-         patient_id,
          remarks,
          create_id
         )values(
@@ -307,7 +303,6 @@
         #{updateBy},
         #{updateDate},
         #{delFlag},
-        #{patientId},
         #{remarks},
         #{createId}
         )

@@ -581,7 +581,7 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
                 registration.setStatus(statusDictItem);
                 registration.setReceptionEndDate(new Date());
             }
-            if(receptionEvt.getRecipelInfoEvtList().get(0).getRecipelInfo().getIsPre()!=null&&receptionEvt.getRecipelInfoEvtList().size() == 1 && receptionEvt.getRecipelInfoEvtList().get(0).getRecipelInfo().getIsPre()){
+            if(!receptionEvt.getRecipelInfoEvtList().isEmpty() && receptionEvt.getRecipelInfoEvtList().get(0).getRecipelInfo().getIsPre()!=null&&receptionEvt.getRecipelInfoEvtList().size() == 1 && receptionEvt.getRecipelInfoEvtList().get(0).getRecipelInfo().getIsPre()){
                 //单号单电子处方设置号结束就诊流程
                 registration.setIsPre("1");
             }
