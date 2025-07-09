@@ -118,7 +118,7 @@ import {
 } from "@/utils/auth";
 import { routerTree, handleFamily } from "@/utils/routerTree";
 
-import backImg from "@/assets/images/KCI8nCoKFf.jpg";
+import backImg from "@/assets/images/logbg.jpg";
 
 const _import = require("@/router/_import_" + process.env.NODE_ENV);
 
@@ -193,6 +193,9 @@ export default {
             // this.sysData.favicon = `${this.baseApi}/sys/sysSeting/getFile/4`;
             this.sysData.loginBg = `${this.baseApi}/sys/sysSeting/getFile/5`;
             this.sysData.loginGraph = `${this.baseApi}/sys/sysSeting/getFile/6`;
+
+
+
             setLocalSysSetting(this.sysData);
 
             // this.changeFavicon(this.sysData.favicon);

@@ -419,7 +419,7 @@ public class UserService extends CrudService<UserDao, User>{
     }
 
 //    public static void main(String[] args) {
-//        Md5Hash md5 = new Md5Hash("xzsuperxz","1000" , 6);
+//        Md5Hash md5 = new Md5Hash("xzadmin","2077468568630583314" , 6);
 //        String md5Password = md5.toHex();
 //        System.out.println(md5Password);
 //    }

@@ -153,7 +153,7 @@ public class UserController extends BaseController {
         list.add(new Parameter("name", "=", user.getUserExt().getOffice()));
         ClinicOffice clinicOffice = clinicOfficeService.listAll(list, "").get(0);
         user.getUserExt().setOfficeCode(clinicOffice.getCode());
-        user.setLoginName(user.getPhone());
+        //user.setLoginName(user.getPhone());
         String[] deleteIds = JSONObject.parseObject(strDeleteIds, String[].class);
         String id = userService.update(user,fileIdUploads,deleteIds).getId();
         return ResponseEntity.ok(ResultUtil.successJson(id));

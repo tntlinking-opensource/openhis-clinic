@@ -68,7 +68,7 @@
           <el-col :span="24 / 2">
             <el-form-item label="手机号" prop="phone">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'||  dialogProps.action === 'edit'"
                 v-model="bizFormModel.phone"
                 :maxlength="11"
                 :placeholder="
@@ -274,7 +274,7 @@
           <el-col :span="24 / 2">
             <el-form-item label="登录名" prop="phone">
               <el-input
-                disabled="false"
+                disabled='false'
                 v-model="bizFormModel.phone"
                 :maxlength="10"
                 :placeholder="dialogProps.action == 'view' ? '' : ''"

@@ -139,7 +139,14 @@
       <el-row>
         <el-col>
     <el-table ref='genTable' :data='bizFormModel.genTableColumnList' border @current-change='(currentRow, oldCurrentRow) => {genTableColumnCurrentRow = currentRow}'>
-      <el-table-column prop='name' label='字段名' min-width='180px' header-align='center' fixed></el-table-column>
+      <el-table-column prop='name' label='字段名' min-width='180px' header-align='center' fixed>
+        <template slot-scope='{row,$index}'>
+          <el-form-item v-if='dialogProps.action != "view" && row === genTableColumnCurrentRow' :prop="`genTableColumnList.${$index}.name`" :rules='formRules.genTableColumn_name' label-width=0>
+            <el-input v-model='row.name'  :maxlength='2000' clearable placeholder='请输入字段名'></el-input>
+          </el-form-item>
+          <span v-else>{{row.name}}</span>
+        </template>
+      </el-table-column>
         <el-table-column v-if='tabIndex=="3"' key='comments' prop='comments' label='说明' min-width='200px' header-align='center'>
         <template slot='header' slot-scope='{row,$index}'>说明</template>
         <template slot-scope='{row,$index}'>
