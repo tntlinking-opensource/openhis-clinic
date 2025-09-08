@@ -1686,6 +1686,7 @@ export default {
         };
         this.initOptions(this.bizFormModel);
         this.bizFormModel.treatType.name = "初诊"
+        this.bizFormModel.cardType = this.cardTypeList[0];
         this.tabIndex = "1";
         this.dialogProps.visible = true;
         this.pageInit()
@@ -1704,10 +1705,12 @@ export default {
           };
         });
         this.tabIndex = "1";
+        this.bizFormModel.cardType = this.cardTypeList[0];
         this.bizFormModel.id = null; //把id设置为空，添加一个新的
         this.dialogProps.visible = true;
       });
     });
+
   },
 };
 </script>
