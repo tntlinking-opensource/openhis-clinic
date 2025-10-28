@@ -22,7 +22,7 @@ public interface RecipetemplateDao extends CrudDao<Recipetemplate> {
 
     String listOne(String companyId);
 
-    Recipetemplate getById(String id);
+    Recipetemplate getById(String id, String companyId);
 
     int updateById(Recipetemplate recipetemplate);
 

@@ -816,9 +816,9 @@ export default {
         // "medType.name": [
         //   { required: true, message: "请选择医疗类型", trigger: "change" },
         // ],
-        // "doctor.name": [
-        //   { required: true, message: "请选择医生", trigger: "change" },
-        // ],
+        "doctor.name": [
+          { required: true, message: "请选择医生", trigger: "change" },
+        ],
         "clinicOffice.id": [
           { required: true, message: "请选择科室", trigger: "change" },
         ],

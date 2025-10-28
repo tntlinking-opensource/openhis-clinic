@@ -122,7 +122,7 @@ public class RecipetemplateService extends CrudService<RecipetemplateDao, Recipe
     //根据id获取模板处方
     public Recipetemplate getById(String id){
         //获取主表信息
-        Recipetemplate recipetemplate=this.dao.getById(id);
+        Recipetemplate recipetemplate=this.dao.getById(id,SessionUtils.getUserDto().getCompanyId());
 
         //获取处方信息
         RecipeTemplateInfo recipeTemplateInfo=recipetemplateInfoService.getByRecipeTemplateId(recipetemplate.getId());
