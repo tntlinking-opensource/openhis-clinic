@@ -16,10 +16,10 @@
 
 ## 📚【支持文档】
 
-技术支持资源：https://open.tntlinking.com/resource/technicalSupport?site=gitee
+技术支持资源：https://open.tntlinking.com/resource/openProductDoc?site=gitee
 （含演示环境、操作手册、部署手册、开发手册、常见问题等）
 
-产品介绍：https://open.tntlinking.com/resource/industryKnowledge?site=gitee
+产品介绍：https://open.tntlinking.com/resource/productPresentation?site=gitee
 
 操作教程：https://open.tntlinking.com/resource/operationTutorial?site=gitee
 
