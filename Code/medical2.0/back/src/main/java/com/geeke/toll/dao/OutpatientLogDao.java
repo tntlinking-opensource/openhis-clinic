@@ -17,7 +17,7 @@ import java.util.List;
 @Mapper
 public interface OutpatientLogDao extends CrudDao<OutpatientLog> {
     public OutpatientLog getLogs(String id);
-    /** id查询 */
+    /** 查询 */
     int logCount(PageRequest var1);
 
     List<OutpatientLog> getOutpatientLog(OutpatientLogRc outpatientLogRc);
