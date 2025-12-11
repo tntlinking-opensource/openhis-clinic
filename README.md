@@ -10,7 +10,7 @@
 
 了解我们：https://open.tntlinking.com/about?site=gitee
 
-## 💾【部署包下载】
+## 💾【部署包下载】 
 
 请访问官网产品中心下载部署包：https://open.tntlinking.com/resource/productCenter?site=gitee
 
