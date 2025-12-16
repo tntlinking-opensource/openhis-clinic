@@ -7,7 +7,7 @@
   >
     <div class="login-header">
       <div class="login-logo">
-        <!-- <img :src="sysData.projectLogo" alt="" /> -->
+         <img :src="sysData.projectLogo" alt="" />
       </div>
       <div class="login-title">
         {{ sysData.sysName }}
@@ -77,7 +77,9 @@
       ></div>
     </div>
 
-    <div class="footer">@Copyright 2021.08.12</div>
+
+
+    <div class="footer">本系统软件源代码来源于天天开源的许可</div>
 
 
     <el-dialog
@@ -118,7 +120,7 @@ import {
 } from "@/utils/auth";
 import { routerTree, handleFamily } from "@/utils/routerTree";
 
-import backImg from "@/assets/images/logbg.jpg";
+import backImg from "@/assets/images/Logbk.png";
 
 const _import = require("@/router/_import_" + process.env.NODE_ENV);
 
@@ -145,7 +147,7 @@ export default {
         ],
         password: [{ required: true, message: "请输入口令", trigger: "blur" }],
       },
-      loginBg: require("../../assets/images/logbg.jpg"),
+      loginBg: require("../../assets/images/Logbk.png"),
       loginSubBg: require("../../assets/images/logsubbg.jpg"),
       sysData: {
         sysName: "", // 系统名称
@@ -181,6 +183,7 @@ export default {
       let parmas = {};
       listSysSetingAll(parmas)
         .then((response) => {
+          console.log(1236)
           if (response.code == 100) {
             let result = response.data[0];
             this.sysData.sysName = result.sysName;
@@ -385,6 +388,9 @@ export default {
 </script>
 
 <style scoped>
+
+
+
 .til {
   margin: 0 auto;
 }
@@ -460,7 +466,7 @@ ul li p:nth-child(1) span {
       font-weight: bold;
       font-size: 24px;
       color: #555;
-      line-height: 100px;
+      line-height: 92px;
       position: relative;
       top: 5px;
     }
@@ -481,7 +487,7 @@ ul li p:nth-child(1) span {
   }
 
   .footer {
-    font-size: 12px;
+    font-size: 14px;
     position: absolute;
     right: 20px;
     bottom: 20px;
@@ -645,7 +651,7 @@ ul li p:nth-child(1) span {
     .footer {
       position: absolute;
       color: #f5f5f5;
-      font-size: 14px;
+      font-size: 15px;
       bottom: -50px;
       width: 100%;
       text-align: center;

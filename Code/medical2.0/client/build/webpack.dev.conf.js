@@ -49,7 +49,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       filename: 'index.html',
       template: 'index.html',
       inject: true,
-      favicon:'src/assets/images/favicon.ico'
+      favicon:'src/assets/images/Logo.png'
     }),
   ]
 })
