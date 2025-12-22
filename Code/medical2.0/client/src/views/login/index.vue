@@ -79,7 +79,21 @@
 
 
 
-    <div class="footer">本系统软件源代码来源于天天开源的许可</div>
+    <div class="footer">Copyright © 2025 湖北天天数链技术有限公司
+      <!-- 第三行：协议名称（单独占一行） -->
+      <div  style="margin-top: 2px;">
+        <a
+          href="https://open.tntlinking.com/communityTreaty"
+          target="_blank"
+          rel="noopener noreferrer"
+          :style="{
+            color: settings.theme, // 复用主题色作为链接色
+            textDecoration: 'none',
+          }">
+          本系统软件源代码许可来源于《天天开源软件（社区版）许可协议》
+        </a>
+      </div>
+    </div>
 
 
     <el-dialog
@@ -487,7 +501,7 @@ ul li p:nth-child(1) span {
   }
 
   .footer {
-    font-size: 14px;
+    font-size: 12px;
     position: absolute;
     right: 20px;
     bottom: 20px;
