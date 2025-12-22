@@ -1,14 +1,14 @@
 <template>
-  <el-dialog :title='dialogProps.title' :visible.sync='dialogProps.visible' :close-on-click-modal='false' width='80%' 
+  <el-dialog :title='dialogProps.title' :visible.sync='dialogProps.visible' :close-on-click-modal='false' width='80%'
     @open='onDialogOpen()' v-loading='loading'>
     <div slot='title' class='dialog-header'>
       {{ dialogProps.title }}
       <OperationIcon v-show='dialogProps.action == "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
     </div>
     <el-card class="box-card main-card">
-    <el-form :model='bizFormModel' :rules='formRules' 
-      ref='recipetemplateForm' label-width='120px' label-position='right' class='edit-form'>  
-      <div class="tab-item" v-show='tabIndex=="1"'>  
+    <el-form :model='bizFormModel' :rules='formRules'
+      ref='recipetemplateForm' label-width='120px' label-position='right' class='edit-form'>
+      <div class="tab-item" v-show='tabIndex=="1"'>
               <el-row>
         <el-col :span='24/4'>
           <el-form-item label='模板编号' prop='code' >
@@ -26,7 +26,7 @@
           </el-form-item>
         </el-col>
         <el-col :span='24/4'>
-          <el-form-item label='模板类别' prop='category' >    
+          <el-form-item label='模板类别' prop='category' >
                     <el-radio
                       :disabled='dialogProps.action == "view"'
                       v-model="bizFormModel.category"
@@ -82,7 +82,7 @@
             >
             </el-option>
           </el-select>
-          
+
           <el-popover
             placement="top-start"
             v-if="
@@ -95,7 +95,7 @@
               :data="recipeTemplateTable"
               :height="300"
               border
-              highlight-current-row 
+              highlight-current-row
               @row-click="RowClickWesternTable"
             >
               <el-table-column
@@ -164,7 +164,7 @@
                   }}
                 </template>
               </el-table-column>
-             
+
             </el-table>
             <el-input
               prefix-icon="el-icon-plus"
@@ -177,8 +177,8 @@
               @focus="GetWesternTable"
               placeholder="输入药品名称或拼音码"
             ></el-input>
-            
-          </el-popover>  
+
+          </el-popover>
         </el-row>
         <el-row>
           <el-table
@@ -237,7 +237,7 @@
                   "
                 >
                   <template slot="append">{{
-                    scope.row.drugStuffId.preparationUnit.name
+                    scope.row.drugStuffId.dosisUnit.name
                   }}</template>
                 </el-input>
               </template>
@@ -474,12 +474,12 @@
                     {{ scope.row.price + "/" + scope.row.pack.name }}
                   </template>
                 </el-table-column>
-                <!--                                                     
+                <!--
                                           <el-table-column label="零售价" width="80">
                                               <template slot-scope="scope">
                                                   {{scope.row.isUnpackSell === "1" ? (scope.row.retailPrice + "/" + scope.row.preparationUnit.name) : "--"}}
                                               </template>
-                                          </el-table-column> 
+                                          </el-table-column>
                                           -->
                 <el-table-column
                   prop="inventory"
@@ -520,7 +520,7 @@
                 @focus="GetChineseTable"
                 placeholder="输入药品名称或拼音码"
               ></el-input>
-              
+
             </el-popover>
           </el-row>
           <el-row :gutter="24" style="min-height: 100px">
@@ -569,7 +569,7 @@
                     @input="changeSingleDosage(citem.singleDosage,index,item)"
                     v-model="citem.singleDosage"
                     style="width: 80px"
-                    
+
                   >
                     <template slot="append">{{
                       citem.drugStuffId.pack.name
@@ -610,7 +610,7 @@
               style="width: 60px"
             ></el-input
             >
-            
+
             &nbsp;剂 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;用法：
             <el-select
               :disabled="
@@ -681,10 +681,10 @@
       </div>
       <!-- 输液处方 -->
       <div v-else-if="templateType==2">
-           <div >             
+           <div >
             <el-row>
               <el-divider content-position="left">处方信息</el-divider>
-              
+
               <el-select
                 :disabled="
                   dialogProps.action == 'view'
@@ -704,9 +704,9 @@
                 >
                 </el-option>
               </el-select>
-                
-            
-              <el-button 
+
+
+              <el-button
                   v-if="
                     dialogProps.action != 'view'
                   " @click="addGroup(bizFormModel)" type="primary" plain>加一组</el-button>
@@ -715,7 +715,7 @@
             </div>
           <div  style="margin-left:-10px;">
               <div v-for="(items,index) in bizFormModel.infusion.zushu" :key="index" style="border:1px solid #DCDCDC;padding:10px;margin:10px;">
-              
+
               <el-row>
 
                 <div>
@@ -812,7 +812,7 @@
                   @focus="GetInfusionTable(index)"
                   placeholder="输入药品名称或拼音码"
                 ></el-input>
-                
+
               </el-popover>
                   <span  >&nbsp;&nbsp;第{{index+1}}组</span>
                     <span  style="float:right;height:25px;line-height:25px;font-size:14px;">&nbsp;&nbsp;</span>
@@ -823,7 +823,7 @@
                   ></el-button>
                   <span  style="float:right;height:25px;line-height:25px;font-size:14px;">&nbsp;&nbsp;</span>
                     <span  style="float:right;height:25px;line-height:25px;font-size:14px;">&nbsp;&nbsp;滴/分钟</span>
-                      
+
                       <el-input
                       style="float:right;width:10%"
                       v-model="bizFormModel.infusion.drippingSpeed[index]"
@@ -832,11 +832,11 @@
                         dialogProps.action == 'view'
                       "
                     >
-                      
+
                     </el-input>
-                    
+
                     <span  style="float:right;height:25px;line-height:25px;font-size:14px;">&nbsp;&nbsp;天&nbsp;&nbsp;</span>
-                    
+
                       <el-select
                         style="float:right;width:10%"
                       v-model="bizFormModel.infusion.days[index]"
@@ -854,9 +854,9 @@
                       >
                       </el-option>
                     </el-select>
-                    
+
                     <span  style="float:right;height:25px;line-height:25px;font-size:18px;">&nbsp;&nbsp;</span>
-                      
+
                       <el-select
                         style="float:right;width:10%;"
                       v-model="bizFormModel.infusion.frequency[index]"
@@ -874,9 +874,9 @@
                       >
                       </el-option>
                     </el-select>
-                  
+
                     <span  style="float:right;height:25px;line-height:25px;font-size:18px;">&nbsp;&nbsp;</span>
-                    
+
                   <el-select
                       style="float:right;width:10%"
                       v-model="bizFormModel.infusion.infuseUse[index]"
@@ -893,8 +893,8 @@
                       >
                       </el-option>
                     </el-select>
-                                                                                              
-            
+
+
                 </div>
               <div style="border:7px solid #0000"></div>
               <el-table
@@ -909,14 +909,14 @@
                 style="width: 100%"
                 class="tableStyle"
                 @cell-click="checkInventory"
-              >   
+              >
                     <el-table-column
                   type="index"
                   label="序号"
                   width="50"
                   align="center"
                 ></el-table-column>
-               
+
                 <el-table-column
                   prop="drugStuffId"
                   label="药品名称"
@@ -990,7 +990,7 @@
                   width="100"
                 >
                   <template slot-scope="scope">
-                    
+
                     {{
                       Math.floor(
                         scope.row.total /
@@ -1072,12 +1072,12 @@
                   </template>
                 </el-table-column>
               </el-table>
-            </el-row> 
-            
+            </el-row>
+
             </div>
-            
+
           </div>
-              
+
       </div>
 
       <div  v-else-if="templateType==3">
@@ -1616,7 +1616,7 @@
       <el-button v-if='dialogProps.action != "view"' type='primary' :plain='true' @click='onSubmit("recipetemplateForm")'>保 存</el-button>
       <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
       <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
-    </span>    
+    </span>
   </el-dialog>
 </template>
 <script>
@@ -1658,7 +1658,7 @@ export default {
   name: 'recipetemplate-form',
   components: {
     OperationIcon
-  },  
+  },
   data() {
     return {
       bizFormModel: this.initFormModel(),
@@ -1686,9 +1686,9 @@ export default {
         'recipetemplateName': [
             { required: true, message: '请输入模板名称', trigger: 'blur' }
         ],
-       
+
       }
-    }    
+    }
   },
     //搜索药品条件
       SearchWesternModel: {
@@ -1714,7 +1714,7 @@ export default {
         },
         ]
       },
-      
+
       SearchChineseModel: {
         columnName: "",
         limit: 10,
@@ -1780,7 +1780,7 @@ export default {
     permission: {
       type: Object
     }
-  },  
+  },
   methods: {
     //开具处方新增Tab标签页
     addMedicalEditTab(tabTypeData) {
@@ -1917,7 +1917,7 @@ export default {
           //   this.ChineseUseOption = this.ChineseUseOption.filter(
           //     (item) => item.name == "水冲"
           //   );
-          // } 
+          // }
         }else if (optionId == "1014474470772899990")
           this.FrequencyOption = responseData.data;
         else if (optionId == "1014474470772899985")
@@ -1988,9 +1988,9 @@ export default {
       //         paramsCheck = true
       //       }
       //       }
-          
+
       //     })
-           
+
       //   }
       //   if(paramsCheck){
       //     return
@@ -2019,7 +2019,7 @@ export default {
       this.initOptions(this.bizFormModel)
     },
     onDialogClose() {
-      this.dialogProps.visible = false  
+      this.dialogProps.visible = false
     },
     onDialogOpen() {
       this.$nextTick(() => {
@@ -2077,7 +2077,7 @@ export default {
           }
         })
       })
-      
+
       let type_search = {
         params: [{'columnName':'dict_type_id', 'queryType': '=', 'value': '1014474470772899974'}]
       }
@@ -2194,7 +2194,7 @@ export default {
 
      minusGroup(item,index){
      if(item.infusion.defaultNumber>1){
-       
+
       item.infusion.defaultNumber=item.infusion.defaultNumber-1
       item.infusion.zushu.splice(index,1)
       item.infusion.infusionProject.splice(index,1)
@@ -2313,7 +2313,7 @@ export default {
         this.bizFormModel.infusion.infusionProject[index].push(
         JSON.parse(JSON.stringify(recipelDetailEvt))
       );
-      
+
     },
 
      GetMedicalRecordAll() {
@@ -2427,10 +2427,10 @@ export default {
       setTimeout(() => {
         this.MedicalCalculate()
       }, 0);
-      
+
     },
     changeSingleDosage(row,index,item){
-     
+
       //  this.medicalEditTabs.forEach((tabElement) => {
       //    if (tabElement.type === "recipelType_1"&&tabElement.key==item.key) {
       //    //for (let i = 0; i < tabElement.content.recipelDetailEvtList.length; i++) {
@@ -2454,7 +2454,7 @@ export default {
       console.log(this.bizFormModel.recipeTemplateDetail,'就是情况');
     },
     GetWesternTable() {
-      
+
       // this.SearchWesternModel.params[1].value = [
       //   "medicalType_0",
       //   "medicalType_2",
@@ -2531,7 +2531,7 @@ export default {
           updateDate: "2022-10-10 10:14:27",
           westernMedicineUse: {name: ''},
         }
-        
+
         listAllStock2(search).then((responseData) => {
         if (responseData.code == 100) {
           this.recipeTemplateTable=[]
@@ -2542,7 +2542,7 @@ export default {
          this.$forceUpdate()
         }
       });
-     
+
     },
     //西药表格行点击选择添加到已选择西药处方的表格
     RowClickWesternTable(row) {
@@ -2562,7 +2562,7 @@ export default {
                 return
               }
       }
-      
+
       recipelDetailEvtList.forEach((element) => {
         if (element.isExtra === 0) {
           count++;
@@ -2579,7 +2579,7 @@ export default {
         this.$message.error("每个西药处方最多只能添加5个药品");
         return;
       }
-      
+
       let drugStuff = {
         drugStuffId: row.id,
         name: row.goodsName,
@@ -2609,7 +2609,7 @@ export default {
       setTimeout(() => {
         this.MedicalCalculate()
       }, 0);
-      
+
     },
      getDataFilterTable(data, isExtra,item) {
       let arr=[]
@@ -2625,7 +2625,7 @@ export default {
           //console.log(item,'这是一个新址');
           if(data[i].singleDosage==0&&data[i].singleDosage==" "&&data[i].drugStuffId.drug.singleDosage){
             let flages=false;
-              for (let i = 0; i < item.chineseTest.length; i++) {     
+              for (let i = 0; i < item.chineseTest.length; i++) {
                if(item.chineseTest[i]==data[i].drugStuffId.drug.name){
                   flages=true;
                   break;
@@ -2665,9 +2665,9 @@ export default {
             }
           }
           }
-          
+
           arr.push(data[i])
-        }     
+        }
       }
        return arr.filter((item) => item.isExtra === isExtra);
        this.MedicalCalculate()
@@ -2677,7 +2677,7 @@ export default {
       this.changeData = row
     },
      DeleteMedicalRow(index,row,item) {
-     
+
       this.bizFormModel.recipeTemplateDetail =
         this.bizFormModel.recipeTemplateDetail.filter(
           (item) => item !== row
@@ -2688,7 +2688,7 @@ export default {
           (item) => item.infuseGroup!==row.infuseGroup && this.bizFormModel.recipeTemplateDetail.indexOf(item)!==index
         );
         this.bizFormModel.infusion.infusionProject[row.infuseGroup-1].splice(index,1)
-        
+
        }
       this.MedicalCalculate();
     },
@@ -2718,7 +2718,7 @@ export default {
             if (rowElement.isExtra === 0) {
               detailSeq++;
               rowElement.seq = detailSeq;
-             
+
               rowElement.singleDosage = rowElement.singleDosage
                 ? rowElement.singleDosage
                 : "";
@@ -2866,7 +2866,7 @@ export default {
               this.bizFormModel.recipeTemplateDetail[arr]= this.bizFormModel.infusion.infusionProject[i][j]
               arr++;
               }
-                
+
           }
         for (let i = 0; i < this.bizFormModel.infusion.excharge.length; i++) {
          this.bizFormModel.recipeTemplateDetail.push(this.bizFormModel.infusion.excharge[i])
@@ -2876,11 +2876,11 @@ export default {
           ? this.bizFormModel.recipeTemplateDetail
           : [];
             console.log(this.medicalEditTabs,'kankan');
-           
+
           //  recipelInfo.frequency = recipelInfo.frequency ? recipelInfo.frequency : 0;
           let infusionRecipelDetailEvtList=this.bizFormModel.recipeTemplateDetail
           infusionRecipelDetailEvtList.forEach((rowElement) => {
-          
+
             if (rowElement.isExtra === 0) {
               detailSeq++;
               rowElement.seq = detailSeq;
@@ -2924,7 +2924,7 @@ export default {
                     .toNumber();
                 }
               }
-             
+
               medicalAmount = BigNumber(medicalAmount)
                 .plus(rowElement.allFee)
                 .toNumber();
@@ -3026,9 +3026,9 @@ export default {
     },
    init(item){
      this.SearchInfusion=[""]
-     if (item.value == "recipelType_1") {  
+     if (item.value == "recipelType_1") {
           this.bizFormModel.recipeTemplateInfo= {
-            company: this.Company,          
+            company: this.Company,
             fee: 0,
             recipelUse:  {
                   name: "",
@@ -3050,10 +3050,10 @@ export default {
             excharge:[]
           }
       } else {
-       
+
           this.bizFormModel.recipeTemplateInfo={
             company: this.Company,
-            fee: 0,         
+            fee: 0,
             smallType:"",
           };
           this.bizFormModel.recipeTemplateDetail= [];
@@ -3107,7 +3107,7 @@ export default {
         SearchModel.params[1].value = this.SearchSurchargeInput.toUpperCase();
         SearchModel.params[1].columnName = "pinyin_code";
       } else {
-        
+
         SearchModel.params[1].value = this.SearchSurchargeInput;
         SearchModel.params[1].columnName = "item_name";
       }
@@ -3225,7 +3225,7 @@ export default {
       };
 
       if(this.templateType==2){
-        
+
        this.bizFormModel.infusion.excharge.push(JSON.parse(JSON.stringify(recipelDetailEvt)))
       }else{
          this.bizFormModel.recipeTemplateDetail.push(
@@ -3246,7 +3246,7 @@ export default {
               }
               }
          }
-      
+
       for (let i = 1; i < count; i++) {
         row.infusion.defaultNumber=row.infusion.defaultNumber+1;
         row.infusion.zushu.push(row.infusion.defaultNumber)
@@ -3260,17 +3260,17 @@ export default {
       //this.excharge=null
       let arr=[]
        for (let i = 0; i < row.recipeTemplateDetail.length; i++) {
-        
-        
+
+
              if(row.recipeTemplateDetail[i].isExtra!=1){
-               
+
              row.infusion.infusionProject[row.recipeTemplateDetail[i].infuseGroup-1].push(row.recipeTemplateDetail[i])
              row.infusion.drippingSpeed[row.recipeTemplateDetail[i].infuseGroup-1]=row.recipeTemplateDetail[i].drippingSpeed
              row.infusion.days[row.recipeTemplateDetail[i].infuseGroup-1]=row.recipeTemplateDetail[i].days
              row.infusion.frequency[row.recipeTemplateDetail[i].infuseGroup-1]=row.recipeTemplateDetail[i].frequency
              row.infusion.infuseUse[row.recipeTemplateDetail[i].infuseGroup-1]=row.recipeTemplateDetail[i].infuseUse
              }else{
-              
+
                row.infusion.excharge.push(row.recipeTemplateDetail[i])
                //arr.push(element.recipelDetailEvtList[i])
              }
@@ -3286,7 +3286,7 @@ export default {
   },
   mounted: function() {
    // this.GetMedicalRecordAll();
-   
+
     this.$nextTick(() => {
       this.$on('openViewRecipetemplateDialog', function(recipetemplate,company) {
         this.dialogProps.action = 'view'
@@ -3345,7 +3345,7 @@ export default {
         //this.recipeTemplateTable=[{}]
         this.GetWesternTable()
         //this.addMedicalEditTab(item)
-          
+
       })
       this.$on('openCopyRecipetemplateDialog', function(recipetemplate) {
         this.dialogProps.action = 'add'
@@ -3357,7 +3357,7 @@ export default {
         this.dialogProps.visible = true
       })
     })
-  }  
+  }
 }
 </script>
 <style scoped>
@@ -3431,7 +3431,7 @@ export default {
 
 /deep/ .el-input-group__append {
   padding: 4px;
-} 
+}
 .medical-type-ul {
   list-style-type: none;
   font-size: 13px;
