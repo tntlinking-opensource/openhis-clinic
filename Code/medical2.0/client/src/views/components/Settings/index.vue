@@ -76,7 +76,7 @@
 
 <script>
   import ThemePicker from '@/components/ThemePicker'
-  
+
   import { listThemeAll } from '@/api/sys/theme'
   import { saveTheme } from '@/api/sys/theme'
   import { getLocalCurrentUser, getLocalPersonalTheme, setLocalPersonalTheme } from '@/utils/auth'
@@ -102,7 +102,7 @@
         predefine: ['#018cb7','#409EFF', '#1890ff', '#2f4050','#212121','#11a983', '#13c2c2', '#6959CD'],
         styles: [
           {code: 'up-down', icon: require('../../../assets/images/style_up_down.png')},
-          {code: 'left-right', icon: require('../../../assets/images/style_left_right.png')},
+          //{code: 'left-right', icon: require('../../../assets/images/style_left_right.png')},
         ],
         sizes: [
           {size: 'default', name: '大型'},

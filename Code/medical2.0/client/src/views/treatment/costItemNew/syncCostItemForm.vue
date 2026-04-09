@@ -50,7 +50,7 @@
                 </el-table-column>
                 <el-table-column label="序号" type="index" :index="indexMethod" align="center">
                 </el-table-column>
-                <el-table-column v-for="item in columnList" :label="item.label" :prop="item.prop"></el-table-column>
+                <el-table-column v-for="item in columnList"  :key="item.label"  :label="item.label" :prop="item.prop"></el-table-column>
                 <!-- <el-table-column label="操作" header-align="center" :width="130 + 'px'" fixed="right"
                   :key="Math.random()">
                   <template slot="header" slot-scope="scope">
@@ -820,7 +820,7 @@ export default {
 }
 </style>
 <style scoped>
-/deep/ .el-table__body-wrapper {
+.el-table__body-wrapper {
   height: calc(100% - 44px) !important;
 }
 </style>

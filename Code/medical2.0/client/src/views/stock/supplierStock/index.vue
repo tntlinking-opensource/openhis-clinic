@@ -123,7 +123,16 @@
               >
               </el-pagination>
             </el-tab-pane>
-            <el-tab-pane label="已发药" name="IsAll">
+            <el-tab-pane name="IsAll">
+              <span slot="label">
+                已发药
+                <el-badge
+                  :value="OtherTotal"
+                  :max="99"
+                  type="primary"
+                  style="line-height: normal"
+                ></el-badge>
+              </span>
               <el-scrollbar view-style="height:calc(100vh - 267px);">
                 <el-collapse
                   v-model="patientInfoRow"
@@ -202,7 +211,16 @@
               >
               </el-pagination>
             </el-tab-pane>
-            <el-tab-pane label="已退药" name="return">
+            <el-tab-pane name="return">
+              <span slot="label">
+                已退药
+                <el-badge
+                  :value="returnTotal"
+                  :max="99"
+                  type="primary"
+                  style="line-height: normal"
+                ></el-badge>
+              </span>
               <el-scrollbar view-style="height:calc(100vh - 267px);">
                 <el-collapse
                   v-model="patientInfoRow"
@@ -1555,7 +1573,39 @@ export default {
     Init() {
       this.GetAllPatient();
       this.GetDispensingTable();
+      this.getAllPatientList();
+      this.getReturnPatientList();
       this.initOptions()
+    },
+    getAllPatientList() {
+      this.PageRegistration.limit = this.dispensingPageSize;
+      this.PageRegistration.companyId = this.Company.id;
+      this.PageRegistration.offset = (this.allCurrentPage - 1) * this.dispensingPageSize;
+      this.PageRegistration.dispensionStatus = 1;
+      this.PageRegistration.columnName = "dispensing_date";
+      this.PageRegistration.chargeStatus = 1;
+      this.PageRegistration.patientName = '';
+      this.PageRegistration.patientCode = '';
+      listRegistrationPages(this.PageRegistration).then((responseData) => {
+        if (responseData.code == 100) {
+          this.OtherTotal = responseData.data.total;
+        }
+      });
+    },
+    getReturnPatientList() {
+      this.PageRegistration.limit = this.dispensingPageSize;
+      this.PageRegistration.companyId = this.Company.id;
+      this.PageRegistration.offset = (this.returnCurrentPage - 1) * this.dispensingPageSize;
+      this.PageRegistration.dispensionStatus = -1;
+      this.PageRegistration.columnName = "return_date";
+      this.PageRegistration.chargeStatus = 3;
+      this.PageRegistration.patientName = '';
+      this.PageRegistration.patientCode = '';
+      listRegistrationPages(this.PageRegistration).then((responseData) => {
+        if (responseData.code == 100) {
+          this.returnTotal = responseData.data.total;
+        }
+      });
     },
     initOptions(){
       this.getOption("1014474470772899981")

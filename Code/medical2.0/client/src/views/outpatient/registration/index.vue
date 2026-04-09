@@ -25,9 +25,10 @@
                 ref="queryForm"
                 :inline-message="true"
               >
-                <el-col :span="8">
+                <el-col :span="6">
                   <el-form-item label="登记时间" prop="createDate">
                     <el-date-picker
+                      style="width: 200px"
                       :picker-options="filerData.pickerOptions"
                       v-model="queryModel.createDate"
                       type="datetimerange"
@@ -61,6 +62,7 @@
                 <el-col :span="4" style="text-align:right">
                   <el-form-item label="医生" prop="doctor">
                     <el-select
+                      style="width: 140px"
                       v-model="queryModel.doctor"
                       value-key="id"
                       filterable
@@ -79,6 +81,7 @@
                 <el-col :span="4" style="text-align:right">
                   <el-form-item label="来源" prop="source">
                     <el-select
+                      style="width: 140px"
                       v-model="queryModel.source"
                       value-key="value"
                       filterable
@@ -97,6 +100,7 @@
                 <el-col :span="4" style="text-align:right">
                   <el-form-item label="患者" prop="patientId">
                     <el-select
+                      style="width: 140px"
                       v-model="queryModel.patientId"
                       value-key="id"
                       filterable
@@ -115,6 +119,7 @@
                 <el-col :span="4">
                   <el-form-item label="状态" prop="status">
                     <el-select
+                      style="width: 140px"
                       v-model="queryModel.status"
                       value-key="id"
                       filterable
@@ -181,10 +186,10 @@
             <el-col :span="24">
               <div @mouseleave="moveTableOutside">
                 <el-table
-                  class="drag_table"
+                  class="registration-table"
                   :data="registrationList"
                   border
-                  height="calc(100vh - 200px)"
+                  height="calc(100vh - 350px)"
                   @sort-change="onSortChange"
                   @header-dragend="onChangeWidth"
                   :cell-class-name="cellClassName"
@@ -210,7 +215,6 @@
                     :width="cv.width + 'px'"
                     header-align="center"
                     :column-key="index.toString()"
-                    :render-header="renderHeader"
                   >
                     <template slot-scope="{ row, $index }">
                   <span
@@ -251,8 +255,8 @@
                     label="操作"
                     header-align="center"
                     :width="ColumnWidth"
-                    fixed="right"
-                    :key="Math.random()"
+                  
+                    key="operationColumn"
                   >
                     <template slot="header" slot-scope="scope">
                       <span>操作</span>
@@ -565,50 +569,55 @@
         </span>
           </el-dialog>
         </el-tab-pane>
-        <el-tab-pane label="预约分诊" name="yyfz">
-          <el-row style="margin-top:40px;">
-            <el-col :span="7" v-for="(item,index) in registrationList" :key="index" :offset="1"
-                    style="padding-top:20px;">
-              <div>
-                <el-card class="box-card" :body-style="{ padding:'0px'}" shadow="hover">
-                  <div style="width:400px; height:160px; padding-left:100px; padding-top:20px;">
-                    <span style="font-size: 16px; font-weight:540;">{{ item.patientId.name }}  </span>
+<!--        <el-tab-pane label="预约分诊" name="yyfz">-->
+<!--          <el-row style="margin-top:40px;">-->
+<!--            <el-col :span="7" v-for="(item,index) in registrationList" :key="index" :offset="1"-->
+<!--                    style="padding-top:20px;">-->
+<!--              <div>-->
+<!--                <el-card class="box-card" :body-style="{ padding:'0px'}" shadow="hover">-->
+<!--                  <div style="width:400px; height:160px; padding-left:100px; padding-top:20px;">-->
+<!--                    <span style="font-size: 16px; font-weight:540;">{{ item.patientId.name }}  </span>-->
 
-                    <span
-                      style="font-size: 14px; color: darkgray;">   {{
-                        item.patientId.gender.name
-                      }}   {{ item.patientId.age }}{{ "岁" }}</span>
-                    <br/>
-                    <br/>
-                    <span
-                      style="font-size: 14px; color: darkgray;">登记科室：{{
-                        item.clinicOffice.name
-                      }} {{ "(" + item.treatType.name + ")" }}</span>
-                    <br/>
-                    <span
-                      style="font-size: 14px; color: darkgray;">登记时间：{{
-                        $moment(item.createDate).format("HH:mm")
-                      }}</span>
+<!--                    <span-->
+<!--                      style="font-size: 14px; color: darkgray;">   {{-->
+<!--                        item.patientId.gender.name-->
+<!--                      }}   {{ item.patientId.age }}{{ "岁" }}</span>-->
+<!--                    <br/>-->
+<!--                    <br/>-->
+<!--                    <span-->
+<!--                      style="font-size: 14px; color: darkgray;">登记科室：{{-->
+<!--                        item.clinicOffice.name-->
+<!--                      }} {{ "(" + item.treatType.name + ")" }}</span>-->
+<!--                    <br/>-->
+<!--                    <span-->
+<!--                      style="font-size: 14px; color: darkgray;">登记时间：{{-->
+<!--                        $moment(item.createDate).format("HH:mm")-->
+<!--                      }}</span>-->
 
-                  </div>
+<!--                  </div>-->
 
-                  <div class="bottom clearfix">
-                    <el-row style="padding-left:40px;">
-                      <el-col :span="10">
-                        <el-button type="text" style="font-size: 15px; color:darkgray;" @click="buttonyz(item)">预诊
-                        </el-button>
-                      </el-col>
-                      <el-col :span="10">
-                        <el-button type="text" style="font-size: 15px; color:darkgray;" @click="buttonys(item)">选择医生
-                        </el-button>
-                      </el-col>
-                    </el-row>
-                  </div>
-                </el-card>
-              </div>
-            </el-col>
-          </el-row>
+<!--                  <div class="bottom clearfix">-->
+<!--                    <el-row style="padding-left:40px;">-->
+<!--                      <el-col :span="10">-->
+<!--                        <el-button type="text" style="font-size: 15px; color:darkgray;" @click="buttonyz(item)">预诊-->
+<!--                        </el-button>-->
+<!--                      </el-col>-->
+<!--                      <el-col :span="10">-->
+<!--                        <el-button type="text" style="font-size: 15px; color:darkgray;" @click="buttonys(item)">选择医生-->
+<!--                        </el-button>-->
+<!--                      </el-col>-->
+<!--                    </el-row>-->
+<!--                  </div>-->
+<!--                </el-card>-->
+<!--              </div>-->
+<!--            </el-col>-->
+<!--          </el-row>-->
+<!--        </el-tab-pane>-->
+        <el-tab-pane label="患者档案" name="hzdangan">
+          <!-- 直接使用封装好的患者管理组件 -->
+          <PatientManage />
         </el-tab-pane>
+
       </el-tabs>
     </el-card>
   </el-row>
@@ -644,6 +653,7 @@
   Vue.prototype.$axios = axios;
   import { getLocalToken } from '@/utils/auth';
   import request from '@/utils/request'
+  import PatientManage from "../patient/PatientManage.vue";
 
   const loginForm = {Data:"API.Manage",AppId:"Oh_Newtouch_Clinic"}
   const config = {
@@ -668,16 +678,11 @@
   }
   }
 
-  const configToken = {
-    headers: {
-      Authorization: "Bearer "+this.tokenData
-    }
-  }
-
   export default {
 
     extends: MainUI,
     components: {
+      PatientManage,
       RegistrationForm,
       ExportExcelButton,
       ViewColumnsSelect,
@@ -1433,6 +1438,19 @@
             this.permission.skip = listPermissionRespData.data.find((item) => {
               return item.permission === "registration:jump";
             });
+            // ===== 新增：同时获取患者管理权限（patient权限）=====
+            const patientPermissionRes = await listResourcePermission('patient-router-id'); // 替换为实际的patient路由ID
+
+            if (patientPermissionRes.code == 100) {
+              this.patientPermission = {
+                view: !!patientPermissionRes.data.find(item => item.permission === "patient:read"),
+                add: !!patientPermissionRes.data.find(item => item.permission === "patient:create"),
+                edit: !!patientPermissionRes.data.find(item => item.permission === "patient:update"),
+                remove: !!patientPermissionRes.data.find(item => item.permission === "patient:delete"),
+                export: !!patientPermissionRes.data.find(item => item.permission === "patient:export"),
+                skip: false
+              };
+            }
           } else {
             this.showMessage(
               listPermissionRespData.code != 100
@@ -1813,17 +1831,6 @@
         //   });
         // }
       },
-      // tableData是el-table绑定的数据
-      tableData: {
-        // 解决表格显示错位问题
-        handler() {
-          this.$nextTick(() => {
-            // tableRef是el-table绑定的ref属性值
-            this.$refs.mutipleTable.doLayout()// 对 Table 进行重新布局
-          })
-        },
-        deep: true
-      },
     },
     updated() {
       if (this.$refs.mutipleTables) {
@@ -1853,7 +1860,7 @@
     justify-content: center;
     align-items: center;
     color: #01a5e4;
-    margin: 0
+    margin: 0;
   }
 
   .btn span:nth-child(1) {
@@ -1924,27 +1931,26 @@
 
 
   /deep/ .el-table__fixed-right-patch {
-    width: 5px !important
+    width: 5px !important;
   }
-
-  ;
 
   /deep/ .el-table colgroup col[name='gutter'] {
-    width: 5px !important
+    width: 5px !important;
   }
-
-  ;
 
   /deep/ .el-table__body {
-    width: 100% !important
+    width: 100% !important;
   }
 
-  ;
+  /deep/ .el-table__fixed-body-wrapper {
+    top: 47px !important;
+  }
 
-  .drag_table {
+  .registration-table {
     // 设置表格header的高度
     /deep/ th {
       height: 44px;
+      vertical-align: middle !important;
     }
 
     /deep/ th.gutter:last-of-type {
@@ -1956,11 +1962,36 @@
       //解决数据展示超出body高度不滚动bug
       overflow-y: auto;
       // 减去的是表格header的高度
-      height: calc(100% - 44px) !important;
+      height: calc(100vh - 350px - 44px) !important;
     }
 
-    .el-table__fixed-right {
+    /deep/ .el-table__fixed-right {
       height: 100% !important;
+    }
+    
+    // 修复操作列按钮对齐
+    /deep/ .el-table__column--fixed-right .cell {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex-wrap: wrap !important;
+      gap: 4px !important;
+      height: 100% !important;
+    }
+    
+    // 修复表格行高度和对齐
+    /deep/ .el-table__row {
+      height: 48px !important;
+    }
+    
+    // 修复单元格内容垂直居中
+    /deep/ .el-table__cell {
+      vertical-align: middle !important;
+    }
+    
+    // 修复表头对齐
+    /deep/ .el-table__header th {
+      vertical-align: middle !important;
     }
 
   }
@@ -1991,18 +2022,12 @@
   }
 
   .clearfix:after {
-    clear: both
+    clear: both;
   }
 
   .box-card {
     margin-right: 20px;
     // width: 400px;
     // height: 200px;
-  }
-
-</style>
-<style scoped>
-  /deep/ .el-table__body-wrapper {
-    height: calc(100% - 44px) !important;
   }
 </style>

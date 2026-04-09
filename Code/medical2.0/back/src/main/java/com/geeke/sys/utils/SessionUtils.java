@@ -27,7 +27,11 @@ public class SessionUtils {
 	 * @return 取不到返回 new User()
 	 */
 	public static JSONObject getUserJson(){
-		return (JSONObject)SecurityUtils.getSubject().getSession().getAttribute(SESSION_USER_INFO);
+		try {
+			return (JSONObject)SecurityUtils.getSubject().getSession().getAttribute(SESSION_USER_INFO);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 
@@ -37,8 +41,12 @@ public class SessionUtils {
      * @return 取不到返回 new User()
      */
     public static SessionUserDto getUserDto() {
-        Object object = SecurityUtils.getSubject().getSession().getAttribute(SESSION_USER_INFO);
-        return BeanUtil.copyProperties(object, SessionUserDto.class);
+        try {
+            Object object = SecurityUtils.getSubject().getSession().getAttribute(SESSION_USER_INFO);
+            return BeanUtil.copyProperties(object, SessionUserDto.class);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 	/**
@@ -47,6 +55,9 @@ public class SessionUtils {
 	 * @return
 	 */
 	public static JSONObject getUserJson(Session session){
+		if (session == null) {
+			return null;
+		}
 		return (JSONObject)session.getAttribute(SESSION_USER_INFO);
 	}
 	
@@ -56,16 +67,28 @@ public class SessionUtils {
 	 * @return 取不到返回 new User()
 	 */
 	public static void setUserJson(JSONObject userObj ){
-		SecurityUtils.getSubject().getSession().setAttribute(SESSION_USER_INFO, userObj);
+		try {
+			SecurityUtils.getSubject().getSession().setAttribute(SESSION_USER_INFO, userObj);
+		} catch (Exception e) {
+			// Session 已过期或不存在
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
 	public static List<String> getUserPermission() {
-		return (List<String>)SecurityUtils.getSubject().getSession().getAttribute(SESSION_USER_PERMISSION);
+		try {
+			return (List<String>)SecurityUtils.getSubject().getSession().getAttribute(SESSION_USER_PERMISSION);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 	
 	public static void setUserPermission(List<String> permissionList) {
-		SecurityUtils.getSubject().getSession().setAttribute(SESSION_USER_PERMISSION, permissionList);
+		try {
+			SecurityUtils.getSubject().getSession().setAttribute(SESSION_USER_PERMISSION, permissionList);
+		} catch (Exception e) {
+			// Session 已过期或不存在
+		}
 	}
 
 
@@ -74,7 +97,11 @@ public class SessionUtils {
 	 * @return 取不到返回 JSONObject
 	 */
 	public static JSONObject getWeChatUser(){
-		return (JSONObject)SecurityUtils.getSubject().getSession().getAttribute(SESSION_YEWECHAT_OPENID);
+		try {
+			return (JSONObject)SecurityUtils.getSubject().getSession().getAttribute(SESSION_YEWECHAT_OPENID);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 
@@ -83,6 +110,10 @@ public class SessionUtils {
 	 * @return
 	 */
 	public static void setWeChatUser(JSONObject jsonObject){
-		SecurityUtils.getSubject().getSession().setAttribute(SESSION_YEWECHAT_OPENID, jsonObject);
+		try {
+			SecurityUtils.getSubject().getSession().setAttribute(SESSION_YEWECHAT_OPENID, jsonObject);
+		} catch (Exception e) {
+			// Session 已过期或不存在
+		}
 	}
 }

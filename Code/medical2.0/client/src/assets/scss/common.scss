@@ -6,10 +6,38 @@ body {
 /* 表格 */
 .el-table {
   width: 100%;
+  min-width: 600px;
   color: #111;
+  font-size: 13px;
   th {
       background: #F2F6FC!important;
       color: #111;
+      white-space: normal;
+      word-break: break-all;
+      text-align: center;
+  }
+  
+  /* 修复 ResizeObserver 错误 */
+  .el-table__body-wrapper {
+    overflow: auto;
+  }
+  
+  .el-table__header-wrapper {
+    overflow: visible !important;
+  }
+  
+  .el-table__fixed {
+    overflow: hidden;
+  }
+  
+  .el-table__fixed-right {
+    overflow: hidden;
+  }
+  
+  /* 禁用 ResizeObserver 错误提示 */
+  .el-table {
+    /* 避免在调整列宽时触发过多的 ResizeObserver 事件 */
+    --el-table-resize-observer-disabled: true;
   }
 }
 .drag_table th {
@@ -50,6 +78,15 @@ body .el-table th.gutter {
 }
 body .el-table colgroup.gutter {
   display: table-cell !important;
+}
+
+/* 确保表头正常显示 */
+.el-table__header-wrapper {
+  overflow: visible !important;
+}
+
+.el-table__header {
+  display: table-header-group !important;
 }
 
 /* 分页 */
@@ -146,6 +183,127 @@ body .el-table colgroup.gutter {
   .el-date-editor.el-input { width: 100%; }
 
   .el-select { width: 100%;  }
+  
+  .el-form-item {
+    margin-bottom: 12px;
+  }
+  
+  .el-button {
+    margin-right: 8px;
+  }
+}
+
+/* 卡片样式 */
+.el-card {
+  margin-bottom: 16px;
+  
+  .el-card__body {
+    padding: 16px;
+  }
+}
+
+/* 表格样式 */
+.el-table {
+  margin-top: 16px;
+  margin-bottom: 16px;
+  
+  .el-table__header-wrapper th {
+    padding: 8px 6px;
+  }
+  
+  .el-table__body-wrapper td {
+    padding: 8px 6px;
+  }
+  
+  /* 确保操作列与表格行对齐 */
+  .el-table__column--fixed-right {
+    height: 100% !important;
+  }
+  
+  .el-table__fixed-right {
+    height: 100% !important;
+    box-shadow: -1px 0 10px rgba(0, 0, 0, 0.05);
+    top: 0 !important;
+  }
+  
+  .el-table__fixed {
+    height: 100% !important;
+    top: 0 !important;
+  }
+  
+  /* 确保固定列与主体列对齐 */
+  .el-table__fixed-header-wrapper th,
+  .el-table__fixed-body-wrapper td {
+    padding: 8px 6px !important;
+  }
+  
+  /* 调整固定列的表头高度 */
+  .el-table__fixed-header-wrapper .el-table__header th {
+    padding: 8px 6px !important;
+  }
+  
+  /* 调整固定列的行高度 */
+  .el-table__fixed-body-wrapper .el-table__row {
+    padding: 8px 6px !important;
+  }
+  
+  /* 调整主体列的行高度，确保与固定列一致 */
+  .el-table__body-wrapper .el-table__row {
+    padding: 8px 6px !important;
+  }
+  
+  /* 序号列样式 */
+  .el-table .el-table__column--type-index {
+    text-align: center !important;
+  }
+  
+  .el-table .el-table__column--type-index .cell {
+    padding: 0 12px !important;
+  }
+  
+  /* 调整操作列内容的垂直对齐 - 使用 flex 布局确保按钮垂直居中 */
+  .el-table__fixed-body-wrapper .el-table__row .el-table__cell {
+    vertical-align: middle !important;
+    padding: 8px !important;
+  }
+  
+  /* 确保操作列按钮与行数据垂直居中对齐 */
+  .el-table__fixed-body-wrapper .el-table__row .cell {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100% !important;
+  }
+  
+  /* 确保操作列按钮与文本对齐 */
+  .el-table__fixed-body-wrapper .el-table__row .el-button {
+    margin: 0 4px !important;
+    vertical-align: middle !important;
+  }
+  
+  /* 调整固定列的垂直对齐 */
+  .el-table__fixed-body-wrapper .el-table__row {
+    vertical-align: middle !important;
+  }
+  
+  /* 修复操作列按钮对齐问题 */
+  .el-table .el-table__column--fixed-right .cell {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+  
+  /* 修复表头对齐问题 */
+  .el-table__header-wrapper .el-table__header th {
+    vertical-align: middle !important;
+  }
+  
+  /* 修复固定列表头对齐 */
+  .el-table__fixed-header-wrapper .el-table__header th {
+    vertical-align: middle !important;
+  }
 }
 
 .el-input.is-disabled .el-input__inner, .el-textarea.is-disabled .el-textarea__inner {

@@ -74,11 +74,11 @@
                             color: #606266;">
                         {{ o.recipelInfo.name }}
                       </p>
-                      
+
                       <p style="font-weight: bold;margin-top: 6px;margin-left:30px;font-size: 12px;
                             color: #606266;">
                         {{ o.recipelInfo.id }}
-                           
+
                       </p>
                        <div style="
                             border-top: 1px dashed #dcdfe6;
@@ -97,7 +97,7 @@
                           >
                           <el-descriptions-item
                             >{{ o.recipelInfo.id }}
-                            
+
                           </el-descriptions-item>
                         </el-descriptions> -->
                       </div>
@@ -115,7 +115,16 @@
               >
               </el-pagination>
             </el-tab-pane>
-            <el-tab-pane label="已完成" name="2">
+            <el-tab-pane  name="2">
+              <span slot="label">
+                已完成
+                <el-badge
+                  :value="isPayTotalCount"
+                  :max="99"
+                  type="primary"
+                  style="line-height: normal"
+                ></el-badge>
+              </span>
               <el-scrollbar view-style="height:calc(100vh - 267px);">
                 <el-collapse
                   v-model="patientInfoRow"
@@ -153,11 +162,11 @@
                             color: #606266;">
                         {{ o.recipelInfo.name }}
                       </p>
-                      
+
                       <p style="font-weight: bold;margin-top: 6px;margin-left:30px;font-size: 12px;
                             color: #606266;">
                         {{ o.recipelInfo.id }}
-                           
+
                       </p>
                        <div style="
                             border-top: 1px dashed #dcdfe6;
@@ -176,7 +185,7 @@
                           >
                           <el-descriptions-item
                             >{{ o.recipelInfo.id }}
-                           
+
                           </el-descriptions-item>
                         </el-descriptions> -->
                       </div>
@@ -289,7 +298,7 @@
             v-if="chargeStatusActiveName == '2' && selRowChargeStatus != '4' && medicalEditTabs.length>0"
           >
             <el-button style="height:30px" slot="reference" type="primary" plain>退费</el-button>
-         
+
           </el-popconfirm> -->
 
           <!-- <el-button
@@ -530,7 +539,7 @@
                         style="padding-top:7px"
                       >
                         <el-button style="height:30px" slot="reference" type="primary" plain>本处方收费</el-button>
-                    
+
                       </el-popconfirm> -->
                   </el-row>
                   <el-row type="flex" justify="space-between" align="center" style="padding-top:8px" v-if="chargeStatusActiveName == '2' && medicalEditTabs.length>0">
@@ -543,7 +552,7 @@
                         style="padding-top:7px"
                       >
                         <el-button style="height:30px" slot="reference" type="primary" plain>本处方退费</el-button>
-                    
+
                       </el-popconfirm> -->
                   </el-row>
                   <el-row style="padding-top:8px" v-if="chargeStatusActiveName == '3' && medicalEditTabs.length>0">
@@ -641,7 +650,7 @@
                     </el-select>
                   </el-input>
                 </template> -->
-                    
+
                     </el-table-column>
                     <el-table-column prop="allFee" label="总额">
                     </el-table-column>
@@ -658,14 +667,14 @@
 
                   <div v-else style="margin-left:-10px;">
                       <div v-for="(items,index) in item.infusion.zushu" :key="index" style="border:1px solid #DCDCDC;padding:10px;margin:10px;">
-                         
+
                         <div>
-                        <span  style="float:left;height:25px;line-height:25px;font-size:14px;">&nbsp;&nbsp;第{{index+1}}组</span>                      
+                        <span  style="float:left;height:25px;line-height:25px;font-size:14px;">&nbsp;&nbsp;第{{index+1}}组</span>
                         <el-button style="margin-left:10px;" v-if="item.infusion.infusionProject[index][0].executions!=item.infusion.infusionProject[index][0].days.name-0&&item.infusion.infusionProject[index][0].infuseType==0" type="warning" round>今日待输</el-button>
-                         <el-button style="margin-left:10px;" v-else-if="item.infusion.infusionProject[index][0].executions==item.infusion.infusionProject[index][0].days.name-0||item.infusion.infusionProject[index][0].infuseType==1" type="success" round>已完成</el-button>           
+                         <el-button style="margin-left:10px;" v-else-if="item.infusion.infusionProject[index][0].executions==item.infusion.infusionProject[index][0].days.name-0||item.infusion.infusionProject[index][0].infuseType==1" type="success" round>已完成</el-button>
                         <el-button style="float:right;width:10%" type="primary" @click="execute(item.infusion.infusionProject[index])">执行</el-button>
                       <!-- <span  style="float:right;height:25px;line-height:25px;font-size:14px;">&nbsp;&nbsp;滴/分钟</span>
-                             
+
                              <el-input
                               style="float:right;width:10%"
                               :value="item.infusion.drippingSpeed[index]"
@@ -674,9 +683,9 @@
                                true
                               "
                             >
-                              
+
                             </el-input>
-                   
+
                             <span  style="float:right;height:25px;line-height:25px;font-size:14px;">&nbsp;&nbsp;天&nbsp;&nbsp;</span>
                              <el-input
                               style="float:right;width:10%"
@@ -686,7 +695,7 @@
                                true
                               "
                             >
-                              
+
                             </el-input> -->
                              <!-- <el-select
                                style="float:right;width:10%"
@@ -694,7 +703,7 @@
                               :disabled="
                                true
                               "
-                             
+
                               placeholder="请选择天数"
                             >
                               <el-option
@@ -705,7 +714,7 @@
                               >
                               </el-option>
                             </el-select> -->
-                            
+
                             <!-- <span  style="float:right;height:25px;line-height:25px;font-size:18px;">&nbsp;&nbsp;</span>
                                 <el-input
                               style="float:right;width:10%"
@@ -715,7 +724,7 @@
                                true
                               "
                             >
-                              
+
                             </el-input> -->
                              <!-- <el-select
                                style="float:right;width:10%;"
@@ -723,7 +732,7 @@
                               :disabled="
                                true
                               "
-                             
+
                               placeholder="请选择频次"
                             >
                               <el-option
@@ -734,7 +743,7 @@
                               >
                               </el-option>
                             </el-select> -->
-                          
+
                             <!-- <span  style="float:right;height:25px;line-height:25px;font-size:18px;">&nbsp;&nbsp;</span>
                             <el-input
                               style="float:right;width:10%"
@@ -744,7 +753,7 @@
                                true
                               "
                             >
-                              
+
                             </el-input> -->
                           <!-- <el-select
                               style="float:right;width:10%"
@@ -766,7 +775,7 @@
                         <div style="border:17px solid #0000"></div>
                            <el-table :data="item.infusion.infusionProject[index]" style="width: 100%">
                     <!-- <el-table-column label="组数" prop="infuseGroup" width="width">
-                      
+
                     </el-table-column> -->
                     <el-table-column label="序号" type="index" align="center">
                     </el-table-column>
@@ -796,14 +805,14 @@
                       label="频次"
                       width="width"
                     >
-                 
+
                     </el-table-column>
                     <el-table-column
                       prop="infuseUse.name"
                       label="用法"
                       width="width"
                     >
-                 
+
                     </el-table-column>
                     <el-table-column prop="drippingSpeed" label="滴速" width="width">
                         <template slot-scope="scope">
@@ -915,7 +924,7 @@
       :close-on-click-modal="false"
       :before-close="dialogBeforeClose"
     >
-      
+
       <div slot="footer">
         <el-button @click="singleDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="singleChargeBtn(1)">确认收费</el-button>
@@ -929,7 +938,7 @@
     width="30%"
     :before-close="handleClose">
     <div style="border:1px solid #CCCC"></div>
-    
+
     <div style="margin-top:10px;" >
       <!-- <el-link v-if="this.compare" type="warning" :underline="false" >今日待输</el-link>
       <el-link v-else type="warning" :underline="false" >已完成</el-link> -->
@@ -941,7 +950,7 @@
           :picker-options="pickerOptions"
           placeholder="选择日期时间">
         </el-date-picker>
-       
+
     </div>
     <div style="margin-top:10px;">
      <el-table :data="updateExecute" style="width: 100%">
@@ -1256,7 +1265,7 @@ export default {
         0
       );
     },
-   
+
   },
   watch: {
     chargeStatusActiveName() {
@@ -1315,9 +1324,9 @@ export default {
        for (let i = 0; i < this.recordList.length; i++) {
          count1+=this.recordList[i].addNumber
           if(this.recordList[i].delType=='1'){
-              
+
                 count2+=this.recordList[i].addNumber
-              
+
           }
        }
       console.log(count1-count2,'只是');
@@ -1337,21 +1346,21 @@ export default {
     },
     dateChange(e){
         let date = new Date(e);
-        
-          date = date.getFullYear() + '-' 
+
+          date = date.getFullYear() + '-'
               + (date.getMonth()+1) + '-'   // 这里加1是因为getMonth()的返回值是为0~11
               + date.getDate() + ' '
-                  + date.getHours() + ':' 
-                  + date.getMinutes() + ':' 
+                  + date.getHours() + ':'
+                  + date.getMinutes() + ':'
                   + date.getSeconds();
           date = Date.parse(new Date(date))/1000; // 转换成时间戳，返回值是ms，除1000后转化成秒
           date += (86400); // 一天是86400秒
           let newDate = new Date(parseInt(date) * 1000); // 把时间戳转换成日期
-          // let myDate = date.getFullYear() + '-' 
-          //               + (date.getMonth()+1) + '-' 
+          // let myDate = date.getFullYear() + '-'
+          //               + (date.getMonth()+1) + '-'
           //               + date.getDate() + ' '
-          //                 + date.getHours() + ':' 
-          //                 + date.getMinutes() + ':' 
+          //                 + date.getHours() + ':'
+          //                 + date.getMinutes() + ':'
           //                 + date.getSeconds();
                           console.log(new Date());
          if(newDate>new Date()){
@@ -1362,7 +1371,7 @@ export default {
       },
 
     //执行保存
-    save(){  
+    save(){
       this.updateExecute[0].executions=this.updateExecute[0].executions+this.updateExecute[0].excuteNum
       let executeModel={
         company:JSON.parse(sessionStorage.getItem("currentCompany")),
@@ -1382,7 +1391,7 @@ export default {
         if(res.code=="100"){
           this.$message.success("执行成功")
           this.saveInfusion
-         
+
           this.compare=false
           this.getSaveInfo(this.getUserId)
           this.search()
@@ -1392,7 +1401,7 @@ export default {
         this.$message.error(error)
       })
       console.log(executeModel,'执行修改');
-      
+
     },
     execute(row){
       //判断是否皮试
@@ -1457,7 +1466,7 @@ export default {
         columnName: "", // 排序字段名
         order: "", // 排序
       }
-      
+
      if(executeRow.executions==executeRow.days.name-0||executeRow.infuseType==1){
        this.executeDisable=false
      }else{
@@ -1476,14 +1485,14 @@ export default {
       //  }
        this.updateExecute=[]
       this.executeDialogVisible=true
-       
+
       this.updateExecute.push(executeRow)
       this.saveInfusion=row
       console.log(this.updateExecute,'执行结果');
           }
         }
       }).catch(()=>{})
-      
+
     },
     clickMedicalEditTab() {
       if (this.medicalEditTabsValue === this.medicalClickTabsValue) {
@@ -1754,7 +1763,7 @@ export default {
            if(responseData.data.rows!=null){
               this.patientList = responseData.data.rows.filter(
               (item) => item.recipeStatus != "1"
-              
+
             );
             let num = responseData.data.rows.length - this.patientList.length;
             if (this.chargeStatusActiveName == "1") {
@@ -1770,7 +1779,7 @@ export default {
               this.isPayTotalCount = 0;
             }
            }
-            
+
           } else {
             this.$message.error(responseData);
           }
@@ -1967,7 +1976,7 @@ export default {
                 count=element.recipelDetailEvtList[i].infuseGroup
               }
          }
-      
+
       for (let i = 1; i < count; i++) {
         infusion.defaultNumber=infusion.defaultNumber+1;
         infusion.zushu.push(infusion.defaultNumber)
@@ -1977,21 +1986,21 @@ export default {
         infusion.frequency.push({})
         infusion.infuseUse.push({})
       }
-       
+
          let arr=[]
        for (let i = 0; i < element.recipelDetailEvtList.length; i++) {
-        
-        
+
+
              if(element.recipelDetailEvtList[i].isExtra!=1){
-               
+
              infusion.infusionProject[element.recipelDetailEvtList[i].infuseGroup-1].push(element.recipelDetailEvtList[i])
              infusion.drippingSpeed[element.recipelDetailEvtList[i].infuseGroup-1]=element.recipelDetailEvtList[i].drippingSpeed
              infusion.days[element.recipelDetailEvtList[i].infuseGroup-1]=element.recipelDetailEvtList[i].days
              infusion.frequency[element.recipelDetailEvtList[i].infuseGroup-1]=element.recipelDetailEvtList[i].frequency
              infusion.infuseUse[element.recipelDetailEvtList[i].infuseGroup-1]=element.recipelDetailEvtList[i].infuseUse
              }else{
-              
-               
+
+
                arr.push(element.recipelDetailEvtList[i])
              }
 
@@ -2542,7 +2551,7 @@ export default {
           };
           chargeStatus = "4";
       }
-      
+
       let model = {
         tollInfo: tollInfo,
         recipelInfos: recipelInfos,
@@ -2599,7 +2608,7 @@ export default {
       };
       let recipelInfos = [];
       let IsAll = 0;
-      
+
       this.prescriptionMainList.map((item) => {
         switch (item.recipelInfo.recipelType.name) {
           case "中药处方":
@@ -2704,9 +2713,9 @@ export default {
           state = true
         }
       })
-   
+
       }
-      
+
       if(state){
         this.$message.error('有处方已发药但未退药，请先退药')
         return
@@ -2765,7 +2774,7 @@ export default {
     this.pageInit();
     this.GetDrugTable();
     this.assignment();
-    
+
   },
 };
 </script>
@@ -3012,7 +3021,7 @@ export default {
 }
 /deep/ .el-form-item__label{
   text-align: left;
-  
+
 }
 /deep/ .el-dialog .el-row{
   padding: 0 10px;

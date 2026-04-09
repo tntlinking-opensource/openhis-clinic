@@ -1,5 +1,6 @@
 <template>
   <div class="layout-container" :class="[layout.style , layout.fixedHeader? 'fixed-header' : '', isCollapse? 'is-collapse':'']">
+    <!-- 顶部导航 Header -->
     <nav-header @openPersonalInfoDialog="openPersonalInfoDialog"
                 ref="NavHeader"
                 :isCollapse="isCollapse"
@@ -9,55 +10,72 @@
                 @hamburger="getHamburgerStatus"
                 @openSetting="onOpenSetting">
     </nav-header>
-    <el-container class="body-container" :style="">
-      <!--左边栏-->
-      <div class="aside-container" :style="{minHeight: getWindowHeight() + 'px', backgroundColor: settings.sidebarColor}">
-        <div
-          v-if="layout.style==='left-right' && layout.showLogo"
-          class="aside-header"
-          :style="{color: isLight('sidebarColor')? 'rgba(0, 0, 0, 0.65)' : 'rgb(255, 255, 255)'}">
-          <img v-if="!isCollapse" class="sysLogo" :src="sysLogo" alt="">
-        </div>
-        <sidebar :isCollapse="isCollapse" :routers="menus.menus"></sidebar>
+
+    <!-- Tab 标签页栏 - 固定定位，不随滚动移动 -->
+    <div class="tabs-bar" :class="{ 'is-fixed': layout.fixedHeader }" v-if="visitedViews.length > 0">
+      <div class="tabs-wrapper">
+        <el-tabs
+          v-model="activeTab"
+          type="card"
+          closable
+          @tab-click="handleTabClick"
+          @tab-remove="handleTabRemove"
+        >
+          <el-tab-pane
+            v-for="item in visitedViews"
+            :key="item.path"
+            :label="item.title"
+            :name="item.path"
+            :closable="isClosable(item)"
+          >
+            <span slot="label" @contextmenu.prevent.stop="handleContextMenu($event, item)">
+              <i v-if="item.meta && item.meta.cssClass" :class="item.meta.cssClass"></i>
+              {{ item.title }}
+            </span>
+          </el-tab-pane>
+        </el-tabs>
+
+        <!-- 右键菜单 -->
+        <ul
+          v-show="contextMenuVisible"
+          :style="{left: contextMenuLeft + 'px', top: contextMenuTop + 'px'}"
+          class="contextmenu"
+          ref="contextMenu"
+          @contextmenu.prevent
+        >
+          <li @click.stop="refreshSelectedTag(selectedTag)">
+            <i class="el-icon-refresh"></i> 刷新页面
+          </li>
+          <li v-if="isClosable(selectedTag)" @click.stop="closeSelectedTag(selectedTag)">
+            <i class="el-icon-close"></i> 关闭标签
+          </li>
+          <li @click.stop="closeOthersTags">
+            <i class="el-icon-circle-close"></i> 关闭其他
+          </li>
+          <li @click.stop="closeAllTags">
+            <i class="el-icon-error"></i> 关闭全部
+          </li>
+        </ul>
       </div>
+
+      <!-- 收藏列表 -->
+      <div class="collect-container">
+        <book-mark class="book-mark"></book-mark>
+      </div>
+    </div>
+
+    <!-- 占位元素，防止内容被固定的 tab 栏遮挡 -->
+    <div class="tabs-placeholder" v-if="visitedViews.length > 0 && layout.fixedHeader"></div>
+
+    <el-container class="body-container" :style="">
       <!--工作区-->
       <el-main class="main" :style="{backgroundColor: settings.backgroundColor}">
-        <div class="app-header">
-          <nav-header  @openPersonalInfoDialog="openPersonalInfoDialog"
-                      :isCollapse="isCollapse"
-                      v-if="layout.style==='left-right'"
-                      :routers="routers"
-                      :sysLogo="sysLogo"
-                      @hamburger="getHamburgerStatus"
-                      @openSetting="onOpenSetting">
-          </nav-header>
-          <div class="sub-bar">
-            <!-- 面包屑 -->
-            <div class="breadcrumb-container">
-              <el-breadcrumb separator-class="el-icon-arrow-right">
-                <span class="default-bread" v-if="breadcrumbItems[0] && breadcrumbItems[0].to !=='/homepage'"
-                      @click="$router.push({path: '/homepage'})"><el-link :underline="false">首页</el-link> | </span>
-                <template v-for="breadcrembItem in breadcrumbItems">
-                  <template v-if="breadcrembItem.to === ''">
-                    <el-breadcrumb-item>{{breadcrembItem.title}}</el-breadcrumb-item>
-                  </template>
-                  <template v-else>
-                    <el-breadcrumb-item :to="{ 'path': breadcrembItem.to }"> {{ breadcrembItem.title }}</el-breadcrumb-item>
-                  </template>
-                </template>
-              </el-breadcrumb>
-            </div>
-
-            <!-- 收藏列表 -->
-            <div class="collect-container">
-              <book-mark class="book-mark"></book-mark>
-            </div>
-          </div>
-        </div>
         <div v-show="false" class="mask-layout" :class="isCollapse? 'is-collapse':''" v-loading="true"></div>
         <div class="main-content">
           <transition name="fade" mode="out-in">
-            <router-view></router-view>
+            <keep-alive :include="cachedViews">
+              <router-view :key="key" />
+            </keep-alive>
           </transition>
         </div>
         <!-- 右边栏 -->
@@ -81,15 +99,16 @@ import Settings from '../components/Settings'
 import Sys from '../components/Sys'
 import PersonalInfo from '@/views/admin/common/personalInfo'
 import BookMark from './components/bookmark'
-
+import logoImage from '@/assets/images/Logo.png'
 import NavHeader from './components/header'
 import { isLightOrDark } from '@/utils/common'
 import { getLocalRouters, getLocalSysSetting, getLocalCurrentUser } from '@/utils/auth'
+
 export default {
   extends: BaseUI,
   data() {
     return {
-      sysLogo: '',
+      sysLogo: logoImage,
       isCollapse: false,
       header: 'Jeeke demo',
       currentUsername: '',
@@ -97,24 +116,113 @@ export default {
 
       webSocketUrl:process.env.WEB_SOCKET_URL,
       websocket:null,
-      lockReconnect: false,//是否真正建立连接
-      timeout: 300 * 1000,//300秒一次心跳
-      timeoutObj:  null,//心跳心跳倒计时
-      serverTimeoutObj:  null,//心跳倒计时
-      timeoutNum:  null,//断开 重连倒计时
+      lockReconnect: false,
+      timeout: 300 * 1000,
+      timeoutObj:  null,
+      serverTimeoutObj:  null,
+      timeoutNum:  null,
+
+      // 标签页相关数据
+      activeTab: '',
+      visitedViews: [],
+      cachedViews: [],
+      contextMenuVisible: false,
+      contextMenuLeft: 0,
+      contextMenuTop: 0,
+      selectedTag: {},
+      affixTags: ['/homepage', '/']
     }
   },
   destroyed(){
-    //窗口销毁调用
     if(this.websocket){
       this.websocket.close()
     }
+    document.removeEventListener('click', this.handleDocumentClick)
   },
   watch: {
+    $route: {
+      immediate: true,
+      handler(route) {
+        this.addView(route)
+        this.moveToCurrentTag(route)
+      }
+    }
+  },
+  computed: {
+    layout() {
+      const { style, fixedHeader, showLogo } = this.settings;
+      return {
+        style,
+        fixedHeader,
+        showLogo,
+      }
+    },
+
+    isLight() {
+      return function(colorType) {
+        return isLightOrDark(this.settings[colorType])
+      }
+    },
+
+    routers() {
+      let items = [];
+      let routers = getLocalRouters()
+      for (let router of routers) {
+        let routerProperties = JSON.parse(router.properties)
+        let item = {
+          id: router.id,
+          code: router.code,
+          name: router.name,
+          url: router.url,
+          level: router.level,
+          parentId: router.parent && router.parent.id ? router.parent.id: '',
+          nameFullPath: routerProperties.nameFullPath,
+          cssClass: routerProperties.cssClass,
+          component: routerProperties.component
+        }
+        items.push(item)
+      }
+      return items
+    },
+
+    key() {
+      return this.$route.path
+    },
+
+    ...Vuex.mapGetters(['menus', 'breadcrumbItems', 'settings', 'sys'])
+  },
+  mounted() {
+    console.log(this.$router,'====');
+    this.connectWebSocket()
+    let setting = getLocalSysSetting()
+    this.sysLogo =   require('@/assets/images/projectLogo.png');
+    this.changeWebTitle(setting.sysAbbrname)
+    this.doGetCurrentUsername();
+    if(this.$store.getters.toPath){
+      let routers = getLocalRouters()
+      const url = this.removeBlock(JSON.stringify( {url:this.$store.getters.toPath.substring(1)} ));
+      if(routers.includes(url)){
+        this.$router.push(this.$store.getters.toPath);
+      }
+    }
+    this.initTags()
+
+    this.$nextTick(() => {
+      document.addEventListener('click', this.handleDocumentClick)
+    })
+  },
+  beforeCreate() {
+    window.currentUser = getLocalCurrentUser();
 
   },
   methods: {
-    //连接webSocket
+    handleDocumentClick(e) {
+      const contextMenu = this.$refs.contextMenu
+      if (contextMenu && !contextMenu.contains(e.target)) {
+        this.closeContextMenu()
+      }
+    },
+
     connectWebSocket(){
       if(this.userId){
         try {
@@ -128,61 +236,49 @@ export default {
         }
       }
     },
-    //开启心跳
     start(){
       const self = this;
       self.timeoutObj && clearTimeout(self.timeoutObj);
       self.serverTimeoutObj && clearTimeout(self.serverTimeoutObj);
       self.timeoutObj = setTimeout(function(){
-        //这里发送一个心跳，后端收到后，返回一个心跳消息，
-        if (self.websocket.readyState === 1) {//如果连接正常
-            self.websocket.send("heartCheck");
-        }else{//否则重连
+        if (self.websocket.readyState === 1) {
+          self.websocket.send("heartCheck");
+        }else{
           self.reconnect();
         }
         self.serverTimeoutObj = setTimeout(function() {
-          //超时关闭
           self.websocket.close();
         }, self.timeout);
       }, self.timeout)
     },
-    //重置心跳
     reset(){
       clearTimeout(this.timeoutObj);
       clearTimeout(this.serverTimeoutObj);
       this.start();
     },
-    //重新连接
     reconnect() {
       const that = this;
       if(that.lockReconnect) {
         return;
       }
       that.lockReconnect = true;
-      //没连接上会一直重连，设置延迟避免请求过多
-      that.timeoutnum && clearTimeout(that.timeoutnum); // 卸载定时器
+      that.timeoutnum && clearTimeout(that.timeoutnum);
       that.timeoutnum = setTimeout(function () {
-        //新连接
         that.connectWebSocket();
         that.lockReconnect = false;
       },20 * 1000);
     },
-    //初始化webSocket
     initWebSocket(){
-      //异常消息
       this.websocket.onerror = this.setErrorMessage;
-      // //连接成功
       this.websocket.onopen = this.setOnopenMessage;
-      //收到消息的回调
       this.websocket.onmessage = this.setOnmessageMessage;
-      //连接关闭的回调
       this.websocket.onclose = this.setOncloseMessage;
     },
-    setOnopenMessage(){ //连接成功
+    setOnopenMessage(){
       console.log("连接成功");
       this.start();
     },
-    setOnmessageMessage(event){ //收到消息的回调
+    setOnmessageMessage(event){
       this.reset();
       if("" === event.data){
         return  false;
@@ -198,7 +294,6 @@ export default {
             message += "<li>" + item.title + "</li>";
           });
           message += "</ul></div>";
-          //"<div class='msg-box'><ul class='msg-list'><li>"+ data[0].noticeRecord.title +"</li></ul></div>"
           this.$notify({
             title: total+'条：未读消息通知',
             duration: Number(total) * 1500,
@@ -212,19 +307,176 @@ export default {
         });
       }
     },
-    setOncloseMessage(){  //连接关闭的回调
-        console.log('连接关闭');
-        //重连
-        this.reconnect();
+    setOncloseMessage(){
+      console.log('连接关闭');
+      this.reconnect();
     },
-    setErrorMessage(){  //连接异常
-        console.log("连接异常");
-        //重连
-        this.reconnect();
+    setErrorMessage(){
+      console.log("连接异常");
+      this.reconnect();
     },
+
     ...Vuex.mapActions({
-        showPanel: 'settings/showPanel',
+      showPanel: 'settings/showPanel',
     }),
+
+    initTags() {
+      const route = this.$route
+      if (route.path !== '/login') {
+        this.addView(route)
+      }
+    },
+
+    isActive(route) {
+      return route.path === this.$route.path
+    },
+
+    isClosable(view) {
+      if (!view || !view.path) return false
+      if (this.affixTags.includes(view.path)) return false
+      if (view.meta && view.meta.affix) return false
+      return true
+    },
+
+    isAffix(view) {
+      if (!view || !view.path) return false
+      return this.affixTags.includes(view.path) || (view.meta && view.meta.affix)
+    },
+
+    addView(route) {
+      const { name } = route
+      if (name) {
+        const hasVisited = this.visitedViews.some(v => v.path === route.path)
+        if (!hasVisited) {
+          this.visitedViews.push({
+            name: route.name,
+            path: route.path,
+            title: route.meta && route.meta.name || route.name || '无标题',
+            meta: route.meta || {}
+          })
+        }
+
+        if (!route.meta || !route.meta.noCache) {
+          if (!this.cachedViews.includes(name)) {
+            this.cachedViews.push(name)
+          }
+        }
+      }
+      this.activeTab = route.path
+    },
+
+    moveToCurrentTag(route) {
+      this.activeTab = route.path
+    },
+
+    handleTabClick(tab) {
+      const route = this.visitedViews.find(v => v.path === tab.name)
+      if (route && route.path !== this.$route.path) {
+        this.$router.push(route.path)
+      }
+    },
+
+    handleTabRemove(targetName) {
+      const view = this.visitedViews.find(v => v.path === targetName)
+      if (view && this.isClosable(view)) {
+        this.closeSelectedTag(view)
+      }
+    },
+
+    handleContextMenu(e, tag) {
+      e.preventDefault()
+      e.stopPropagation()
+
+      if (!tag) return
+      this.selectedTag = tag
+
+      this.contextMenuLeft = e.clientX
+      this.contextMenuTop = e.clientY
+
+      this.$nextTick(() => {
+        this.contextMenuVisible = true
+      })
+    },
+
+    closeContextMenu() {
+      this.contextMenuVisible = false
+    },
+
+    closeSelectedTag(view) {
+      this.closeContextMenu()
+      this.visitedViews = this.visitedViews.filter(v => v.path !== view.path)
+      this.cachedViews = this.cachedViews.filter(v => v !== view.name)
+
+      if (this.isActive(view)) {
+        this.toLastView(this.visitedViews, view)
+      }
+    },
+
+    closeOthersTags() {
+      this.closeContextMenu()
+      const selected = this.selectedTag
+      if (!selected || !selected.path) return
+
+      this.visitedViews = this.visitedViews.filter(v => {
+        return this.isAffix(v) || v.path === selected.path
+      })
+      this.cachedViews = this.visitedViews.filter(v => {
+        return !v.meta || !v.meta.noCache
+      }).map(v => v.name)
+
+      if (!this.isActive(selected)) {
+        this.$router.push(selected.path)
+      }
+    },
+
+    closeAllTags() {
+      this.closeContextMenu()
+      this.visitedViews = this.visitedViews.filter(v => this.isAffix(v))
+      this.cachedViews = this.visitedViews.filter(v => {
+        return !v.meta || !v.meta.noCache
+      }).map(v => v.name)
+
+      if (this.visitedViews.length > 0) {
+        const currentPath = this.$route.path
+        const isCurrentAffix = this.visitedViews.some(v => v.path === currentPath)
+        if (!isCurrentAffix) {
+          this.$router.push(this.visitedViews[0].path)
+        }
+      } else {
+        if (this.$route.path !== '/homepage') {
+          this.$router.push('/homepage')
+        }
+      }
+    },
+
+    toLastView(visitedViews, view) {
+      const latestView = visitedViews.slice(-1)[0]
+      if (latestView) {
+        this.$router.push(latestView.path)
+      } else {
+        if (view.path !== '/homepage' && view.path !== '/') {
+          this.$router.push('/homepage')
+        }
+      }
+    },
+
+    refreshSelectedTag(view) {
+      this.closeContextMenu()
+
+      const index = this.cachedViews.indexOf(view.name)
+      if (index > -1) {
+        this.cachedViews.splice(index, 1)
+      }
+
+      this.$nextTick(() => {
+        this.$router.replace({
+          path: '/redirect',
+          query: {
+            to: this.$route.fullPath
+          }
+        })
+      })
+    },
 
     openPersonalInfoDialog() {
       this.$refs.personalInfo.$emit('openPersonalInfoDialog')
@@ -270,68 +522,6 @@ export default {
       document.title = title
     },
   },
-  computed: {
-    layout() {
-      const { style, fixedHeader, showLogo } = this.settings;
-      return {
-        style,
-        fixedHeader,
-        showLogo,
-      }
-    },
-
-    isLight() {
-      return function(colorType) {
-        return isLightOrDark(this.settings[colorType])
-      }
-    },
-
-    routers() {
-      let items = [];
-      let routers = getLocalRouters()
-      for (let router of routers) {
-        let routerProperties = JSON.parse(router.properties)
-        let item = {
-          id: router.id,
-          code: router.code,
-          name: router.name,
-          url: router.url,
-          level: router.level,
-          parentId: router.parent && router.parent.id ? router.parent.id: '',
-          nameFullPath: routerProperties.nameFullPath,
-          cssClass: routerProperties.cssClass,
-          component: routerProperties.component
-        }
-        items.push(item)
-      }
-
-      return items
-    },
-    ...Vuex.mapGetters(['menus', 'breadcrumbItems', 'settings', 'sys'])
-  },
-  mounted() {
-    console.log(this.$router,'====');
-    //连接websocket
-    this.connectWebSocket()
-    let setting = getLocalSysSetting()
-    this.sysLogo = setting.sysLogo
-    // this.changeFavicon(setting.favicon)
-    this.changeWebTitle(setting.sysAbbrname)
-    this.doGetCurrentUsername();
-    if(this.$store.getters.toPath){
-      let routers = getLocalRouters()
-      // 去除路径的 ‘/’ 字符  获取对象的 string 并去除首尾大括号  判断路由中的url 字段是否一致
-      const url = this.removeBlock(JSON.stringify( {url:this.$store.getters.toPath.substring(1)} ));
-      if(routers.includes(url)){
-          this.$router.push(this.$store.getters.toPath);
-      }
-    }
-  },
-  beforeCreate() {
-    // 当前登录用户放进全局参数中
-    window.currentUser = getLocalCurrentUser();
-    console.log('再一次');
-  },
   components: { Sidebar, RightPanel, Settings, Sys, NavHeader, PersonalInfo, BookMark }
 };
 </script>
@@ -357,29 +547,194 @@ export default {
 
 .layout-container {
   min-height: 100%;
-  &.up-down {
-    .body-container {
+  position: relative;
+}
 
-    }
-    .nav-menu {
-      border-right: none;
-    }
-    .aside-container {
-      border-right: 1px solid #e6e6e6;
+// Tab 栏样式 - 固定定位
+.tabs-bar {
+  background: #fff;
+  border-bottom: 1px solid #d8dce5;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,.12), 0 0 3px 0 rgba(0,0,0,.04);
+  height: 37px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  position: relative;
+  z-index: 10;
+
+  // 固定定位模式
+  &.is-fixed {
+    position: fixed;
+    top: 56px; // header 高度
+    left: 0;
+    right: 0;
+    z-index: 100;
+  }
+
+  .tabs-wrapper {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+
+    /deep/ .el-tabs {
+      .el-tabs__header {
+        margin: 0;
+        border-bottom: none;
+
+        .el-tabs__nav-wrap {
+          &::after {
+            display: none;
+          }
+        }
+
+        .el-tabs__nav {
+          border: none;
+          border-radius: 0;
+        }
+
+        .el-tabs__item {
+          height: 28px;
+          line-height: 28px;
+          border: 1px solid #d8dce5;
+          border-radius: 3px;
+          margin-right: 5px;
+          margin-top: 4px;
+          padding: 0 12px;
+          font-size: 12px;
+          color: #495060;
+          background: #fff;
+          transition: all .3s;
+
+          &:hover {
+            color: #409EFF;
+          }
+
+          &.is-active {
+            background-color: #409EFF;
+            color: #fff;
+            border-color: #409EFF;
+
+            &::before {
+              content: '';
+              background: #fff;
+              display: inline-block;
+              width: 8px;
+              height: 8px;
+              border-radius: 50%;
+              position: relative;
+              margin-right: 4px;
+            }
+          }
+
+          .el-icon-close {
+            width: 14px;
+            height: 14px;
+            line-height: 14px;
+            border-radius: 50%;
+            margin-left: 4px;
+            transition: all .3s;
+
+            &:hover {
+              background-color: rgba(255,255,255,0.3);
+              color: #fff;
+            }
+          }
+
+          &:not(.is-closable) {
+            padding: 0 15px;
+          }
+        }
+      }
+
+      .el-tabs__content {
+        display: none;
+      }
     }
   }
 
-  &.left-right {
-    .nav-menu {
-      border: none;
+  .collect-container {
+    flex-shrink: 0;
+    margin-left: 10px;
+    line-height: 28px;
+  }
+}
+
+// 占位元素 - 防止内容被固定的 tab 栏遮挡
+.tabs-placeholder {
+  height: 37px;
+  width: 100%;
+}
+
+// 右键菜单样式
+.contextmenu {
+  position: fixed;
+  margin: 0;
+  background: #fff;
+  z-index: 9999;
+  list-style-type: none;
+  padding: 5px 0;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #333;
+  box-shadow: 2px 2px 3px 0 rgba(0, 0, 0, .3);
+  border: 1px solid #ebeef5;
+  min-width: 120px;
+
+  li {
+    margin: 0;
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+
+    i {
+      margin-right: 8px;
+      font-size: 14px;
+      color: #909399;
     }
-    .aside-container {
-      z-index: 1001;
-      box-shadow: 2px 0 6px rgba(0,0,0, .35);
+
+    &:hover {
+      background: #f5f7fa;
+      color: #409EFF;
+
+      i {
+        color: #409EFF;
+      }
+    }
+
+    &:not(:last-child) {
+      border-bottom: 1px solid #f0f0f0;
     }
   }
 }
 
+// 主体容器
+.body-container {
+  height: 100%;
+  width: 100%;
+  min-width: 1120px;
+  overflow: hidden;
+
+  // 当 tab 固定时，给 body-container 添加顶部间距
+  .layout-container.fixed-header & {
+    padding-top: 37px; // tab 栏高度
+  }
+}
+
+.main {
+  margin: 0px;
+  padding: 0px;
+  width: 100%;
+
+  .main-content {
+    margin: 10px;
+  }
+}
+
+// 其他原有样式...
 .fixed-header {
   &.up-down {
     .body-container {
@@ -389,22 +744,7 @@ export default {
       bottom: 0;
     }
     .main {
-      margin-top: 37px;
-      /*height: calc(100vh - 93px);*/
-    }
-    .app-header {
-      position: absolute;
-      z-index: 10;
-      right: 0;
-      top: 0;
-      -webkit-transition: 0.3s width ease-in-out;
-      transition: 0.3s width ease-in-out;
-      width: calc(100% - 200px);
-    }
-    &.is-collapse {
-      .app-header {
-        width: calc(100% - 64px);
-      }
+      margin-top: 0;
     }
   }
   &.left-right {
@@ -414,38 +754,9 @@ export default {
       top: 0;
       bottom: 0;
     }
-    .app-header {
-      position: fixed;
-      top: 0;
-      right: 0;
-      z-index: 9;
-      width: calc(100% - 200px);
-      -webkit-transition: 0.3s width ease-in-out;
-      transition: 0.3s width ease-in-out;
-    }
     .main {
-      margin-top: 93px;
-      /*height: calc(100vh - 93px);*/
+      margin-top: 0;
     }
-    &.is-collapse {
-      .app-header {
-        width: calc(100% - 64px);
-      }
-    }
-  }
-}
-
-
-
-.body-container {
-  height: 100%;
-  width: 100%;
-  min-width: 1120px;
-  overflow: hidden;
-  .aside-container {
-    min-height: 100%;
-    margin: 0px;
-    padding: 0px;
   }
 }
 
@@ -455,77 +766,27 @@ export default {
   text-align: center;
   margin: 0px auto;
   padding: 0px;
-  line-height: 56px;
-  width: 100%;
+  width: 200px;
   height: 56px;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+
   .sysLogo {
-    height: 26px;
-    display: inline-block;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    display: block;
+    object-fit: contain;
   }
 }
-
 
 .nav-menu:not(.el-menu--collapse) {
   width: 200px;
   height: 100%;
   overflow: auto;
-}
-
-.main {
-  margin: 0px;
-  padding: 0px;
-  width: 100%;
-  .main-header {
-    padding-right: 10px;
-    .header-function {
-      text-align: right;
-      line-height: 56px;
-      .personal-link {
-        padding: 13px 10px 14px;
-        text-decoration: none;
-      }
-      .personal-link:hover {
-
-      }
-      img {
-        -moz-border-radius: 50%;
-        -webkit-border-radius: 50%;
-         border-radius: 50%;
-         vertical-align:middle;
-      }
-      .username {
-        margin-left: 3px;
-        font-size: 10pt;
-        color: #fff;
-      }
-    }
-  }
-  .sub-bar {
-    // overflow: hidden;
-    background: #fff;
-    border-bottom: 1px solid #d8dce5;
-    -webkit-box-shadow: 0 1px 3px 0 rgba(0,0,0,.12), 0 0 3px 0 rgba(0,0,0,.04);
-    box-shadow: 0 1px 3px 0 rgba(0,0,0,.12), 0 0 3px 0 rgba(0,0,0,.04);
-  }
-  .main-content {
-    margin: 10px;
-    /*overflow: auto;*/
-  }
-  .el-breadcrumb {
-    height: 36px;
-    line-height: 36px;
-    padding-left: 10px;
-    border-radius: 0px;
-    /*background-color: #F5F4F4;*/
-    /*border-bottom: solid 1px #eeeeee;*/
-    .el-breadcrumb__item {
-      font-size: 12px;
-    }
-  }
 }
 
 .hamburger {
@@ -558,26 +819,25 @@ export default {
     font-size: 12px;
   }
 }
-
-
 </style>
+
 <style lang="scss">
-  .msg-box {
-    height: 40px;
-    width: 200px;
-    overflow:hidden;
-    margin:auto;
-    position:relative;
+.msg-box {
+  height: 40px;
+  width: 200px;
+  overflow:hidden;
+  margin:auto;
+  position:relative;
+}
+@keyframes animation {
+  100% {
+    transform:translateY(-100px)
   }
-  @keyframes animation {
-    100% {
-      transform:translateY(-100px)
-    }
-  }
-  .msg-list {
-    animation:animation 10s linear infinite;
-  }
-  .msg-list:hover {
-    animation-play-state:paused;
-  }
+}
+.msg-list {
+  animation:animation 10s linear infinite;
+}
+.msg-list:hover {
+  animation-play-state:paused;
+}
 </style>

@@ -12,9 +12,10 @@ export default function () {
     },
     created() {
       this.themeVal = this.theme;
-      if (this.theme === ORIGINAL_THEME) {
-        this.themeChange(this.theme, ORIGINAL_THEME);
-      }
+      // 初始化时不触发主题切换提示
+      // if (this.theme === ORIGINAL_THEME) {
+      //   this.themeChange(this.theme, ORIGINAL_THEME);
+      // }
     },
     watch: {
       themeVal(val, oldVal) {
@@ -29,13 +30,13 @@ export default function () {
       ...Vuex.mapMutations({
         CHANGE_SETTING: (commit, data) => commit('settings/CHANGE_SETTING', data)
       }),
-  
+
       async themeChange(val, old) {
         const oldVal = this.chalk ? this.themeVal : old
         if (typeof val !== 'string') return
         const themeCluster = this.getThemeCluster(val.replace('#', ''))
         const originalCluster = this.getThemeCluster(oldVal.replace('#', ''))
-    
+
         const $message = this.$message({
           message: '主题色切换',
           customClass: 'theme-message',
@@ -43,12 +44,12 @@ export default function () {
           duration: 0,
           iconClass: 'el-icon-loading'
         })
-    
+
         const getHandler = (variable, id) => {
           return () => {
             const originalCluster = this.getThemeCluster(ORIGINAL_THEME.replace('#', ''))
             const newStyle = this.updateStyle(this[variable], originalCluster, themeCluster)
-        
+
             let styleTag = document.getElementById(id)
             if (!styleTag) {
               styleTag = document.createElement('style')
@@ -58,17 +59,17 @@ export default function () {
             styleTag.innerText = newStyle
           }
         }
-    
+
         if (!this.chalk) {
           // const url = `https://unpkg.zhimg.com/element-ui@${version}/lib/theme-chalk/index.css`
-          const url = 'static/lib/element/theme-chalk@2.15.6.css'
+          const url = 'public/lib/element/theme-chalk@2.15.6.css'
           await this.getCSSString(url, 'chalk')
         }
-    
+
         const chalkHandler = getHandler('chalk', 'chalk-style')
-    
+
         chalkHandler()
-    
+
         const styles = [].slice.call(document.querySelectorAll('style'))
         .filter(style => {
           const text = style.innerText
@@ -79,9 +80,9 @@ export default function () {
           if (typeof innerText !== 'string') return
           style.innerText = this.updateStyle(innerText, originalCluster, themeCluster)
         })
-    
+
         this.$emit('change', val)
-    
+
         $message.close()
       },
       updateStyle(style, oldCluster, newCluster) {

@@ -1,9 +1,10 @@
 import axios from 'axios'
-import { getLocalToken } from '@/utils/auth'
+import { getLocalToken, removeLocalToken } from '@/utils/auth'
+import router from '@/router'
 
-// 创建axios实例
+// 创建 axios 实例
 const service = axios.create({
-    // api的base_url
+    // api 的 base_url
     baseURL: process.env.BASE_API,
     // 请求超时时间
     timeout: 150000
@@ -24,7 +25,7 @@ service.interceptors.request.use(config => {
     Promise.reject(error)
 })
 
-// respone拦截器
+// respone 拦截器
 service.interceptors.response.use(
     response => {
 
@@ -52,6 +53,20 @@ service.interceptors.response.use(
         // 工作流异常处理
         if(error.response && error.response.data && error.response.data.message) {
             errorData.msg = error.response.data.message
+        }
+        
+        // 处理 401 错误（未授权/未登录）
+        if (error.response && error.response.status === 401) {
+            // 清除本地 token
+            removeLocalToken()
+            // 提示用户
+            ELEMENT.Message({
+                message: '登录已过期，请重新登录',
+                type: 'warning',
+                duration: 2000
+            })
+            // 跳转到登录页
+            router.replace('/login')
         }
 
         return errorData

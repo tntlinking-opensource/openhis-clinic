@@ -49,8 +49,9 @@ target/
  
 ### VS Code ###
 .vscode/
- 
- 
+.vs/
+.trae/
+.history/
 # Log file
 *.log
 log/

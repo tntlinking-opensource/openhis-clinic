@@ -190,7 +190,7 @@
                 </el-select>
               </el-form-item>
             </el-col>
-            <el-col :span="24 / 2" v-if="bizFormModel.cardType.value === '03'">
+            <el-col :span="24 / 2" v-if="bizFormModel.cardType && bizFormModel.cardType.value === '03'">
               <el-form-item
                 label="社会保障卡号" prop="mdtrtCertNo">
                 <el-input
@@ -1686,7 +1686,9 @@ export default {
         };
         this.initOptions(this.bizFormModel);
         this.bizFormModel.treatType.name = "初诊"
-        this.bizFormModel.cardType = this.cardTypeList[0];
+        if (this.cardTypeList && this.cardTypeList.length > 0) {
+          this.bizFormModel.cardType = this.cardTypeList[0];
+        }
         this.tabIndex = "1";
         this.dialogProps.visible = true;
         this.pageInit()
@@ -1705,7 +1707,9 @@ export default {
           };
         });
         this.tabIndex = "1";
-        this.bizFormModel.cardType = this.cardTypeList[0];
+        if (this.cardTypeList && this.cardTypeList.length > 0) {
+          this.bizFormModel.cardType = this.cardTypeList[0];
+        }
         this.bizFormModel.id = null; //把id设置为空，添加一个新的
         this.dialogProps.visible = true;
       });

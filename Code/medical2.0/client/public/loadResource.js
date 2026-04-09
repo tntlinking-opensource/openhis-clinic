@@ -1,9 +1,5 @@
-// 用户设置的元素大小
-let size = 'default'
-let personalTheme = sessionStorage.getItem('personalTheme')
-if(personalTheme) {
-  size = JSON.parse(personalTheme).theme.size
-}
+// 保持 Element UI 尺寸为 mini（在 index.html 中已设置）
+const size = 'mini'
 
 const loadLink = function(url, rel, type, callback) {
   var link = document.createElement("link")
@@ -64,22 +60,22 @@ const loadDataViewer = function() {
   let prevCount = 4 // 需前置加载的资源数
   sleep(50).then(() => {
     // echarts
-    loadJS('static/lib/echarts/echarts@5.3.0.js', function(){
+    loadJS('lib/echarts/echarts@5.3.0.js', function(){
       prevCount = prevCount - 1
     })
     // umy-ui
-    loadJS('static/lib/umy-ui/umy-ui@1.1.6.js', function(){
+    loadJS('lib/umy-ui/umy-ui@1.1.6.js', function(){
       Vue.prototype.$ELEMENT.size = size
       prevCount = prevCount - 1
     })
 
     // jspdf
-    loadJS('static/lib/jspdf@2.5.1/jspdf.umd.min.js', function(){
+    loadJS('lib/jspdf@2.5.1/jspdf.umd.min.js', function(){
       prevCount = prevCount - 1
     })
 
     // @antv/g2plot
-    loadJS('static/lib/@antv/g2plot@2.4.8/g2plot.min.js', function(){
+    loadJS('lib/@antv/g2plot@2.4.8/g2plot.min.js', function(){
       prevCount = prevCount - 1
     })
   })
@@ -87,9 +83,9 @@ const loadDataViewer = function() {
   const doLoadDataViewer = function() {
     if(prevCount <= 0) {
       sleep(50).then(() => {
-        loadLink('static/lib/vue-dataviewer-1.6.4/vue-dataviewer.css', 'stylesheet', 'text/css', function(){
+        loadLink('lib/vue-dataviewer-1.6.4/vue-dataviewer.css', 'stylesheet', 'text/css', function(){
         })
-        loadJS('static/lib/vue-dataviewer-1.6.4/vue-dataviewer.umd.min.js', function(){
+        loadJS('lib/vue-dataviewer-1.6.4/vue-dataviewer.umd.min.js', function(){
           Vue.prototype.$ELEMENT.size = size
         })
       })

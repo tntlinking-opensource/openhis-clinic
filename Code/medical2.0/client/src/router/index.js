@@ -1,11 +1,13 @@
-// import Vue from 'vue'
-// import Router from 'vue-router'
+const Vue = window.Vue
+import Router from 'vue-router'
 import LoginView from '@/views/login/index'
 import { getLocalToken, getLocalRouters } from '@/utils/auth'
 import { routerTree, handleFamily } from '@/utils/routerTree'
 import charge from '@/views/charge/index'
 import chargeaccountreport from '@/views/chargeaccountreport/index'
 import chargecombinereport from '@/views/chargecombinereport/index'
+// Element UI 已通过 CDN 加载
+const ELEMENT = window.ELEMENT
 
 
 const _import = require('./_import_' + process.env.NODE_ENV)

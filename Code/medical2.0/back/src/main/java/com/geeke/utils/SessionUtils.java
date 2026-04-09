@@ -17,7 +17,11 @@ public class SessionUtils extends com.geeke.sys.utils.SessionUtils {
 	 * @return 取不到返回 new User()
 	 */
 	public static User getUser(){
-		return getUserJson().toJavaObject(User.class);
+		JSONObject userJson = getUserJson();
+		if (userJson == null) {
+			return null;
+		}
+		return userJson.toJavaObject(User.class);
 	}
 	
 	
@@ -34,7 +38,11 @@ public class SessionUtils extends com.geeke.sys.utils.SessionUtils {
 	 * @return 取不到返回 new User()
 	 */
 	public static void setLoginTenantId(String tenantId){
-		SecurityUtils.getSubject().getSession().setAttribute("tenantID", tenantId);
+		try {
+			SecurityUtils.getSubject().getSession().setAttribute("tenantID", tenantId);
+		} catch (Exception e) {
+			// Session 已过期或不存在
+		}
 	}
 
 	/**
@@ -42,8 +50,12 @@ public class SessionUtils extends com.geeke.sys.utils.SessionUtils {
 	 * @return 取不到返回 new User()
 	 */
 	public static void setLoginTenant(Company company){
-		JSONObject com = (JSONObject) JSONObject.toJSON(company);
-		SecurityUtils.getSubject().getSession().setAttribute("tenant", com);
+		try {
+			JSONObject com = (JSONObject) JSONObject.toJSON(company);
+			SecurityUtils.getSubject().getSession().setAttribute("tenant", com);
+		} catch (Exception e) {
+			// Session 已过期或不存在
+		}
 	}
 
 	/**
@@ -51,7 +63,11 @@ public class SessionUtils extends com.geeke.sys.utils.SessionUtils {
 	 * @return 取不到返回 new User()
 	 */
 	public static String getLoginTenantId(){
-		return String.valueOf(SecurityUtils.getSubject().getSession().getAttribute("tenantID"));
+		try {
+			return String.valueOf(SecurityUtils.getSubject().getSession().getAttribute("tenantID"));
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	/**
@@ -59,8 +75,12 @@ public class SessionUtils extends com.geeke.sys.utils.SessionUtils {
 	 * @return 取不到返回 new User()
 	 */
 	public static Company getLoginTenant(){
-		JSONObject j = (JSONObject)SecurityUtils.getSubject().getSession().getAttribute("tenant");
-		return j.toJavaObject(Company.class);
+		try {
+			JSONObject j = (JSONObject)SecurityUtils.getSubject().getSession().getAttribute("tenant");
+			return j.toJavaObject(Company.class);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 }

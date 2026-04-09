@@ -123,7 +123,16 @@
               >
               </el-pagination>
             </el-tab-pane>
-            <el-tab-pane label="已收费" name="2">
+            <el-tab-pane name="2">
+              <span slot="label">
+                已收费
+                <el-badge
+                  :value="isPayTotalCount"
+                  :max="99"
+                  type="primary"
+                  style="line-height: normal"
+                ></el-badge>
+              </span>
               <el-scrollbar view-style="height:calc(100vh - 267px);">
                 <el-collapse
                   v-model="patientInfoRow"
@@ -206,7 +215,16 @@
               >
               </el-pagination>
             </el-tab-pane>
-            <el-tab-pane label="已退费" name="3">
+            <el-tab-pane name="3">
+              <span slot="label">
+                已退费
+                <el-badge
+                  :value="returnTotalCount"
+                  :max="99"
+                  type="primary"
+                  style="line-height: normal"
+                ></el-badge>
+              </span>
               <el-scrollbar view-style="height:calc(100vh - 267px);">
                 <el-collapse
                   v-model="patientInfoRow"
@@ -2318,6 +2336,8 @@
       pageInit() {
         this.selectPatientList();
         this.GetAllPatient();
+        this.getIsPayPatientList();
+        this.returnPayPatientList();
         this.initOptions()
       },
       initOptions() {

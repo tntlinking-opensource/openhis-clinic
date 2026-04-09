@@ -344,21 +344,12 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
         for (RecipelDetail recipelDetail:recipelDetailList)
         {
             String drugStuffId = recipelDetail.getDrugStuffId().getDrugStuffId();
-            BigDecimal totalBigDecimal = new BigDecimal(recipelDetail.getTotal());    //需要占用的库存
-            BigDecimal calculationBigDecimal = BigDecimal.ZERO;                       //用于计算，最后与totalBigDecimal做比较进行控制
-            if (totalBigDecimal.compareTo(BigDecimal.ZERO) < 0)
-            {
-                throw new RuntimeException("处方用量存在开具负数的情况，请正确填写处方开具信息！");
-            }
-            if (totalBigDecimal.compareTo(BigDecimal.ZERO) == 0)
-            {
-                continue;
-            }
-
+            BigDecimal calculationBigDecimal = BigDecimal.ZERO;                       //用于计算，最后与 totalBigDecimal 做比较进行控制
+            
             MedicinalStockRecord medicinalStockRecord = new MedicinalStockRecord();
             medicinalStockRecord.setCompany(recipelDetail.getCompany());
             medicinalStockRecord.setOperationType(2);    //预占用操作标识
-            //TODO 加一个诊所Id的条件
+            //TODO 加一个诊所 Id 的条件
             Drug drug = this.drugService.get(drugStuffId);
             Stuff stuff = this.stuffService.get(drugStuffId);
             if (Objects.nonNull(drug) && StringUtils.isNotBlank(drug.getId()))
@@ -384,6 +375,24 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
             else
             {
                 //目前只有药品、材料才进行动态库存控制，其他不控制
+                continue;
+            }
+            
+            // 根据是否拆零销售判断总量单位
+            BigDecimal totalBigDecimal = new BigDecimal(recipelDetail.getTotal());    //需要占用的库存
+            // 如果不拆零销售（isUnpackSell == 0），total 是包装单位，需要转换为制剂单位
+            if (recipelDetail.getIsUnpackSell() != null && recipelDetail.getIsUnpackSell() == 0) {
+                if (drug != null && drug.getPreparation() != null) {
+                    totalBigDecimal = totalBigDecimal.multiply(new BigDecimal(drug.getPreparation()));
+                }
+            }
+            
+            if (totalBigDecimal.compareTo(BigDecimal.ZERO) < 0)
+            {
+                throw new RuntimeException("处方用量存在开具负数的情况，请正确填写处方开具信息！");
+            }
+            if (totalBigDecimal.compareTo(BigDecimal.ZERO) == 0)
+            {
                 continue;
             }
 

@@ -2,6 +2,8 @@ package com.geeke.outpatient.service;
 
 import com.alibaba.fastjson.JSONObject;
 import com.geeke.common.service.CrudService;
+import com.geeke.cure.entity.InspectionCheck;
+import com.geeke.cure.service.InspectionCheckService;
 import com.geeke.outpatient.dao.RecipelDetailDao;
 import com.geeke.outpatient.dao.RecipelInfoDao;
 import com.geeke.outpatient.entity.*;
@@ -11,13 +13,14 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
 /**
- * 处方详情Service
+ * 处方详情 Service
  * @author txl
  * @version 2022-06-07
  */
@@ -33,6 +36,9 @@ public class RecipelDetailService extends CrudService<RecipelDetailDao, RecipelD
 
     @Autowired
     private RegistrationService registrationService;
+
+    @Autowired
+    private InspectionCheckService inspectionCheckService;
     @Transactional
     public void addRetailrecipelDetails(List<RecipelDetail> recipelDetails, RecipelInfo recipelInfo) {
         for (RecipelDetail recipelDetail : recipelDetails) {
@@ -108,6 +114,15 @@ public class RecipelDetailService extends CrudService<RecipelDetailDao, RecipelD
                             Registration registration = registrationService.get(recipelInfo.getRegistration().getId());
                             registration.setTreatmentDate(new Date());
                             registrationService.save(registration);
+                            
+                            // 更新该处方下所有检验检查状态为已填写
+                            List<InspectionCheck> inspectionChecks = inspectionCheckService.getByRecipelInfoId(recipelInfo.getId());
+                            if (!CollectionUtils.isEmpty(inspectionChecks)) {
+                                for (InspectionCheck inspectionCheck : inspectionChecks) {
+                                    inspectionCheck.setStatus("1");
+                                    inspectionCheckService.save(inspectionCheck);
+                                }
+                            }
                         }
                     }else {
                         recipelInfoDao.updateById(0,0,recipelDetail.getRecipelInfo().getId());
@@ -145,6 +160,15 @@ public class RecipelDetailService extends CrudService<RecipelDetailDao, RecipelD
                         Registration registration = registrationService.get(recipelInfo.getRegistration().getId());
                         registration.setTreatmentDate(new Date());
                         registrationService.save(registration);
+                        
+                        // 更新该处方下所有检验检查状态为已填写
+                        List<InspectionCheck> inspectionChecks = inspectionCheckService.getByRecipelInfoId(recipelInfo.getId());
+                        if (!CollectionUtils.isEmpty(inspectionChecks)) {
+                            for (InspectionCheck inspectionCheck : inspectionChecks) {
+                                inspectionCheck.setStatus("1");
+                                inspectionCheckService.save(inspectionCheck);
+                            }
+                        }
                     }
                 }else {
                     recipelInfoDao.updateById(0,0,recipelDetail.getRecipelInfo().getId());

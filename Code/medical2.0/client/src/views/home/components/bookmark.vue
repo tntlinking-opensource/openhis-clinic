@@ -396,7 +396,6 @@
       },
       close() {
         this.closeMenu()
-        this.$refs.moreMenu.close('2')
       },
       closeMenu() {
         this.visible = false

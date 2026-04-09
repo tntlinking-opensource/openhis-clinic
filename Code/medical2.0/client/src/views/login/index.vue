@@ -3,7 +3,7 @@
     v-if="isLoaded"
     class="login-container"
     :class="sysData.loginLayout"
-    :style="{ backgroundImage: 'url(' + backImg + ')' }"
+    :style="{ backgroundImage: 'url(' + (sysData.loginBg || backImg) + ')' }"
   >
     <div class="login-header">
       <div class="login-logo">
@@ -45,6 +45,7 @@
               autofocus="autofocus"
               placeholder="用户名"
               @input="isError = false"
+              size="large"
             >
               <div class="login-username" slot="prepend"></div>
             </el-input>
@@ -56,6 +57,7 @@
               v-model.trim="loginForm.password"
               placeholder="口令"
               @input="isError = false"
+              size="large"
             >
               <template slot="prepend"
                 ><div class="login-password"></div
@@ -67,6 +69,7 @@
             :loading="showLoading"
             @click.native.prevent="doLogin"
             native-type="submit"
+            size="large"
             >登录</el-button
           >
         </div>
@@ -208,7 +211,7 @@ export default {
             this.sysData.loginLogo = `${this.baseApi}/sys/sysSeting/getFile/2`;
             this.sysData.sysLogo = `${this.baseApi}/sys/sysSeting/getFile/3`;
             // this.sysData.favicon = `${this.baseApi}/sys/sysSeting/getFile/4`;
-            this.sysData.loginBg = `${this.baseApi}/sys/sysSeting/getFile/5`;
+            //this.sysData.loginBg = `${this.baseApi}/sys/sysSeting/getFile/5`;
             this.sysData.loginGraph = `${this.baseApi}/sys/sysSeting/getFile/6`;
 
 

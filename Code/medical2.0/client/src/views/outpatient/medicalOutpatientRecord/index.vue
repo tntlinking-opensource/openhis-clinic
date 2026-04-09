@@ -1354,7 +1354,6 @@
                                 line-height: 25px;
                                 font-size: 18px;
                               ">&nbsp;&nbsp;</span>
-
                             <el-select style="float: right; width: 10%"
                                        v-model="item.infusion.frequency[index]" :disabled="
                                 isReadOnly ||
@@ -7435,7 +7434,7 @@
                 rowElement.total = rowElement.total ? rowElement.total : 0;
                 rowElement.allFee = rowElement.allFee ? rowElement.allFee : 0;
                 rowElement.dosageUnitType = rowElement.dosageUnitType || 'dosis'; // 默认剂量单位
-                
+
                 if (rowElement.frequency && rowElement.days) {
                   // 计算总量（制剂单位）
                   let calculatedTotalInPreparation;
@@ -7453,7 +7452,7 @@
                       .dividedBy(rowElement.drugStuffId.drug.dosis)
                       .toNumber();
                   }
-                  
+
                   if (rowElement.isUnpackSell == "1") {
                     // 拆零销售：总量单位是制剂单位
                     rowElement.unitPrice = rowElement.drugStuffId.retailPrice;
@@ -7859,10 +7858,10 @@
       },
       changeDosageUnit(row, unitType) {
         if (row.dosageUnitType === unitType) return;
-        
+
         // 保存当前值
         const currentValue = parseFloat(row.singleDosage) || 0;
-        
+
         if (unitType === 'preparation') {
           // 从剂量单位转换为制剂单位
           if (row.drugStuffId.drug && row.drugStuffId.drug.dosis) {
@@ -7874,7 +7873,7 @@
             row.singleDosage = (currentValue * row.drugStuffId.drug.dosis).toFixed(2);
           }
         }
-        
+
         // 更新单位类型
         row.dosageUnitType = unitType;
         // 重新计算
@@ -7882,9 +7881,9 @@
       },
       calculateDaysByTotal(row) {
         if (!row.total || !row.singleDosage || !row.frequency) return;
-        
+
         row.dosageUnitType = row.dosageUnitType || 'dosis';
-        
+
         // 计算单次用量（转换为制剂单位）
         let singleDoseInPreparation;
         if (row.dosageUnitType === 'preparation') {
@@ -7894,10 +7893,10 @@
           // 剂量单位，需要转换为制剂单位
           singleDoseInPreparation = (parseFloat(row.singleDosage) || 0) / (row.drugStuffId.drug.dosis || 1);
         }
-        
+
         // 计算每日用量（制剂单位）
         let dailyDosage = singleDoseInPreparation * (parseFloat(row.frequency.value.split("_")[1]) || 0);
-        
+
         if (dailyDosage > 0) {
           // 根据 isUnpackSell 判断总量单位
           let totalInPreparation;
@@ -7908,7 +7907,7 @@
             // 总量单位是包装单位，需要转换为制剂单位：总量 × 包装规格
             totalInPreparation = row.total * (row.drugStuffId.drug.preparation || 1);
           }
-          
+
           // 计算天数 = 总量 (制剂单位) / 每日用量
           // 向上取整，确保天数足够覆盖总量
           const days = Math.ceil(totalInPreparation / dailyDosage);
@@ -7917,7 +7916,7 @@
           } else {
             row.days = { name: days };
           }
-          
+
           // 直接计算费用，不调用 MedicalCalculate 避免循环计算
           if (row.isUnpackSell == "1") {
             row.allFee = (row.total * row.drugStuffId.retailPrice).toFixed(2);
@@ -7928,9 +7927,9 @@
       },
       calculateTotalByDays(row) {
         if (!row.singleDosage || !row.frequency || !row.days) return;
-        
+
         row.dosageUnitType = row.dosageUnitType || 'dosis';
-        
+
         // 计算单次用量（转换为制剂单位）
         let singleDoseInPreparation;
         if (row.dosageUnitType === 'preparation') {
@@ -7940,14 +7939,14 @@
           // 剂量单位，需要转换为制剂单位
           singleDoseInPreparation = (parseFloat(row.singleDosage) || 0) / (row.drugStuffId.drug.dosis || 1);
         }
-        
+
         // 计算每日用量（制剂单位）
         let dailyDosage = singleDoseInPreparation * (parseFloat(row.frequency.value.split("_")[1]) || 0);
-        
+
         // 计算总量 (制剂单位) = 每日用量 × 天数
         let days = parseFloat(row.days.name) || 1;
         let totalInPreparation = dailyDosage * days;
-        
+
         // 根据 isUnpackSell 判断总量单位
         if (row.isUnpackSell == "1") {
           // 总量单位是制剂单位，直接使用
@@ -9603,14 +9602,6 @@
   ::v-deep .el-input-group__append {
     padding: 4px;
   }
-
-  /* ::v-deep .el-collapse-item__header {
-    background: #409eff !important;
-} */
-  /* ::v-deep .el-descriptions__body{
-  background: #e7edf0 !important;
-} */
-
   .medical-type-ul {
     list-style-type: none;
     font-size: 13px;
@@ -9660,7 +9651,7 @@
     transform: scale(0.5);
   }
 </style>
-<style lang="scss">
+<style>
   .el-popover.medical-type-popover {
     min-width: 85px !important;
     margin: 0;
@@ -9703,55 +9694,53 @@
     display: inline-block;
   }
 
-  // 医疗基础信息表单样式
-  .medical-base-form {
-    .el-form-item {
-      margin-bottom: 10px;
+  /* 医疗基础信息表单样式*/
+  .medical-base-form .el-form-item {
+    margin-bottom: 10px;
+  }
 
-      .el-form-item__label {
-        font-weight: 500;
-        color: #606266;
-        font-size: 13px;
-      }
-    }
+  .medical-base-form .el-form-item .el-form-item__label {
+    font-weight: normal;
+    color: #606266;
+    font-size: 14px;
+  }
 
-    .info-content {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+  .medical-base-form .info-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-      .patient-name {
-        font-size: 14px;
-        color: #303133;
-        font-weight: 600;
-      }
+  .medical-base-form .info-content .patient-name {
+    font-size: 14px;
+    color: #303133;
+    font-weight: 600;
+  }
 
-      .vip-tag {
-        display: inline-flex;
-        align-items: center;
-      }
+  .medical-base-form .info-content .vip-tag {
+    display: inline-flex;
+    align-items: center;
+  }
 
-      .poverty-tag {
-        color: #f56c6c;
-        font-weight: 600;
-        font-size: 13px;
-      }
-    }
+  .medical-base-form .info-content .poverty-tag {
+    color: #f56c6c;
+    font-weight: 600;
+    font-size: 13px;
+  }
 
-    .info-text {
-      font-size: 14px;
-      color: #303133;
-      font-weight: 500;
-    }
+  .medical-base-form .info-text {
+    font-size: 14px;
+    color: #303133;
+    font-weight: 600;
+  }
 
-    .el-radio-group {
-      display: inline-flex;
-      align-items: center;
-    }
+  .medical-base-form .el-radio-group {
+    display: inline-flex;
+    align-items: center;
+  }
 
-    .el-date-editor {
-      width: 180px;
-    }
+  .medical-base-form .el-date-editor {
+    width: 180px;
   }
 </style>
 <style lang="scss">

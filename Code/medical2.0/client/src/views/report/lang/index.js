@@ -13,6 +13,8 @@ import fuZh from 'fit2cloud-ui/src/locale/lang/zh-CN' // 加载fit2cloud的内�
 
 import fuEn from 'fit2cloud-ui/src/locale/lang/en_US' // 加载fit2cloud的内容
 
+const Vue = window.Vue
+const VueI18n = window.VueI18n
 Vue.use(VueI18n)
 
 const messages = {

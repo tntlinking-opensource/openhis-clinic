@@ -108,7 +108,16 @@
               >
               </el-pagination>
             </el-tab-pane>
-            <el-tab-pane label="已完成" name="2">
+            <el-tab-pane  name="2">
+               <span slot="label">
+                已完成
+                <el-badge
+                  :value="isPayTotalCount"
+                  :max="99"
+                  type="primary"
+                  style="line-height: normal"
+                ></el-badge>
+              </span>
               <el-scrollbar view-style="height:calc(100vh - 267px);">
                 <el-collapse
                   v-model="patientInfoRow"
@@ -2430,6 +2439,8 @@ export default {
   mounted() {
     this.pageInit();
     this.GetDrugTable();
+    // 同时加载已完成列表的数量（用于显示徽章）
+    this.getIsPayPatientList();
   },
 };
 </script>
