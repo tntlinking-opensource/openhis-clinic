@@ -241,141 +241,82 @@
               <!-- <el-button v-if="isReadOnly==false" style="float: right; padding: 3px 0" type="text">清空</el-button> -->
             </div>
             <el-form :model="BasicInfoModel" ref="BasicInfoForm" label-width="auto"
-                     :rules="BasicInfoFormRules">
-              <el-row :gutter="24">
-                <el-col :span="4">
+                     :rules="BasicInfoFormRules" class="medical-base-form">
+              <el-row :gutter="12">
+                <el-col :span="3">
                   <el-form-item label="患者姓名:" prop="name">
-                    <!-- <el-input
-                      :disabled="isBaseReadOnly"
-                      v-model="BasicInfoModel.name"
-                      style="width:100px"
-                    ></el-input> -->
-                    <div class="nameStyle">
-                      {{ BasicInfoModel.name ? BasicInfoModel.name : "" }}
-                      <div class="imgStyle" v-if="member.length > 0">
+                    <div class="info-content">
+                      <span class="patient-name">{{ BasicInfoModel.name ? BasicInfoModel.name : "" }}</span>
+                      <div class="vip-tag" v-if="member.length > 0">
                         <el-popover placement="top-start" title="" width="200" trigger="hover">
                           <div v-for="(item, index) in member" :key="index"
                                style="padding: 5px">
-                            <el-tag>{{ item.memberName }}</el-tag>
+                            <el-tag size="mini">{{ item.memberName }}</el-tag>
                           </div>
                           <img slot="reference" src="../../../assets/images/vip.png"
-                               style="width: 25px; height: 25px"/>
+                               style="width: 20px; height: 20px; vertical-align: middle;"/>
                         </el-popover>
                       </div>
+                      <span class="poverty-tag" v-if="poverty.length > 0">[贫]</span>
                     </div>
-                    <div class="nameStyle" style="color:#ff0000" v-if="poverty.length > 0"> [贫]
-                    </div>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="2">
+                  <el-form-item label="性别:" prop="gender">
+                    <span class="info-text">{{ BasicInfoModel.gender.name ? BasicInfoModel.gender.name : "" }}</span>
                   </el-form-item>
                 </el-col>
                 <el-col :span="3">
-                  <el-form-item label="性别:" prop="gender">
-                    <!-- <el-select
-                      :disabled="isBaseReadOnly"
-                      v-model="BasicInfoModel.gender.name"
-                      placeholder="请选择性别"
-                      style="width: 100%"
-                    >
-                      <el-option label="男" value="男"></el-option>
-                      <el-option label="女" value="女"></el-option>
-                    </el-select> -->
-                    <span>
-											{{
-                        BasicInfoModel.gender.name
-                          ? BasicInfoModel.gender.name
-                          : ""
-                      }}
-										</span>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="5">
                   <el-form-item label="年龄:" prop="name">
-                    <!-- <el-input
-                      :disabled="isBaseReadOnly"
-                      placeholder="请输入"
-                      v-model="BasicInfoModel.age"
-                      style="width: 49%"
-                    >
-                      <template slot="append">岁</template>
-                    </el-input>
-                    <el-input
-                      :disabled="isBaseReadOnly"
-                      placeholder="请输入"
-                      v-model="BasicInfoModel.month"
-                      style="width: 49%"
-                    >
-                      <template slot="append">月</template>
-                    </el-input> -->
-                    <span>
-											{{ BasicInfoModel.age ? BasicInfoModel.age : 0 }}岁{{
-                        BasicInfoModel.month ? BasicInfoModel.month : 0
-                      }}月
-										</span>
+                    <span class="info-text">{{ BasicInfoModel.age ? BasicInfoModel.age : 0 }}岁{{ BasicInfoModel.month ? BasicInfoModel.month : 0 }}月</span>
                   </el-form-item>
                 </el-col>
-                <el-col :span="5">
+                <el-col :span="3">
                   <el-form-item label="联系方式:" prop="phone">
-                    <!-- <el-input
-                      :disabled="isBaseReadOnly"
-                      v-model="BasicInfoModel.phone"
-                    ></el-input> -->
-                    <span>
-											{{ BasicInfoModel.phone ? BasicInfoModel.phone : "" }}
-										</span>
+                    <span class="info-text">{{ BasicInfoModel.phone ? BasicInfoModel.phone : "" }}</span>
                   </el-form-item>
                 </el-col>
-                <el-col :span="5">
+                <el-col :span="4">
                   <el-form-item label="身份证号:" prop="card">
-                    <!-- <el-input
-                      :disabled="isBaseReadOnly"
-                      v-model="BasicInfoModel.card"
-                    ></el-input> -->
-                    <span>
-											{{ BasicInfoModel.card ? BasicInfoModel.card : "" }}
-										</span>
+                    <span class="info-text">{{ BasicInfoModel.card ? BasicInfoModel.card : "" }}</span>
                   </el-form-item>
+                </el-col>
+                <el-col :span="4">
+                  <el-form-item label="治疗类型:">
+                    <el-radio-group :disabled="isReadOnly" v-model="registration.treatType.value" size="mini">
+                      <el-radio label="treatType_0">初诊</el-radio>
+                      <el-radio label="treatType_1">复诊</el-radio>
+                    </el-radio-group>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="5" style="text-align: right;">
+                  <el-button @click="jzjlclick" type="primary" class="visit-record-btn">就诊记录</el-button>
                 </el-col>
               </el-row>
 
-              <el-row :gutter="24">
-                <!-- <el-form-item label="治疗类型" prop="treatType">
-                                        <el-radio-group v-model="MedicalRecordModel.registration.treatType">
-                                            <el-radio :disabled="isReadOnly==true" v-for="typeItem in TreatTypeOption" :key="typeItem" :label="typeItem.name"></el-radio>
-                                        </el-radio-group>
-                                    </el-form-item> -->
-                <el-col :span="6">
-                  <el-form-item label="治疗类型:">
-                    <el-radio :disabled="isReadOnly" v-model="registration.treatType.value"
-                              label="treatType_0">初诊
-                    </el-radio>
-                    <el-radio :disabled="isReadOnly" v-model="registration.treatType.value"
-                              label="treatType_1">复诊
-                    </el-radio>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="5">
+              <!-- <el-row :gutter="24">
+                <el-col :span="4">
                   <el-form-item label="传染病:" prop="infectType">
-                    <el-radio :disabled="isReadOnly" v-model="registration.infectType.value" label="infectType_0">否
-                    </el-radio>
-                    <el-radio :disabled="isReadOnly" v-model="registration.infectType.value" label="infectType_1">是
-                    </el-radio>
+                    <el-radio-group :disabled="isReadOnly" v-model="registration.infectType.value" size="small">
+                      <el-radio label="infectType_0">否</el-radio>
+                      <el-radio label="infectType_1">是</el-radio>
+                    </el-radio-group>
                   </el-form-item>
                 </el-col>
                 <el-col :span="8">
-                  <el-form-item label="发病时间:" style="margin-right: 3px;">
+                  <el-form-item label="发病时间:">
                     <el-date-picker
                       :disabled="isReadOnly"
                       v-model="registration.morbidityTime"
                       type="datetime"
                       placeholder="选择日期时间"
+                      size="small"
                       align="right"
                       :picker-options="pickerOptions">
                     </el-date-picker>
                   </el-form-item>
                 </el-col>
-
-                <el-col :span="2">
-                  <el-button @click="jzjlclick" type="primary" style="margin-left: 16px">就诊记录
-                  </el-button>
+              </el-row> -->
                   <el-drawer title="就诊日志" :visible.sync="drawer" :direction="direction"
                              :before-close="JZrecordclick">
                     <el-table :data="recordtableData" border style="width: 100%">
@@ -393,8 +334,6 @@
                       </el-table-column>
                     </el-table>
                   </el-drawer>
-                </el-col>
-              </el-row>
             </el-form>
           </el-card>
 
@@ -440,6 +379,11 @@
                         </el-button>
                       </div>
                       <div>
+                        <el-row style="margin-bottom: 15px;">选择病历类型</el-row>
+                        <el-radio-group v-model="medicalType" @change="handleMedicalTypeChange" style="margin-bottom: 15px;">
+                          <el-radio label="western">西医</el-radio>
+                          <el-radio label="chinese">中医</el-radio>
+                        </el-radio-group>
                         <el-row>选择需要的病历字段</el-row>
                         <el-checkbox-group v-model="ChooseRecordList">
                           <el-checkbox :disabled="isReadOnly"
@@ -450,7 +394,7 @@
                       </div>
                     </el-card>
                     <el-button :disabled="isReadOnly" slot="reference" type="text"><i
-                      class="el-icon-setting el-icon--right"></i>配置
+                      class="el-icon-setting el-icon--right"></i>病历配置
                     </el-button>
                   </el-popover>
                 </div>
@@ -510,7 +454,7 @@
                   </el-form-item>
                 </el-col>
               </el-row>
-              <el-form-item label="西医诊断" prop="westernDiagnose">
+              <el-form-item label="西医诊断" prop="westernDiagnose" v-if="medicalType === 'western'">
                 <span slot="label" >
                       西医诊断
                     <el-popover v-model:visible="WMpopoverVisible" placement="bottom-start"
@@ -533,8 +477,8 @@
                 >
                 </el-input>
               </el-form-item>
-                  <el-form-item label="中医诊断" prop="chinaDiagnose">
-                    <span slot="label" >
+              <el-form-item label="中医诊断" prop="chinaDiagnose" v-if="medicalType === 'chinese'">
+                <span slot="label" >
                       中医诊断
                     <el-popover v-model:visible="TCMpopoverVisible" placement="top-start"
                                 width="700" trigger="focus"
@@ -555,7 +499,7 @@
                       @blur="TCMpopoverVisible = false">
                     </el-input>
                   </el-form-item>
-                  <el-form-item label="中医证候" prop="chinaDiagnose">
+                  <el-form-item label="中医证候" prop="chinaSyndrome" v-if="medicalType === 'chinese'">
                     <span slot="label" >
                       中医证候
                     <el-popover v-model:visible="ZHpopoverVisible" placement="top-start"
@@ -604,7 +548,7 @@
                 <el-tab-pane :closable="false" v-if="!isReadOnly" disabled key="add" name="add">
 									<span slot="label">
 										<el-popover placement="bottom-start" popper-class="medical-type-popover"
-                                trigger="click">
+                                trigger="hover">
 											<el-button type="text" slot="reference"><i
                         class="el-icon-plus el-icon--right"></i>开处方</el-button>
 											<ul class="medical-type-ul">
@@ -802,19 +746,29 @@
                         <el-table-column prop="singleDosage" label="单次用量" align="center"
                         >
                           <template slot-scope="scope">
-                            <el-input v-model="scope.row.singleDosage"
-                                      ref="westernMedicine"
-                                      oninput="value=value.replace(/[^\d.]/g,'')"
-                                      @input="MedicalCalculate()" :disabled="
-                                isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1"
-                            >
-                              <template slot="append">{{
-                                  scope.row.drugStuffId.dosisUnit.name
-                                }}
-                              </template>
-                            </el-input>
+                            <div style="display: flex; align-items: center;">
+                              <el-input v-model="scope.row.singleDosage"
+                                        ref="westernMedicine"
+                                        oninput="value=value.replace(/[^\d.]/g,'')"
+                                        @input="MedicalCalculate()" :disabled="
+                                  isReadOnly ||
+                                  item.content.recipelInfo.chargeStatus != 0 ||
+                                  item.content.recipelInfo.status == -1"
+                                        style="width: 150px;">
+                                <template slot="append">
+                                  <el-dropdown @command="(command) => changeDosageUnit(scope.row, command)">
+                                    <span class="el-dropdown-link">
+                                      {{ scope.row.dosageUnitType === 'preparation' ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.dosisUnit.name }}
+                                      <i class="el-icon-arrow-down el-icon--right"></i>
+                                    </span>
+                                    <el-dropdown-menu slot="dropdown">
+                                      <el-dropdown-item command="dosis">剂量单位 ({{ scope.row.drugStuffId.dosisUnit.name }})</el-dropdown-item>
+                                      <el-dropdown-item command="preparation">制剂单位 ({{ scope.row.drugStuffId.preparationUnit.name }})</el-dropdown-item>
+                                    </el-dropdown-menu>
+                                  </el-dropdown>
+                                </template>
+                              </el-input>
+                            </div>
                           </template>
                         </el-table-column>
                         <el-table-column prop="westernMedicineUse" label="用法" align="center"
@@ -853,7 +807,7 @@
                             <el-input-number v-model="scope.row.days.name" :min='0'
                                              :max="item.content.recipelInfo.chronicDisease? systemParamConfig.chronicDays: systemParamConfig.normalDays"
                                              :disabled="isReadOnly || item.content.recipelInfo.chargeStatus != 0 || item.content.recipelInfo.status == -1"
-                                             :controls="false" @change="onChronicDiseaseChange">
+                                             :controls="false" @change="calculateTotalByDays(scope.row)">
                             </el-input-number>
                             <!-- <el-select v-model="scope.row.days" :disabled="
                                 isReadOnly ||
@@ -869,25 +823,24 @@
                         </el-table-column>
                         <el-table-column v-if="item.content.recipelInfo.isPre" prop="total" label="总量" align="center">
                           <template slot-scope="scope">
-                            <el-input-number v-model="scope.row.total" :min='0'
-                                             :disabled="isReadOnly || item.content.recipelInfo.chargeStatus != 0 || item.content.recipelInfo.status == -1"
-                                             :controls="false" >
-                            </el-input-number>
+                            <div style="display: flex; align-items: center;">
+                              <el-input-number v-model="scope.row.total" :min='0'
+                                               :disabled="isReadOnly || item.content.recipelInfo.chargeStatus != 0 || item.content.recipelInfo.status == -1"
+                                               :controls="false" style="width: 100px" @change="calculateDaysByTotal(scope.row)">
+                              </el-input-number>
+                              <span style="margin-left: 5px">{{ scope.row.isUnpackSell == "1" ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name }}</span>
+                            </div>
                           </template>
                         </el-table-column>
                         <el-table-column v-if="!item.content.recipelInfo.isPre" prop="total" label="总量" align="center">
                           <template slot-scope="scope">
-                            {{
-                              Math.floor(scope.row.total / scope.row.drugStuffId.drug.preparation) > 0
-                                ? Math.floor(scope.row.total / scope.row.drugStuffId.drug.preparation) +
-                                scope.row.drugStuffId.pack.name +
-                                (scope.row.total % scope.row.drugStuffId.drug.preparation > 0
-                                  ? (scope.row.total % scope.row.drugStuffId.drug.preparation) +
-                                  scope.row.drugStuffId.preparationUnit.name
-                                  : "")
-                                : scope.row.total +
-                                scope.row.drugStuffId.preparationUnit.name
-                            }}
+                            <div style="display: flex; align-items: center;">
+                              <el-input-number v-model="scope.row.total" :min='0'
+                                               :disabled="isReadOnly || item.content.recipelInfo.chargeStatus != 0 || item.content.recipelInfo.status == -1"
+                                               :controls="false" style="width: 100px" @change="calculateDaysByTotal(scope.row)">
+                              </el-input-number>
+                              <span style="margin-left: 5px">{{ scope.row.isUnpackSell == "1" ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name }}</span>
+                            </div>
                           </template>
                         </el-table-column>
                         <!-- <el-table-column
@@ -928,7 +881,7 @@
                                 isReadOnly ||
                                 item.content.recipelInfo.chargeStatus != 0 ||
                                 item.content.recipelInfo.status == -1
-                              " placeholder="请选择" @change="MedicalCalculate()" style="width: 110px">
+                              " placeholder="请选择" @change="calculateTotalByDays(scope.row)" style="width: 110px">
                               <el-option :label="
                                   (scope.row.drugStuffId.price).toFixed(4) +
                                   '/' +
@@ -4032,6 +3985,29 @@
     },
     name: "index",
     methods: {
+      // 处理医疗类型切换
+      handleMedicalTypeChange() {
+        // 根据模板类型调整必填项
+        if (this.medicalType === 'chinese') {
+          // 中医模板：中医诊断和中医证候必填
+          this.BasicInfoFormRules.chinaDiagnose = [
+            { required: true, message: '请输入中医诊断', trigger: 'blur' }
+          ];
+          this.BasicInfoFormRules.chinaSyndrome = [
+            { required: true, message: '请输入中医证候', trigger: 'blur' }
+          ];
+          // 移除西医诊断必填
+          delete this.BasicInfoFormRules.westernDiagnose;
+        } else {
+          // 西医模板：西医诊断必填
+          this.BasicInfoFormRules.westernDiagnose = [
+            { required: true, message: '请输入西医诊断', trigger: 'blur' }
+          ];
+          // 移除中医诊断和证候必填
+          delete this.BasicInfoFormRules.chinaDiagnose;
+          delete this.BasicInfoFormRules.chinaSyndrome;
+        }
+      },
       getFileList(fileList) {
         console.log(fileList, 'getFileList');
       },
@@ -7458,38 +7434,43 @@
                 rowElement.singleDosage = rowElement.singleDosage ? rowElement.singleDosage : "";
                 rowElement.total = rowElement.total ? rowElement.total : 0;
                 rowElement.allFee = rowElement.allFee ? rowElement.allFee : 0;
+                rowElement.dosageUnitType = rowElement.dosageUnitType || 'dosis'; // 默认剂量单位
+                
                 if (rowElement.frequency && rowElement.days) {
-                  let total = Math.ceil(
-                    BigNumber(rowElement.singleDosage - 0)
+                  // 计算总量（制剂单位）
+                  let calculatedTotalInPreparation;
+                  if (rowElement.dosageUnitType === 'preparation') {
+                    // 制剂单位计算
+                    calculatedTotalInPreparation = BigNumber(rowElement.singleDosage - 0)
+                      .multipliedBy(rowElement.frequency.value.split("_")[1])
+                      .multipliedBy(rowElement.days.name)
+                      .toNumber();
+                  } else {
+                    // 剂量单位计算
+                    calculatedTotalInPreparation = BigNumber(rowElement.singleDosage - 0)
                       .multipliedBy(rowElement.frequency.value.split("_")[1])
                       .multipliedBy(rowElement.days.name)
                       .dividedBy(rowElement.drugStuffId.drug.dosis)
-                      .toNumber()
-                  );
+                      .toNumber();
+                  }
+                  
                   if (rowElement.isUnpackSell == "1") {
+                    // 拆零销售：总量单位是制剂单位
                     rowElement.unitPrice = rowElement.drugStuffId.retailPrice;
-                    rowElement.total = total;
+                    rowElement.total = Math.ceil(calculatedTotalInPreparation);
                     rowElement.allFee = (BigNumber(rowElement.total)
                       .multipliedBy(rowElement.drugStuffId.retailPrice)
                       .toNumber()).toFixed(2);
                   } else {
+                    // 不拆零销售：总量单位是包装单位
                     rowElement.unitPrice = rowElement.drugStuffId.price;
-                    rowElement.total = BigNumber(
-                      Math.ceil(
-                        BigNumber(total)
-                          .dividedBy(rowElement.drugStuffId.drug.preparation)
-                          .toNumber()
-                      )
-                    )
-                      .multipliedBy(rowElement.drugStuffId.drug.preparation)
-                      .toNumber();
-                    rowElement.allFee = BigNumber(
-                      Math.ceil(
-                        BigNumber(total)
-                          .dividedBy(rowElement.drugStuffId.drug.preparation)
-                          .toNumber()
-                      )
-                    )
+                    // 将制剂单位转换为包装单位
+                    rowElement.total = Math.ceil(
+                      BigNumber(calculatedTotalInPreparation)
+                        .dividedBy(rowElement.drugStuffId.drug.preparation)
+                        .toNumber()
+                    );
+                    rowElement.allFee = BigNumber(rowElement.total)
                       .multipliedBy(rowElement.drugStuffId.price)
                       .toNumber();
                   }
@@ -7875,6 +7856,110 @@
         });
 
         this.payAmount = fullAmount;
+      },
+      changeDosageUnit(row, unitType) {
+        if (row.dosageUnitType === unitType) return;
+        
+        // 保存当前值
+        const currentValue = parseFloat(row.singleDosage) || 0;
+        
+        if (unitType === 'preparation') {
+          // 从剂量单位转换为制剂单位
+          if (row.drugStuffId.drug && row.drugStuffId.drug.dosis) {
+            row.singleDosage = (currentValue / row.drugStuffId.drug.dosis).toFixed(2);
+          }
+        } else {
+          // 从制剂单位转换为剂量单位
+          if (row.drugStuffId.drug && row.drugStuffId.drug.dosis) {
+            row.singleDosage = (currentValue * row.drugStuffId.drug.dosis).toFixed(2);
+          }
+        }
+        
+        // 更新单位类型
+        row.dosageUnitType = unitType;
+        // 重新计算
+        this.MedicalCalculate();
+      },
+      calculateDaysByTotal(row) {
+        if (!row.total || !row.singleDosage || !row.frequency) return;
+        
+        row.dosageUnitType = row.dosageUnitType || 'dosis';
+        
+        // 计算单次用量（转换为制剂单位）
+        let singleDoseInPreparation;
+        if (row.dosageUnitType === 'preparation') {
+          // 制剂单位，不需要转换
+          singleDoseInPreparation = parseFloat(row.singleDosage) || 0;
+        } else {
+          // 剂量单位，需要转换为制剂单位
+          singleDoseInPreparation = (parseFloat(row.singleDosage) || 0) / (row.drugStuffId.drug.dosis || 1);
+        }
+        
+        // 计算每日用量（制剂单位）
+        let dailyDosage = singleDoseInPreparation * (parseFloat(row.frequency.value.split("_")[1]) || 0);
+        
+        if (dailyDosage > 0) {
+          // 根据 isUnpackSell 判断总量单位
+          let totalInPreparation;
+          if (row.isUnpackSell == "1") {
+            // 总量单位是制剂单位，直接使用
+            totalInPreparation = row.total;
+          } else {
+            // 总量单位是包装单位，需要转换为制剂单位：总量 × 包装规格
+            totalInPreparation = row.total * (row.drugStuffId.drug.preparation || 1);
+          }
+          
+          // 计算天数 = 总量 (制剂单位) / 每日用量
+          // 向上取整，确保天数足够覆盖总量
+          const days = Math.ceil(totalInPreparation / dailyDosage);
+          if (row.days && row.days.name) {
+            row.days.name = days;
+          } else {
+            row.days = { name: days };
+          }
+          
+          // 直接计算费用，不调用 MedicalCalculate 避免循环计算
+          if (row.isUnpackSell == "1") {
+            row.allFee = (row.total * row.drugStuffId.retailPrice).toFixed(2);
+          } else {
+            row.allFee = (row.total * row.drugStuffId.price).toNumber();
+          }
+        }
+      },
+      calculateTotalByDays(row) {
+        if (!row.singleDosage || !row.frequency || !row.days) return;
+        
+        row.dosageUnitType = row.dosageUnitType || 'dosis';
+        
+        // 计算单次用量（转换为制剂单位）
+        let singleDoseInPreparation;
+        if (row.dosageUnitType === 'preparation') {
+          // 制剂单位，不需要转换
+          singleDoseInPreparation = parseFloat(row.singleDosage) || 0;
+        } else {
+          // 剂量单位，需要转换为制剂单位
+          singleDoseInPreparation = (parseFloat(row.singleDosage) || 0) / (row.drugStuffId.drug.dosis || 1);
+        }
+        
+        // 计算每日用量（制剂单位）
+        let dailyDosage = singleDoseInPreparation * (parseFloat(row.frequency.value.split("_")[1]) || 0);
+        
+        // 计算总量 (制剂单位) = 每日用量 × 天数
+        let days = parseFloat(row.days.name) || 1;
+        let totalInPreparation = dailyDosage * days;
+        
+        // 根据 isUnpackSell 判断总量单位
+        if (row.isUnpackSell == "1") {
+          // 总量单位是制剂单位，直接使用
+          row.total = Math.ceil(totalInPreparation);
+          // 直接计算费用
+          row.allFee = (row.total * row.drugStuffId.retailPrice).toFixed(2);
+        } else {
+          // 总量单位是包装单位，需要转换为包装单位：总量 (制剂单位) ÷ 包装规格
+          row.total = Math.ceil(totalInPreparation / (row.drugStuffId.drug.preparation || 1));
+          // 直接计算费用
+          row.allFee = (row.total * row.drugStuffId.price).toNumber();
+        }
       },
       FinishVisit() {
         let FormCheck = true;
@@ -8804,8 +8889,12 @@
         WMpopoverVisible: false,
         TCMpopoverVisible:false,
         ZHpopoverVisible:false,
+        syndromePopoverVisible:false,
         diagnosesList: [],//诊断
         zyzhList:[],//中医证候
+        syndromesList:[],//中医证候列表
+        //医疗类型：western-西医，chinese-中医，默认西医
+        medicalType: 'western',
         queryModel: {
           dateRange: [],
         },
@@ -9442,7 +9531,7 @@
     width: 10% !important;
   }
 
-  /deep/ .el-aside {
+  ::v-deep .el-aside {
     /* background-color: #e6d6d3; */
     color: #333;
     /* text-align: center; */
@@ -9452,7 +9541,7 @@
     height: calc(100vh - 118px);
   }
 
-  /deep/ .el-main {
+  ::v-deep .el-main {
     /* background-color: #E9EEF3; */
     color: #333;
     /* text-align: center; */
@@ -9461,64 +9550,64 @@
     height: calc(100vh - 118px);
   }
 
-  /deep/ .el-card__header {
+  ::v-deep .el-card__header {
     padding: 12px 20px;
   }
 
-  /deep/ .el-form-item--mini {
+  ::v-deep .el-form-item--mini {
     margin-bottom: 8px !important;
   }
 
-  /deep/ .main-card {
+  ::v-deep .main-card {
     margin-bottom: 10px;
   }
 
-  /deep/ .main-card > .el-card__header {
+  ::v-deep .main-card > .el-card__header {
     padding: 0px 20px;
   }
 
-  /deep/ .main-card > .el-card__body {
+  ::v-deep .main-card > .el-card__body {
     font-size: 14px;
   }
 
-  /deep/ .sub-card > .el-card__body {
+  ::v-deep .sub-card > .el-card__body {
     padding: 12px 20px;
     font-size: 16px;
     font-weight: bold;
     color: midnightblue;
   }
 
-  /deep/ .chinese-medicine-card > .el-card__header {
+  ::v-deep .chinese-medicine-card > .el-card__header {
     padding: 0px 20px;
   }
 
-  /deep/ .el-divider--horizontal {
+  ::v-deep .el-divider--horizontal {
     margin: 5px 0 10px 0px;
   }
 
-  /deep/ .el-tabs__header {
+  ::v-deep .el-tabs__header {
     margin: 0 0 0;
   }
 
-  /deep/ .el-collapse-item__content {
+  ::v-deep .el-collapse-item__content {
     padding-bottom: 0;
   }
 
-  /deep/ .el-divider--vertical {
+  ::v-deep .el-divider--vertical {
     width: 5px;
     height: 2em;
     margin-left: 0;
     background-color: #409eff;
   }
 
-  /deep/ .el-input-group__append {
+  ::v-deep .el-input-group__append {
     padding: 4px;
   }
 
-  /* /deep/ .el-collapse-item__header {
+  /* ::v-deep .el-collapse-item__header {
     background: #409eff !important;
 } */
-  /* /deep/ .el-descriptions__body{
+  /* ::v-deep .el-descriptions__body{
   background: #e7edf0 !important;
 } */
 
@@ -9551,7 +9640,7 @@
     margin-bottom: 0;
   }
 
-  /* /deep/ .already-medocal .el-collapse-item__header{
+  /* ::v-deep .already-medocal .el-collapse-item__header{
   border-bottom: 1px solid #dcdfe6;
   margin-right: 15px;
   background: #409eff !important;
@@ -9571,7 +9660,7 @@
     transform: scale(0.5);
   }
 </style>
-<style>
+<style lang="scss">
   .el-popover.medical-type-popover {
     min-width: 85px !important;
     margin: 0;
@@ -9612,6 +9701,57 @@
   .nameStyle {
     position: relative;
     display: inline-block;
+  }
+
+  // 医疗基础信息表单样式
+  .medical-base-form {
+    .el-form-item {
+      margin-bottom: 10px;
+
+      .el-form-item__label {
+        font-weight: 500;
+        color: #606266;
+        font-size: 13px;
+      }
+    }
+
+    .info-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .patient-name {
+        font-size: 14px;
+        color: #303133;
+        font-weight: 600;
+      }
+
+      .vip-tag {
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .poverty-tag {
+        color: #f56c6c;
+        font-weight: 600;
+        font-size: 13px;
+      }
+    }
+
+    .info-text {
+      font-size: 14px;
+      color: #303133;
+      font-weight: 500;
+    }
+
+    .el-radio-group {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .el-date-editor {
+      width: 180px;
+    }
   }
 </style>
 <style lang="scss">
