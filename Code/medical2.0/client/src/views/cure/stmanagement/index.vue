@@ -97,7 +97,7 @@
       label="执行人"
       width="130">
     </el-table-column>
-    <el-table-column  label="皮试结果" :width="140" fixed="right">
+    <el-table-column  label="皮试结果" :width="140">
        <template slot-scope="scope">
       <el-select v-model="scope.row.stresult" filterable allow-create @change="psjgchange(scope.row)">
       <el-option label="阴性" value="0"></el-option>
@@ -105,7 +105,7 @@
     </el-select>
         </template>
 </el-table-column>
-<el-table-column  label="皮试时间" :width="140" fixed="right" >
+<el-table-column  label="皮试时间" :width="140"  >
        <template slot-scope="scope">
       <el-select v-model="scope.row.sttime" filterable allow-create @change="pssjchange(scope.row)">
       <el-option label="5分钟" value="5"></el-option>
@@ -119,7 +119,7 @@
     </el-select>
         </template>
 </el-table-column>
-<el-table-column prop="intervalTime" label="倒计时" :width="140" fixed="right">
+<el-table-column prop="intervalTime" label="倒计时" :width="140">
                 <template slot-scope="scope">
                     <span>
                        {{ scope.row.intervalTime }}
@@ -127,7 +127,6 @@
                 </template>
             </el-table-column>
     <el-table-column
-      fixed="right"
       label="操作"
       width="100">
       <template slot-scope="scope">

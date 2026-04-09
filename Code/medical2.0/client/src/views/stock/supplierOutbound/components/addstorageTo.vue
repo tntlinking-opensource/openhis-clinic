@@ -144,7 +144,7 @@
                 <template slot-scope="scope">{{ calcTotalOutPrice(scope.row) |numberFormatter(2)}}
                 </template>
               </el-table-column>
-              <el-table-column label="" fixed="right" width="80">
+              <el-table-column label="" width="80">
                 <template slot-scope="scope">
                   <el-button type="danger" size="small"
                     @click.native.prevent="deleteRow(scope.$index, storageDetailTable)">删除

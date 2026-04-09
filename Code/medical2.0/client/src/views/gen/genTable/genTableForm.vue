@@ -119,7 +119,7 @@
           <span v-else>{{row.constraintColumn}}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if='dialogProps.action != "view"' label='操作' header-align='center' align='center' width='60px' fixed='right'>
+      <el-table-column v-if='dialogProps.action != "view"' label='操作' header-align='center' align='center' width='60px'>
         <template slot-scope='scope'>
           <el-tooltip class='item' effect='light' content='删除' placement='top-start'>
             <i class='el-icon-delete' style='color:#F56C6C;cursor:pointer;'
@@ -327,7 +327,7 @@
           <span v-else>{{row.sort}}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if='dialogProps.action != "view"' label='操作' header-align='center' align='center' width='60px' fixed='right'>
+      <el-table-column v-if='dialogProps.action != "view"' label='操作' header-align='center' align='center' width='60px'>
         <template slot-scope='scope'>
           <el-tooltip class='item' effect='light' content='删除' placement='top-start'>
             <i class='el-icon-delete' style='color:#F56C6C;cursor:pointer;'

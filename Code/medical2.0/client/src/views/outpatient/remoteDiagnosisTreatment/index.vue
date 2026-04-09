@@ -130,7 +130,7 @@
               </el-table-column>
 
               <!--表行级操作按钮-->
-              <el-table-column label='操作' fixed="right" header-align='center' :key="Math.random()" :width='150'>
+              <el-table-column label='操作' header-align='center' :key="Math.random()" :width='150'>
                 <template slot-scope='scope'>
                   <span v-if="scope.row.status === '0'" style="color: #0a7be0"
                         @click="submit(scope.$index, scope.row)">提交&nbsp;</span>

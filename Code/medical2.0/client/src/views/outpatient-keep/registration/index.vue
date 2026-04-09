@@ -187,7 +187,6 @@
                 label="操作"
                 header-align="center"
                 :width="oprColumnWidth + 'px'"
-                fixed="right"
               >
                 <template slot="header" slot-scope="scope">
                   <span>操作</span>

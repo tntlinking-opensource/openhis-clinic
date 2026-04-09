@@ -178,7 +178,6 @@
                 label="操作"
                 header-align="center"
                 :width="130 + 'px'"
-                fixed="right"
                 :key="Math.random()"
               >
                 <template slot="header" slot-scope="scope">

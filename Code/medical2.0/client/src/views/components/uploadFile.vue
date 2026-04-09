@@ -32,7 +32,7 @@
           <el-table-column prop='name' label='附件名' :width="width"></el-table-column>
           <el-table-column prop="createBy" label='上传人' width='190px'></el-table-column>
           <el-table-column prop='createDate' label='上传日期' width='160px'></el-table-column>
-          <el-table-column label='操作' header-align='center' width='120px' fixed='right'>
+          <el-table-column label='操作' header-align='center' width='120px'>
             <template slot-scope='scope'>
               <OperationIcon type='info' content='预览' placement='top-start' icon-name='el-icon-view'
                              @click='onViewFileList(scope.$index, scope.row)'></OperationIcon>

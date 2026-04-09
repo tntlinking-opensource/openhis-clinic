@@ -99,7 +99,7 @@
               >
             </template>
           </el-table-column>
-          <el-table-column fixed="right" label="操作" align="center" header-align='center' width="120px">
+          <el-table-column label="操作" align="center" header-align='center' width="120px">
             <template slot-scope="scope">
               <el-button @click="onCreatePatient('修改',scope.row.id)" type="text" size="small"
                 >查看详情</el-button

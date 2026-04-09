@@ -201,7 +201,7 @@
               align="center">
             </el-table-column>
             <!--表行级操作按钮-->
-            <el-table-column label='操作' header-align='center' :width='60 + "px"' fixed="right" :key="Math.random()">
+            <el-table-column label='操作' header-align='center' :width='60 + "px"' :key="Math.random()">
               <!--<template slot='header' slot-scope="scope">
                 <span>操作</span>
               </template>-->

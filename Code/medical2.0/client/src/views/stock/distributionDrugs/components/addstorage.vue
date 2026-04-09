@@ -238,7 +238,7 @@
             >{{ calcTotalOutPrice(scope.row) }}
             </template>
           </el-table-column>
-          <el-table-column label="" fixed="right" width="100">
+          <el-table-column label="" width="100">
             <template slot-scope="scope">
               <el-button
                 type="danger"

@@ -110,7 +110,7 @@
               >
             </template>
           </el-table-column>
-          <el-table-column fixed="right" label="操作" width="120">
+          <el-table-column label="操作" width="120">
             <template slot-scope="scope">
               <el-button v-if="scope.row.auditstatus=='0'" @click="onCreatePatient('审核',scope.row.id)" type="text" size="small"
                 >审 核</el-button

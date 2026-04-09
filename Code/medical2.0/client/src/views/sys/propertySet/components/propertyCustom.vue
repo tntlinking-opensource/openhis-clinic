@@ -108,7 +108,7 @@
               <span v-else>{{row.remarks}}</span>
             </template>
           </el-table-column>
-          <el-table-column label='操作' fixed='right' min-width="40px" v-if="action !== 'view'" >
+          <el-table-column label='操作' min-width="40px" v-if="action !== 'view'" >
             <template slot='header' slot-scope="scope">
               <el-button circle icon="el-icon-plus" :disabled="action === 'view'" @click="pushPropertyData(panel, bizindex)"></el-button>
             </template>

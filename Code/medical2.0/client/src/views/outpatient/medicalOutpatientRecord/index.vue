@@ -325,7 +325,7 @@
                       </el-table-column>
                       <el-table-column prop="jbxx" :show-overflow-tooltip="true" label="基本信息">
                       </el-table-column>
-                      <el-table-column fixed="right" label="操作" width="60">
+                      <el-table-column label="操作" width="60">
                         <template slot-scope="scope">
                           <el-button @click="jzjlhandleClick(scope.row)" type="text"
                                      size="small">查看
@@ -902,7 +902,7 @@
                             !isReadOnly &&
                             item.content.recipelInfo.chargeStatus == 0 &&
                             item.content.recipelInfo.status != -1
-                          " label="操作" fixed="right" align="center" width="80">
+                          " label="操作" align="center" width="80">
                           <template slot-scope="scope">
                             <i class="el-icon-circle-close"
                                @click="DeleteMedicalRow(scope.$index, scope.row)"></i>
@@ -1621,7 +1621,7 @@
                                 !isReadOnly &&
                                 item.content.recipelInfo.chargeStatus == 0 &&
                                 item.content.recipelInfo.status != -1
-                              " label="操作" fixed="right" align="center" width="50">
+                              " label="操作" align="center" width="50">
                               <template slot-scope="scope">
                                 <i class="el-icon-circle-close" @click="
                                     DeleteMedicalRow(scope.$index, scope.row)
@@ -1734,14 +1734,13 @@
                             !isReadOnly &&
                             item.content.recipelInfo.chargeStatus == 0 &&
                             item.content.recipelInfo.status != -1
-                          " label="操作" fixed="right" align="center" width="50">
+                          " label="操作" align="center" width="50">
                           <template slot-scope="scope">
                             <i class="el-icon-circle-close"
                                @click="DeleteMedicalRow(scope.$index, scope.row)"></i>
                           </template>
                         </el-table-column>
-                        <el-table-column v-else-if="inspectionSign == 1" label="操作"
-                                         fixed="right" align="center" width="80">
+                        <el-table-column v-else-if="inspectionSign == 1" label="操作" align="center" width="80">
                           <template slot-scope="scope">
                             <div v-if="inspectionType[scope.$index] == 1">
                               <el-button @click="lookInspection(scope.row.drugStuffId)"
@@ -1920,7 +1919,7 @@
                               !isReadOnly &&
                               item.content.recipelInfo.chargeStatus == 0 &&
                               item.content.recipelInfo.status != -1
-                            " label="操作" fixed="right" width="80" align="center">
+                            " label="操作" width="80" align="center">
                             <template slot-scope="scope">
                               <i class="el-icon-circle-close" @click="
                                   DeleteMedicalRow(scope.$index, scope.row)
@@ -2001,7 +2000,7 @@
                               !isReadOnly &&
                               item.content.recipelInfo.chargeStatus == 0 &&
                               item.content.recipelInfo.status != -1
-                            " label="操作" fixed="right" width="80" align="center">
+                            " label="操作" width="80" align="center">
                             <template slot-scope="scope">
                               <i class="el-icon-circle-close" @click="
                                   DeleteExMedicalRow(scope.$index, scope.row)
@@ -3856,7 +3855,7 @@
               <el-table-column prop="mbmc" label="模板名称"></el-table-column>
               <el-table-column prop="mblx" label="模板类型"></el-table-column>
               <el-table-column prop="bllx" label="病历类型"></el-table-column>
-              <el-table-column fixed="right" label="操作" width="80">
+              <el-table-column label="操作" width="80">
                 <template slot-scope="scope">
                   <el-button @click.native="diaoyong(scope.row)" type="text" size="small">调用
                   </el-button>
@@ -6604,10 +6603,7 @@
         //   this.outputError(error)
         // })
       },
-      GetInfusionTable(type) {
-        if(type === undefined){
-          type = false;
-        }
+      GetInfusionTable(index) {
         this.SearchWesternModel.params[1].columnName = "drug.type";
         this.SearchWesternModel.params[1].value = [
           "medicalType_0",
@@ -6615,14 +6611,13 @@
         ];
         //判断是否输入的是英文
         var pattern2 = new RegExp("[A-Za-z]+");
-        debugger
-        if (pattern2.test(this.SearchInfusion[0])) {
+        if (pattern2.test(this.SearchInfusion[index])) {
           // console.log(this.SearchWesternInput,'字符');
           this.SearchWesternModel.params[2].value =
-            this.SearchInfusion[0].toUpperCase();
+            this.SearchInfusion[index].toUpperCase();
           this.SearchWesternModel.params[2].columnName = "drug.pinyin_code";
         } else {
-          this.SearchWesternModel.params[2].value = this.SearchInfusion[0];
+          this.SearchWesternModel.params[2].value = this.SearchInfusion[index];
           this.SearchWesternModel.params[2].columnName = "drug.goods_name";
         }
 
@@ -6648,7 +6643,7 @@
             value: "0",
           });
         }
-        listAll(this.SearchWesternModel,type).then((responseData) => {
+        listAll(this.SearchWesternModel, 0).then((responseData) => {
           if (responseData.code == 100) {
             // responseData.data.forEach((element) => {
             //     let isUnpackSell = element.isUnpackSell; //允许拆零销售

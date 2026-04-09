@@ -150,7 +150,7 @@
                 </template>
               </el-table-column>
               <!--表行级操作按钮-->
-              <el-table-column label='操作' header-align='center' :width='120 + "px"' :key="Math.random()" fixed="right">
+              <el-table-column label='操作' header-align='center' :width='120 + "px"' :key="Math.random()">
                 <template slot='header' slot-scope="scope">
                   <span>操作</span>
                   <view-columns-select v-model='columnViews' v-on:save-column-view='saveColumn'

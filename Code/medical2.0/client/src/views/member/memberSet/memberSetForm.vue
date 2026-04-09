@@ -144,7 +144,6 @@
              
                 <el-table-column
                 v-if="dialogProps.action != 'view'"
-                  fixed="right"
                   label="操作"
                   width="100">
                   <template slot-scope="scope">

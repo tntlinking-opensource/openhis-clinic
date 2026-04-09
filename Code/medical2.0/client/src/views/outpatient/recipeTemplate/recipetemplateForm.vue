@@ -393,7 +393,6 @@
                dialogProps.action != 'view'
               "
               label="操作"
-              fixed="right"
               align="center"
             >
               <template slot-scope="scope">
@@ -1060,7 +1059,6 @@
                     dialogProps.action != 'view'
                   "
                   label="操作"
-                  fixed="right"
                   align="center"
                   width="100"
                 >
@@ -1229,7 +1227,6 @@
                   dialogProps.action != 'view'
                 "
                 label="操作"
-                fixed="right"
                 align="center"
                 width="80"
               >
@@ -1457,7 +1454,6 @@
                             dialogProps.action == 'view'
                           "
                           label="操作"
-                          fixed="right"
                           width="100"
                           align="center"
                         >
@@ -1584,7 +1580,6 @@
                             dialogProps.action != 'view'
                           "
                           label="操作"
-                          fixed="right"
                           width="100"
                           align="center"
                         >

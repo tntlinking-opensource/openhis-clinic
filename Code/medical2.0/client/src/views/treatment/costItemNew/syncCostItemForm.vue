@@ -51,7 +51,7 @@
                 <el-table-column label="序号" type="index" :index="indexMethod" align="center">
                 </el-table-column>
                 <el-table-column v-for="item in columnList"  :key="item.label"  :label="item.label" :prop="item.prop"></el-table-column>
-                <!-- <el-table-column label="操作" header-align="center" :width="130 + 'px'" fixed="right"
+                <!-- <el-table-column label="操作" header-align="center" :width="130 + 'px'"
                   :key="Math.random()">
                   <template slot="header" slot-scope="scope">
                     <span>操作</span>

@@ -103,7 +103,7 @@
                     <span v-else>0</span>
                   </template>
                 </el-table-column>
-                <!-- <el-table-column label='操作' header-align='center' :width='50 + "px"' :key="Math.random()" fixed="right">
+                <!-- <el-table-column label='操作' header-align='center' :width='50 + "px"' :key="Math.random()">
                   <template slot='header' slot-scope="scope">
                     <span>操作</span>
                   </template>
