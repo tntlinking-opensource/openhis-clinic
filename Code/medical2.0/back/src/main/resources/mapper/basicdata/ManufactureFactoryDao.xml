@@ -47,7 +47,7 @@
     </select>    
     
     <select id="listPage" resultType="com.geeke.basicdata.entity.ManufactureFactory">
-        SELECT 
+        SELECT DISTINCT
             <include refid="manufactureFactoryColumns"/>
         FROM manufacture_factory a
         <include refid="manufactureFactoryJoins"/>
@@ -69,7 +69,7 @@
     </select>
     
     <select id="listAll" resultType="com.geeke.basicdata.entity.ManufactureFactory">
-        SELECT 
+        SELECT DISTINCT
             <include refid="manufactureFactoryColumns"/>
         FROM manufacture_factory a
         <include refid="manufactureFactoryJoins"/>
@@ -90,7 +90,7 @@
         </choose>
     </select>
     <select id="listAlls" resultType="com.geeke.basicdata.entity.ManufactureFactory">
-        SELECT
+        SELECT DISTINCT
         <include refid="manufactureFactoryColumns"/>
         FROM manufacture_factory a
         <include refid="manufactureFactoryJoins"/>
