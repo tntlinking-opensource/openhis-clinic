@@ -823,24 +823,12 @@
                         </el-table-column>
                         <el-table-column v-if="item.content.recipelInfo.isPre" prop="total" label="总量" align="center">
                           <template slot-scope="scope">
-                            <div style="display: flex; align-items: center;">
-                              <el-input-number v-model="scope.row.total" :min='0'
-                                               :disabled="isReadOnly || item.content.recipelInfo.chargeStatus != 0 || item.content.recipelInfo.status == -1"
-                                               :controls="false" style="width: 100px" @change="calculateDaysByTotal(scope.row)">
-                              </el-input-number>
-                              <span style="margin-left: 5px">{{ scope.row.isUnpackSell == "1" ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name }}</span>
-                            </div>
+                            <span>{{ scope.row.total }} {{ scope.row.isUnpackSell == 1 ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name }}</span>
                           </template>
                         </el-table-column>
                         <el-table-column v-if="!item.content.recipelInfo.isPre" prop="total" label="总量" align="center">
                           <template slot-scope="scope">
-                            <div style="display: flex; align-items: center;">
-                              <el-input-number v-model="scope.row.total" :min='0'
-                                               :disabled="isReadOnly || item.content.recipelInfo.chargeStatus != 0 || item.content.recipelInfo.status == -1"
-                                               :controls="false" style="width: 100px" @change="calculateDaysByTotal(scope.row)">
-                              </el-input-number>
-                              <span style="margin-left: 5px">{{ scope.row.isUnpackSell == "1" ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name }}</span>
-                            </div>
+                            <span>{{ scope.row.total }} {{ scope.row.isUnpackSell == 1 ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name }}</span>
                           </template>
                         </el-table-column>
                         <!-- <el-table-column
@@ -1561,36 +1549,9 @@
                             </el-select>
                           </template>
                         </el-table-column> -->
-                            <el-table-column prop="total" label="总量" align="center"
-                            >
+                            <el-table-column prop="total" label="总量" align="center">
                               <template slot-scope="scope">
-                                <!-- <el-input v-model="scope.row.total" type="number" disabled>
-                                                                <template slot="append">
-                                                                    {{scope.row.isUnpackSell === '1' ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name}}
-                                                                </template>
-                                                            </el-input> -->
-                                {{
-                                  Math.floor(
-                                    scope.row.total /
-                                    scope.row.drugStuffId.drug.preparation
-                                  ) > 0
-                                    ? Math.floor(
-                                    scope.row.total /
-                                    scope.row.drugStuffId.drug.preparation
-                                    ) +
-                                    scope.row.drugStuffId.pack.name +
-                                    (scope.row.total %
-                                    scope.row.drugStuffId.drug.preparation >
-                                    0
-                                      ? (scope.row.total %
-                                      scope.row.drugStuffId.drug
-                                        .preparation) +
-                                      scope.row.drugStuffId.preparationUnit
-                                        .name
-                                      : "")
-                                    : scope.row.total +
-                                    scope.row.drugStuffId.preparationUnit.name
-                                }}
+                                <span>{{ scope.row.total }} {{ scope.row.isUnpackSell == 1 ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name }}</span>
                               </template>
                             </el-table-column>
                             <el-table-column prop="isUnpackSell" label="单价"
@@ -1706,19 +1667,7 @@
                         </el-table-column>
                         <el-table-column prop="total" label="数量" align="center">
                           <template slot-scope="scope">
-                            <el-input v-model="scope.row.total"
-                                      ref="DiagnosisTreatment"
-                                      oninput="value=value.replace(/[^\d.]/g,'')"
-                                      @input="MedicalCalculate()" :disabled="
-                                isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1
-                              ">
-                              <template slot="append">{{
-                                  scope.row.drugStuffId.pack.name
-                                }}
-                              </template>
-                            </el-input>
+                            {{ scope.row.total }} {{ scope.row.isUnpackSell == 1 ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name }}
                           </template>
                         </el-table-column>
                         <el-table-column label="单价" align="center">
@@ -1801,7 +1750,7 @@
                             <template slot-scope="scope">
                               {{
                                 scope.row.stuffType === "4" &&
-                                scope.row.stuff.isUnpackSell == "1"
+                                scope.row.stuff.isUnpackSell == 1
                                   ? scope.row.stuff.retailPrice +
                                   "/" +
                                   scope.row.stuff.minUnit.name
@@ -1901,7 +1850,7 @@
                                   isReadOnly ||
                                   item.content.recipelInfo.chargeStatus != 0 ||
                                   item.content.recipelInfo.status == -1
-                                " v-model="scope.row.isUnpackSell" @change="MedicalCalculate()" placeholder="请选择"
+                                " v-model="scope.row.isUnpackSell" @change="handleUnpackSellChange(scope.row, scope.row.isUnpackSell === 1 ? 0 : 1)" placeholder="请选择"
                                          style="width: 80px">
                                 <el-option :label="scope.row.drugStuffId.pack.name"
                                            :value="0"></el-option>
@@ -1982,7 +1931,7 @@
                                   isReadOnly ||
                                   item.content.recipelInfo.chargeStatus != 0 ||
                                   item.content.recipelInfo.status == -1
-                                " v-model="scope.row.isUnpackSell" @change="MedicalCalculate()" placeholder="请选择"
+                                " v-model="scope.row.isUnpackSell" @change="handleUnpackSellChange(scope.row, scope.row.isUnpackSell === 1 ? 0 : 1)" placeholder="请选择"
                                          style="width: 80px">
                                 <el-option :label="scope.row.drugStuffId.pack.name"
                                            :value="0"></el-option>
@@ -4306,6 +4255,17 @@
         ) {
           this.medicalEditTabs[this.singleRecipel].content.recipelDetailEvtList =
             row.recipeTemplateDetail;
+          setTimeout(() => {
+            this.MedicalCalculate();
+          }, 0);
+        } else if (
+          this.medicalEditTabs[this.singleRecipel].type == "recipelType_0"
+        ) {
+          this.medicalEditTabs[this.singleRecipel].content.recipelDetailEvtList =
+            row.recipeTemplateDetail;
+          setTimeout(() => {
+            this.MedicalCalculate();
+          }, 0);
         } else if (
           this.medicalEditTabs[this.singleRecipel].type == "recipelType_2"
         ) {
@@ -6785,6 +6745,7 @@
           allFee: 0,
           total: 0,
           singleDosage: 0,
+          dosageUnitType: 'dosis', // 默认剂量单位
           company: this.Company,
           stuffType: 0,
           isExtra: 0,
@@ -6852,6 +6813,7 @@
         let recipelDetailEvt = {
           allFee: 0,
           total: 0,
+          dosageUnitType: 'dosis', // 默认剂量单位
           company: this.Company,
           stuffType: 0,
           isExtra: 0,
@@ -7067,7 +7029,7 @@
 
         let recipelDetailEvt = {
           allFee: 0,
-          total: 0,
+          total: 1, // 诊疗项目数量默认为1
           company: this.Company,
           stuffType: 3,
           isExtra: 0,
@@ -7083,6 +7045,7 @@
           this.$refs['DiagnosisTreatment'].slice(-2, -1)[0].focus()
           console.log("++++++++++++++++++++++", this.$refs['DiagnosisTreatment'])
         })
+        this.MedicalCalculate();
       },
       GetCostItemFee(index, row) {
         row.allFee = row.drugStuffId.price * row.total;
@@ -7251,7 +7214,8 @@
             totalDosage += Number(item.content.recipelInfo.dosage);
           })
           recipelDetailEvt.singleDosage = totalDosage;
-          recipelDetailEvt.allFee = recipelDetailEvt.drugStuffId.costItem.costPrice * totalDosage;
+          // 使用售价而非成本价
+          recipelDetailEvt.allFee = recipelDetailEvt.drugStuffId.costItem.salePrice * totalDosage;
         }
 
         if (this.medicalClickTabsValue.type == "recipelType_2") {
@@ -7278,8 +7242,41 @@
         } else if (data.length >= 1) {
           for (let i = 0; i < data.length; i++) {
             data[i].drugOrder = i+1;
-            if(data[i].minTotal != undefined){
-              data[i].total = data[i].minTotal
+            // 确保 isUnpackSell 有值，默认不拆零
+            if (data[i].isUnpackSell === undefined) {
+              data[i].isUnpackSell = data[i].drugStuffId && data[i].drugStuffId.isUnpackSell === 1 ? 1 : 0;
+            }
+            // 根据 isUnpackSell 正确设置总量单位
+            if (data[i].minTotal != undefined) {
+              // 获取包装规格：药品用 drug.preparation，材料用 stuff.packNumber
+              let preparation = 1;
+              if (data[i].stuffType === '4') {
+                // 材料类型
+                preparation = (data[i].drugStuffId && data[i].drugStuffId.stuff && data[i].drugStuffId.stuff.packNumber) || 1;
+              } else {
+                // 药品类型：优先使用 preparation，如果为 0 或 undefined，则尝试使用 stuff.packNumber
+                preparation = (data[i].drugStuffId && data[i].drugStuffId.drug && data[i].drugStuffId.drug.preparation);
+                if (!preparation) {
+                  preparation = (data[i].drugStuffId && data[i].drugStuffId.stuff && data[i].drugStuffId.stuff.packNumber) || 1;
+                }
+              }
+              
+              console.log('数据回显 - 总量转换调试:', {
+                name: data[i].drugStuffId ? data[i].drugStuffId.name : '未知',
+                minTotal: data[i].minTotal,
+                isUnpackSell: data[i].isUnpackSell,
+                preparation: preparation,
+                drug_preparation: data[i].drugStuffId ? data[i].drugStuffId.drug : null,
+                stuff_packNumber: data[i].drugStuffId ? data[i].drugStuffId.stuff : null
+              });
+              
+              if (data[i].isUnpackSell == 1) {
+                // 拆零销售：总量 = 制剂单位总量
+                data[i].total = data[i].minTotal;
+              } else {
+                // 不拆零销售：总量 = 制剂单位总量 ÷ 包装规格 = 包装单位总量
+                data[i].total = Math.ceil(data[i].minTotal / (preparation || 1));
+              }
             }
             if (data[i].isExtra == 0 && data[i].drugStuffId.drug) {
               if (data[i].drugStuffId.drug.type.value == "medicalType_0") {
@@ -7381,7 +7378,7 @@
       },
       GetSurchargeFee(index, row) {
         row.singleDosage = row.singleDosage ? row.singleDosage : 0;
-        if (row.isUnpackSell == "1") {
+        if (row.isUnpackSell == 1) {
           row.total = row.singleDosage;
           row.allFee = row.total * row.drugStuffId.retailPrice;
         } else {
@@ -7393,6 +7390,24 @@
 
           row.allFee = row.singleDosage * row.drugStuffId.price;
         }
+      },
+      // 处理拆零销售切换时的总量转换
+      handleUnpackSellChange(row, oldValue) {
+        // 如果之前没有总量或总量为0，不需要转换
+        if (!row.total || row.total === 0) {
+          this.MedicalCalculate();
+          return;
+        }
+        // 获取包装规格（每个包装包含多少制剂单位）
+        let preparation = row.drugStuffId.drug.preparation || 1;
+        if (oldValue === 0 && row.isUnpackSell === 1) {
+          // 从不拆零切换为拆零：包装单位转为制剂单位
+          row.total = Math.ceil(row.total * preparation);
+        } else if (oldValue === 1 && row.isUnpackSell === 0) {
+          // 从拆零切换为不拆零：制剂单位转为包装单位
+          row.total = Math.ceil(row.total / preparation);
+        }
+        this.MedicalCalculate();
       },
       MedicalCalculate() {
         let n1 = 0; //西药处方个数
@@ -7448,29 +7463,33 @@
                       .toNumber();
                   }
 
-                  if (rowElement.isUnpackSell == "1") {
-                    // 拆零销售：总量单位是制剂单位
+                  // minTotal 统一保存制剂单位总量，用于后端库存校验
+                  rowElement.minTotal = Math.ceil(calculatedTotalInPreparation);
+
+                  if (rowElement.isUnpackSell == 1) {
+                    // 拆零销售：total 保存制剂单位总量
                     rowElement.unitPrice = rowElement.drugStuffId.retailPrice;
                     rowElement.total = Math.ceil(calculatedTotalInPreparation);
-                    rowElement.allFee = (BigNumber(rowElement.total)
+                    // 费用 = 制剂总量 × 制剂单价
+                    rowElement.allFee = (BigNumber(calculatedTotalInPreparation)
                       .multipliedBy(rowElement.drugStuffId.retailPrice)
                       .toNumber()).toFixed(2);
                   } else {
-                    // 不拆零销售：总量单位是包装单位
+                    // 不拆零销售：total 保存包装单位总量
                     rowElement.unitPrice = rowElement.drugStuffId.price;
-                    // 将制剂单位转换为包装单位
                     rowElement.total = Math.ceil(
                       BigNumber(calculatedTotalInPreparation)
                         .dividedBy(rowElement.drugStuffId.drug.preparation)
                         .toNumber()
                     );
+                    // 费用 = 包装总量 × 包装单价
                     rowElement.allFee = BigNumber(rowElement.total)
                       .multipliedBy(rowElement.drugStuffId.price)
                       .toNumber();
                   }
                 }
                 if (
-                  rowElement.drugStuffId.surplusStock < rowElement.total &&
+                  rowElement.drugStuffId.surplusStock < rowElement.minTotal &&
                   !this.isReadOnly &&
                   tabElement.content.recipelInfo.dispensionStatus == 0
                 ) {
@@ -7576,7 +7595,7 @@
                 }
 
                 if (
-                  rowElement.drugStuffId.surplusStock < rowElement.total &&
+                  rowElement.drugStuffId.surplusStock < (rowElement.minTotal || rowElement.total) &&
                   !this.isReadOnly &&
                   tabElement.content.recipelInfo.dispensionStatus == 0
                 ) {
@@ -7658,44 +7677,50 @@
                   "";
                 rowElement.total = rowElement.total ? rowElement.total : 0;
                 rowElement.allFee = rowElement.allFee ? rowElement.allFee : 0;
-                if (rowElement.frequency.value && rowElement.days.name) {
-                  let total = Math.ceil(
-                    BigNumber(rowElement.singleDosage - 0)
+                rowElement.dosageUnitType = rowElement.dosageUnitType || 'dosis'; // 默认剂量单位
+                if (rowElement.frequency && rowElement.frequency.value && rowElement.days && rowElement.days.name) {
+                  // 计算总量（制剂单位）
+                  let calculatedTotalInPreparation;
+                  if (rowElement.dosageUnitType === 'preparation') {
+                    // 制剂单位计算
+                    calculatedTotalInPreparation = BigNumber(rowElement.singleDosage - 0)
+                      .multipliedBy(rowElement.frequency.value.split("_")[1])
+                      .multipliedBy(rowElement.days.name)
+                      .toNumber();
+                  } else {
+                    // 剂量单位计算
+                    calculatedTotalInPreparation = BigNumber(rowElement.singleDosage - 0)
                       .multipliedBy(rowElement.frequency.value.split("_")[1])
                       .multipliedBy(rowElement.days.name)
                       .dividedBy(rowElement.drugStuffId.drug.dosis)
-                      .toNumber()
-                  );
-                  if (rowElement.isUnpackSell == "1") {
+                      .toNumber();
+                  }
+
+                  // minTotal 统一保存制剂单位总量，用于后端库存校验
+                  rowElement.minTotal = Math.ceil(calculatedTotalInPreparation);
+
+                  if (rowElement.isUnpackSell == 1) {
+                    // 拆零销售：total 保存制剂单位总量
                     rowElement.unitPrice = rowElement.drugStuffId.retailPrice;
-                    rowElement.total = total;
-                    rowElement.allFee = BigNumber(rowElement.total)
+                    rowElement.total = Math.ceil(calculatedTotalInPreparation);
+                    // 费用 = 制剂总量 × 制剂单价
+                    rowElement.allFee = BigNumber(calculatedTotalInPreparation)
                       .multipliedBy(rowElement.drugStuffId.retailPrice)
                       .toNumber();
                   } else {
                     rowElement.unitPrice = rowElement.drugStuffId.price;
-                    rowElement.total = BigNumber(
-                      Math.ceil(
-                        BigNumber(total)
-                          .dividedBy(rowElement.drugStuffId.drug.preparation)
-                          .toNumber()
-                      )
-                    )
-                      .multipliedBy(rowElement.drugStuffId.drug.preparation)
-                      .toNumber();
-                    rowElement.allFee = BigNumber(
-                      Math.ceil(
-                        BigNumber(total)
-                          .dividedBy(rowElement.drugStuffId.drug.preparation)
-                          .toNumber()
-                      )
-                    )
+                    rowElement.total = Math.ceil(
+                      BigNumber(calculatedTotalInPreparation)
+                        .dividedBy(rowElement.drugStuffId.drug.preparation)
+                        .toNumber()
+                    );
+                    rowElement.allFee = BigNumber(rowElement.total)
                       .multipliedBy(rowElement.drugStuffId.price)
                       .toNumber();
                   }
                 }
                 if (
-                  rowElement.drugStuffId.surplusStock < rowElement.total &&
+                  rowElement.drugStuffId.surplusStock < (rowElement.minTotal || rowElement.total) &&
                   !this.isReadOnly &&
                   tabElement.content.recipelInfo.dispensionStatus == 0
                 ) {
@@ -7726,7 +7751,7 @@
               if (rowElement.isExtra === 0) {
                 detailSeq++;
                 rowElement.seq = detailSeq;
-                rowElement.total = rowElement.total ? rowElement.total : "";
+                rowElement.total = rowElement.total ? rowElement.total : 1; // 默认数量为1
                 rowElement.allFee = BigNumber(rowElement.drugStuffId.price)
                   .multipliedBy(rowElement.total - 0)
                   .toNumber();
@@ -7774,7 +7799,7 @@
               //   rowElement.singleDosage && rowElement.singleDosage != 0 ?
               //     rowElement.singleDosage :
               //     "";
-              if (rowElement.isUnpackSell == "1") {
+              if (rowElement.isUnpackSell == 1) {
                 rowElement.total = rowElement.singleDosage - 0;
                 rowElement.allFee = BigNumber(rowElement.drugStuffId.retailPrice)
                   .multipliedBy(rowElement.total)
@@ -7782,7 +7807,7 @@
                 rowElement.unitPrice = rowElement.drugStuffId.retailPrice;
                 console.log(rowElement, "奇怪");
                 if (
-                  rowElement.drugStuffId.surplusStock < rowElement.total &&
+                  rowElement.drugStuffId.surplusStock < (rowElement.minTotal || rowElement.total) &&
                   !this.isReadOnly &&
                   tabElement.content.recipelInfo.dispensionStatus == 0
                 ) {
@@ -7804,7 +7829,7 @@
                     .toNumber();
 
                   if (
-                    rowElement.drugStuffId.surplusStock < rowElement.total &&
+                    rowElement.drugStuffId.surplusStock < (rowElement.minTotal || rowElement.total) &&
                     !this.isReadOnly &&
                     tabElement.content.recipelInfo.dispensionStatus == 0
                   ) {
@@ -7895,13 +7920,16 @@
         if (dailyDosage > 0) {
           // 根据 isUnpackSell 判断总量单位
           let totalInPreparation;
-          if (row.isUnpackSell == "1") {
+          if (row.isUnpackSell == 1) {
             // 总量单位是制剂单位，直接使用
             totalInPreparation = row.total;
           } else {
             // 总量单位是包装单位，需要转换为制剂单位：总量 × 包装规格
             totalInPreparation = row.total * (row.drugStuffId.drug.preparation || 1);
           }
+
+          // minTotal 统一保存制剂单位总量，用于后端库存校验
+          row.minTotal = Math.ceil(totalInPreparation);
 
           // 计算天数 = 总量 (制剂单位) / 每日用量
           // 向上取整，确保天数足够覆盖总量
@@ -7912,12 +7940,14 @@
             row.days = { name: days };
           }
 
-          // 直接计算费用，不调用 MedicalCalculate 避免循环计算
-          if (row.isUnpackSell == "1") {
+          // 计算费用并更新总金额
+          if (row.isUnpackSell == 1) {
             row.allFee = (row.total * row.drugStuffId.retailPrice).toFixed(2);
           } else {
-            row.allFee = (row.total * row.drugStuffId.price).toNumber();
+            row.allFee = (row.total * row.drugStuffId.price).toFixed(2);
           }
+          // 更新总金额显示
+          this.MedicalCalculate();
         }
       },
       calculateTotalByDays(row) {
@@ -7942,18 +7972,33 @@
         let days = parseFloat(row.days.name) || 1;
         let totalInPreparation = dailyDosage * days;
 
+        // minTotal 统一保存制剂单位总量，用于后端库存校验
+        row.minTotal = Math.ceil(totalInPreparation);
+
         // 根据 isUnpackSell 判断总量单位
-        if (row.isUnpackSell == "1") {
+        if (row.isUnpackSell == 1) {
           // 总量单位是制剂单位，直接使用
           row.total = Math.ceil(totalInPreparation);
-          // 直接计算费用
+          // 计算费用
           row.allFee = (row.total * row.drugStuffId.retailPrice).toFixed(2);
         } else {
           // 总量单位是包装单位，需要转换为包装单位：总量 (制剂单位) ÷ 包装规格
-          row.total = Math.ceil(totalInPreparation / (row.drugStuffId.drug.preparation || 1));
-          // 直接计算费用
-          row.allFee = (row.total * row.drugStuffId.price).toNumber();
+          let preparation = (row.drugStuffId.drug && row.drugStuffId.drug.preparation) || 
+                            (row.drugStuffId.stuff && row.drugStuffId.stuff.packNumber) || 1;
+          console.log('calculateTotalByDays - 总量转换调试:', {
+            name: row.drugStuffId.name,
+            totalInPreparation: totalInPreparation,
+            isUnpackSell: row.isUnpackSell,
+            preparation: preparation,
+            drug_preparation: row.drugStuffId.drug ? row.drugStuffId.drug.preparation : null,
+            stuff_packNumber: row.drugStuffId.stuff ? row.drugStuffId.stuff.packNumber : null
+          });
+          row.total = Math.ceil(totalInPreparation / preparation);
+          // 计算费用
+          row.allFee = (row.total * row.drugStuffId.price).toFixed(2);
         }
+        // 更新总金额显示
+        this.MedicalCalculate();
       },
       FinishVisit() {
         let FormCheck = true;
@@ -8071,8 +8116,9 @@
       },
       checkInventory(row) {
         console.log(row.total, "当前行");
-        // alert('hahahahahhahaha')
-        if (row.total > row.drugStuffId.surplusStock) {
+        // 用制剂单位总量和库存（制剂单位）比较
+        const minTotal = row.minTotal || (row.isUnpackSell == 1 ? row.total : row.total * (row.drugStuffId.drug.preparation || 1));
+        if (minTotal > row.drugStuffId.surplusStock) {
           //
           if (!this.beyondInventoryType) {
             this.beyondInventoryType = true;

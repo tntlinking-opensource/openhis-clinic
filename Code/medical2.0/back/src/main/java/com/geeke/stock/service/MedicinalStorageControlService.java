@@ -378,14 +378,25 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
                 continue;
             }
             
-            // 根据是否拆零销售判断总量单位
-            BigDecimal totalBigDecimal = new BigDecimal(recipelDetail.getTotal());    //需要占用的库存
-            // 如果不拆零销售（isUnpackSell == 0），total 是包装单位，需要转换为制剂单位
-            if (recipelDetail.getIsUnpackSell() != null && recipelDetail.getIsUnpackSell() == 0) {
-                if (drug != null && drug.getPreparation() != null) {
-                    totalBigDecimal = totalBigDecimal.multiply(new BigDecimal(drug.getPreparation()));
-                }
+            // 库存表存储的是包装单位
+            // - 不拆零时：直接使用 total（包装单位）与库存比较，占用也用包装单位
+            // - 拆零时：需要把总量（制剂单位）转换为包装单位来占用库存
+            BigDecimal totalBigDecimal;
+            boolean isUnpackSell = recipelDetail.getIsUnpackSell() != null && recipelDetail.getIsUnpackSell() == 1;
+            
+            if (isUnpackSell) {
+                // 拆零销售：total 是制剂单位，需要转换为包装单位（向上取整）
+                totalBigDecimal = new BigDecimal(recipelDetail.getTotal());
+            } else {
+                // 不拆零销售：total 是包装单位，直接使用
+                totalBigDecimal = new BigDecimal(recipelDetail.getTotal());
             }
+            
+            System.out.println("========== 库存占用调试 ==========");
+            System.out.println("药品名称: " + (drug != null ? drug.getGoodsName() : (stuff != null ? stuff.getName() : "未知")));
+            System.out.println("total: " + recipelDetail.getTotal());
+            System.out.println("isUnpackSell: " + isUnpackSell + " (1=拆零, 0=不拆零)");
+            System.out.println("用于比较的总量: " + totalBigDecimal);
             
             if (totalBigDecimal.compareTo(BigDecimal.ZERO) < 0)
             {
@@ -398,36 +409,52 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
 
             String companyId = recipelInfo.getCompany().getId();
             List<MedicinalStorageControl> medicinalStorageControlList = super.dao.getSurplusStockByDrugStuffIdTo(drugStuffId, companyId);
+            System.out.println("库存记录数量: " + (medicinalStorageControlList != null ? medicinalStorageControlList.size() : 0));
+            
             if (CollectionUtils.isEmpty(medicinalStorageControlList))
             {
-                // throw new RuntimeException("[" + recipelInfo.getName() + "]中[" + medicinalStockRecord.getDrugStuffName() + "]库存不足！");
+                System.out.println("【错误】该药品在库存控制表中没有记录！");
                 throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "[" + recipelInfo.getName() + "]中[" + medicinalStockRecord.getDrugStuffName() + "]库存不足！"));
             }
 
-            for (MedicinalStorageControl medicinalStorageControl:medicinalStorageControlList)
-            {
-                if (totalBigDecimal.compareTo(BigDecimal.ZERO) == 0)
+            // 拆零时，需要把总量（制剂单位）转换为包装单位
+            BigDecimal stockToOccupy = totalBigDecimal;
+            if (isUnpackSell && drug != null && drug.getPreparation() != null && Integer.valueOf(drug.getPreparation()) > 0) {
+                // 制剂单位转为包装单位：向上取整（确保有足够的制剂数量）
+                BigDecimal preparationBD = new BigDecimal(drug.getPreparation());
+                stockToOccupy = totalBigDecimal.divide(preparationBD, 0, BigDecimal.ROUND_UP);
+                System.out.println("拆零模式，将总量转为包装单位: " + totalBigDecimal + " / " + drug.getPreparation() + " = " + stockToOccupy);
+            }
+
+            for (int i = 0; i < medicinalStorageControlList.size(); i++) {
+                MedicinalStorageControl medicinalStorageControl = medicinalStorageControlList.get(i);
+                if (stockToOccupy.compareTo(BigDecimal.ZERO) == 0)
                 {
                     break;
                 }
 
-                BigDecimal surplusStock = medicinalStorageControl.getSurplusStock();   //剩余可用库存数
+                BigDecimal surplusStock = medicinalStorageControl.getSurplusStock();   //剩余可用库存数（包装单位）
                 BigDecimal occupyStock = medicinalStorageControl.getOccupyStock();		// 当前占用库存数
-                if (surplusStock.compareTo(totalBigDecimal) >= 0)   //明细库存够用
+                
+                System.out.println("库存记录" + i + ": surplusStock=" + surplusStock + ", occupyStock=" + occupyStock);
+                System.out.println("需要占用: " + stockToOccupy + ", 比较: " + surplusStock + " >= " + stockToOccupy + " = " + (surplusStock.compareTo(stockToOccupy) >= 0));
+                
+                if (surplusStock.compareTo(stockToOccupy) >= 0)   //明细库存够用
                 {
                     medicinalStockRecord.setId(null);
-                    medicinalStockRecord.setOperationStock(totalBigDecimal);  //操作库存数
+                    medicinalStockRecord.setOperationStock(stockToOccupy);  //操作库存数
                     medicinalStockRecord.setStorageId(medicinalStorageControl.getStorageId());    //占用的入库明细ID
                     medicinalStockRecord.setRecipelInfoId(recipelInfoId);  //占用的处方ID
                     medicinalStockRecord.setRefId(recipelDetail.getId());  //占用的关联记录ID
                     this.medicinalStockRecordService.save(medicinalStockRecord);
 
-                    medicinalStorageControl.setOccupyStock(occupyStock.add(totalBigDecimal));
-                    medicinalStorageControl.setSurplusStock(surplusStock.subtract(totalBigDecimal));
+                    medicinalStorageControl.setOccupyStock(occupyStock.add(stockToOccupy));
+                    medicinalStorageControl.setSurplusStock(surplusStock.subtract(stockToOccupy));
                     super.save(medicinalStorageControl);
 
-                    calculationBigDecimal = calculationBigDecimal.add(totalBigDecimal);
-                    totalBigDecimal = totalBigDecimal.subtract(totalBigDecimal);
+                    calculationBigDecimal = calculationBigDecimal.add(stockToOccupy);
+                    stockToOccupy = stockToOccupy.subtract(stockToOccupy);
+                    System.out.println("库存足够，占用成功！剩余待占用: " + stockToOccupy);
                 }
                 else                                            //明细库存不够用
                 {
@@ -443,15 +470,17 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
                     super.save(medicinalStorageControl);
 
                     calculationBigDecimal = calculationBigDecimal.add(surplusStock);
-                    totalBigDecimal = totalBigDecimal.subtract(surplusStock);
+                    stockToOccupy = stockToOccupy.subtract(surplusStock);
+                    System.out.println("该条库存不够用，占用: " + surplusStock + ", 剩余待占用: " + stockToOccupy);
                 }
             }
 
-            if (totalBigDecimal.compareTo(BigDecimal.ZERO) > 0)
+            if (stockToOccupy.compareTo(BigDecimal.ZERO) > 0)
             {
+                System.out.println("【错误】所有库存记录都不够，剩余还需占用: " + stockToOccupy);
                 throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "[" + recipelInfo.getName() + "]中[" + medicinalStockRecord.getDrugStuffName() + "]库存不足！"));
-//                throw new RuntimeException("[" + recipelInfo.getName() + "]中[" + medicinalStockRecord.getDrugStuffName() + "]库存不足！");
             }
+            System.out.println("========== 库存占用完成 ==========");
 
             //更新总控制的预占用
             parameters.clear();

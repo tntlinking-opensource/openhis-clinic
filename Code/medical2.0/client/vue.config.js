@@ -20,7 +20,17 @@ module.exports = {
     client: {
       overlay: {
         warnings: false,
-        errors: true
+        errors: true,
+        runtimeErrors: (error) => {
+          const ignoreErrors = [
+            'ResizeObserver loop completed with undelivered notifications',
+            'ResizeObserver loop limit exceeded',
+          ];
+          if (ignoreErrors.some(e => error.message?.includes(e))) {
+            return false;
+          }
+          return true;
+        }
       }
     },
     proxy: {

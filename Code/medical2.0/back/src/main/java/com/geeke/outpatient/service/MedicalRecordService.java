@@ -229,7 +229,10 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
                     for (RecipelDetail recipelDetail : recipelDetailEvtList) {
                         //保存处方详情
                         recipelDetail.setRecipelInfo(recipelInfoSave);
-                        recipelDetail.setMinTotal(recipelDetail.getTotal());
+                        // 如果前端没有传minTotal（制剂单位总量），则用total作为默认值
+                        if (recipelDetail.getMinTotal() == null || recipelDetail.getMinTotal() == 0) {
+                            recipelDetail.setMinTotal(recipelDetail.getTotal());
+                        }
                         //TODO
 //                        recipelDetail.setIsUnpackSell(0);
 //                        recipelDetail.setStuffType("0");
@@ -761,7 +764,10 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
                     recipelDetail.setAllFee(BigDecimal.valueOf(0.00));
                     recipelDetail.setId(null);
                     recipelDetail.setRecipelInfo(recipelInfoEntity);
-                    recipelDetail.setMinTotal(recipelDetail.getTotal());
+                    // 如果前端没有传minTotal（制剂单位总量），则用total作为默认值
+                    if (recipelDetail.getMinTotal() == null || recipelDetail.getMinTotal() == 0) {
+                        recipelDetail.setMinTotal(recipelDetail.getTotal());
+                    }
                     if (recipelDetail.getInfuseGroup() != null) {
                         recipelDetail.setStuffType("2");
                     }
@@ -817,7 +823,10 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
                 for (RecipelDetail recipelDetail : recipelDetailEvtList) {
                     recipelDetail.setId(null);
                     recipelDetail.setRecipelInfo(recipelInfoEntity);
-                    recipelDetail.setMinTotal(recipelDetail.getTotal());
+                    // 如果前端没有传minTotal（制剂单位总量），则用total作为默认值
+                    if (recipelDetail.getMinTotal() == null || recipelDetail.getMinTotal() == 0) {
+                        recipelDetail.setMinTotal(recipelDetail.getTotal());
+                    }
                     if (recipelDetail.getInfuseGroup() != null) {
                         recipelDetail.setStuffType("2");
                     }
