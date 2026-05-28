@@ -427,12 +427,12 @@ public class UserService extends CrudService<UserDao, User>{
 //        System.out.println("system:"+md5Password1);
 //
 //
-//        Md5Hash md52 = new Md5Hash("","1000" , 6);
-//        Md5Hash md53 = new Md5Hash("","1001" , 6);
-//        String md5Password2 = md52.toHex();
-//        String md5Password3 = md53.toHex();
-//        System.err.println("演示super:"+md5Password2);
-//        System.err.println("演示system:"+md5Password3);
+        Md5Hash md52 = new Md5Hash("2WSXcde!@","1000" , 6);
+        Md5Hash md53 = new Md5Hash("2WSXcde!@","1001" , 6);
+        String md5Password2 = md52.toHex();
+        String md5Password3 = md53.toHex();
+        System.err.println("演示super:"+md5Password2);
+        System.err.println("演示system:"+md5Password3);
 
         Md5Hash md54 = new Md5Hash("2WSXcde!@","2077468568630583314" , 6);
         String md5Password4 = md54.toHex();

@@ -1294,7 +1294,7 @@
                             <template slot-scope="scope">
                               {{
                                 scope.row.stuffType === "4" &&
-                                scope.row.isUnpackSell == "1"
+                                scope.row.isUnpackSell == 1
                                   ? scope.row.retailPrice +
                                     "/" +
                                     scope.row.minUnit.name
@@ -2719,37 +2719,41 @@ export default {
                 : "";
               rowElement.total = rowElement.total ? rowElement.total : 0;
               rowElement.allFee = rowElement.allFee ? rowElement.allFee : 0;
+              rowElement.dosageUnitType = rowElement.dosageUnitType || 'dosis'; // 默认剂量单位
               if (rowElement.frequency && rowElement.days) {
-                let total = Math.ceil(
-                  BigNumber(rowElement.singleDosage-0)
+                // 计算总量（制剂单位）
+                let calculatedTotalInPreparation;
+                if (rowElement.dosageUnitType === 'preparation') {
+                  // 制剂单位计算
+                  calculatedTotalInPreparation = BigNumber(rowElement.singleDosage - 0)
                     .multipliedBy(rowElement.frequency.value.split("_")[1])
                     .multipliedBy(rowElement.days.name)
-                    .toNumber()
-                );
-                if (rowElement.isUnpackSell == "1") {
-                  rowElement.unitPrice = rowElement.drugStuffId.retailPrice;
-                  rowElement.total = total;
-                  rowElement.allFee = BigNumber(rowElement.total)
-                    .multipliedBy(rowElement.drugStuffId.retailPrice)
                     .toNumber();
                 } else {
-                  rowElement.unitPrice = rowElement.drugStuffId.price;
-                  rowElement.total = BigNumber(
-                    Math.ceil(
-                      BigNumber(total)
-                        .dividedBy(rowElement.drugStuffId.drug.preparation)
-                        .toNumber()
-                    )
-                  )
-                    .multipliedBy(rowElement.drugStuffId.drug.preparation)
+                  // 剂量单位计算
+                  calculatedTotalInPreparation = BigNumber(rowElement.singleDosage - 0)
+                    .multipliedBy(rowElement.frequency.value.split("_")[1])
+                    .multipliedBy(rowElement.days.name)
+                    .dividedBy(rowElement.drugStuffId.drug.dosis)
                     .toNumber();
-                  rowElement.allFee = BigNumber(
-                    Math.ceil(
-                      BigNumber(total)
-                        .dividedBy(rowElement.drugStuffId.drug.preparation)
-                        .toNumber()
-                    )
-                  )
+                }
+
+                if (rowElement.isUnpackSell == 1) {
+                  // 拆零销售：总量单位是制剂单位
+                  rowElement.unitPrice = rowElement.drugStuffId.retailPrice;
+                  rowElement.total = Math.ceil(calculatedTotalInPreparation);
+                  rowElement.allFee = (BigNumber(rowElement.total)
+                    .multipliedBy(rowElement.drugStuffId.retailPrice)
+                    .toNumber()).toFixed(2);
+                } else {
+                  // 不拆零销售：总量单位是包装单位
+                  rowElement.unitPrice = rowElement.drugStuffId.price;
+                  rowElement.total = Math.ceil(
+                    BigNumber(calculatedTotalInPreparation)
+                      .dividedBy(rowElement.drugStuffId.drug.preparation)
+                      .toNumber()
+                  );
+                  rowElement.allFee = BigNumber(rowElement.total)
                     .multipliedBy(rowElement.drugStuffId.price)
                     .toNumber();
                 }
@@ -2884,37 +2888,46 @@ export default {
                 : "";
               rowElement.total = rowElement.total ? rowElement.total : 0;
               rowElement.allFee = rowElement.allFee ? rowElement.allFee : 0;
-              if (rowElement.frequency.value && rowElement.days.name) {
-                let total = Math.ceil(
-                  BigNumber(rowElement.singleDosage-0)
+              rowElement.dosageUnitType = rowElement.dosageUnitType || 'dosis'; // 默认剂量单位
+              if (rowElement.frequency && rowElement.frequency.value && rowElement.days && rowElement.days.name) {
+                // 计算总量（制剂单位）
+                let calculatedTotalInPreparation;
+                if (rowElement.dosageUnitType === 'preparation') {
+                  // 制剂单位计算
+                  calculatedTotalInPreparation = BigNumber(rowElement.singleDosage - 0)
                     .multipliedBy(rowElement.frequency.value.split("_")[1])
                     .multipliedBy(rowElement.days.name)
-                    .toNumber()
-                );
-                if (rowElement.isUnpackSell == "1") {
+                    .toNumber();
+                } else {
+                  // 剂量单位计算
+                  calculatedTotalInPreparation = BigNumber(rowElement.singleDosage - 0)
+                    .multipliedBy(rowElement.frequency.value.split("_")[1])
+                    .multipliedBy(rowElement.days.name)
+                    .dividedBy(rowElement.drugStuffId.drug.dosis)
+                    .toNumber();
+                }
+
+                // minTotal 统一保存制剂单位总量，用于后端库存校验
+                rowElement.minTotal = Math.ceil(calculatedTotalInPreparation);
+
+                if (rowElement.isUnpackSell == 1) {
+                  // 拆零销售：total 保存制剂单位总量
                   rowElement.unitPrice = rowElement.drugStuffId.retailPrice;
-                  rowElement.total = total;
-                  rowElement.allFee = BigNumber(rowElement.total)
+                  rowElement.total = Math.ceil(calculatedTotalInPreparation);
+                  // 费用 = 制剂总量 × 制剂单价
+                  rowElement.allFee = BigNumber(calculatedTotalInPreparation)
                     .multipliedBy(rowElement.drugStuffId.retailPrice)
                     .toNumber();
                 } else {
+                  // 不拆零销售：total 保存包装单位总量
                   rowElement.unitPrice = rowElement.drugStuffId.price;
-                  rowElement.total = BigNumber(
-                    Math.ceil(
-                      BigNumber(total)
-                        .dividedBy(rowElement.drugStuffId.drug.preparation)
-                        .toNumber()
-                    )
-                  )
-                    .multipliedBy(rowElement.drugStuffId.drug.preparation)
-                    .toNumber();
-                  rowElement.allFee = BigNumber(
-                    Math.ceil(
-                      BigNumber(total)
-                        .dividedBy(rowElement.drugStuffId.drug.preparation)
-                        .toNumber()
-                    )
-                  )
+                  rowElement.total = Math.ceil(
+                    BigNumber(calculatedTotalInPreparation)
+                      .dividedBy(rowElement.drugStuffId.drug.preparation)
+                      .toNumber()
+                  );
+                  // 费用 = 包装总量 × 包装单价
+                  rowElement.allFee = BigNumber(rowElement.total)
                     .multipliedBy(rowElement.drugStuffId.price)
                     .toNumber();
                 }
@@ -2961,7 +2974,7 @@ export default {
             rowElement.singleDosage = rowElement.singleDosage&&rowElement.singleDosage!=0
               ? rowElement.singleDosage
               : "";
-            if (rowElement.isUnpackSell == "1") {
+            if (rowElement.isUnpackSell == 1) {
               rowElement.total = rowElement.singleDosage-0;
               rowElement.allFee = BigNumber(rowElement.drugStuffId.retailPrice)
                 .multipliedBy(rowElement.total)

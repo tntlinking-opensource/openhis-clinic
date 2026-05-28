@@ -19,6 +19,8 @@ import com.geeke.outpatient.dao.MedicalRecordDao;
 import com.geeke.outpatient.entity.*;
 import com.geeke.stock.entity.Drug;
 import com.geeke.stock.entity.InstantPatient;
+import com.geeke.stock.entity.MedicinalStockControl;
+import com.geeke.stock.dao.MedicinalStockControlDao;
 import com.geeke.stock.entity.InventoryVerification;
 import com.geeke.stock.entity.Stuff;
 import com.geeke.stock.service.DrugService;
@@ -105,6 +107,9 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
 
     @Autowired
     private MedicinalStorageControlService medicinalStorageControlService;
+
+    @Autowired
+    private MedicinalStockControlDao medicinalStockControlDao;
 
     @Autowired
     private InspectionCheckService inspectionCheckService;
@@ -264,7 +269,7 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
         return bindedRegistration;
     }
 
-    private void isEnough(List<RecipelStastics> recipelStasticsList) {
+    private void isEnough(String companyId, List<RecipelStastics> recipelStasticsList) {
         List<RecipelStastics> occupied = recipelDetailService.getDetailStasticsForOccupy(30);
         Map<String, List<RecipelStastics>> collect = recipelStasticsList.stream()
                 .collect(Collectors.groupingBy(RecipelStastics::getId));
@@ -277,39 +282,17 @@ public class MedicalRecordService extends CrudService<MedicalRecordDao, MedicalR
         for (RecipelStastics now : need) {
             String nowId = now.getId();
             for (RecipelStastics oc : occupied) {
-                int inventory;
                 String ocId = oc.getId();
                 int total = oc.getOccupy() + now.getOccupy();
-                //校验数量是否合法
                 if (ocId.equals(nowId)) {
-                    switch (oc.getStuffType()) {
-                        //药品
-                        case "0":
-                        case "1":
-                        case "2":
-                            Drug drug = drugService.get(ocId);
-                            if (null == drug) {
-                                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "当前物料不在数据表中。"));
-                            }
-                            inventory = drug.getInventory();
-                            if (inventory < total) {
-                                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "当前物料库存不足，无法办理。"));
-                            }
-                            break;
-                        //材料
-                        case "4":
-                            Stuff stuff = stuffService.get(ocId);
-                            if (null == stuff) {
-                                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "当前物料不在数据表中。"));
-                            }
-                            inventory = stuff.getInventory();
-                            if (inventory < total) {
-                                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "当前物料库存不足，无法办理。"));
-                            }
-                            break;
-                        //诊疗项目
-                        default:
-                            break;
+                    // 从新库存系统读取可用库存（MedicinalStockControl.surplusStock）
+                    List<MedicinalStockControl> stockList = medicinalStockControlDao.inventory(companyId, ocId);
+                    if (stockList == null || stockList.isEmpty()) {
+                        throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "当前物料不在数据表中。"));
+                    }
+                    BigDecimal surplusStock = stockList.get(0).getSurplusStock();
+                    if (surplusStock == null || surplusStock.compareTo(new BigDecimal(total)) < 0) {
+                        throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "当前物料库存不足，无法办理。"));
                     }
                 }
             }

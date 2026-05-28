@@ -3,7 +3,7 @@ server:
     max-http-post-size: -1
 spring:
   profiles:
-    active: dev
+    active: demo
   application:
     name: medical
   servlet:

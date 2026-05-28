@@ -54,9 +54,9 @@
                             flex: 1;
                           "
                         >{{ patientQueryCondition.offset + index + 1 }}. {{
-                            item.patientId.name
-                          }}/ {{ item.patientId.gender.name }} /
-                      {{ item.patientId.age }}岁</span
+                            item.patientId && item.patientId.name ? item.patientId.name : '未知'
+                          }}/ {{ item.patientId && item.patientId.gender && item.patientId.gender.name ? item.patientId.gender.name : '' }} /
+                      {{ item.patientId && item.patientId.age ? item.patientId.age : '' }}岁</span
                         >
                         <span style="font-size: 12px; color: #606266">{{
                             item.receptionEndDate
@@ -171,13 +171,13 @@
                         <!-- <br> -->
                         <p style="font-weight: bold;margin-top: 15px;margin-left:30px;font-size: 12px;
                             color: #606266;">
-                          {{ o.recipelInfo.name }}<span v-if="o.recipelInfo.dispensionStatus==-1"
+                          {{ o.recipelInfo && o.recipelInfo.name ? o.recipelInfo.name : '' }}<span v-if="o.recipelInfo && o.recipelInfo.dispensionStatus==-1"
                                                         style="font-weight: bold;margin-left: 15px;color:red">已退药</span>
                         </p>
 
                         <p style="font-weight: bold;margin-top: 6px;margin-left:30px;font-size: 12px;
                             color: #606266;">
-                          {{ o.recipelInfo.id }}
+                          {{ o.recipelInfo && o.recipelInfo.id ? o.recipelInfo.id : '' }}
 
                         </p>
                         <div style="
@@ -263,12 +263,12 @@
                         <!-- <br> -->
                         <p style="font-weight: bold;margin-top: 15px;margin-left:30px;font-size: 12px;
                             color: #606266;">
-                          {{ o.recipelInfo.name }}
+                          {{ o.recipelInfo && o.recipelInfo.name ? o.recipelInfo.name : '' }}
                         </p>
 
                         <p style="font-weight: bold;margin-top: 6px;margin-left:30px;font-size: 12px;
                             color: #606266;">
-                          {{ o.recipelInfo.id }}
+                          {{ o.recipelInfo && o.recipelInfo.id ? o.recipelInfo.id : '' }}
 
                         </p>
                         <div style="
@@ -2627,35 +2627,37 @@
 
 
         //根据患者id获取会员信息
-        getByPatientId(this.patientInfoRow.patientId.id).then(res => {
-          if (res.code === '100') {
-            this.allMember = res.data
-          } else {
-            this.$message.error("后台数据异常请联系管理！")
-          }
-        }).catch()
+        if (this.patientInfoRow.patientId) {
+          getByPatientId(this.patientInfoRow.patientId.id).then(res => {
+            if (res.code === '100') {
+              this.allMember = res.data
+            } else {
+              this.$message.error("后台数据异常请联系管理！")
+            }
+          }).catch()
+        }
 
         this.selRowChargeStatus = this.patientInfoRow.chargeStatus;
 
         this.getSaveInfo(this.patientInfoRow.id);
 
-        // 获取患者远程诊疗信息
-        this.diagnosis = null
-        console.log("akakkakakakakkakkkakakak"+this.patientInfoRow.id)
-        getRegistrationId(this.patientInfoRow.id).then(res => {
-          if (res.data.id !== null) {
-            // this.diagnosis = res.data;
-            // this.diagnosisPrescription = true;
-            this.inquireHis();
-            setTimeout(() => {
-              this.pendingBill();
-              }, 1000);
-            // this.billingDetail(this.prescriptionCollection);
+        // 获取患者远程诊疗信息（已注释）
+        // this.diagnosis = null
+        // console.log("akakkakakakakkakkkakakak"+this.patientInfoRow.id)
+        // getRegistrationId(this.patientInfoRow.id).then(res => {
+        //   if (res.data.id !== null) {
+        //     // this.diagnosis = res.data;
+        //     // this.diagnosisPrescription = true;
+        //     this.inquireHis();
+        //     setTimeout(() => {
+        //       this.pendingBill();
+        //       }, 1000);
+        //     // this.billingDetail(this.prescriptionCollection);
 
-          } else {
-            this.$message.error("后台数据异常请联系管理！")
-          }
-        }).catch()
+        //   } else {
+        //     this.$message.error("后台数据异常请联系管理！")
+        //   }
+        // }).catch()
 
         this.overColor = 0
 
