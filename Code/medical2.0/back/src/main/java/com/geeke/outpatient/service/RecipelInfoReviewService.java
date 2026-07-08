@@ -1,19 +1,18 @@
 package com.geeke.outpatient.service;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.geeke.common.data.Page;
 import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
+import com.geeke.common.data.SearchParamsBuilder;
 import com.geeke.common.service.CrudService;
 import com.geeke.outpatient.dao.RecipelInfoReviewDao;
 import com.geeke.outpatient.entity.*;
 import com.geeke.outpatient.vo.PrescriptionStatisticsVO;
 import com.geeke.outpatient.vo.ReviewVO;
 import com.geeke.outpatient.vo.StatementVO;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +27,6 @@ import java.util.List;
  */
  
 @Service("recipellnfoReviewService")
-@Transactional(readOnly = true)
 public class RecipelInfoReviewService extends CrudService<RecipelInfoReviewDao, RecipelInfoReview>{
     @Resource
     private RecipelInfoReviewDao recipelInfoReviewDao;
@@ -52,7 +50,9 @@ public class RecipelInfoReviewService extends CrudService<RecipelInfoReviewDao, 
         ReviewVO vo = new ReviewVO();
         vo.setRecipelInfoReview(recipelInfoReview);
         //中药西药
-        List<Parameter> parameters = ListUtil.list(Boolean.FALSE, new Parameter("registration_id", "=", recipelInfoReview.getRecipelInfo().getRegistration().getId()));
+        List<Parameter> parameters = SearchParamsBuilder.create()
+                .eq("registration_id", recipelInfoReview.getRecipelInfo().getRegistration().getId())
+                .build();
         List<MedicalRecord> medicalRecordList = medicalRecordService.listAll(parameters, StrUtil.EMPTY);
         if (CollUtil.isNotEmpty(medicalRecordList)) {
             MedicalRecord medicalRecord = medicalRecordList.get(0);
@@ -60,11 +60,12 @@ public class RecipelInfoReviewService extends CrudService<RecipelInfoReviewDao, 
             vo.setChinaDiagnose(medicalRecord.getChinaDiagnose());
         }
         //处方明细
-        CollUtil.clear(parameters);
-        parameters.add(new Parameter("company_id", "=", recipelInfoReview.getRecipelInfo().getCompany().getId()));
-        parameters.add(new Parameter("recipel_info_id", "=", recipelInfoId));
-        parameters.add(new Parameter("is_extra", "=", 0));
-        List<RecipelDetail> recipelDetailList = this.recipelDetailService.listAll(parameters, org.apache.commons.lang3.StringUtils.EMPTY);
+        List<Parameter> recipelParams = SearchParamsBuilder.create()
+                .eq("company_id", recipelInfoReview.getRecipelInfo().getCompany().getId())
+                .eq("recipel_info_id", recipelInfoId)
+                .eq("is_extra", 0)
+                .build();
+        List<RecipelDetail> recipelDetailList = this.recipelDetailService.listAll(recipelParams, org.apache.commons.lang3.StringUtils.EMPTY);
         if (CollUtil.isNotEmpty(recipelDetailList)) {
             recipelDetailList.forEach(recipelDetail -> {
 
@@ -74,10 +75,12 @@ public class RecipelInfoReviewService extends CrudService<RecipelInfoReviewDao, 
         }
         vo.setRecipelDetails(recipelDetailList);
         //附加费
-        Parameter parameter = parameters.get(2);
-        parameter.setValue(1);
-        parameters.set(2, parameter);
-        List<RecipelDetail> additionalCharges = this.recipelDetailService.listAll(parameters, org.apache.commons.lang3.StringUtils.EMPTY);
+        List<Parameter> additionalParams = SearchParamsBuilder.create()
+                .eq("company_id", recipelInfoReview.getRecipelInfo().getCompany().getId())
+                .eq("recipel_info_id", recipelInfoId)
+                .eq("is_extra", 1)
+                .build();
+        List<RecipelDetail> additionalCharges = this.recipelDetailService.listAll(additionalParams, org.apache.commons.lang3.StringUtils.EMPTY);
         if (CollUtil.isNotEmpty(additionalCharges)) {
             additionalCharges.forEach(recipelDetail -> {
                 recipelDetail.setDrugStuffId(medicalRecordService.getDrugStuffEvt(recipelDetail));

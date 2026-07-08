@@ -12,12 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.geeke.common.service.CrudService;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.geeke.config.exception.CommonJsonException;
 import com.geeke.cure.dao.InspectionCheckDetailDao;
 import com.geeke.cure.entity.InspectionCheckDetail;
-import com.geeke.utils.ResultUtil;
 import com.geeke.utils.StringUtils;
-import com.geeke.utils.constants.ErrorEnum;
 import com.google.common.collect.Maps;
 
 /**
@@ -27,7 +24,7 @@ import com.google.common.collect.Maps;
  */
  
 @Service("inspectionCheckDetailService")
-@Transactional(readOnly = false)
+@Transactional(readOnly = true)
 public class InspectionCheckDetailService extends CrudService<InspectionCheckDetailDao, InspectionCheckDetail>{
 
     @Autowired
@@ -63,10 +60,12 @@ public class InspectionCheckDetailService extends CrudService<InspectionCheckDet
         return byInfoId2;
     }
 
+    @Transactional(readOnly = false)
     public void update(InspectionCheckDetail inspectionCheckDetail) {
         this.dao.update(inspectionCheckDetail);
     }
 
+    @Transactional(readOnly = false)
     public void deleteBy(InspectionCheckDetail inspectionCheckDetail) {
         this.dao.deleteBy(inspectionCheckDetail.getId());
     }

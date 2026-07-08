@@ -30,7 +30,7 @@
             <div
               class="todayPatientItem"
               @click="GoVisit(item, index)"
-              :class="{ click: index == NowPreIndex }"
+              :class="{ click: index === NowPreIndex }"
               v-for="(item, index) in PreparePatientList"
               :key="index"
             >
@@ -44,7 +44,7 @@
                 </p>
                 <p>
                   {{ item.company.name }} /
-                  <span :class="{ isNet: item.source.name == '网上' }">{{
+                  <span :class="{ isNet: item.source.name === '网上' }">{{
                     item.source.name
                   }}</span>
                 </p>
@@ -64,7 +64,7 @@
         >
           <div class="todayVisitBox">
             <div
-              :class="{ click: index == NowAlreadyIndex }"
+              :class="{ click: index === NowAlreadyIndex }"
               v-for="(item, index) in AlreadyPatientList"
               :key="index"
             >
@@ -1029,6 +1029,8 @@
 
 <script>
 import { listDictItemAll } from "@/api/sys/dictItem";
+import { getDictItemsByCode, DICT_CODE } from "@/utils/dictCache";
+import { getFrequencyCount } from "@/utils/dataUtils";
 import {
   listRegistrationPage,
   getRegistrationById,
@@ -1043,26 +1045,19 @@ import {
   allQueryMedicalRecord,
 } from "@/api/outpatient/medicalRecord";
 import MedicalRecordForm from "./medicalRecordForm";
-import ExportExcelButton from "@/components/ExportExcelButton";
-import ViewColumnsSelect from "@/views/components/ViewColumnsSelect";
-import QueryForm from "@/views/components/queryForm";
 import MainUI from "@/views/components/mainUI";
-import OperationIcon from "@/components/OperationIcon";
 import History from "@/views/components/history";
 import ChineseMedicine from "./components/ChineseMedicine";
 import InfusionPrescription from "./components/InfusionPrescription.vue";
 import VisitRecords from "./components/VisitRecords.vue";
 import indexVue from "../../../components/Clipboard/index.vue";
 import uploadFile from "@/views/components/uploadFile";
+import { getCurrentUser, getCurrentUserId } from "@/utils/userCache";
 export default {
   extends: MainUI,
   components: {
     uploadFile,
     MedicalRecordForm,
-    ExportExcelButton,
-    ViewColumnsSelect,
-    QueryForm,
-    OperationIcon,
     History,
     ChineseMedicine,
     InfusionPrescription,
@@ -1337,7 +1332,7 @@ export default {
   },
   computed: {
     Company() {
-      let company = JSON.parse(sessionStorage.getItem("currentUser")).company;
+      let company = getCurrentUser().company;
       return {
         id: company.id,
         label: company.label,
@@ -1345,7 +1340,7 @@ export default {
       };
     },
     UserId() {
-      return JSON.parse(sessionStorage.getItem("currentUser")).id;
+      return getCurrentUserId();
     },
     AllTotal() {
       return (
@@ -1370,7 +1365,6 @@ export default {
   methods: {
     // 选择处方
     changeItem(val) {
-      console.log(val.name);
       const list = [...this.addPrescriptionList, val];
       const listString = list.map((i) => JSON.stringify(i));
       const addPrescriptionList = Array.from(new Set(listString));
@@ -1398,7 +1392,7 @@ export default {
         ],
       };
       listPatientAll(searchModel).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.AllPatientOption = responseData.data;
         }
       });
@@ -1435,10 +1429,10 @@ export default {
       this.SearchPreModel.params[1].value = "registrationStatus_0";
       let model = { age: "", gender: "" };
       listRegistrationPage(this.SearchPreModel).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.PreparePatientTotal = responseData.data.total;
           this.PreparePatientList = responseData.data.rows;
-          if (this.PreparePatientTotal == 0) return;
+          if (this.PreparePatientTotal === 0) return;
           this.PreparePatientList.map((item, index) => {
             item.patientInfo = model;
             this.GetPatientById(item.patientId.id, index, "pre");
@@ -1475,10 +1469,10 @@ export default {
       //this.SearchAlreadyModel.params[1].value = "registrationStatus_1";
       let model = { age: "", gender: "" };
       listRegistrationPage(this.SearchAlreadyModel).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.AlreadyPatientListTotal = responseData.data.total;
           this.AlreadyPatientList = responseData.data.rows;
-          if (this.AlreadyPatientListTotal == 0) return;
+          if (this.AlreadyPatientListTotal === 0) return;
           this.AlreadyPatientList.map((item, index) => {
             item.patientInfo = model;
             this.GetPatientById(item.patientId.id, index, "already");
@@ -1489,8 +1483,8 @@ export default {
     //获取就诊患者的个人信息
     GetPatientById(id, index, type) {
       this.AllPatientOption.map((item) => {
-        if (item.id == id) {
-          if (type == "pre") {
+        if (item.id === id) {
+          if (type === "pre") {
             this.PreparePatientList[index].patientInfo = item;
           } else {
             this.AlreadyPatientList[index].patientInfo = item;
@@ -1500,43 +1494,14 @@ export default {
     },
     //获取数据字典的值
     GetAllOption() {
-      this.GetOption("1014474470772899981");
-      this.GetOption("1014474470772899990");
-      this.GetOption("1014474470772899985");
-      this.GetOption("1014474470772900028");
-      this.GetOption("1014474470772900052");
-      this.GetOption("1014474470772900062");
-      this.GetOption("1014474470772900068");
-      this.GetOption("1014474470772900058");
-    },
-    GetOption(optionId) {
-      let model = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: optionId,
-          },
-        ],
-      };
-      listDictItemAll(model).then((responseData) => {
-        if (optionId == "1014474470772899981")
-          this.ChineseUseOption = responseData.data;
-        else if (optionId == "1014474470772899990")
-          this.FrequencyOption = responseData.data;
-        else if (optionId == "1014474470772899985")
-          this.ChineseTimeOption = responseData.data;
-        else if (optionId == "1014474470772900028")
-          this.WesternUseOption = responseData.data;
-        else if (optionId == "1014474470772900052")
-          this.DayNumOption = responseData.data;
-        else if (optionId == "1014474470772900062")
-          this.InfusionUseOption = responseData.data;
-        else if (optionId == "1014474470772900068")
-          this.InfusionOption = responseData.data;
-        else if (optionId == "1014474470772900058")
-          this.ChineseUseTimeOption = responseData.data;
-      });
+      getDictItemsByCode(DICT_CODE.CHINESE_MEDICINE_RECIPEL_USE).then((data) => { this.ChineseUseOption = data; });
+      getDictItemsByCode(DICT_CODE.CHINESE_MEDICINE_RECIPEL_TAKE_FREQUENCY).then((data) => { this.FrequencyOption = data; });
+      getDictItemsByCode(DICT_CODE.CHINESE_MEDICINE_RECIPEL_FREQUENCY).then((data) => { this.ChineseTimeOption = data; });
+      getDictItemsByCode(DICT_CODE.WESTERN_MEDICINE_USE).then((data) => { this.WesternUseOption = data; });
+      getDictItemsByCode(DICT_CODE.RECIPEL_DETAIL_DAYS).then((data) => { this.DayNumOption = data; });
+      getDictItemsByCode(DICT_CODE.INFUSE_USE).then((data) => { this.InfusionUseOption = data; });
+      getDictItemsByCode(DICT_CODE.SKIN_TEST).then((data) => { this.InfusionOption = data; });
+      getDictItemsByCode(DICT_CODE.CHINESE_MEDICINE_USE).then((data) => { this.ChineseUseTimeOption = data; });
     },
     GetClearData() {
       this.VisitId = "";
@@ -1591,7 +1556,7 @@ export default {
     },
     //待就诊翻页
     PreparePrePage() {
-      if (this.SearchPreModel.offset == 0) return;
+      if (this.SearchPreModel.offset === 0) return;
       this.SearchPreModel.offset -= 1;
       this.GetPreparePatientList();
     },
@@ -1607,7 +1572,7 @@ export default {
     },
     //已就诊翻页
     AlreadyPrePage() {
-      if (this.SearchAlreadyModel.offset == 0) return;
+      if (this.SearchAlreadyModel.offset === 0) return;
       this.SearchAlreadyModel.offset -= 1;
       this.GetAlreadyPatientList();
     },
@@ -1622,7 +1587,7 @@ export default {
     },
     //得到处方总价
     GetChineseFee(type) {
-      if (type != 1 && !this.ChinesePrescription.dosage) return;
+      if (type !== 1 && !this.ChinesePrescription.dosage) return;
       this.ChinesePrescription.fee = 0;
       this.ChooseChineseMedicineTable.map((item) => {
         this.ChinesePrescription.fee += item.allFee;
@@ -1633,13 +1598,13 @@ export default {
     //根据是否零售与新增还是查看获取单位
     GetWesternUnit(index, row) {
       if (row.preparationUnit) {
-        if (row.isUnpackSell == "1") {
+        if (row.isUnpackSell === "1") {
           return row.preparationUnit.name;
         } else {
           return row.pack.name;
         }
       } else {
-        if (row.drugStuffId.drug.isUnpackSell == "1") {
+        if (row.drugStuffId.drug.isUnpackSell === "1") {
           return row.drugStuffId.drug.preparationUnit.name;
         } else {
           return row.drugStuffId.drug.pack.name;
@@ -1649,13 +1614,13 @@ export default {
     //根据是否零售与新增还是查看获取价格
     GetWesternPrice(index, row) {
       if (row.preparationUnit) {
-        if (row.isUnpackSell == "1") {
+        if (row.isUnpackSell === "1") {
           return row.retailPrice;
         } else {
           return row.price;
         }
       } else {
-        if (row.drugStuffId.drug.isUnpackSell == "1") {
+        if (row.drugStuffId.drug.isUnpackSell === "1") {
           return row.drugStuffId.drug.retailPrice;
         } else {
           return row.drugStuffId.drug.price;
@@ -1667,10 +1632,10 @@ export default {
       if (row) {
         if (row.frequency && row.days) {
           row.singleDosage = row.singleDosage ? row.singleDosage : 0;
-          if (row.isUnpackSell == "1") {
+          if (row.isUnpackSell === "1") {
             row.total = Math.ceil(
               row.singleDosage *
-                row.frequency.value.split("_")[1] *
+                getFrequencyCount(row.frequency.value) *
                 row.days.name
             );
             row.allFee =
@@ -1681,7 +1646,7 @@ export default {
           } else {
             let total = Math.ceil(
               row.singleDosage *
-                row.frequency.value.split("_")[1] *
+                getFrequencyCount(row.frequency.value) *
                 row.days.name
             );
             row.total = Math.ceil(total / row.preparation);
@@ -1756,7 +1721,7 @@ export default {
         ],
       };
       listStuffPage(SearchModel).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.SurchargeTable = responseData.data.rows;
         }
       });
@@ -1786,7 +1751,7 @@ export default {
         ],
       };
       listCostItemPage(SearchModel).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.TreatmentTable = responseData.data.rows;
         }
       });
@@ -1818,7 +1783,7 @@ export default {
       this.SearchWesternModel.params[1].value = "medicalType_0";
       this.SearchWesternModel.params[2].value = this.SearchWesternInput;
       listAllStock(this.SearchWesternModel).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100 && Array.isArray(responseData.data)) {
           responseData.data.forEach((element) => {
             let isUnpackSell = element.isUnpackSell; //允许拆零销售
             let stockNumber = element.stockNumber; //库存数量
@@ -1858,7 +1823,7 @@ export default {
       this.SearchChineseModel.params[1].value = "medicalType_1";
       this.SearchChineseModel.params[2].value = this.SearchChineseInput;
       listAllStock(this.SearchChineseModel).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.ChineseMedicineTable = responseData.data;
         }
       });
@@ -1912,9 +1877,9 @@ export default {
         registrationId:''
       };
       allQueryMedicalRecord(this.VisitId).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.GetVisitRecordData(responseData.data);
-          if (this.IsOnlyRead == true) this.GetOnlyReadData(responseData.data);
+          if (this.IsOnlyRead === true) this.GetOnlyReadData(responseData.data);
         }
       });
     },
@@ -1990,7 +1955,7 @@ export default {
               };
               this.InfusionItemList.push(JSON.parse(JSON.stringify(InfoModel)));
               prescriptionItem.recipelDetailEvtList.map((item) => {
-                if (group == item.infuseGroup) {
+                if (group === item.infuseGroup) {
                   this.InfusionItemList[group - 1].infuseUse = item.infuseUse;
                   this.InfusionItemList[group - 1].frequency = item.frequency;
                   this.InfusionItemList[group - 1].days = item.days;
@@ -2382,7 +2347,7 @@ export default {
         if (valid) {
           let model = this.createFormData(FinishModel);
           allSaveMedicalRecord(model).then((responseData) => {
-            if (responseData.code == 100) {
+            if (responseData.code === 100) {
               this.$message.success("操作成功！");
               this.GetClearData();
               this.GetVisitList();
@@ -2393,13 +2358,13 @@ export default {
     },
     invalidPrescription() {
       getRegistrationById(this.VisitId).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           let status = responseData.data.status.value;
           let chargeStatus = responseData.data.chargeStatus; //收费状态 0- 待收费   1-部分收费   2- 已收费   3-  部分退费    4- 已退费
           if (chargeStatus === "0" && status === "registrationStatus_1") {
             updateStatus(this.VisitId, "registrationStatus_4").then(
               (responseData) => {
-                if (responseData.code == 100) {
+                if (responseData.code === 100) {
                   this.GetAlreadyPatientList();
                   this.$message.success("操作成功！");
                 }

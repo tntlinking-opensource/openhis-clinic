@@ -3,7 +3,7 @@
     @open='onDialogOpen()' v-loading='loading'>
     <div slot='title' class='dialog-header'>
       {{ dialogProps.title }}
-      <OperationIcon v-show='dialogProps.action == "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
+      <OperationIcon v-show='dialogProps.action === "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
     </div>
     <el-form :model='bizFormModel' :rules='formRules'
       ref='departmentForm' label-width='120px' label-position='right' class='edit-form'>
@@ -11,7 +11,7 @@
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='上级部门' prop='parent.id'>
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.parent.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.parent.name'></el-input>
             <el-cascader v-else v-model='bizFormModel.parent.id' :options='parent_List' :key='key_parent' ref='parentCascader' @change='onParentChange' :props='{value: "id", label: "name", checkStrictly: true, emitPath: false}' filterable clearable placeholder='请选择上级部门' />
           </el-form-item>
         </el-col>
@@ -19,21 +19,21 @@
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='编码' prop='code'>
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.code' :maxlength='10' :placeholder='dialogProps.action == "view"? "" : "请输入编码"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.code' :maxlength='10' :placeholder='dialogProps.action === "view"? "" : "请输入编码"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='名称' prop='name'>
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.name' :maxlength='100' :placeholder='dialogProps.action == "view"? "" : "请输入名称"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.name' :maxlength='100' :placeholder='dialogProps.action === "view"? "" : "请输入名称"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='排序' prop='sort'>
-            <number-input v-if='dialogProps.action == "view"' disabled v-model="bizFormModel.sort" :precision="0"></number-input>
+            <number-input v-if='dialogProps.action === "view"' disabled v-model="bizFormModel.sort" :precision="0"></number-input>
             <number-input v-else v-model="bizFormModel.sort" :precision="0"></number-input>
           </el-form-item>
         </el-col>
@@ -41,7 +41,7 @@
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='总监' prop='director.id'>
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.director.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.director.name'></el-input>
             <el-select v-else v-model='bizFormModel.director' value-key='id' filterable clearable placeholder='请选择总监' @clear='bizFormModel.director={"id": null,"name": null,}'>
              <el-option v-for='director in director_List' :key='director.id' :label='director.name' :value='director'></el-option>
             </el-select>
@@ -51,7 +51,7 @@
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='经理' prop='manager.id'>
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.manager.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.manager.name'></el-input>
             <el-select v-else v-model='bizFormModel.manager' value-key='id' filterable clearable placeholder='请选择经理' @clear='bizFormModel.manager={"id": null,"name": null,}'>
              <el-option v-for='manager in manager_List' :key='manager.id' :label='manager.name' :value='manager'></el-option>
             </el-select>
@@ -61,16 +61,16 @@
               <el-row>
         <el-col>
           <el-form-item label='备注信息' prop='remarks'>
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.remarks' type='textarea' 
-             :maxlength='255' :placeholder='dialogProps.action == "view"? "" : "请输入备注信息"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.remarks' type='textarea' 
+             :maxlength='255' :placeholder='dialogProps.action === "view"? "" : "请输入备注信息"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
     </el-form>
     <span slot='footer' class='dialog-footer'>
-      <el-button v-if='dialogProps.action != "view"' :disabled="flage" type='primary' :plain='true' @click='onSubmit("departmentForm")'>保 存</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :disabled="flag" type='primary' :plain='true' @click='onSubmit("departmentForm")'>保 存</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span>
   </el-dialog>
 </template>
@@ -91,7 +91,7 @@ export default {
   data() {
     return {
       bizFormModel: this.initFormModel(),
-      flage:false,
+      flag:false,
                   key_parent: 1,    // el-cascader key
           parent_List: [],  // 上级部门
                                           director_List: [],  // 总监
@@ -126,12 +126,12 @@ export default {
   },
   methods: {
     onSubmit(formName) {
-      this.flage=true
+      this.flag=true
       this.$refs[formName].validate(valid => {
         if (valid) {
           this.doSave()
         } else {
-          this.flage=false
+          this.flag=false
           return false
         }
       });
@@ -139,8 +139,8 @@ export default {
     doSave() {
       this.setLoad()
       saveDepartment(this.bizFormModel).then(responseData => {
-        this.flage=false
-        if(responseData.code == 100) {
+        this.flag=false
+        if(responseData.code === 100) {
           this.dialogProps.visible = false
           this.$emit('save-finished')
         } else {
@@ -148,7 +148,7 @@ export default {
         }
         this.resetLoad()
       }).catch(error => {
-        this.flage=false
+        this.flag=false
         this.outputError(error)
       })
     },
@@ -249,7 +249,7 @@ export default {
   },
   watch: {
     parent_List(newVal, oldVal) {
-      if(newVal != oldVal && this.dialogProps.action == 'add' ) {
+      if(newVal !== oldVal && this.dialogProps.action === 'add' ) {
         this.$nextTick(() => {
           this.onParentChange()
         })
@@ -258,37 +258,36 @@ export default {
 
   },
   mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openViewDepartmentDialog', function(department) {
-        this.dialogProps.action = 'view'
-        this.dialogProps.title = '查看部门'
-        this.bizFormModel = department
-        // this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openEditDepartmentDialog', function(department) {
-        this.dialogProps.action = 'edit'
-        this.dialogProps.title = '修改部门'
-        this.bizFormModel = department
-        this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openAddDepartmentDialog', function(parent) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加部门'
-        this.bizFormModel = this.initFormModel(parent)
-        this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openCopyDepartmentDialog', function(department) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加部门'
-        this.bizFormModel = department
-        this.initOptions(this.bizFormModel)
-        this.bizFormModel.id = null   //把id设置为空，添加一个新的
-        this.dialogProps.visible = true
-      })
-    })
+  },
+  methods: {
+    openViewDepartmentDialog(department) {
+      this.dialogProps.action = 'view'
+      this.dialogProps.title = '查看部门'
+      this.bizFormModel = department
+      this.dialogProps.visible = true
+    },
+    openEditDepartmentDialog(department) {
+      this.dialogProps.action = 'edit'
+      this.dialogProps.title = '修改部门'
+      this.bizFormModel = department
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+    },
+    openAddDepartmentDialog(parent) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加部门'
+      this.bizFormModel = this.initFormModel(parent)
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+    },
+    openCopyDepartmentDialog(department) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加部门'
+      this.bizFormModel = department
+      this.initOptions(this.bizFormModel)
+      this.bizFormModel.id = null
+      this.dialogProps.visible = true
+    },
   }
 }
 </script>

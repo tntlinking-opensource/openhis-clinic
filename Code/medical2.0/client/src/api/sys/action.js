@@ -1,37 +1,10 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getActionById = (id) =>
-    request({
-        url: '/sys/action/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/sys/action')
 
-export const listActionPage = (search) =>
-    request({
-        url: '/sys/action/list',
-        method: 'post',
-        data: search
-    })
-
-export const listActionAll = (search) =>
-    request({
-        url: '/sys/action/listAll',
-        method: 'post',
-        data: search
-    })    
-
-
-export const saveAction = (action) => 
-    request({
-        url: '/sys/action/save',
-        method: 'post',
-        data: action
-    })
-
-export const deleteAction = (action) =>
-    request({
-        url: '/sys/action/delete',
-        method: 'post',
-        data: action
-    })
-    
+// 导出标准CRUD接口（保持向后兼容）
+export const getActionById = baseApi.getById
+export const listActionPage = baseApi.listPage
+export const listActionAll = baseApi.listAll
+export const saveAction = baseApi.save
+export const deleteAction = baseApi.delete

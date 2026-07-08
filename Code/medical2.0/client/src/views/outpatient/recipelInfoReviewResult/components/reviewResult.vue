@@ -1,7 +1,7 @@
 <template>
   <div class="review-container">
     <!-- 编辑窗口  -->
-    <review-form ref='reviewForm' :permission='permission' v-on:save-finished='getReviewList()'></review-form>
+    <review-form ref='reviewForm' :permission='permission' @save-finished='getReviewList'></review-form>
     <!--  搜索栏  开始 -->
     <div class='query-form-container'>
       <el-form :model='queryModel' @submit.native.prevent label-position="left" label-width='70px' ref='queryForm' :inline-message='true'>
@@ -156,7 +156,7 @@
               prop='reviewResult'
               align="center">
               <template slot-scope="scope">
-                {{scope.row.reviewResult == 1?"合理":"不合理"}}
+                {{scope.row.reviewResult === 1?"合理":"不合理"}}
               </template>
             </el-table-column>
             <el-table-column
@@ -176,7 +176,7 @@
               align="center">
             </el-table-column>
             <!--表行级操作按钮-->
-            <el-table-column label='操作' header-align='center' :width='60 + "px"' :key="Math.random()">
+            <el-table-column label='操作' header-align='center' :width='60 + "px"' :key="'operate'">
               <!--<template slot='header' slot-scope="scope">
                 <span>操作</span>
               </template>-->
@@ -216,28 +216,26 @@ import { validatenull } from '@/utils/validate'
 import { listRecipelInfoReviewPage, getRecipelInfoReviewById,getRecipelInfoReviewByRecipelInfoId,getReviewFormByRecipelInfoId } from '@/api/outpatient/recipelInfoReview'
 import { listResourcePermission } from '@/api/admin/common/permission'
 import { listDictItemAll } from '@/api/sys/dictItem'
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 import { getCompanyById } from '@/api/org/company'
 import { listUserAll } from "@/api/admin/user";
 import { listCompanyAll } from "@/api/org/company";
 import ReviewForm from './../../recipelInfoReview/components/reviewForm'
-import ExportExcelButton from '@/components/ExportExcelButton'
-import QueryForm from '@/views/components/queryForm'
 import MainUI from '@/views/components/mainUI'
 import OperationIcon from '@/components/OperationIcon'
 import DataRangePicker from '@/components/DataRangePicker'
+import { getCurrentUser } from "@/utils/userCache";
 export default {
   name: "review-result",
   extends: MainUI,
   components: {
     ReviewForm,
-    ExportExcelButton,
-    QueryForm,
     OperationIcon,
     DataRangePicker,
   },
   computed: {
     Company() {
-      let company = JSON.parse(sessionStorage.getItem("currentUser")).company;
+      let company = getCurrentUser().company;
       return {
         id: company.id,
         label: company.label,
@@ -245,7 +243,7 @@ export default {
       };
     },
     Department() {
-      let department = JSON.parse(sessionStorage.getItem("currentUser")).department;
+      let department = getCurrentUser().department;
       return {
         id: department.id,
         label: department.label,
@@ -361,7 +359,7 @@ export default {
       // 数据权限
       this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
       listRecipelInfoReviewPage(this.search).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           this.reviewTotal = responseData.data.total
           this.reviewList = responseData.data.rows
         } else {
@@ -439,7 +437,7 @@ export default {
           listRecipelInfoReviewPage(this.search),
           listResourcePermission(this.$route.meta.routerId)
         ])
-        if(listReviewRespData.code == 100 && listPermissionRespData.code == 100) {
+        if(listReviewRespData.code === 100 && listPermissionRespData.code === 100) {
           this.reviewTotal = listReviewRespData.data.total
           this.reviewList = listReviewRespData.data.rows
           this.permission.view = listPermissionRespData.data.find(item => {
@@ -458,7 +456,7 @@ export default {
             return item.permission === 'recipelInfoReviewResult:delete'
           })
         } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listReviewRespData)
+          this.showMessage(listPermissionRespData.code !== 100 ? listPermissionRespData : listReviewRespData)
         }
         this.resetLoad()
       } catch(error) {
@@ -468,8 +466,8 @@ export default {
     onViewTheme(index, row) {
       this.setLoad()
       getRecipelInfoReviewById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.reviewForm.$emit('openViewThemeDialog', responseData.data)
+        if(responseData.code === 100) {
+          this.$refs.reviewForm.openViewThemeDialog(responseData.data)
         } else {
           this.showMessage(responseData)
         }
@@ -481,8 +479,8 @@ export default {
     onViewReviewResult(index, row) {
       this.setLoad()
       getReviewFormByRecipelInfoId(row.recipelInfo.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.reviewForm.$emit('openViewReviewDialog', responseData.data)
+        if(responseData.code === 100) {
+          this.$refs.reviewForm.openViewReviewDialog(responseData.data)
         }else{
           this.showMessage(responseData)
         }
@@ -492,16 +490,8 @@ export default {
       })
     },
     async initOptions(This) {
-      let recipelType_search = {
-        params: [{'columnName': 'dict_type_id', 'queryType': '=', 'value': '1014474470772899974'}]
-      }
-      // 字段对应表上filter条件
-      recipelType_search.params.push.apply(recipelType_search.params, [])
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(recipelType_search.params, this.$route.meta.routerId, '1014474470772899974')
-      this.recipelType_List = []
-      listDictItemAll(recipelType_search).then(responseData => {
-        this.recipelType_List = responseData.data
+      getDictItemsByCode(DICT_CODE.RECIPEL_TYPE).then((data) => {
+        this.recipelType_List = data
         this.recipelType_List.unshift({name: "全部", value: ""})
       })
       //初始化开单医生
@@ -560,22 +550,22 @@ export default {
       this.loginCompany = companyRespData.data
     },
     recipellnfoStatus(row){
-      if (row.recipelInfo.status == -1) {
+      if (row.recipelInfo.status === -1) {
         return "作废处方";
       }
-      if (row.recipelInfo.chargeStatus == -1) {
+      if (row.recipelInfo.chargeStatus === -1) {
         return "已退费";
       }
-      if (row.recipelInfo.dispensionStatus == 1) {
+      if (row.recipelInfo.dispensionStatus === 1) {
         return "已发药";
-      }else if (row.recipelInfo.dispensionStatus == -1) {
-        if (row.recipelInfo.chargeStatus == 1) {
+      }else if (row.recipelInfo.dispensionStatus === -1) {
+        if (row.recipelInfo.chargeStatus === 1) {
           return "已退药未退费";
         }
-      }else if (row.recipelInfo.dispensionStatus == 0) {
-        if (row.recipelInfo.chargeStatus == 0) {
+      }else if (row.recipelInfo.dispensionStatus === 0) {
+        if (row.recipelInfo.chargeStatus === 0) {
           return "待收费";
-        }else if (row.recipelInfo.chargeStatus == 1) {
+        }else if (row.recipelInfo.chargeStatus === 1) {
           return "已收费";
         }
       }
@@ -591,14 +581,14 @@ export default {
 <style lang="scss" scoped>
   .drag_table {
     // 设置表格header的高度
-    /deep/ th {
+    ::v-deep th {
       height: 44px;
     }
-    /deep/ th.gutter:last-of-type {
+    ::v-deep th.gutter:last-of-type {
       height: 0 !important;
     }
     // 设置表格body的高度
-    /deep/.el-table__body-wrapper {
+    ::v-deep.el-table__body-wrapper {
       //解决数据展示超出body高度不滚动bug
       overflow-y: auto;
       // 减去的是表格header的高度

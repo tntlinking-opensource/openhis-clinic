@@ -13,6 +13,7 @@ import com.geeke.admin.service.ResourceService;
 import com.geeke.admin.service.RouterService;
 import com.geeke.clinic.entity.ClinicVersion;
 import com.geeke.common.data.Parameter;
+import com.geeke.common.data.SearchParamsBuilder;
 import com.geeke.org.entity.Company;
 import com.geeke.org.service.CompanyService;
 import com.geeke.sys.controller.BaseController;
@@ -141,14 +142,11 @@ public class PermissionController extends BaseController {
      * @return
      */
     private List<Router> listUnlockedRouter() {
-        List<Parameter> parms = Lists.newArrayList();
-        parms.add(new Parameter("is_locked", "=", "0"));
-
-        
         // 系统级功能路由不能被分配： 3006  代码管理;	3007  路由管理;   3003   资源管理 ;  3011  字典数据;  3009    操作日志; 3024  系统编号规则; 3026 系统主题;
-        // parms.add(new Parameter("id", "not in", "(3006, 3007, 3003, 3011, 3009, 3024, 3026)", true));
-        
-        parms.add(new Parameter("can_permission", "=", "1"));
+        List<Parameter> parms = SearchParamsBuilder.create()
+                .eq("is_locked", "0")
+                .eq("can_permission", "1")
+                .build();
 
         Company company = companyService.get(SessionUtils.getLoginTenantId());
         String parentId = Opt.ofNullable(company).map(Company::getParent).map(Company::getId).get();
@@ -166,16 +164,16 @@ public class PermissionController extends BaseController {
      * 获取未禁用的资源
      * @return
      */
-    private List<Resource> listUnlockedResource() {       
-        List<Parameter> parms = Lists.newArrayList();
-        parms.add(new Parameter("is_locked", "=", "0"));            
-        parms.add(new Parameter("is_default", "=", "0"));		// 默认的不用分配
+    private List<Resource> listUnlockedResource() {
         /* 不参与分配的资源
-         * 公司管理：41105517082353672 添加公司 、54172422505193473 删除公司 
+         * 公司管理：41105517082353672 添加公司 、54172422505193473 删除公司
          */
-        // parms.add(new Parameter("id", "not in", "(41105517082353672, 54172422505193473)", true));
-        
-        parms.add(new Parameter("can_permission", "=", "1"));
+        List<Parameter> parms = SearchParamsBuilder.create()
+                .eq("is_locked", "0")
+                .eq("is_default", "0")  // 默认的不用分配
+                .eq("can_permission", "1")
+                .build();
+
         Company company = companyService.get(SessionUtils.getLoginTenantId());
         if (ObjUtil.isNotNull(company) && !"0".equals(company.getParent().getId()) && !"供应商".equals(company.getName())) {
             //对诊所限定

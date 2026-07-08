@@ -112,14 +112,14 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 				try {
 					outs.close();
 				} catch (IOException oute) {
-					oute.printStackTrace();
+					logger.error("关闭输出流失败", oute);
 				}
 			}
 			if (ins != null) {
 				try {
 					ins.close();
 				} catch (IOException ine) {
-					ine.printStackTrace();
+					logger.error("关闭输入流失败", ine);
 				}
 			}
 		}
@@ -350,8 +350,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 				return false;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			logger.debug(descFileName + " 文件创建失败!");
+			logger.error(descFileName + " 文件创建失败!", e);
 			return false;
 		}
 
@@ -446,8 +445,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 			zouts.close();
 			logger.debug(descFileName + " 文件压缩成功!");
 		} catch (Exception e) {
-			logger.debug("文件压缩失败：" + e.getMessage());
-			e.printStackTrace();
+			logger.error("压缩文件失败", e);
 		}
 
 	}*/
@@ -524,7 +522,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 					zouts.putNextEntry(entry);
 					zouts.closeEntry();
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error("关闭zip条目失败", e);
 				}
 				return;
 			}
@@ -544,59 +542,8 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 	}*/
 
 	/**
-	 * 将文件压缩到ZIP输出流
-	 * @param dirPath 目录路径
-	 * @param file 文件
-	 * @param zouts 输出流
+	 * 将文件压缩到ZIP输出流（已移除未使用的死代码）
 	 */
-/*	public static void zipFilesToZipFile(String dirPath, File file, ZipOutputStream zouts) {
-		FileInputStream fin = null;
-		ZipEntry entry = null;
-		// 创建复制缓冲区
-		byte[] buf = new byte[4096];
-		int readByte = 0;
-		if (file.isFile()) {
-			try {
-				// 创建一个文件输入流
-				fin = new FileInputStream(file);
-				// 创建一个ZipEntry
-				entry = new ZipEntry(getEntryName(dirPath, file));
-				// 存储信息到压缩文件
-				zouts.putNextEntry(entry);
-				// 复制字节到压缩文件
-				while ((readByte = fin.read(buf)) != -1) {
-					zouts.write(buf, 0, readByte);
-				}
-				zouts.closeEntry();
-				fin.close();
-				System.out
-						.println("添加文件 " + file.getAbsolutePath() + " 到zip文件中!");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-*/
-	/**
-	 * 获取待压缩文件在ZIP文件中entry的名字，即相对于跟目录的相对路径名
-	 * @param dirPat 目录名
-	 * @param file entry文件名
-	 * @return
-	 */
-/*	private static String getEntryName(String dirPath, File file) {
-		String dirPaths = dirPath;
-		if (!dirPaths.endsWith(File.separator)) {
-			dirPaths = dirPaths + File.separator;
-		}
-		String filePath = file.getAbsolutePath();
-		// 对于目录，必须在entry名字后面加上"/"，表示它将以目录项存储
-		if (file.isDirectory()) {
-			filePath += "/";
-		}
-		int index = filePath.indexOf(dirPaths);
-
-		return filePath.substring(index + dirPaths.length());
-	}*/
 
 	/**
 	 * 根据“文件名的后缀”获取文件内容类型（而非根据File.getContentType()读取的文件类型）

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.geeke.common.constants.ActionConstants;
 import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
+import com.geeke.common.data.SearchParamsBuilder;
 import com.geeke.common.service.CrudService;
 import com.geeke.sys.dao.ActionDao;
 import com.geeke.sys.dao.ActionRecycleDao;
@@ -38,12 +39,11 @@ public class ActionService extends CrudService<ActionDao, Action> {
 	public Action get(String id) {
 		Action action = super.get(id);
 
-		List<Parameter> params = null;
-		PageRequest pageRequest;
     	/*获取子表列表   回收站*/
-		params = Lists.newArrayList();
-        params.add(new Parameter("action_id", "=", action.getId()));
-        pageRequest = new PageRequest(params);
+		List<Parameter> params = SearchParamsBuilder.create()
+				.eq("action_id", action.getId())
+				.build();
+		PageRequest pageRequest = new PageRequest(params);
         action.setActionRecycleList(actionRecycleDao.listAll(pageRequest));
 		return action;
 	}
@@ -55,12 +55,11 @@ public class ActionService extends CrudService<ActionDao, Action> {
 		String id = super.save(action).getId();
 		if (StringUtils.isNoneBlank(id)) {
 
-            List<Parameter> params = null;
-            PageRequest pageRequest;
             /* 处理子表     回收站 */
-            params = Lists.newArrayList();
-            params.add(new Parameter("action_id", "=", action.getId()));
-            pageRequest = new PageRequest(params);
+            List<Parameter> params = SearchParamsBuilder.create()
+                    .eq("action_id", action.getId())
+                    .build();
+            PageRequest pageRequest = new PageRequest(params);
             List<ActionRecycle> list_ActionRecycle = actionRecycleDao.listAll(pageRequest);            
             for(ActionRecycle actionRecycleSaved: list_ActionRecycle) {
                 boolean found = false;   
@@ -99,12 +98,11 @@ public class ActionService extends CrudService<ActionDao, Action> {
     @Override
     @Transactional(readOnly = false)
     public int delete(Action action) {
-        List<Parameter> params = null;
-        PageRequest pageRequest;
         /* 处理子表     回收站 */
-        params = Lists.newArrayList();
-        params.add(new Parameter("action_id", "=", action.getId()));
-        pageRequest = new PageRequest(params);
+        List<Parameter> params = SearchParamsBuilder.create()
+                .eq("action_id", action.getId())
+                .build();
+        PageRequest pageRequest = new PageRequest(params);
         action.setActionRecycleList(actionRecycleDao.listAll(pageRequest));
 
         for(ActionRecycle actionRecycleSaved: action.getActionRecycleList()) {

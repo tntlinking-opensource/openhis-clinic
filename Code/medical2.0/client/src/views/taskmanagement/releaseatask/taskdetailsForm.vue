@@ -10,7 +10,7 @@
     v-loading="loading"
   >
   <!-- 选择任务执行审核 -->
-    <div v-if="mark=='0'">
+    <div v-if="mark==='0'">
           <el-table
             :data="tableData"
             style="width: 100%"
@@ -34,10 +34,10 @@
               align="center"
               width="width">
               <template slot-scope="scope">
-                <span v-if="scope.row.executeschedule=='0'" style="color:orange;">
+                <span v-if="scope.row.executeschedule==='0'" style="color:orange;">
                   待执行
                 </span>
-                <span v-if="scope.row.executeschedule=='1'" style="color:lightgreen;">
+                <span v-if="scope.row.executeschedule==='1'" style="color:lightgreen;">
                   已执行
                 </span>
               </template>
@@ -60,13 +60,13 @@
               align="center"
               width="width">
               <template slot-scope="scope">
-                <span v-if="scope.row.auditType=='0'" style="color:orange">
+                <span v-if="scope.row.auditType==='0'" style="color:orange">
                     待审核
                 </span>
-                 <span v-if="scope.row.auditType=='1'" style="color:lightgreen">
+                 <span v-if="scope.row.auditType==='1'" style="color:lightgreen">
                     已审核
                 </span>
-                <span v-if="scope.row.auditType=='2'" style="color:red">
+                <span v-if="scope.row.auditType==='2'" style="color:red">
                     未通过
                 </span>
               </template>
@@ -76,7 +76,7 @@
               width="120">
               <template slot-scope="scope">
                 <el-button
-                  v-if="scope.row.auditType=='0'"
+                  v-if="scope.row.auditType==='0'"
                   @click.native.prevent="auditStart(scope.$index, scope.row)"
                   type="text"
                   size="small">
@@ -98,7 +98,7 @@
      <div class="specifications">任务详情</div>
         <div style="width:80%;margin-left:100px">
            <div>
-             任务类型：{{this.indexdata.tasktype=='0'?"常规任务":"宣传活动"}}
+             任务类型：{{this.indexdata.tasktype==='0'?"常规任务":"宣传活动"}}
            </div>
            <div>
              任务名称：{{this.indexdata.taskname}}
@@ -119,7 +119,7 @@
         <div class="specifications">执行情况反馈</div>
          <div style="width:80%;margin-left:100px">
            <div>
-             执行进度：{{this.feedbacklist[0]==undefined?"":this.feedbacklist[0].executeschedule}}
+             执行进度：{{this.feedbacklist[0]===undefined?"":this.feedbacklist[0].executeschedule}}
            </div>
 
            <div>
@@ -127,11 +127,11 @@
            </div>
 
             <div>
-             备注：{{this.feedbacklist[0]==undefined?"---":this.feedbacklist[0].remark}}
+             备注：{{this.feedbacklist[0]===undefined?"---":this.feedbacklist[0].remark}}
            </div>
         </div>
 <!-- <el-descriptions title="任务详情" :column="1" >
-    <el-descriptions-item label="任务类型">{{this.indexdata.tasktype=this.indexdata.tasktype=="0"?"常规任务":"宣传活动"}}</el-descriptions-item>
+    <el-descriptions-item label="任务类型">{{this.indexdata.tasktype=this.indexdata.tasktype==="0"?"常规任务":"宣传活动"}}</el-descriptions-item>
     <el-descriptions-item label="任务名称">{{this.indexdata.taskname}}</el-descriptions-item>
     <el-descriptions-item label="任务描述">{{this.indexdata.taskdescribe}}</el-descriptions-item>
     <el-descriptions-item label="任务发起人">{{this.indexdata.taskinitiatorname}}</el-descriptions-item>
@@ -150,7 +150,7 @@
     </el-descriptions-item>
 
 
-    <el-descriptions-item label="备注">{{this.feedbacklist[0]==undefined?"---":this.feedbacklist[0].remark}}</el-descriptions-item>
+    <el-descriptions-item label="备注">{{this.feedbacklist[0]===undefined?"---":this.feedbacklist[0].remark}}</el-descriptions-item>
 </el-descriptions> -->
 
 <el-descriptions title="审核结果" ></el-descriptions>
@@ -170,7 +170,7 @@
 
       </div>
     <span slot='footer' class='dialog-footer'>
-      <el-button :disabled="flage" type='primary' v-if="!checkFlage" :plain='true' @click="submitForm('ruleForm')">保 存</el-button>
+      <el-button :disabled="flag" type='primary' v-if="!checkFlage" :plain='true' @click="submitForm('ruleForm')">保 存</el-button>
       <el-button :plain='true' type="primary" @click='onDialogClose1()'>取 消</el-button>
     </span>
   </div>
@@ -180,8 +180,6 @@
 
 <script>
 import BaseUI from "@/views/components/baseUI";
-import OperationIcon from "@/components/OperationIcon";
-import VDistpicker from 'v-distpicker';
 import {inserttask,getusertree,getfeedbacktable,updateaudit} from "@/api/taskmanagement/taskmanagement"
 import UploadFile from '../../components/uploadFile.vue'
 import UploadFile1 from '../../components/uploadFile.vue'
@@ -192,8 +190,6 @@ import { listMyTaskPage, saveMyTask, updateMyTask } from '@/api/myTask/myTask'
     extends: BaseUI,
   name: "taskdetails-form",
   components: {
-    OperationIcon,
-    VDistpicker,
     UploadFile,
     UploadFile1
   },
@@ -234,7 +230,7 @@ import { listMyTaskPage, saveMyTask, updateMyTask } from '@/api/myTask/myTask'
       flags:true,
       flagsfee:true,
       fileIds:[],
-      flages:false,  //防止重复提交
+      flags:false,  //防止重复提交
       uploadFiles:'',
       taskaccessoryid:'',//附件id
       uploadFilesfee:'',
@@ -265,14 +261,14 @@ import { listMyTaskPage, saveMyTask, updateMyTask } from '@/api/myTask/myTask'
 
     submitForm(){
       updateaudit(this.ruleForm).then((responseData)=>{
-        if(responseData.code == 100){
-          if(this.ruleForm.auditresult=='0'){
+        if(responseData.code === 100){
+          if(this.ruleForm.auditresult==='0'){
             this.myTaskId.auditType = "1"
           }else{
             this.myTaskId.auditType = "2"
           }
           updateMyTask(this.myTaskId).then(res=>{
-              if(res.code==100){
+              if(res.code===100){
                 this.ruleForm={
                   id:'',
                   auditresult:0,
@@ -303,11 +299,11 @@ import { listMyTaskPage, saveMyTask, updateMyTask } from '@/api/myTask/myTask'
     },
     // 将base64转换为blob
     dataURLtoBlob: function (dataurl) {
-      var arr = dataurl.split(',')
-      var mime = arr[0].match(/:(.*?);/)[1]
-      var bstr = atob(arr[1])
-      var n = bstr.length
-      var u8arr = new Uint8Array(n)
+      const arr = dataurl.split(',')
+      const mime = arr[0].match(/:(.*?);/)[1]
+      const bstr = atob(arr[1])
+      let n = bstr.length
+      const u8arr = new Uint8Array(n)
       while (n--) {
         u8arr[n] = bstr.charCodeAt(n)
       }
@@ -315,62 +311,50 @@ import { listMyTaskPage, saveMyTask, updateMyTask } from '@/api/myTask/myTask'
     },
     getfileddata(){
       getFiled(this.taskaccessory).then((res) => {
-          console.log(res,'就是看');
          const src = `data:text/plain;base64,${res.base64Str}`;
         // let name = res.name.substring(0,res.name.lastIndexOf("."))
         let name = res.name
         this.fileName=name
         this.bizFormModel.uploadFile = src;
-        console.log(this.fileName, ".......");
         return src;
       });
     },
     getfileddata2(){
       getFiled(this.feedbacklist.fileid).then((res) => {
-          console.log(res,'就是看');
          const src = `data:text/plain;base64,${res.base64Str}`;
         // let name = res.name.substring(0,res.name.lastIndexOf("."))
         let name = res.name
         this.fileName=name
         this.bizFormModel2.uploadFile = src;
-        console.log(this.fileName, ".......");
         return src;
       });
     },
     getFileList(fileList){
-      console.log(fileList,'撒娇发生了警方破案就');
       this.bizFormModel.fileIdFile=[]
       this.bizFormModel.uploadFile=[]
       this.bizFormModel.uploadFile=fileList
-      if(fileList!=null&&fileList!=undefined){
+      if(fileList!=null&&fileList!==undefined){
         for (let i = 0; i < fileList.length; i++) {
        this.bizFormModel.fileIdFile.push(fileList[i].raw)
       }
       }
 
-      console.log(this.bizFormModel.uploadFile,'撒娇发生了警方破案就');
-      console.log(this.bizFormModel.fileIdFile,'按法律框架老咔叽分类');
     },
     getFileListfee(fileList){
-      console.log(fileList,'撒娇发生了警方破案就');
       this.bizFormModel2.fileIdFile=[]
       this.bizFormModel2.uploadFile=[]
       this.bizFormModel2.uploadFile=fileList
 
-      if(fileList!=null&&fileList!=undefined){
+      if(fileList!=null&&fileList!==undefined){
         for (let i = 0; i < fileList.length; i++) {
        this.bizFormModel.fileIdFile.push(fileList[i].raw)
       }
       }
-      console.log(this.bizFormModel2.uploadFile,'撒娇发生了警方破案就');
-      console.log(this.bizFormModel2.fileIdFile,'按法律框架老咔叽分类');
     },
     deleteFile(fileIds){
       this.fileIds.push(fileIds)
-      console.log(this.fileIds,'删除看');
     },
     getFeedbacktableList(row){
-      console.log(row,'获取自豪');
       let search = {
         params: [
           {
@@ -390,10 +374,9 @@ import { listMyTaskPage, saveMyTask, updateMyTask } from '@/api/myTask/myTask'
         order: "", // 排序
       }
       listMyTaskPage(search).then((res)=>{
-        if(res.code==100){
+        if(res.code===100){
 
           this.tableData = res.data.rows
-          console.log(this.tableData,"nishi");
         }
       }).catch((error)=>{
 
@@ -413,7 +396,7 @@ import { listMyTaskPage, saveMyTask, updateMyTask } from '@/api/myTask/myTask'
                 companyId:row.companyId,
                 createdBy:row.createdBy,
                 createdDate:row.createdDate,
-                executeschedule:row.executeschedule == 1 ? "已完成":"进行中",
+                executeschedule:row.executeschedule === 1 ? "已完成":"进行中",
                 fileid:row.fileid,
                 id:row.id,
                 remark:row.remark?row.remark:"",
@@ -445,7 +428,7 @@ import { listMyTaskPage, saveMyTask, updateMyTask } from '@/api/myTask/myTask'
                 companyId:row.companyId,
                 createdBy:row.createdBy,
                 createdTime:row.createdDate,
-                executeschedule:row.executeschedule == 1 ? "已完成":"进行中",
+                executeschedule:row.executeschedule === 1 ? "已完成":"进行中",
                 fileid:row.fileid,
                 id:row.id,
                 remark:row.remark?row.remark:"",
@@ -456,23 +439,17 @@ import { listMyTaskPage, saveMyTask, updateMyTask } from '@/api/myTask/myTask'
         this.uploadFilesfee=this.feedbacklist[0].id
         this.getfileddata2();
         this.mark = "1"
-    }
+    },
+    openAddworkbenchDialog(types) {
+      this.mark = "0"
+      this.getFeedbacktableList(types)
+      this.taskManagementId = types
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = ''
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
    },
-    mounted: function(){
-       this.$nextTick(() => {
-      this.$on('openAddworkbenchDialog', function(types) {
-        this.mark = "0"
-        this.getFeedbacktableList(types)
-        this.taskManagementId = types
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = ''
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-    });
-
-    }
-
   }
   </script>
 

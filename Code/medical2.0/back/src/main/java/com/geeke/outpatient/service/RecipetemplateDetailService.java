@@ -30,7 +30,7 @@ import java.util.List;
  */
  
 @Service
-@Transactional(readOnly = false)
+@Transactional(readOnly = true)
 public class RecipetemplateDetailService extends CrudService<RecipeTemplateDetailDao, RecipeTemplateDetail> {
     protected String createBy;
     protected Date createDate;

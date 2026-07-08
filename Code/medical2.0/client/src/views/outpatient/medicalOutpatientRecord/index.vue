@@ -38,9 +38,9 @@
                           style="line-height: normal"></el-badge>
 							</span>
               <el-scrollbar view-style="height:calc(100vh - 308px);padding-top: 15px;">
-                <div v-for="(item, index) in PreparePatientList" :key="item"
+                <div v-for="(item, index) in PreparePatientList" :key="item.id"
                      @click="clickPreparePatient(item, index)"
-                     :class="{ click: index == backgroundColors }">
+                     :class="{ click: index === backgroundColors }">
                   <p style="
                       font-weight: bold;
                       font-size: 12px;
@@ -113,9 +113,9 @@
               <el-scrollbar view-style="height:calc(100vh - 293px);">
                 <el-collapse v-model="activeSelAlreadyPatientItem" accordion
                              @change="AlreadyPatientDeletilQuery">
-                  <div v-for="(item, index) in AlreadyPatientList" :key="item">
+                  <div v-for="(item, index) in AlreadyPatientList" :key="item.id">
                     <div class="test">
-                      <el-collapse-item :class="{ alreadyMedocal: item.id == clickChangeColor }"
+                      <el-collapse-item :class="{ alreadyMedocal: item.id === clickChangeColor }"
                                         :name="item">
                         <template slot="title">
 													<span style="
@@ -133,7 +133,7 @@
                         </template>
                         <div v-for="(o, num) in AlreadyPatientDescriptions" :key="num"
                              @click="AlreadyPatientDescriptionsQuery(o, num)"
-                             :class="{ clickTest: num == overColor }">
+                             :class="{ clickTest: num === overColor }">
                           <div style="
                               border-top: 1px dashed #dcdfe6;
                               margin: 0px 30px 0 15px;
@@ -238,7 +238,7 @@
           <el-card class="box-card main-card">
             <div slot="header" style="padding: 5px 0px; font-size: 14px; font-weight: bold">
               <span>基础信息</span>
-              <!-- <el-button v-if="isReadOnly==false" style="float: right; padding: 3px 0" type="text">清空</el-button> -->
+              <!-- <el-button v-if="isReadOnly===false" style="float: right; padding: 3px 0" type="text">清空</el-button> -->
             </div>
             <el-form :model="BasicInfoModel" ref="BasicInfoForm" label-width="auto"
                      :rules="BasicInfoFormRules" class="medical-base-form">
@@ -388,7 +388,7 @@
                         <el-checkbox-group v-model="ChooseRecordList">
                           <el-checkbox :disabled="isReadOnly"
                                        v-for="item in MedicineRecordLabelList" :label="item"
-                                       :key="item">{{ item.label }}
+                                       :key="item.name">{{ item.label }}
                           </el-checkbox>
                         </el-checkbox-group>
                       </div>
@@ -552,7 +552,7 @@
 											<el-button type="text" slot="reference"><i
                         class="el-icon-plus el-icon--right"></i>开处方</el-button>
 											<ul class="medical-type-ul">
-												<li v-for="(item, index) in medicalTypeList" :key="item">
+												<li v-for="(item, index) in medicalTypeList" :key="item.type">
 													<el-button @click="addMedicalEditTab(item)" plain size="mini"
                                      style="border: none">{{ item.name }}</el-button>
 												</li>
@@ -560,7 +560,7 @@
 										</el-popover>
 									</span>
                 </el-tab-pane>
-                <el-tab-pane v-for="(item, index) in medicalEditTabs" :key="item" :label="item.title"
+                <el-tab-pane v-for="(item, index) in medicalEditTabs" :key="item.key" :label="item.title"
                              :name="item" :closable="item.closable">
 									<span slot="label">
 										<!-- <el-checkbox :disabled="isReadOnly"></el-checkbox>  -->
@@ -577,8 +577,8 @@
                         <el-select
                           :disabled="
                           isReadOnly ||
-                          item.content.recipelInfo.chargeStatus != 0 ||
-                          item.content.recipelInfo.status == -1
+                          item.content.recipelInfo.chargeStatus !== 0 ||
+                          item.content.recipelInfo.status === -1
                         " v-model="item.content.recipelInfo.smallType" placeholder="请选择处方分类" style="width: 100px">
                           <el-option v-for="smallTypeItem in RecipelSmallTypeList"
                                      :key="smallTypeItem.value" :label="smallTypeItem.name" :value="{
@@ -590,8 +590,8 @@
                       </div>
                       <el-popover placement="top-start" v-if="
                           !isReadOnly &&
-                          item.content.recipelInfo.chargeStatus == 0 &&
-                          item.content.recipelInfo.status != -1
+                          item.content.recipelInfo.chargeStatus === 0 &&
+                          item.content.recipelInfo.status !== -1
                         " width="700" trigger="focus">
                         <el-table :data="WesternMedicineTable" :height="300" border
                                   highlight-current-row @row-click="RowClickWesternTable">
@@ -625,7 +625,7 @@
                           <el-table-column label="拆零价" width="80">
                             <template slot-scope="scope">
                               {{
-                                scope.row.drug.isUnpackSell == 1
+                                scope.row.drug.isUnpackSell === 1
                                   ? (scope.row.drug.retailPrice).toFixed(4) +
                                   "/" +
                                   scope.row.drug.preparationUnit.name
@@ -668,16 +668,16 @@
 
                       <el-checkbox style="margin-left: 20px;" v-model="item.content.recipelInfo.chronicDisease"
                                    :disabled="isReadOnly ||
-                                   item.content.recipelInfo.chargeStatus != 0 ||
-                                   item.content.recipelInfo.status == -1">
+                                   item.content.recipelInfo.chargeStatus !== 0 ||
+                                   item.content.recipelInfo.status === -1">
                         是否慢病{{
                           item.content.recipelInfo.chronicDisease ? "(慢病处方最多可开" + systemParamConfig.chronicDays + "天)" : "(非慢病处方最多可开" + systemParamConfig.normalDays + "天)"
                         }}
                       </el-checkbox>
                       <el-checkbox style="margin-left: 20px;" v-model="item.content.recipelInfo.isPre"
                                    :disabled="isReadOnly ||
-                                   item.content.recipelInfo.chargeStatus != 0 ||
-                                   item.content.recipelInfo.status == -1"
+                                   item.content.recipelInfo.chargeStatus !== 0 ||
+                                   item.content.recipelInfo.status === -1"
                                    @change="DeleteMedicalRow('','',item)"
                       >
                         是否电子处方
@@ -752,8 +752,8 @@
                                         oninput="value=value.replace(/[^\d.]/g,'')"
                                         @input="MedicalCalculate()" :disabled="
                                   isReadOnly ||
-                                  item.content.recipelInfo.chargeStatus != 0 ||
-                                  item.content.recipelInfo.status == -1"
+                                  item.content.recipelInfo.chargeStatus !== 0 ||
+                                  item.content.recipelInfo.status === -1"
                                         style="width: 150px;">
                                 <template slot="append">
                                   <el-dropdown @command="(command) => changeDosageUnit(scope.row, command)">
@@ -776,8 +776,8 @@
                           <template slot-scope="scope">
                             <el-select v-model="scope.row.westernMedicineUse" :disabled="
                                 isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1
+                                item.content.recipelInfo.chargeStatus !== 0 ||
+                                item.content.recipelInfo.status === -1
                               " placeholder="" @change="changeUse(scope.row.westernMedicineUse)">
                               <el-option v-for="item in WesternUseOption"
                                          :key="item.value" :label="item.name"
@@ -790,8 +790,8 @@
                           <template slot-scope="scope">
                             <el-select v-model="scope.row.frequency" :disabled="
                                 isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1
+                                item.content.recipelInfo.chargeStatus !== 0 ||
+                                item.content.recipelInfo.status === -1
                               " @change="MedicalCalculate()" placeholder="">
                               <el-option v-for="item in FrequencyOption" :key="item.value"
                                          :label="item.name" :value="{
@@ -806,13 +806,13 @@
                           <template slot-scope="scope">
                             <el-input-number v-model="scope.row.days.name" :min='0'
                                              :max="item.content.recipelInfo.chronicDisease? systemParamConfig.chronicDays: systemParamConfig.normalDays"
-                                             :disabled="isReadOnly || item.content.recipelInfo.chargeStatus != 0 || item.content.recipelInfo.status == -1"
+                                             :disabled="isReadOnly || item.content.recipelInfo.chargeStatus !== 0 || item.content.recipelInfo.status === -1"
                                              :controls="false" @change="calculateTotalByDays(scope.row)">
                             </el-input-number>
                             <!-- <el-select v-model="scope.row.days" :disabled="
                                 isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1
+                                item.content.recipelInfo.chargeStatus !== 0 ||
+                                item.content.recipelInfo.status === -1
                               " @change="MedicalCalculate()" placeholder="">
                               <el-option v-for="item in DayNumOption" :key="item.value"
                                          :label="item.name"
@@ -823,12 +823,12 @@
                         </el-table-column>
                         <el-table-column v-if="item.content.recipelInfo.isPre" prop="total" label="总量" align="center">
                           <template slot-scope="scope">
-                            <span>{{ scope.row.total }} {{ scope.row.isUnpackSell == 1 ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name }}</span>
+                            <span>{{ scope.row.total }} {{ scope.row.isUnpackSell === 1 ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name }}</span>
                           </template>
                         </el-table-column>
                         <el-table-column v-if="!item.content.recipelInfo.isPre" prop="total" label="总量" align="center">
                           <template slot-scope="scope">
-                            <span>{{ scope.row.total }} {{ scope.row.isUnpackSell == 1 ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name }}</span>
+                            <span>{{ scope.row.total }} {{ scope.row.isUnpackSell === 1 ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name }}</span>
                           </template>
                         </el-table-column>
                         <!-- <el-table-column
@@ -867,8 +867,8 @@
                           <template slot-scope="scope">
                             <el-select v-model="scope.row.isUnpackSell" :disabled="
                                 isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1
+                                item.content.recipelInfo.chargeStatus !== 0 ||
+                                item.content.recipelInfo.status === -1
                               " placeholder="请选择" @change="calculateTotalByDays(scope.row)" style="width: 110px">
                               <el-option :label="
                                   (scope.row.drugStuffId.price).toFixed(4) +
@@ -888,8 +888,8 @@
                         </el-table-column>
                         <el-table-column v-if="
                             !isReadOnly &&
-                            item.content.recipelInfo.chargeStatus == 0 &&
-                            item.content.recipelInfo.status != -1
+                            item.content.recipelInfo.chargeStatus === 0 &&
+                            item.content.recipelInfo.status !== -1
                           " label="操作" align="center" width="80">
                           <template slot-scope="scope">
                             <i class="el-icon-circle-close"
@@ -906,8 +906,8 @@
                       <el-divider content-position="left">处方信息</el-divider>
                       <!--<el-select :disabled="
                           isReadOnly ||
-                          item.content.recipelInfo.chargeStatus != 0 ||
-                          item.content.recipelInfo.status == -1
+                          item.content.recipelInfo.chargeStatus !== 0 ||
+                          item.content.recipelInfo.status === -1
                         " v-model="item.content.recipelInfo.smallType" placeholder="请选择处方分类" style="width: 100px">
                         <el-option v-for="smallTypeItem in RecipelSmallTypeList"
                                    :key="smallTypeItem.value" :label="smallTypeItem.name" :value="{
@@ -920,8 +920,8 @@
                       <el-popover placement="top-start"
                                   v-if="
                           !isReadOnly &&
-                          item.content.recipelInfo.chargeStatus == 0 &&
-                          item.content.recipelInfo.status != -1
+                          item.content.recipelInfo.chargeStatus === 0 &&
+                          item.content.recipelInfo.status !== -1
                         " width="700" trigger="focus">
                         <el-table :data="ChineseMedicineTable" :height="300" border
                                   highlight-current-row @row-click="RowClickChineseTable">
@@ -1018,12 +1018,12 @@
                             <span>{{ citem.drugStuffId.name }}</span>
                             <el-button v-if="
                                 !isReadOnly &&
-                                item.content.recipelInfo.chargeStatus == 0 &&
-                                item.content.recipelInfo.status != -1
+                                item.content.recipelInfo.chargeStatus === 0 &&
+                                item.content.recipelInfo.status !== -1
                               " :disabled="
                                 isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1
+                                item.content.recipelInfo.chargeStatus !== 0 ||
+                                item.content.recipelInfo.status === -1
                               " @click="DeleteMedicalRow(index, citem, item)" icon="el-icon-close"
                                        style="float: right; padding: 3px 0" type="text">
                             </el-button>
@@ -1032,8 +1032,8 @@
                             <el-input
                               :disabled="
                                 isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1
+                                item.content.recipelInfo.chargeStatus !== 0 ||
+                                item.content.recipelInfo.status === -1
                               " placeholder="数量" size="mini" ref='herbMedicine'
                                       oninput="value=value.replace(/[^\d.]/g,'')" @input="
                                 changeSingleDosage(
@@ -1051,8 +1051,8 @@
                             </el-input>
                             <el-select :disabled="
                                 isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1
+                                item.content.recipelInfo.chargeStatus !== 0 ||
+                                item.content.recipelInfo.status === -1
                               " size="mini" v-model="citem.chineseMedicineUse" placeholder="" style="width: 105px">
                               <el-option v-for="oitem in ChineseUseTimeOption"
                                          :key="oitem.value" :label="oitem.name" :value="{
@@ -1068,8 +1068,8 @@
                     <el-row>
                       <el-input :disabled="
                           isReadOnly ||
-                          item.content.recipelInfo.chargeStatus != 0 ||
-                          item.content.recipelInfo.status == -1
+                          item.content.recipelInfo.chargeStatus !== 0 ||
+                          item.content.recipelInfo.status === -1
                         " v-model="item.content.recipelInfo.dosage" oninput="value=value.replace(/[^\d.]/g,'')"
                                 @input="MedicalCalculate()"  id ='dosageInput' style="width: 60px"
                        @keydown.enter.native="focusNextInput('')"
@@ -1079,8 +1079,8 @@
                       <el-select
                          :disabled="
                           isReadOnly ||
-                          item.content.recipelInfo.chargeStatus != 0 ||
-                          item.content.recipelInfo.status == -1
+                          item.content.recipelInfo.chargeStatus !== 0 ||
+                          item.content.recipelInfo.status === -1
                         " v-model="item.content.recipelInfo.recipelUse" placeholder="请选择" style="width: 110px"
                                  @change="exchage"
                       >
@@ -1092,8 +1092,8 @@
                       <el-select
                           :disabled="
                           isReadOnly ||
-                          item.content.recipelInfo.chargeStatus != 0 ||
-                          item.content.recipelInfo.status == -1
+                          item.content.recipelInfo.chargeStatus !== 0 ||
+                          item.content.recipelInfo.status === -1
                         " v-model="item.content.recipelInfo.frequency" placeholder="请选择" style="width: 110px"
                                  @change="exchage">
                         <el-option v-for="pitem in ChineseTimeOption" :key="pitem.value"
@@ -1104,8 +1104,8 @@
                       <el-select
                           :disabled="
                           isReadOnly ||
-                          item.content.recipelInfo.chargeStatus != 0 ||
-                          item.content.recipelInfo.status == -1
+                          item.content.recipelInfo.chargeStatus !== 0 ||
+                          item.content.recipelInfo.status === -1
                         " v-model="item.content.recipelInfo.takeFrequency" placeholder="请选择" style="width: 110px"
                                  @change="exchage">
                         <el-option v-for="pitem in JSON.parse(
@@ -1122,8 +1122,8 @@
                            @keydown.enter.native='focusNextInput("fj")'
                            :disabled="
                           isReadOnly ||
-                          item.content.recipelInfo.chargeStatus != 0 ||
-                          item.content.recipelInfo.status == -1
+                          item.content.recipelInfo.chargeStatus !== 0 ||
+                          item.content.recipelInfo.status === -1
                         " v-model="item.content.recipelInfo.singleDosage" style="width: 60px">
                       </el-input>&nbsp;
                       <span
@@ -1135,8 +1135,8 @@
                         }}元</span>
                       <el-input :disabled="
                           isReadOnly ||
-                          item.content.recipelInfo.chargeStatus!= 0 ||
-                          item.content.recipelInfo.status == -1
+                          item.content.recipelInfo.chargeStatus!== 0 ||
+                          item.content.recipelInfo.status === -1
                         " v-model="item.content.recipelInfo.chinessNotes" placeholder="输入备注选项"
                                 style="margin-top:10px"></el-input>
                     </el-row>
@@ -1149,8 +1149,8 @@
 
                         <el-select :disabled="
                             isReadOnly ||
-                            item.content.recipelInfo.chargeStatus != 0 ||
-                            item.content.recipelInfo.status == -1
+                            item.content.recipelInfo.chargeStatus !== 0 ||
+                            item.content.recipelInfo.status === -1
                           " v-model="item.content.recipelInfo.smallType" placeholder="请选择处方分类" style="width: 100px">
                           <el-option v-for="smallTypeItem in RecipelSmallTypeList"
                                      :key="smallTypeItem.value" :label="smallTypeItem.name" :value="{
@@ -1162,14 +1162,14 @@
 
                         <el-button v-if="
                             !isReadOnly &&
-                            item.content.recipelInfo.chargeStatus == 0 &&
-                            item.content.recipelInfo.status != -1
+                            item.content.recipelInfo.chargeStatus === 0 &&
+                            item.content.recipelInfo.status !== -1
                           " @click="addGroup(item)" type="primary" plain>加一组
                         </el-button>
                         <!-- <button v-if="
                             !isReadOnly &&
-                            item.content.recipelInfo.chargeStatus == 0 &&
-                            item.content.recipelInfo.status != -1
+                            item.content.recipelInfo.chargeStatus === 0 &&
+                            item.content.recipelInfo.status !== -1
                           " @click="minusGroup(item)">减一组</button> -->
                         <el-button type="primary" v-if="!isReadOnly" style="float: right" plain
                                    @click="historyRecipel(item.type, index)">历史处方
@@ -1196,8 +1196,8 @@
                           <div>
                             <el-popover placement="top-start" v-if="
                                 !isReadOnly &&
-                                item.content.recipelInfo.chargeStatus == 0 &&
-                                item.content.recipelInfo.status != -1
+                                item.content.recipelInfo.chargeStatus === 0 &&
+                                item.content.recipelInfo.status !== -1
                               " width="700" trigger="focus">
                               <el-table :data="InfusionTable" :height="300" border
                                         highlight-current-row @row-click="
@@ -1234,7 +1234,7 @@
                                 <el-table-column label="拆零价" width="80">
                                   <template slot-scope="scope">
                                     {{
-                                      scope.row.drug.isUnpackSell == 1
+                                      scope.row.drug.isUnpackSell === 1
                                         ? (scope.row.drug.retailPrice).toFixed(4) +
                                         "/" +
                                         scope.row.drug.preparationUnit.name
@@ -1287,8 +1287,8 @@
                             <el-button style="float: right" type="primary" plain
                                        icon="el-icon-delete" circle v-if="
                                 !isReadOnly &&
-                                item.content.recipelInfo.chargeStatus == 0 &&
-                                item.content.recipelInfo.status != -1
+                                item.content.recipelInfo.chargeStatus === 0 &&
+                                item.content.recipelInfo.status !== -1
                               " @click="minusGroup(item, index)"></el-button>
                             <span style="
                                 float: right;
@@ -1307,8 +1307,8 @@
                                       v-model="item.infusion.drippingSpeed[index]"
                                       placeholder="请选择滴速" :disabled="
                                 isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1
+                                item.content.recipelInfo.chargeStatus !== 0 ||
+                                item.content.recipelInfo.status === -1
                               ">
                             </el-input>
 
@@ -1320,15 +1320,15 @@
                               ">&nbsp;&nbsp;天&nbsp;&nbsp;</span>
 
                             <el-input-number v-model="item.infusion.days[index].name" style="float: right; width: 10%"
-                                             :disabled="isReadOnly || item.content.recipelInfo.chargeStatus != 0 || item.content.recipelInfo.status == -1"
+                                             :disabled="isReadOnly || item.content.recipelInfo.chargeStatus !== 0 || item.content.recipelInfo.status === -1"
                                              @change="MedicalCalculate()" :controls="false" placeholder="请选择天数">
                             </el-input-number>
 
                             <!-- <el-select style="float: right; width: 10%"
                                        v-model="item.infusion.days[index]" :disabled="
                                 isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1
+                                item.content.recipelInfo.chargeStatus !== 0 ||
+                                item.content.recipelInfo.status === -1
                               " @change="MedicalCalculate()" placeholder="请选择天数">
                               <el-option v-for="item in DayNumOption" :key="item.value"
                                          :label="item.name"
@@ -1345,8 +1345,8 @@
                             <el-select style="float: right; width: 10%"
                                        v-model="item.infusion.frequency[index]" :disabled="
                                 isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1
+                                item.content.recipelInfo.chargeStatus !== 0 ||
+                                item.content.recipelInfo.status === -1
                               " @change="MedicalCalculate()" placeholder="请选择频次">
                               <el-option v-for="item in FrequencyOption" :key="item.value"
                                          :label="item.name" :value="{
@@ -1366,8 +1366,8 @@
                             <el-select style="float: right; width: 10%"
                                        v-model="item.infusion.infuseUse[index]" :disabled="
                                 isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1
+                                item.content.recipelInfo.chargeStatus !== 0 ||
+                                item.content.recipelInfo.status === -1
                               " placeholder="请选择用法">
                               <el-option v-for="item in infuseUseOption" :key="item.value"
                                          :label="item.name"
@@ -1414,9 +1414,9 @@
                               <template slot-scope="scope">
                                 <el-select v-model="scope.row.skinTest" :disabled="
                                     isReadOnly ||
-                                    item.content.recipelInfo.chargeStatus !=
+                                    item.content.recipelInfo.chargeStatus !==
                                       0 ||
-                                    item.content.recipelInfo.status == -1
+                                    item.content.recipelInfo.status === -1
                                   " placeholder="">
                                   <el-option v-for="item in InfusionOption"
                                              :key="item.value" :label="item.name" :value="{
@@ -1435,9 +1435,9 @@
                                           oninput="value=value.replace(/[^\d.]/g,'')"
                                           @input="MedicalCalculate()" :disabled="
                                     isReadOnly ||
-                                    item.content.recipelInfo.chargeStatus !=
+                                    item.content.recipelInfo.chargeStatus !==
                                       0 ||
-                                    item.content.recipelInfo.status == -1
+                                    item.content.recipelInfo.status === -1
                                   ">
                                   <template slot="append">{{
                                       scope.row.drugStuffId.dosisUnit.name
@@ -1458,8 +1458,8 @@
 
                               :disabled="
                                 isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1
+                                item.content.recipelInfo.chargeStatus !== 0 ||
+                                item.content.recipelInfo.status === -1
                               "
                             >
 
@@ -1480,8 +1480,8 @@
                               v-model="scope.row.infuseUse"
                               :disabled="
                                 isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1
+                                item.content.recipelInfo.chargeStatus !== 0 ||
+                                item.content.recipelInfo.status === -1
                               "
                               placeholder=""
                             >
@@ -1506,8 +1506,8 @@
                               v-model="scope.row.frequency"
                               :disabled="
                                 isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1
+                                item.content.recipelInfo.chargeStatus !== 0 ||
+                                item.content.recipelInfo.status === -1
                               "
                               @change="MedicalCalculate()"
                               placeholder=""
@@ -1533,8 +1533,8 @@
                               v-model="scope.row.days"
                               :disabled="
                                 isReadOnly ||
-                                item.content.recipelInfo.chargeStatus != 0 ||
-                                item.content.recipelInfo.status == -1
+                                item.content.recipelInfo.chargeStatus !== 0 ||
+                                item.content.recipelInfo.status === -1
                               "
                               @change="MedicalCalculate()"
                               placeholder=""
@@ -1551,7 +1551,7 @@
                         </el-table-column> -->
                             <el-table-column prop="total" label="总量" align="center">
                               <template slot-scope="scope">
-                                <span>{{ scope.row.total }} {{ scope.row.isUnpackSell == 1 ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name }}</span>
+                                <span>{{ scope.row.total }} {{ scope.row.isUnpackSell === 1 ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name }}</span>
                               </template>
                             </el-table-column>
                             <el-table-column prop="isUnpackSell" label="单价"
@@ -1559,9 +1559,9 @@
                               <template slot-scope="scope">
                                 <el-select v-model="scope.row.isUnpackSell" :disabled="
                                     isReadOnly ||
-                                    item.content.recipelInfo.chargeStatus !=
+                                    item.content.recipelInfo.chargeStatus !==
                                       0 ||
-                                    item.content.recipelInfo.status == -1
+                                    item.content.recipelInfo.status === -1
                                   " placeholder="请选择" @change="MedicalCalculate()" style="width: 100%">
                                   <el-option :label="
                                       (scope.row.drugStuffId.price).toFixed(4) +
@@ -1580,8 +1580,8 @@
                                              align="center"></el-table-column>
                             <el-table-column v-if="
                                 !isReadOnly &&
-                                item.content.recipelInfo.chargeStatus == 0 &&
-                                item.content.recipelInfo.status != -1
+                                item.content.recipelInfo.chargeStatus === 0 &&
+                                item.content.recipelInfo.status !== -1
                               " label="操作" align="center" width="50">
                               <template slot-scope="scope">
                                 <i class="el-icon-circle-close" @click="
@@ -1600,8 +1600,8 @@
                       <el-divider content-position="left">处方信息</el-divider>
                       <el-popover placement="top-start" v-if="
                           !isReadOnly &&
-                          item.content.recipelInfo.chargeStatus == 0 &&
-                          item.content.recipelInfo.status != -1
+                          item.content.recipelInfo.chargeStatus === 0 &&
+                          item.content.recipelInfo.status !== -1
                         " width="540" trigger="focus">
                         <el-table :data="TreatmentTable" :height="300" border
                                   highlight-current-row @row-click="RowClickTreatmentTable">
@@ -1667,7 +1667,7 @@
                         </el-table-column>
                         <el-table-column prop="total" label="数量" align="center">
                           <template slot-scope="scope">
-                            {{ scope.row.total }} {{ scope.row.isUnpackSell == 1 ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name }}
+                            {{ scope.row.total }} {{ scope.row.isUnpackSell === 1 ? scope.row.drugStuffId.preparationUnit.name : scope.row.drugStuffId.pack.name }}
                           </template>
                         </el-table-column>
                         <el-table-column label="单价" align="center">
@@ -1681,17 +1681,17 @@
                         </el-table-column>
                         <el-table-column v-if="
                             !isReadOnly &&
-                            item.content.recipelInfo.chargeStatus == 0 &&
-                            item.content.recipelInfo.status != -1
+                            item.content.recipelInfo.chargeStatus === 0 &&
+                            item.content.recipelInfo.status !== -1
                           " label="操作" align="center" width="50">
                           <template slot-scope="scope">
                             <i class="el-icon-circle-close"
                                @click="DeleteMedicalRow(scope.$index, scope.row)"></i>
                           </template>
                         </el-table-column>
-                        <el-table-column v-else-if="inspectionSign == 1" label="操作" align="center" width="80">
+                        <el-table-column v-else-if="inspectionSign === 1" label="操作" align="center" width="80">
                           <template slot-scope="scope">
-                            <div v-if="inspectionType[scope.$index] == 1">
+                            <div v-if="inspectionType[scope.$index] === 1">
                               <el-button @click="lookInspection(scope.row.drugStuffId)"
                                          type="text">查看
                               </el-button>
@@ -1710,8 +1710,8 @@
                       <el-popover
                           placement="top-start" width="550" trigger="focus" v-if="
                           !isReadOnly &&
-                          item.content.recipelInfo.chargeStatus == 0 &&
-                          item.content.recipelInfo.status != -1
+                          item.content.recipelInfo.chargeStatus === 0 &&
+                          item.content.recipelInfo.status !== -1
                         ">
                         <el-table :data="SurchargeTable" :max-height="300" border
                                   highlight-current-row @row-click="RowClickSurchargeTable">
@@ -1750,7 +1750,7 @@
                             <template slot-scope="scope">
                               {{
                                 scope.row.stuffType === "4" &&
-                                scope.row.stuff.isUnpackSell == 1
+                                scope.row.stuff.isUnpackSell === 1
                                   ? scope.row.stuff.retailPrice +
                                   "/" +
                                   scope.row.stuff.minUnit.name
@@ -1793,7 +1793,7 @@
                         </el-input>
                       </el-popover>
                     </el-row>
-                    <div v-if="item.type != 'recipelType_2'">
+                    <div v-if="item.type !== 'recipelType_2'">
                       <el-row>
                         <el-table :data="
                             getDataFilterTable(
@@ -1826,7 +1826,7 @@
 															</span>
                               <span v-if="scope.row.stuffType === '4'">
 																{{
-                                  scope.row.isUnpackSell == 0
+                                  scope.row.isUnpackSell === 0
                                     ? (scope.row.drugStuffId.price).toFixed(4) +
                                     "/" +
                                     scope.row.drugStuffId.pack.name
@@ -1841,21 +1841,21 @@
                             <template slot-scope="scope">
                               <el-input :disabled="
                                   isReadOnly ||
-                                  item.content.recipelInfo.chargeStatus != 0 ||
-                                  item.content.recipelInfo.status == -1
+                                  item.content.recipelInfo.chargeStatus !== 0 ||
+                                  item.content.recipelInfo.status === -1
                                 " ref="additionalCharge" v-model="scope.row.singleDosage" @input="MedicalCalculate()"
                                         style="width: 60px">
                               </el-input>
                               <el-select :disabled="
                                   isReadOnly ||
-                                  item.content.recipelInfo.chargeStatus != 0 ||
-                                  item.content.recipelInfo.status == -1
+                                  item.content.recipelInfo.chargeStatus !== 0 ||
+                                  item.content.recipelInfo.status === -1
                                 " v-model="scope.row.isUnpackSell" @change="handleUnpackSellChange(scope.row, scope.row.isUnpackSell === 1 ? 0 : 1)" placeholder="请选择"
                                          style="width: 80px">
                                 <el-option :label="scope.row.drugStuffId.pack.name"
                                            :value="0"></el-option>
                                 <el-option
-                                  v-if="scope.row.drugStuffId.isUnpackSell == 1"
+                                  v-if="scope.row.drugStuffId.isUnpackSell === 1"
                                   :label="
                                     scope.row.drugStuffId.preparationUnit.name
                                   " :value="1"></el-option>
@@ -1866,8 +1866,8 @@
                           </el-table-column>
                           <el-table-column v-if="
                               !isReadOnly &&
-                              item.content.recipelInfo.chargeStatus == 0 &&
-                              item.content.recipelInfo.status != -1
+                              item.content.recipelInfo.chargeStatus === 0 &&
+                              item.content.recipelInfo.status !== -1
                             " label="操作" width="80" align="center">
                             <template slot-scope="scope">
                               <i class="el-icon-circle-close" @click="
@@ -1907,7 +1907,7 @@
 															</span>
                               <span v-if="scope.row.stuffType === '4'">
 																{{
-                                  scope.row.isUnpackSell == 0
+                                  scope.row.isUnpackSell === 0
                                     ? (scope.row.drugStuffId.price).toFixed(4) +
                                     "/" +
                                     scope.row.drugStuffId.pack.name
@@ -1922,21 +1922,21 @@
                             <template slot-scope="scope">
                               <el-input :disabled="
                                   isReadOnly ||
-                                  item.content.recipelInfo.chargeStatus != 0 ||
-                                  item.content.recipelInfo.status == -1
+                                  item.content.recipelInfo.chargeStatus !== 0 ||
+                                  item.content.recipelInfo.status === -1
                                 " ref="additionalCharge" v-model="scope.row.singleDosage" @input="MedicalCalculate()"
                                         style="width: 60px">
                               </el-input>
                               <el-select :disabled="
                                   isReadOnly ||
-                                  item.content.recipelInfo.chargeStatus != 0 ||
-                                  item.content.recipelInfo.status == -1
+                                  item.content.recipelInfo.chargeStatus !== 0 ||
+                                  item.content.recipelInfo.status === -1
                                 " v-model="scope.row.isUnpackSell" @change="handleUnpackSellChange(scope.row, scope.row.isUnpackSell === 1 ? 0 : 1)" placeholder="请选择"
                                          style="width: 80px">
                                 <el-option :label="scope.row.drugStuffId.pack.name"
                                            :value="0"></el-option>
                                 <el-option
-                                  v-if="scope.row.drugStuffId.isUnpackSell == 1"
+                                  v-if="scope.row.drugStuffId.isUnpackSell === 1"
                                   :label="
                                     scope.row.drugStuffId.preparationUnit.name
                                   " :value="1"></el-option>
@@ -1947,8 +1947,8 @@
                           </el-table-column>
                           <el-table-column v-if="
                               !isReadOnly &&
-                              item.content.recipelInfo.chargeStatus == 0 &&
-                              item.content.recipelInfo.status != -1
+                              item.content.recipelInfo.chargeStatus === 0 &&
+                              item.content.recipelInfo.status !== -1
                             " label="操作" width="80" align="center">
                             <template slot-scope="scope">
                               <i class="el-icon-circle-close" @click="
@@ -1964,8 +1964,8 @@
                       <el-input type="textarea" :rows="4" placeholder="请输入医嘱事项"
                                 v-model="item.content.recipelInfo.entrust" :disabled="
                           isReadOnly ||
-                          item.content.recipelInfo.chargeStatus != 0 ||
-                          item.content.recipelInfo.status == -1
+                          item.content.recipelInfo.chargeStatus !== 0 ||
+                          item.content.recipelInfo.status === -1
                         ">
                       </el-input>
                     </el-row>
@@ -1982,15 +1982,15 @@
         <div style="float: right">
           <el-button type="primary" plain v-if="
               medicalEditTabsValue.content &&
-              medicalEditTabsValue.content.recipelInfo.status == 1 &&
-              medicalEditTabsValue.content.recipelInfo.chargeStatus == 0 &&
-              TodayActiveName == 'already'
+              medicalEditTabsValue.content.recipelInfo.status === 1 &&
+              medicalEditTabsValue.content.recipelInfo.chargeStatus === 0 &&
+              TodayActiveName === 'already'
             " @click="invalidMedical">作废
           </el-button>
-          <el-button :type="timeOut ? 'info' : 'primary'" v-if="isReadOnly && TodayActiveName == 'already'"
+          <el-button :type="timeOut ? 'info' : 'primary'" v-if="isReadOnly && TodayActiveName === 'already'"
                      @click="edit">编辑
           </el-button>
-          <el-button type="primary" v-if="!isReadOnly && TodayActiveName == 'already'" @click="save(2)">保存
+          <el-button type="primary" v-if="!isReadOnly && TodayActiveName === 'already'" @click="save(2)">保存
           </el-button>
           <el-button type="primary" v-if="hasBtnPrint" @click="print">打印</el-button>
           <el-button v-show="hasBtnFinishVisit" type="primary" @click="save(1)">完成接诊</el-button>
@@ -2036,13 +2036,13 @@
         <el-table-column type="expand">
           <template slot-scope="props">
             <!-- 西药处方 -->
-            <div class="two" v-if="props.row.recipelType.value == 'recipelType_0'">
+            <div class="two" v-if="props.row.recipelType.value === 'recipelType_0'">
               <el-table :data="filterRecipel(props.row.recipelDetail)" style="width: 100%"
                         header-cell-style="{
       background:'#e2d2d2'}">
                 <el-table-column label="序号" type="index" align="center">
                   <template slot-scope="scope">
-										<span v-if="scope.row.isExtra == 0">
+										<span v-if="scope.row.isExtra === 0">
 											{{ scope.$index + 1 }}
 										</span>
                   </template>
@@ -2050,7 +2050,7 @@
                 <el-table-column prop="drugStuffId.name" label="药品信息" width="width">
                   <template slot-scope="scope">
 										<span v-if="
-                        scope.row.isExtra == 0 && scope.row.stuffType == '0'
+                        scope.row.isExtra === 0 && scope.row.stuffType === '0'
                       ">
 											{{ scope.row.drugStuffId.name }}
 										</span>
@@ -2059,20 +2059,20 @@
                 <el-table-column prop="unitPrice" label="单价" width="120">
                   <template slot-scope="scope">
 										<span v-if="
-                        (scope.row.isExtra == 0 &&
-                          scope.row.isUnpackSell == 0 &&
-                          scope.row.stuffType == '0') ||
-                        scope.row.stuffType == '2'
+                        (scope.row.isExtra === 0 &&
+                          scope.row.isUnpackSell === 0 &&
+                          scope.row.stuffType === '0') ||
+                        scope.row.stuffType === '2'
                       ">
 											{{ (scope.row.unitPrice).toFixed(4) }}/{{
                         scope.row.drugStuffId.drug.pack.name
                       }}
 										</span>
                     <span v-else-if="
-                        (scope.row.isExtra == 0 &&
-                          scope.row.isUnpackSell == 1 &&
-                          scope.row.stuffType == '0') ||
-                        scope.row.stuffType == '2'
+                        (scope.row.isExtra === 0 &&
+                          scope.row.isUnpackSell === 1 &&
+                          scope.row.stuffType === '0') ||
+                        scope.row.stuffType === '2'
                       ">
 											{{ (scope.row.unitPrice).toFixed(4) }}/{{
                         scope.row.drugStuffId.drug.preparationUnit.name
@@ -2082,7 +2082,7 @@
                 </el-table-column>
                 <el-table-column prop="singleDosage" label="单次用量" width="width">
                   <template slot-scope="scope">
-                    <template v-if="scope.row.isExtra == 0">{{
+                    <template v-if="scope.row.isExtra === 0">{{
                         scope.row.singleDosage +
                         "" +
                         scope.row.drugStuffId.preparationUnit.name
@@ -2093,8 +2093,8 @@
                 <el-table-column prop="westernMedicineUse.name" label="用法" width="width">
                   <template slot-scope="scope">
 										<span v-if="
-                        scope.row.westernMedicineUse != undefined &&
-                        scope.row.isExtra == 0
+                        scope.row.westernMedicineUse !== undefined &&
+                        scope.row.isExtra === 0
                       ">
 											{{ scope.row.westernMedicineUse.name }}
 										</span>
@@ -2102,7 +2102,7 @@
                 </el-table-column>
                 <el-table-column prop="frequency.name" label="频次" width="width">
                   <template slot-scope="scope">
-										<span v-if="scope.row.isExtra == 0">
+										<span v-if="scope.row.isExtra === 0">
 											{{ scope.row.frequency.name }}
 										</span>
                   </template>
@@ -2115,15 +2115,15 @@
                     </el-table-column> -->
                 <el-table-column prop="days.name" label="天数" width="width">
                   <template slot-scope="scope">
-                    <template v-if="scope.row.isExtra == 0">{{ scope.row.days.name }}天</template>
+                    <template v-if="scope.row.isExtra === 0">{{ scope.row.days.name }}天</template>
                   </template>
                 </el-table-column>
                 <el-table-column prop="total" label="总量" width="width">
                   <template slot-scope="scope">
                     <template v-if="
-                        scope.row.isExtra == 0 &&
-                        scope.row.stuffType != '4' &&
-                        scope.row.stuffType != '3'
+                        scope.row.isExtra === 0 &&
+                        scope.row.stuffType !== '4' &&
+                        scope.row.stuffType !== '3'
                       ">
                       {{
                         Math.floor(
@@ -2181,7 +2181,7 @@
                       <template slot-scope="scope">
                       <span
                         >{{ scope.row.unitPrice }}元/{{
-                          scope.row.isUnpackSell == 1
+                          scope.row.isUnpackSell === 1
                             ? scope.row.drugStuffId.preparationUnit.name
                             : scope.row.drugStuffId.pack.name
                         }}</span
@@ -2251,7 +2251,7 @@
             </div>
 
             <!-- 中药处方 -->
-            <div class="two" v-else-if="props.row.recipelType.value == 'recipelType_1'">
+            <div class="two" v-else-if="props.row.recipelType.value === 'recipelType_1'">
               <el-table :data="filterRecipel(props.row.recipelDetail)" style="width: 100%">
                 <el-table-column label="序号" type="index" align="center">
                 </el-table-column>
@@ -2260,16 +2260,16 @@
                 <el-table-column prop="unitPrice" label="单价" width="120">
                   <template slot-scope="scope">
 										<span v-if="
-                        scope.row.isUnpackSell == 0 &&
-                        scope.row.stuffType == '1'
+                        scope.row.isUnpackSell === 0 &&
+                        scope.row.stuffType === '1'
                       ">
 											{{ (scope.row.unitPrice).toFixed(4) }}/{{
                         scope.row.drugStuffId.drug.pack.name
                       }}
 										</span>
                     <span v-else-if="
-                        scope.row.isUnpackSell == 1 &&
-                        scope.row.stuffType == '1'
+                        scope.row.isUnpackSell === 1 &&
+                        scope.row.stuffType === '1'
                       ">
 											{{ (scope.row.unitPrice).toFixed(4) }}/{{
                         scope.row.drugStuffId.drug.preparationUnit.name
@@ -2279,7 +2279,7 @@
                 </el-table-column>
                 <el-table-column prop="singleDosage" label="单次用量" width="width">
                   <template slot-scope="scope">
-                    <template v-if="scope.row.stuffType == '1'">{{
+                    <template v-if="scope.row.stuffType === '1'">{{
                         scope.row.singleDosage +
                         "" +
                         scope.row.drugStuffId.preparationUnit.name
@@ -2289,7 +2289,7 @@
                 </el-table-column>
                 <el-table-column prop="chineseMedicineUse.name" label="用法" width="width">
                   <template slot-scope="scope">
-                    <template v-if="scope.row.stuffType == '1'">{{
+                    <template v-if="scope.row.stuffType === '1'">{{
                         scope.row.chineseMedicineUse.name
                       }}
                     </template>
@@ -2303,7 +2303,7 @@
                     </el-table-column> -->
                 <el-table-column prop="total" label="总量" width="width">
                   <template slot-scope="scope">
-                    <template v-if="scope.row.stuffType == '1'">
+                    <template v-if="scope.row.stuffType === '1'">
                       {{
                         Math.floor(
                           scope.row.total /
@@ -2375,7 +2375,7 @@
                       <template slot-scope="scope">
                       <span
                         >{{ scope.row.unitPrice }}元/{{
-                          scope.row.isUnpackSell == 1
+                          scope.row.isUnpackSell === 1
                             ? scope.row.drugStuffId.preparationUnit.name
                             : scope.row.drugStuffId.pack.name
                         }}</span
@@ -2446,7 +2446,7 @@
 
             <!-- 输液处方 -->
             <div class="two" style="border: 1px solid #dcdcdc"
-                 v-else-if="props.row.recipelType.value == 'recipelType_2'">
+                 v-else-if="props.row.recipelType.value === 'recipelType_2'">
               <div v-for="(items, index) in getInfuSion(props.row.recipelDetail)
                   .zushu" :key="index" style="border: 1px solid #dcdcdc; padding: 10px; margin: 10px">
                 <div>
@@ -2516,7 +2516,7 @@
                   <el-table-column prop="unitPrice" label="单价" width="120">
                     <template slot-scope="scope">
 											<span>{{ (scope.row.unitPrice).toFixed(4) }}元/{{
-                          scope.row.isUnpackSell == 1
+                          scope.row.isUnpackSell === 1
                             ? scope.row.drugStuffId.preparationUnit.name
                             : scope.row.drugStuffId.pack.name
                         }}</span>
@@ -2597,7 +2597,7 @@
             </div>
             <!-- 诊疗项目 -->
 
-            <div class="two" v-else-if="props.row.recipelType.value == 'recipelType_3'">
+            <div class="two" v-else-if="props.row.recipelType.value === 'recipelType_3'">
               <el-table :data="filterRecipel(props.row.recipelDetail)" style="width: 100%">
                 <el-table-column type="index" label="序号" width="50" align="center"></el-table-column>
                 <el-table-column prop="drugStuffId.name" label="项目名称" align="center"></el-table-column>
@@ -2646,7 +2646,7 @@
                 <el-table-column prop="unitPrice" label="单价" width="120">
                   <template slot-scope="scope">
 										<span>{{ (scope.row.unitPrice).toFixed(4) }}元/{{
-                        scope.row.isUnpackSell == 1
+                        scope.row.isUnpackSell === 1
                           ? scope.row.drugStuffId.preparationUnit.name
                           : scope.row.drugStuffId.pack.name
                       }}</span>
@@ -2928,13 +2928,13 @@
         <el-table-column type="expand">
           <template slot-scope="props">
             <!-- 西药处方 -->
-            <div class="two" v-if="props.row.type.value == 'recipelType_0'">
+            <div class="two" v-if="props.row.type.value === 'recipelType_0'">
               <el-table :data="filterRecipel(props.row.recipeTemplateDetail)" style="width: 100%"
                         header-cell-style="{
       background:'#e2d2d2'}">
                 <el-table-column label="序号" type="index" align="center">
                   <template slot-scope="scope">
-										<span v-if="scope.row.isExtra == 0">
+										<span v-if="scope.row.isExtra === 0">
 											{{ scope.$index + 1 }}
 										</span>
                   </template>
@@ -2942,7 +2942,7 @@
                 <el-table-column prop="drugStuffId.name" label="药品信息" width="width">
                   <template slot-scope="scope">
 										<span v-if="
-                        scope.row.isExtra == 0 && scope.row.stuffType == '0'
+                        scope.row.isExtra === 0 && scope.row.stuffType === '0'
                       ">
 											{{ scope.row.drugStuffId.name }}
 										</span>
@@ -2951,20 +2951,20 @@
                 <el-table-column prop="unitPrice" label="单价" width="120">
                   <template slot-scope="scope">
 										<span v-if="
-                        (scope.row.isExtra == 0 &&
-                          scope.row.isUnpackSell == 0 &&
-                          scope.row.stuffType == '0') ||
-                        scope.row.stuffType == '2'
+                        (scope.row.isExtra === 0 &&
+                          scope.row.isUnpackSell === 0 &&
+                          scope.row.stuffType === '0') ||
+                        scope.row.stuffType === '2'
                       ">
 											{{ (scope.row.unitPrice).toFixed(4) }}/{{
                         scope.row.drugStuffId.drug.pack.name
                       }}
 										</span>
                     <span v-else-if="
-                        (scope.row.isExtra == 0 &&
-                          scope.row.isUnpackSell == 1 &&
-                          scope.row.stuffType == '0') ||
-                        scope.row.stuffType == '2'
+                        (scope.row.isExtra === 0 &&
+                          scope.row.isUnpackSell === 1 &&
+                          scope.row.stuffType === '0') ||
+                        scope.row.stuffType === '2'
                       ">
 											{{ (scope.row.unitPrice).toFixed(4) }}/{{
                         scope.row.drugStuffId.drug.preparationUnit.name
@@ -2974,7 +2974,7 @@
                 </el-table-column>
                 <el-table-column prop="singleDosage" label="单次用量" width="width">
                   <template slot-scope="scope">
-                    <template v-if="scope.row.isExtra == 0">{{
+                    <template v-if="scope.row.isExtra === 0">{{
                         scope.row.singleDosage
                           ? scope.row.singleDosage
                           : 0 + "" + scope.row.drugStuffId.preparationUnit.name
@@ -2985,8 +2985,8 @@
                 <el-table-column prop="westernMedicineUse.name" label="用法" width="width">
                   <template slot-scope="scope">
 										<span v-if="
-                        scope.row.westernMedicineUse != undefined &&
-                        scope.row.isExtra == 0
+                        scope.row.westernMedicineUse !== undefined &&
+                        scope.row.isExtra === 0
                       ">
 											{{ scope.row.westernMedicineUse.name }}
 										</span>
@@ -2994,7 +2994,7 @@
                 </el-table-column>
                 <el-table-column prop="frequency.name" label="频次" width="width">
                   <template slot-scope="scope">
-										<span v-if="scope.row.isExtra == 0">
+										<span v-if="scope.row.isExtra === 0">
 											{{
                         scope.row.frequency.name ? scope.row.frequency.name : ""
                       }}
@@ -3009,7 +3009,7 @@
                     </el-table-column> -->
                 <el-table-column prop="days.name" label="天数" width="width">
                   <template slot-scope="scope">
-                    <template v-if="scope.row.isExtra == 0">{{
+                    <template v-if="scope.row.isExtra === 0">{{
                         scope.row.days.name ? scope.row.days.name : ""
                       }}天
                     </template>
@@ -3018,9 +3018,9 @@
                 <el-table-column prop="total" label="总量" width="width">
                   <template slot-scope="scope">
                     <template v-if="
-                        scope.row.isExtra == 0 &&
-                        scope.row.stuffType != '4' &&
-                        scope.row.stuffType != '3'
+                        scope.row.isExtra === 0 &&
+                        scope.row.stuffType !== '4' &&
+                        scope.row.stuffType !== '3'
                       ">
                       {{
                         Math.floor(
@@ -3052,7 +3052,7 @@
               </el-table>
             </div>
 
-            <div class="two" v-else-if="props.row.type.value == 'recipelType_1'">
+            <div class="two" v-else-if="props.row.type.value === 'recipelType_1'">
               <el-table :data="filterRecipel(props.row.recipeTemplateDetail)" style="width: 100%">
                 <el-table-column label="序号" type="index" align="center">
                 </el-table-column>
@@ -3061,16 +3061,16 @@
                 <el-table-column prop="unitPrice" label="单价" width="120">
                   <template slot-scope="scope">
 										<span v-if="
-                        scope.row.isUnpackSell == 0 &&
-                        scope.row.stuffType == '1'
+                        scope.row.isUnpackSell === 0 &&
+                        scope.row.stuffType === '1'
                       ">
 											{{ (scope.row.unitPrice).toFixed(4) }}/{{
                         scope.row.drugStuffId.drug.pack.name
                       }}
 										</span>
                     <span v-else-if="
-                        scope.row.isUnpackSell == 1 &&
-                        scope.row.stuffType == '1'
+                        scope.row.isUnpackSell === 1 &&
+                        scope.row.stuffType === '1'
                       ">
 											{{ (scope.row.unitPrice).toFixed(4) }}/{{
                         scope.row.drugStuffId.drug.preparationUnit.name
@@ -3080,7 +3080,7 @@
                 </el-table-column>
                 <el-table-column prop="singleDosage" label="单次用量" width="width">
                   <template slot-scope="scope">
-                    <template v-if="scope.row.stuffType == '1'">{{
+                    <template v-if="scope.row.stuffType === '1'">{{
                         scope.row.singleDosage +
                         "" +
                         scope.row.drugStuffId.preparationUnit.name
@@ -3090,7 +3090,7 @@
                 </el-table-column>
                 <el-table-column prop="chineseMedicineUse.name" label="用法" width="width">
                   <template slot-scope="scope">
-                    <template v-if="scope.row.stuffType == '1'">{{
+                    <template v-if="scope.row.stuffType === '1'">{{
                         scope.row.chineseMedicineUse.name
                       }}
                     </template>
@@ -3104,7 +3104,7 @@
                     </el-table-column> -->
                 <el-table-column prop="total" label="总量" width="width">
                   <template slot-scope="scope">
-                    <template v-if="scope.row.stuffType == '1'">
+                    <template v-if="scope.row.stuffType === '1'">
                       {{
                         Math.floor(
                           scope.row.total /
@@ -3156,7 +3156,7 @@
 
             <!-- 输液处方 -->
             <div class="two" style="border: 1px solid #dcdcdc"
-                 v-else-if="props.row.type.value == 'recipelType_2'">
+                 v-else-if="props.row.type.value === 'recipelType_2'">
               <div v-for="(items, index) in getInfuSion(
                   props.row.recipeTemplateDetail
                 ).zushu" :key="index" style="border: 1px solid #dcdcdc; padding: 10px; margin: 10px">
@@ -3236,7 +3236,7 @@
                   <el-table-column prop="unitPrice" label="单价" width="120">
                     <template slot-scope="scope">
 											<span>{{ (scope.row.unitPrice).toFixed(4) }}元/{{
-                          scope.row.isUnpackSell == 1
+                          scope.row.isUnpackSell === 1
                             ? scope.row.drugStuffId.preparationUnit.name
                             : scope.row.drugStuffId.pack.name
                         }}</span>
@@ -3318,7 +3318,7 @@
 
             <!-- 诊疗项目 -->
 
-            <div class="two" v-else-if="props.row.type.value == 'recipelType_3'">
+            <div class="two" v-else-if="props.row.type.value === 'recipelType_3'">
               <el-table :data="filterRecipel(props.row.recipeTemplateDetail)" style="width: 100%">
                 <el-table-column type="index" label="序号" width="50" align="center"></el-table-column>
                 <el-table-column prop="drugStuffId.name" label="项目名称" align="center"></el-table-column>
@@ -3368,7 +3368,7 @@
                 <el-table-column prop="unitPrice" label="单价" width="120">
                   <template slot-scope="scope">
 										<span>{{ (scope.row.unitPrice).toFixed(4) }}元/{{
-                        scope.row.isUnpackSell == 1
+                        scope.row.isUnpackSell === 1
                           ? scope.row.drugStuffId.preparationUnit.name
                           : scope.row.drugStuffId.pack.name
                       }}</span>
@@ -3448,9 +3448,9 @@
         </el-table-column>
         <el-table-column prop="category" label="模板类别" width="width">
           <template slot-scope="scope">
-            <span v-if="scope.row.category == '0'"> 私人模板 </span>
-            <span v-if="scope.row.category == '1'"> 公用模板 </span>
-            <span v-if="scope.row.category == '2'"> AI模板 </span>
+            <span v-if="scope.row.category === '0'"> 私人模板 </span>
+            <span v-if="scope.row.category === '1'"> 公用模板 </span>
+            <span v-if="scope.row.category === '2'"> AI模板 </span>
           </template>
         </el-table-column>
         <el-table-column prop="diagnosis" label="诊断" width="width">
@@ -3516,7 +3516,7 @@
       <div slot="title" class="dialog-header">
         {{ typeName }}
       </div>
-      <div v-if="costInspection.costItem.itemType.value == 'treatmentItemType_0'">
+      <div v-if="costInspection.costItem.itemType.value === 'treatmentItemType_0'">
         <el-form :model="costInspection.inspectionCheckInfo" :rules="formRules" ref="bizFormModel"
                  label-width="120px" label-position="right" class="edit-form">
           <!-- <el-card class="box-card main-card"> -->
@@ -3640,7 +3640,7 @@
           </el-form-item>
         </el-form>
       </div>
-      <div v-if="costInspection.costItem.itemType.value == 'treatmentItemType_1'">
+      <div v-if="costInspection.costItem.itemType.value === 'treatmentItemType_1'">
         <el-form :model="costInspection.inspectionCheckInfo" :rules="formRules" ref="bizFormModel"
                  label-width="120px" label-position="right" class="edit-form">
           <div style="margin-left: -60px">
@@ -3780,7 +3780,7 @@
 
                     <el-form-item style="padding-left: 10%" v-for="(item, index) in blmbList"
                                   :key="index" :label="item.label"
-                                  v-show="item.value != '' && item.value != null">
+                                  v-show="item.value !== '' && item.value != null">
                       <el-tooltip :content="item.value" placement="top-start" effect="dark"
                                   popper-class="atooltip">
 												<span style="
@@ -3850,7 +3850,7 @@
         </el-row>
       </el-car>
       <span slot="footer" class="dialog-footer">
-				<el-button :disabled="flage" type="primary" :plain="true" @click="saveblmbsubmit('blmbmbmc')">保 存
+				<el-button :disabled="flag" type="primary" :plain="true" @click="saveblmbsubmit('blmbmbmc')">保 存
 				</el-button>
 				<el-button :plain="true" type="primary" @click="blmbonDialogClose()">取 消</el-button>
 			</span>
@@ -3921,6 +3921,7 @@
     getByPatientId, getPoverty
   } from "@/api/member/memberManagement";
   import {listSysParamConfigAll} from '@/api/sys/sysParamConfig';
+  import {getDictItemsByCode, DICT_CODE} from '@/utils/dictCache';
   import {getLocalCurrentCompany} from "@/utils/auth";
   import moment from "moment";
   import RegistrationForm from "../registration/registrationForm.vue";
@@ -3956,22 +3957,18 @@
         }
       },
       getFileList(fileList) {
-        console.log(fileList, 'getFileList');
       },
       deleteFile(fileId) {
-        console.log(fileId, 'deleteFile');
         this.deleteFileIdList.push(fileId);
       },
       beforeRemove(file, fileList) {
-        console.log(file, fileList, 'beforeRemove');
       },
       onChronicDiseaseChange(newVal, oldVal) {
         this.MedicalCalculate();
       },
       //查看检验检查
       lookInspection(row) {
-        console.log(row, "是卡夫卡解放立刻");
-        if (row.costItem.itemType.value == "treatmentItemType_0") {
+        if (row.costItem.itemType.value === "treatmentItemType_0") {
           this.costInspection = row;
           this.typeName = "查看检验报告";
           this.costInspection.inspectionCheckInfo.name =
@@ -3983,9 +3980,8 @@
             "岁";
 
           this.uploadFiles = this.costInspection.inspectionCheckInfo.id;
-          console.log(this.costInspection, "技术方案看见分厘卡");
           this.inspectionDialogVisible = true;
-        } else if (row.costItem.itemType.value == "treatmentItemType_1") {
+        } else if (row.costItem.itemType.value === "treatmentItemType_1") {
           this.costInspection = row;
           this.typeName = "查看检查报告";
           this.costInspection.inspectionCheckInfo.name =
@@ -4020,10 +4016,9 @@
               this.medicalEditTabs[
                 this.saveTemplateIndex
                 ].content.recipelDetailEvtList;
-            console.log(this.saveTemplateBizFormModel, "看结果");
             allSave(this.saveTemplateBizFormModel)
               .then((responseData) => {
-                if (responseData.code == 100) {
+                if (responseData.code === 100) {
                   this.$message.success("保存成功");
 
                   this.saveTemplateDialogVisible = false;
@@ -4072,9 +4067,6 @@
 
       //模板处方搜索事件
       searchTemplate() {
-        console.log(this.BasicInfoModel, "name");
-        console.log(this.BasicInfoModel.id, "id");
-        console.log(this.templateQueryModel.category, "hfjsafakjfkja");
         let search = {
           columnName: "",
           limit: 1000,
@@ -4149,11 +4141,11 @@
         this.templateRecipelList = null;
         listRecipetemplatePage(search)
           .then((responseData) => {
-            if (responseData.code == 100) {
+            if (responseData.code === 100) {
               responseData.data.rows.forEach((item) => {
                 item.recipeTemplateDetail.forEach((recipeTemplateDetailItem) => {
                   if (
-                    recipeTemplateDetailItem.frequency.value == undefined ||
+                    recipeTemplateDetailItem.frequency.value === undefined ||
                     recipeTemplateDetailItem.frequency.value == null
                   ) {
                     recipeTemplateDetailItem.frequency.value = "";
@@ -4161,7 +4153,6 @@
                 });
               });
               this.templateRecipelList = responseData.data.rows;
-              console.log(this.templateRecipelList, "这就是美丽");
             } else {
             }
             this.resetLoad();
@@ -4204,7 +4195,7 @@
         //this.excharge=null
         let arr = [];
         for (let i = 0; i < element.length; i++) {
-          if (element[i].isExtra != 1) {
+          if (element[i].isExtra !== 1) {
             infusion.infusionProject[element[i].infuseGroup - 1].push(element[i]);
             infusion.drippingSpeed[element[i].infuseGroup - 1] =
               element[i].drippingSpeed;
@@ -4221,21 +4212,20 @@
       //过滤处方
       filterRecipel(row) {
         let addObject = row;
-        addObject = addObject.filter((item) => item.isExtra != 1);
+        addObject = addObject.filter((item) => item.isExtra !== 1);
         return addObject;
       },
       //过滤附加费
       filterAdditional(row) {
         let addObject = row;
-        addObject = addObject.filter((item) => item.isExtra != 0);
+        addObject = addObject.filter((item) => item.isExtra !== 0);
         return addObject;
       },
 
       invoking2(row) {
-        console.log(this.medicalEditTabs[this.singleRecipel], "看fasfakjflak");
-        if (this.medicalEditTabs[this.singleRecipel].type == "recipelType_0") {
+        if (this.medicalEditTabs[this.singleRecipel].type === "recipelType_0") {
           let recipelDetailEvtLists = row.recipeTemplateDetail.filter(
-            (item) => item.isExtra == 0
+            (item) => item.isExtra === 0
           );
           if (
             this.medicalEditTabs[this.singleRecipel].content.recipelDetailEvtList
@@ -4248,10 +4238,9 @@
           }
         }
 
-        console.log(row, "看看这是啥");
         if (
           this.medicalEditTabs[this.singleRecipel].content.recipelDetailEvtList
-            .length == 0
+            .length === 0
         ) {
           this.medicalEditTabs[this.singleRecipel].content.recipelDetailEvtList =
             row.recipeTemplateDetail;
@@ -4259,7 +4248,7 @@
             this.MedicalCalculate();
           }, 0);
         } else if (
-          this.medicalEditTabs[this.singleRecipel].type == "recipelType_0"
+          this.medicalEditTabs[this.singleRecipel].type === "recipelType_0"
         ) {
           this.medicalEditTabs[this.singleRecipel].content.recipelDetailEvtList =
             row.recipeTemplateDetail;
@@ -4267,7 +4256,7 @@
             this.MedicalCalculate();
           }, 0);
         } else if (
-          this.medicalEditTabs[this.singleRecipel].type == "recipelType_2"
+          this.medicalEditTabs[this.singleRecipel].type === "recipelType_2"
         ) {
           this.medicalEditTabs[this.singleRecipel].content.recipelDetailEvtList =
             row.recipeTemplateDetail;
@@ -4289,7 +4278,7 @@
               }, 0);
             })
             .catch(() => {
-              let flage = true;
+              let flag = true;
               let arr = [];
               row.recipeTemplateDetail.forEach((item) => {
                 this.medicalEditTabs[
@@ -4299,12 +4288,12 @@
                   ].content.recipelDetailEvtList.filter(
                   (recipelDetai) =>
                     //保留存在相同药品是报错的逻辑
-                    // if(item.drugStuffId.drugStuffId==recipelDetai.drugStuffId.drugStuffId){
+                    // if(item.drugStuffId.drugStuffId===recipelDetai.drugStuffId.drugStuffId){
                     //   this.$message({
                     //     type: 'error',
                     //     message: '存在相同药品，无法调用处方！'
                     //   });
-                    //   flage=false;
+                    //   flag=false;
                     //   return;
                     // }
                     // if(){
@@ -4312,7 +4301,7 @@
                     // }
 
                     //下面是直接进行覆盖
-                    item.drugStuffId.drugStuffId !=
+                    item.drugStuffId.drugStuffId !==
                     recipelDetai.drugStuffId.drugStuffId
                 );
               });
@@ -4328,7 +4317,7 @@
               }, 0);
             });
         }
-        if (this.medicalEditTabs[this.singleRecipel].type == "recipelType_1") {
+        if (this.medicalEditTabs[this.singleRecipel].type === "recipelType_1") {
           this.medicalEditTabs[this.singleRecipel].content.recipelInfo.dosage =
             row.recipeTemplateInfo.dosage;
           this.medicalEditTabs[this.singleRecipel].content.recipelInfo.frequency =
@@ -4345,7 +4334,7 @@
             this.singleRecipel
             ].content.recipelInfo.recipelUse = row.recipeTemplateInfo.recipelUse;
         } else if (
-          this.medicalEditTabs[this.singleRecipel].type == "recipelType_2"
+          this.medicalEditTabs[this.singleRecipel].type === "recipelType_2"
         ) {
           let infusion = {
             defaultNumber: 1, //默认组号
@@ -4380,7 +4369,7 @@
           //this.excharge=null
           let arr = [];
           for (let i = 0; i < row.recipeTemplateDetail.length; i++) {
-            if (row.recipeTemplateDetail[i].isExtra != 1) {
+            if (row.recipeTemplateDetail[i].isExtra !== 1) {
               infusion.infusionProject[
               row.recipeTemplateDetail[i].infuseGroup - 1
                 ].push(row.recipeTemplateDetail[i]);
@@ -4401,8 +4390,8 @@
           this.medicalEditTabs[this.singleRecipel].infusion = infusion;
         }
         if (
-          row.recipeTemplateInfo.entrust != undefined &&
-          row.recipeTemplateInfo.entrust != ""
+          row.recipeTemplateInfo.entrust !== undefined &&
+          row.recipeTemplateInfo.entrust !== ""
         ) {
           this.medicalEditTabs[this.singleRecipel].content.recipelInfo.entrust =
             row.recipeTemplateInfo.entrust;
@@ -4411,7 +4400,6 @@
           this.MedicalCalculate();
         }, 0);
         this.templateDialogVisible = false;
-        console.log(this.medicalEditTabs, "这是一个值的额");
       },
       medicalHistoryInvoking(row) {
         this.ChooseRecordList = [];
@@ -4421,13 +4409,11 @@
             this.ChooseRecordList.push(item);
           }
         });
-        console.log("看看这是什么rows-===" + row.medicalRecord)
-        console.log("看看这是什么this-===" + this.MedicalRecordModel)
         this.caseDialogVisible = false;
       },
 
       invoking(row) {
-        if (this.medicalEditTabs[this.singleRecipel].type == "recipelType_0") {
+        if (this.medicalEditTabs[this.singleRecipel].type === "recipelType_0") {
           if (
             this.medicalEditTabs[this.singleRecipel].content.recipelDetailEvtList
               .length +
@@ -4438,16 +4424,14 @@
             return;
           }
         }
-        console.log(this.medicalEditTabs[this.singleRecipel], "看fasfakjflak");
-        console.log(row, "看看这是啥");
         if (
           this.medicalEditTabs[this.singleRecipel].content.recipelDetailEvtList
-            .length == 0
+            .length === 0
         ) {
           this.medicalEditTabs[this.singleRecipel].content.recipelDetailEvtList =
             row.recipelDetail;
         } else if (
-          this.medicalEditTabs[this.singleRecipel].type == "recipelType_2"
+          this.medicalEditTabs[this.singleRecipel].type === "recipelType_2"
         ) {
           this.medicalEditTabs[this.singleRecipel].content.recipelDetailEvtList =
             row.recipelDetail;
@@ -4469,7 +4453,7 @@
               }, 0);
             })
             .catch(() => {
-              let flage = true;
+              let flag = true;
               let arr = [];
               row.recipelDetail.forEach((item) => {
                 this.medicalEditTabs[
@@ -4479,12 +4463,12 @@
                   ].content.recipelDetailEvtList.filter(
                   (recipelDetai) =>
                     //保留存在相同药品是报错的逻辑
-                    // if(item.drugStuffId.drugStuffId==recipelDetai.drugStuffId.drugStuffId){
+                    // if(item.drugStuffId.drugStuffId===recipelDetai.drugStuffId.drugStuffId){
                     //   this.$message({
                     //     type: 'error',
                     //     message: '存在相同药品，无法调用处方！'
                     //   });
-                    //   flage=false;
+                    //   flag=false;
                     //   return;
                     // }
                     // if(){
@@ -4492,7 +4476,7 @@
                     // }
 
                     //下面是直接进行覆盖
-                    item.drugStuffId.drugStuffId !=
+                    item.drugStuffId.drugStuffId !==
                     recipelDetai.drugStuffId.drugStuffId
                 );
               });
@@ -4508,7 +4492,7 @@
               }, 0);
             });
         }
-        if (this.medicalEditTabs[this.singleRecipel].type == "recipelType_1") {
+        if (this.medicalEditTabs[this.singleRecipel].type === "recipelType_1") {
           this.medicalEditTabs[this.singleRecipel].content.recipelInfo.dosage =
             row.dosage;
           this.medicalEditTabs[this.singleRecipel].content.recipelInfo.frequency =
@@ -4523,7 +4507,7 @@
             this.singleRecipel
             ].content.recipelInfo.recipelUse = row.recipelUse;
         } else if (
-          this.medicalEditTabs[this.singleRecipel].type == "recipelType_2"
+          this.medicalEditTabs[this.singleRecipel].type === "recipelType_2"
         ) {
           let infusion = {
             defaultNumber: 1, //默认组号
@@ -4558,7 +4542,7 @@
           //this.excharge=null
           let arr = [];
           for (let i = 0; i < row.recipelDetail.length; i++) {
-            if (row.recipelDetail[i].isExtra != 1) {
+            if (row.recipelDetail[i].isExtra !== 1) {
               infusion.infusionProject[row.recipelDetail[i].infuseGroup - 1].push(
                 row.recipelDetail[i]
               );
@@ -4577,7 +4561,7 @@
           }
           this.medicalEditTabs[this.singleRecipel].infusion = infusion;
         }
-        if (row.entrust != undefined && row.entrust != "") {
+        if (row.entrust !== undefined && row.entrust !== "") {
           this.medicalEditTabs[this.singleRecipel].content.recipelInfo.entrust =
             row.entrust;
         }
@@ -4585,7 +4569,6 @@
           this.MedicalCalculate();
         }, 0);
         this.historyDialogVisible = false;
-        console.log(this.medicalEditTabs, "这是一个值的额");
       },
       resetCondition() {
         this.queryModel = {
@@ -4606,11 +4589,9 @@
         this.HistoricalCases();
       },
       checkDetails(row, expandedRows) {
-        console.log(expandedRows, "查看详情");
         getByRecipelInfoId(expandedRows[0].id)
           .then((res) => {
-            if (res.code == "100") {
-              console.log(res.data, "查看详情");
+            if (res.code === 100) {
               this.historyRecipelDetailList = res.data;
             }
           })
@@ -4618,11 +4599,10 @@
           });
       },
       GetCreateBy(row) {
-        console.log(row.updateBy);
         let str = "";
         let count = 0;
         for (let i = 0; i < row.updateBy.length; i++) {
-          if (row.updateBy[i] == "(") {
+          if (row.updateBy[i] === "(") {
             count = i;
           }
         }
@@ -4631,7 +4611,6 @@
       },
       historyRecipel(item, index) {
         this.singleRecipel = index;
-        console.log(item, index, "看看这是什么");
         this.historyType = item;
         let search = {
           columnName: "",
@@ -4680,8 +4659,7 @@
         //     },
         getHistoryRecipel(search)
           .then((res) => {
-            if (res.code == "100") {
-              console.log(res, "历史处方");
+            if (res.code === 100) {
               this.historyDialogVisible = true;
               this.historyRecipelList = res.data;
             }
@@ -4718,8 +4696,7 @@
         }
         getHistoryRecipel(search)
           .then((res) => {
-            if (res.code == "100") {
-              console.log(res, "历史病历");
+            if (res.code === 100) {
               this.caseDialogVisible = true;
               this.historicalCasesList = res.data;
             }
@@ -4733,7 +4710,6 @@
       templateRecipel(item, index) {
         this.templateType = item;
         this.singleRecipel = index;
-        console.log(item, index, "就是这样嘛");
         let search = {
           columnName: "",
           limit: 1000,
@@ -4775,10 +4751,9 @@
         });
         listRecipetemplatePage(search)
           .then((responseData) => {
-            if (responseData.code == 100) {
+            if (responseData.code === 100) {
               this.templateRecipelList = responseData.data.rows;
               this.templateDialogVisible = true;
-              console.log(this.templateRecipelList, "模板处方");
               // this.recipetemplateTotal = responseData.data.total
               // this.recipetemplateList = responseData.data.rows
             } else {
@@ -4792,7 +4767,7 @@
       },
 
       changesDosage(row, index) {
-        if (row == "") {
+        if (row === "") {
           this.medicalEditTabs[index].recipelInfo.dosage = " ";
         } else {
           this.medicalEditTabs[index].recipelInfo.dosage = row - 0;
@@ -4802,13 +4777,9 @@
       },
       changeSingleDosage(row, index, item) {
         this.medicalEditTabs.forEach((tabElement) => {
-          if (tabElement.type === "recipelType_1" && tabElement.key == item.key) {
+          if (tabElement.type === "recipelType_1" && tabElement.key === item.key) {
             //for (let i = 0; i < tabElement.content.recipelDetailEvtList.length; i++) {
-            console.log(
-              tabElement.content.recipelDetailEvtList[index],
-              "就是看看"
-            );
-            if (row == "") {
+            if (row === "") {
               tabElement.content.recipelDetailEvtList[index].singleDosage = " ";
             } else {
               tabElement.content.recipelDetailEvtList[index].singleDosage = row;
@@ -4830,7 +4801,6 @@
         item.infusion.frequency.push({});
         item.infusion.infuseUse.push({});
         this.SearchInfusion.push("");
-        console.log(item, "添加");
       },
       minusGroup(item, index) {
         if (item.infusion.defaultNumber > 1) {
@@ -4847,7 +4817,6 @@
           item.infusion.frequency.splice(index, 1);
           item.infusion.infuseUse.splice(index, 1);
           this.SearchInfusion.splice(index, 1);
-          console.log(item, "添加");
         }
       },
       indexMethod(index) {
@@ -4887,36 +4856,34 @@
         }
 
         let infuseFlage = false;
-        let flage1 = false;
-        let flage2 = false;
+        let flag1 = false;
+        let flag2 = false;
         let treatment = false;
-        let chargeflage = false;
-        let flageChinese1 = false;
-        let flageChinese2 = false;
+        let chargeflag = false;
+        let flagChinese1 = false;
+        let flagChinese2 = false;
         let recipelInfoEvtList = [];
         let returnForEach = false;
         let hasSelsmallType = false;
         let numberCheck = false;
         let totalCheck = false;
         let paramsCheck = false;
-        // if (this.medicalEditTabs.length == 0) {
+        // if (this.medicalEditTabs.length === 0) {
         //   this.$message.error("处方数量不能为0");
         //   return;
         // }
-        console.log(this.medicalEditTabs, 'Tesssssssssssssss')
         this.medicalEditTabs.forEach((tabElement) => {
-          console.log(tabElement, "真奇怪");
           //西药处方
           if (
-            tabElement.type == "recipelType_0" &&
+            tabElement.type === "recipelType_0" &&
             !this.MedicalRecordModel.westernDiagnose
           ) {
             returnForEach = true;
           }
-          if (tabElement.type == "recipelType_0") {
+          if (tabElement.type === "recipelType_0") {
             let total = 0;
             tabElement.content.recipelDetailEvtList.forEach((item) => {
-              if (item.isExtra == 0) {
+              if (item.isExtra === 0) {
                 if (
                   item.singleDosage &&
                   item.frequency &&
@@ -4930,9 +4897,8 @@
                       .multipliedBy(item.days.name)
                       .toNumber()
                   );
-                  console.log("total == " + total)
                   if (
-                    item.drugStuffId.drug.total != 0 &&
+                    item.drugStuffId.drug.total !== 0 &&
                     total > item.drugStuffId.drug.total
                   ) {
                     this.$message.error(
@@ -4949,30 +4915,30 @@
           }
           //中药处方
           if (
-            tabElement.type == "recipelType_1" &&
+            tabElement.type === "recipelType_1" &&
             !this.MedicalRecordModel.chinaDiagnose
           ) {
             returnForEach = true;
           }
-          if (tabElement.type == "recipelType_1") {
-            if (tabElement.content.recipelInfo.dosage == "") {
-              flageChinese1 = true;
+          if (tabElement.type === "recipelType_1") {
+            if (tabElement.content.recipelInfo.dosage === "") {
+              flagChinese1 = true;
             }
 
             for (
               let i = 0; i < tabElement.content.recipelDetailEvtList.length; i++
             ) {
-              if (tabElement.content.recipelDetailEvtList[i].isExtra == 0) {
+              if (tabElement.content.recipelDetailEvtList[i].isExtra === 0) {
                 if (
-                  tabElement.content.recipelDetailEvtList[i].singleDosage ==
+                  tabElement.content.recipelDetailEvtList[i].singleDosage ===
                   " " ||
-                  tabElement.content.recipelDetailEvtList[i].singleDosage == ""
+                  tabElement.content.recipelDetailEvtList[i].singleDosage === ""
                 ) {
-                  flageChinese2 = true;
+                  flagChinese2 = true;
                 }
               }
               if (tabElement.content.recipelDetailEvtList[i].stuffType === '1'){
-                if (tabElement.content.recipelDetailEvtList[i].drugStuffId.drug.total != 0 &&
+                if (tabElement.content.recipelDetailEvtList[i].drugStuffId.drug.total !== 0 &&
                   tabElement.content.recipelDetailEvtList[i].total > tabElement.content.recipelDetailEvtList[i].drugStuffId.drug.total) {
                   this.$message.error(
                     tabElement.content.recipelDetailEvtList.drugStuffId.name + "总量上限要小于功效说明计算总量，开药总量上限为" + tabElement.content.recipelDetailEvtList[i].drugStuffId.drug.total + tabElement.content.recipelDetailEvtList[i].drugStuffId.drug.dosisUnit.name
@@ -4981,12 +4947,9 @@
                 }
               }
 
-              console.log("hh=" + JSON.stringify(tabElement.content.recipelDetailEvtList))
 
               /* tabElement.content.recipelDetailEvtList.forEach((item) => {
-                 console.log("recipelDetailEvtList.total" + tabElement.content.recipelDetailEvtList[i].total)
-                 console.log("item.drugStuffId.drug.total" + item.drugStuffId.drug.total)
-                 if (item.drugStuffId.drug.total != 0 &&
+                 if (item.drugStuffId.drug.total !== 0 &&
                    tabElement.content.recipelDetailEvtList[i].total > item.drugStuffId.drug.total) {
                    this.$message.error(
                      item.drugStuffId.name + "总量上限要小于功效说明计算总量，开药总量上限为" + item.drugStuffId.drug.total + item.drugStuffId.drug.dosisUnit.name
@@ -4994,13 +4957,12 @@
                    totalCheck = true;
                  }
                })*/
-              console.log("kankan i " + i)
             }
 
 
           }
           //输液处方
-          if (tabElement.type == "recipelType_2") {
+          if (tabElement.type === "recipelType_2") {
             tabElement.content.recipelDetailEvtList = [];
             let arr = 0;
             for (let i = 0; i < tabElement.infusion.infusionProject.length; i++) {
@@ -5030,23 +4992,22 @@
                 if (
                   tabElement.infusion.days[
                   tabElement.infusion.infusionProject[i][j].infuseGroup - 1
-                    ].name == "" ||
+                    ].name === "" ||
                   tabElement.infusion.days[
                   tabElement.infusion.infusionProject[i][j].infuseGroup - 1
-                    ].name == undefined
+                    ].name === undefined
                 ) {
-                  flage1 = true;
+                  flag1 = true;
                 }
-                //console.log('频次',tabElement.infusion.frequency[tabElement.infusion.infusionProject[i][j].infuseGroup-1]);
                 if (
                   tabElement.infusion.frequency[
                   tabElement.infusion.infusionProject[i][j].infuseGroup - 1
-                    ].value == "" ||
+                    ].value === "" ||
                   tabElement.infusion.frequency[
                   tabElement.infusion.infusionProject[i][j].infuseGroup - 1
-                    ].value == undefined
+                    ].value === undefined
                 ) {
-                  flage2 = true;
+                  flag2 = true;
                 }
               }
             }
@@ -5056,7 +5017,7 @@
               );
             }
             tabElement.content.recipelDetailEvtList.forEach((item) => {
-              if (item.isExtra == 0) {
+              if (item.isExtra === 0) {
                 if (
                   item.singleDosage &&
                   item.frequency &&
@@ -5072,16 +5033,16 @@
             });
           }
           //诊疗项目
-          if (tabElement.type == "recipelType_3") {
+          if (tabElement.type === "recipelType_3") {
             for (
               let i = 0; i < tabElement.content.recipelDetailEvtList.length; i++
             ) {
-              if (tabElement.content.recipelDetailEvtList[i].isExtra == 0) {
+              if (tabElement.content.recipelDetailEvtList[i].isExtra === 0) {
                 if (
-                  tabElement.content.recipelDetailEvtList[i].total == "" ||
-                  tabElement.content.recipelDetailEvtList[i].singleDosage == "" ||
-                  tabElement.content.recipelDetailEvtList[i].total == 0 ||
-                  tabElement.content.recipelDetailEvtList[i].singleDosage == 0
+                  tabElement.content.recipelDetailEvtList[i].total === "" ||
+                  tabElement.content.recipelDetailEvtList[i].singleDosage === "" ||
+                  tabElement.content.recipelDetailEvtList[i].total === 0 ||
+                  tabElement.content.recipelDetailEvtList[i].singleDosage === 0
                 ) {
                   treatment = true;
                 }
@@ -5092,24 +5053,24 @@
           for (
             let i = 0; i < tabElement.content.recipelDetailEvtList.length; i++
           ) {
-            if (tabElement.content.recipelDetailEvtList[i].isExtra == 1) {
+            if (tabElement.content.recipelDetailEvtList[i].isExtra === 1) {
               if (
-                tabElement.content.recipelDetailEvtList[i].total == "" ||
-                tabElement.content.recipelDetailEvtList[i].singleDosage == "" ||
-                tabElement.content.recipelDetailEvtList[i].total == 0 ||
-                tabElement.content.recipelDetailEvtList[i].singleDosage == 0
+                tabElement.content.recipelDetailEvtList[i].total === "" ||
+                tabElement.content.recipelDetailEvtList[i].singleDosage === "" ||
+                tabElement.content.recipelDetailEvtList[i].total === 0 ||
+                tabElement.content.recipelDetailEvtList[i].singleDosage === 0
               ) {
-                chargeflage = true;
+                chargeflag = true;
               }
             }
           }
           if (
             !tabElement.content.recipelInfo.smallType &&
-            tabElement.type != "recipelType_3"
+            tabElement.type !== "recipelType_3"
           ) {
             hasSelsmallType = true;
           }
-          if (tabElement.content.recipelDetailEvtList.length == 0) {
+          if (tabElement.content.recipelDetailEvtList.length === 0) {
             numberCheck = true;
           }
           recipelInfoEvtList.push(tabElement.content);
@@ -5138,19 +5099,19 @@
         if (infuseFlage) {
           return;
         }
-        if (flage1) {
+        if (flag1) {
           this.$message.error("请填写输液天数");
           return;
         }
-        if (flage2) {
+        if (flag2) {
           this.$message.error("请填写输液频次");
           return;
         }
-        if (flageChinese1) {
+        if (flagChinese1) {
           this.$message.error("请填写中药剂量");
           return;
         }
-        if (flageChinese2) {
+        if (flagChinese2) {
           this.$message.error("请填写中药药品数量");
           return;
         }
@@ -5158,7 +5119,7 @@
           this.$message.error("请填写诊疗处方的项目数量");
           return;
         }
-        if (chargeflage) {
+        if (chargeflag) {
           this.$message.error("请填写附加费的项目数量");
           return;
         }
@@ -5175,14 +5136,13 @@
           type: 0,
           deleteFileIdList: this.deleteFileIdList,
         };
-        console.log(medicalRecipelEvt, "怎么回事");
         // return
         let formData = new FormData();
         formData.append("entity", JSON.stringify(medicalRecipelEvt));
         this.pushMedicalFiles(formData)
         this.savelock = true;
         editSave(formData).then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.$message.success("操作成功！");
             this.hasBtnFinishVisit = false;
             this.hasBtnPrint = false;
@@ -5192,7 +5152,7 @@
             });
             this.hint = false;
             this.endHint = true;
-            if (type == 2) {
+            if (type === 2) {
               let itemCopy = JSON.parse(
                 JSON.stringify(this.activeSelAlreadyPatientItem)
               );
@@ -5210,8 +5170,7 @@
 
                 allQueryMedicalRecord(this.registration.id).then((responseData) => {
                     let arr = responseData.data;
-                    console.log(arr, "这是怎么回事");
-                    if (responseData.code == 100) {
+                    if (responseData.code === 100) {
                       let recipelInfoEvtList =
                         responseData.data.recipelInfoEvtList;
                       recipelInfoEvtList.forEach((element) => {
@@ -5221,13 +5180,11 @@
                         );
                       });
 
-                      this.AlreadyPatientDescriptions.sort(function (a, b) {
+                      this.AlreadyPatientDescriptions.sort((a, b) => {
                         a.seq = a.seq ? a.seq : 0;
                         b.seq = b.seq ? b.seq : 0;
                         return a.seq - b.seq;
                       });
-                      console.log(this.AlreadyPatientDescriptions, "utiy");
-                      console.log(responseData.data, "poiu");
                       this.MedicalRecordModel = responseData.data.medicalRecord;
                       this.MedicalRecordModel.registration.id = itemCopy.id;
                       this.MedicalRecordModel.registration.treatType =
@@ -5240,7 +5197,6 @@
                       this.BasicInfoModel.breathe = this.registration.breathe;
                       this.BasicInfoModel.temperature =
                         this.registration.temperature;
-                      console.log(this.BasicInfoModel.temperature, "this.BasicInfoModel.temperature")
                       this.BasicInfoModel.pulse = this.registration.pulse;
                       this.BasicInfoModel.bloodPressure =
                         this.registration.bloodPressure;
@@ -5255,7 +5211,7 @@
             }
             this.GetPreparePatientList();
             this.GetAlreadyPatientList();
-          } else if (responseData.code == "50001") {
+          } else if (responseData.code === "50001") {
             this.$message.warning(responseData.msg);
           } else {
             this.$message.error("更新失败！");
@@ -5273,7 +5229,6 @@
       },
       //附件上传切换
       changeMedicalFile(type, objectId) {
-        console.log(type, objectId, "我是附件上传的信息")
         if ("view" === type) {
           //已就诊
           this.MedicalFileObjId = objectId;
@@ -5295,7 +5250,6 @@
           (this.medicalClickTabsValue.content.recipelInfo.id &&
             this.medicalClickTabsValue)
         ) {
-          console.log(this.medicalEditTabs, "获取值");
           let now = new Date();
           let newDate = new Date(this.activeSelAlreadyPatientItem.createDate);
           now = Date.parse(now);
@@ -5309,19 +5263,18 @@
           this.blmbVisit = true;
           // this.chineseTest=[[]]
           //  for (let i = 1; i < this.medicalEditTabs.length; i++) {
-          //   if(this.medicalEditTabs[i].type=="recipelType_1"){
+          //   if(this.medicalEditTabs[i].type==="recipelType_1"){
           //    this.chineseTest.push([])
           //   }
           // }
 
           // for (let i = 0; i < this.medicalEditTabs.length; i++) {
-          //   if(this.medicalEditTabs[i].type=="recipelType_1"){
+          //   if(this.medicalEditTabs[i].type==="recipelType_1"){
           //     for (let j = 0; j < this.medicalEditTabs[i].content.recipelDetailEvtList.length; j++) {
           //       this.chineseTest[this.medicalEditTabs[i].key-1].push(this.medicalEditTabs[i].content.recipelDetailEvtList[j].drugStuffId.name)
           //     }
           //   }
           // }
-          // console.log(this.chineseTest,'参数');
         } else {
           this.$message.error("未选择用户");
         }
@@ -5333,7 +5286,7 @@
           return;
         }
         let filterArr = this.medicalEditTabs.filter(
-          (item) => item.content.recipelInfo.status != -1
+          (item) => item.content.recipelInfo.status !== -1
         );
         let arr = [];
         for (let i = 0; i < filterArr.length; i++) {
@@ -5346,12 +5299,12 @@
           };
           let str = "";
           let type =
-            params.type == "recipelType_0" ?
+            params.type === "recipelType_0" ?
               // "westMedicine" :
               "chronicDisease" :
-              params.type == "recipelType_1" ?
+              params.type === "recipelType_1" ?
                 "chineseMedicine" :
-                params.type == "recipelType_2" ?
+                params.type === "recipelType_2" ?
                   "infuse" :
                   "costItem";
           if (params.recipelInfoId) {
@@ -5374,13 +5327,10 @@
         });
       },
       handleFileRemove(file, fileList) {
-        console.log(12);
       },
       handleFileProgress(event, file, fileList) {
-        console.log(11);
       },
       handleFileBeforeUpload(file) {
-        console.log(13);
       },
       handlePatientClick(tab, event) {
         this.blmbVisit = false;
@@ -5402,7 +5352,6 @@
 
         this.backgroundColors = 10000;
         this.overColor = 0;
-        console.log("---------:" + this.TodayActiveName);
       },
       //获取待就诊患者列表
       GetPreparePatientList() {
@@ -5453,7 +5402,7 @@
         this.SearchPreModel.params = params;
         this.SearchPreModel.params[1].value = "registrationStatus_0";
         listRegistrationPage(this.SearchPreModel).then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.PreparePatientTotal = responseData.data.total;
             if (responseData.data.rows) {
               responseData.data.rows.forEach((element) => {
@@ -5521,7 +5470,7 @@
         }
         this.SearchAlreadyModel.params = params;
         listRegistrationPage(this.SearchAlreadyModel).then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.AlreadyPatientListTotal = responseData.data.total;
             if (responseData.data.rows) {
               responseData.data.rows.forEach((element) => {
@@ -5551,7 +5500,6 @@
         this.GetAlreadyPatientList();
       },
       AlreadyPatientDeletilQuery(row) {
-        console.log(row, "row");
         if (row.patientId === undefined) {
           return;
         }
@@ -5562,24 +5510,16 @@
           this.recordpatid = row.patientId.id;
           this.clickChangeColor = row.id;
         }
-        console.log(this.activeSelAlreadyPatientItem.id, this.clickId);
         if (
-          this.clickId != "" &&
-          this.clickId == this.activeSelAlreadyPatientItem.id &&
+          this.clickId !== "" &&
+          this.clickId === this.activeSelAlreadyPatientItem.id &&
           !this.cancellation
         ) {
-          console.log("没进来嘛？");
           return;
-        } else if (this.activeSelAlreadyPatientItem.id != undefined) {
+        } else if (this.activeSelAlreadyPatientItem.id !== undefined) {
           this.cancellation = false;
-          console.log(
-            this.clickId,
-            this.activeSelAlreadyPatientItem.id,
-            "书法家看法萨克利夫你来撒快发霉了"
-          );
           if (this.endHint) {
             this.clickId = this.activeSelAlreadyPatientItem.id;
-            console.log(this.activeSelAlreadyPatientItem, "我的");
             if (!this.activeSelAlreadyPatientItem) {
               return;
             }
@@ -5611,8 +5551,7 @@
               //根据患者id获取会员信息
               getByPatientId(this.activeSelAlreadyPatientItem.patientId.id)
                 .then((res) => {
-                  if (res.code == "100") {
-                    console.log(res, "卡九分零四开发");
+                  if (res.code === 100) {
                     this.member = res.data;
                   } else {
                     this.$message.error("后台数据异常请联系管理！");
@@ -5621,8 +5560,7 @@
                 .catch();
               getPoverty(this.activeSelAlreadyPatientItem.patientId.id)
                 .then((res) => {
-                  if (res.code == "100") {
-                    console.log(res, "贫困户");
+                  if (res.code === 100) {
                     this.poverty = res.data;
                   } else {
                     this.$message.error("贫困数据异常请联系管理！");
@@ -5631,21 +5569,18 @@
                 .catch();
               allQueryMedicalRecord(this.registration.id).then((responseData) => {
                 let arr = responseData.data;
-                console.log(arr, "这是怎么回事1");
-                if (responseData.code == 100) {
+                if (responseData.code === 100) {
                   let recipelInfoEvtList = responseData.data.recipelInfoEvtList;
                   recipelInfoEvtList.forEach((element) => {
                     this.AlreadyPatientDescriptions.push(
                       JSON.parse(JSON.stringify(element.recipelInfo))
                     );
                   });
-                  this.AlreadyPatientDescriptions.sort(function (a, b) {
+                  this.AlreadyPatientDescriptions.sort((a, b) => {
                     a.seq = a.seq ? a.seq : 0;
                     b.seq = b.seq ? b.seq : 0;
                     return a.seq - b.seq;
                   });
-                  console.log(this.AlreadyPatientDescriptions, "utiy");
-                  console.log(responseData.data, "poiu");
                   this.MedicalRecordModel = responseData.data.medicalRecord;
                   this.MedicalRecordModel.registration.id = itemCopy.id;
                   this.MedicalRecordModel.registration.treatType =
@@ -5665,7 +5600,6 @@
                 }
               });
               // this.GetPatient(itemCopy);
-              console.log(this.MedicalRecordModel, "nuide");
             });
             this.overColor = 0;
           } else {
@@ -5710,8 +5644,7 @@
                 //根据患者id获取会员信息
                 getByPatientId(this.activeSelAlreadyPatientItem.patientId.id)
                   .then((res) => {
-                    if (res.code == "100") {
-                      console.log(res, "卡九分零四开发");
+                    if (res.code === 100) {
                       this.member = res.data;
                     } else {
                       this.$message.error("后台数据异常请联系管理！");
@@ -5720,8 +5653,7 @@
                   .catch();
                 getPoverty(this.activeSelAlreadyPatientItem.patientId.id)
                   .then((res) => {
-                    if (res.code == "100") {
-                      console.log(res, "贫困户");
+                    if (res.code === 100) {
                       this.poverty = res.data;
                     } else {
                       this.$message.error("贫困数据异常请联系管理！");
@@ -5731,7 +5663,7 @@
                 allQueryMedicalRecord(this.registration.id).then(
                   (responseData) => {
                     let arr = responseData.data;
-                    if (responseData.code == 100) {
+                    if (responseData.code === 100) {
                       let recipelInfoEvtList =
                         responseData.data.recipelInfoEvtList;
                       recipelInfoEvtList.forEach((element) => {
@@ -5740,7 +5672,7 @@
                             .recipelInfo))
                         );
                       });
-                      this.AlreadyPatientDescriptions.sort(function (a, b) {
+                      this.AlreadyPatientDescriptions.sort((a, b) => {
                         a.seq = a.seq ? a.seq : 0;
                         b.seq = b.seq ? b.seq : 0;
                         return a.seq - b.seq;
@@ -5769,7 +5701,6 @@
               });
               this.overColor = 0;
               this.endHint = true;
-              console.log(this.endHint);
             })
               .catch(() => {
                 this.endHint = false;
@@ -5780,10 +5711,9 @@
         this.changeMedicalFile("view", row.id)
       },
       AlreadyPatientDescriptionsQuery(item, index) {
-        console.log(item, "dshafhfkjsafhkj");
         this.hasBtnFinishVisit = false;
         this.medicalEditTabs.forEach((element) => {
-          if (element.content.uuid == item.id) {
+          if (element.content.uuid === item.id) {
             this.medicalEditTabsValue = element;
             this.medicalClickTabsValue = this.medicalEditTabsValue;
           }
@@ -5798,8 +5728,7 @@
         // }
         this.blmbVisit = true;
         this.recordpatid = item.patientId.id; //获取用户id
-        console.log(item, this.userClickID, "点击用户");
-        if (this.userClickID != "" && this.userClickID == item.id) {
+        if (this.userClickID !== "" && this.userClickID === item.id) {
           this.hint = true;
           return;
         }
@@ -5807,7 +5736,6 @@
           this.clickId = item.id;
           let itemCopy = JSON.parse(JSON.stringify(item));
           this.registration = JSON.parse(JSON.stringify(item));
-          console.log(this.registration, "查看默认值")
           this.$nextTick(() => {
             this.hasBtnFinishVisit = true;
             this.hasBtnPrint = false;
@@ -5849,8 +5777,7 @@
             //根据患者id获取会员信息
             getByPatientId(item.patientId.id)
               .then((res) => {
-                if (res.code == "100") {
-                  console.log(res, "卡九分零四开发");
+                if (res.code === 100) {
                   this.member = res.data;
                 } else {
                   this.$message.error("后台数据异常请联系管理！");
@@ -5859,8 +5786,7 @@
               .catch();
             getPoverty(item.patientId.id)
               .then((res) => {
-                if (res.code == "100") {
-                  console.log(res, "贫困户");
+                if (res.code === 100) {
                   this.poverty = res.data;
                 } else {
                   this.$message.error("贫困数据异常请联系管理！");
@@ -5868,7 +5794,6 @@
               })
               .catch();
             // this.addMedicalEditTab(this.medicalTypeList[0]);
-            console.log(this.registration, "查看默认值111")
           });
         } else {
           this.open(item, index);
@@ -5892,8 +5817,7 @@
       },
       GetPatient(patientId) {
         getPatientById(patientId.patientId.id).then((responseData) => {
-          if (responseData.code == 100) {
-            console.log(responseData.data, "查询用户");
+          if (responseData.code === 100) {
             this.BasicInfoModel = responseData.data;
             this.BasicInfoModel.breathe = patientId.breathe;
             this.BasicInfoModel.temperature = patientId.temperature;
@@ -5951,7 +5875,6 @@
       },
       //开具处方新增Tab标签页
       addMedicalEditTab(tabTypeData) {
-        console.log("111111")
         let tabType = tabTypeData.type;
         let typeMaxTabIndex = 0;
         this.medicalEditTabs.forEach((element) => {
@@ -5973,7 +5896,7 @@
             0 :
             1;
         let recipelInfoEvt = {};
-        if (tabType == "recipelType_1") {
+        if (tabType === "recipelType_1") {
           recipelInfoEvt = {
             uuid: require("uuid").v1(),
             recipelInfo: {
@@ -6074,7 +5997,7 @@
           infusion: infusion,
           costDebug: costDebug,
         };
-        // if(tab.type=="recipelType_1"){
+        // if(tab.type==="recipelType_1"){
         //   this.chineseTest[tab.key-1]=[]
         // }
         this.SearchWesternInput = "";
@@ -6085,8 +6008,6 @@
         this.medicalEditTabs.push(tab);
         this.medicalEditTabsValue = tab;
         this.medicalClickTabsValue = this.medicalEditTabsValue;
-        console.log(this.medicalEditTabsValue, "新增");
-        console.log(require("uuid").v1());
         // // 获取第一个input的焦点
         //  this.$nextTick(() => {
         //   this.$refs.singleDosage-input[0].focus();
@@ -6094,7 +6015,6 @@
       },
       //开具处方删除Tab标签页
       removeMedicalEditTab(targetName) {
-        console.log(targetName);
         let tabs = this.medicalEditTabs;
         let activeName = this.medicalEditTabsValue;
         if (activeName === targetName) {
@@ -6128,14 +6048,12 @@
         if (this.medicalEditTabsValue === this.medicalClickTabsValue) {
           return;
         }
-        console.log(this.medicalEditTabsValue, "就是看看");
         this.SearchWesternInput = "";
         this.medicalClickTabsValue = this.medicalEditTabsValue;
-        console.log(this.isReadOnly, this.TodayActiveName);
-        if (this.TodayActiveName == "already") {
+        if (this.TodayActiveName === "already") {
           let num = 0;
           for (let i = 0; i < this.medicalEditTabs.length; i++) {
-            if (this.medicalEditTabs[i].key == this.medicalEditTabsValue.key) {
+            if (this.medicalEditTabs[i].key === this.medicalEditTabsValue.key) {
               num = i;
             }
           }
@@ -6146,11 +6064,9 @@
         }
       },
       createMedicalEditTab(recipelInfoEvtList) {
-        console.log("---------recipelInfoEvtList------------");
-        console.log(recipelInfoEvtList);
         this.medicalEditTabs = [];
         if (
-          recipelInfoEvtList == undefined ||
+          recipelInfoEvtList === undefined ||
           recipelInfoEvtList == null ||
           !recipelInfoEvtList.length > 0
         ) {
@@ -6172,7 +6088,7 @@
                 );
               }
             }
-            if (element.recipelInfo.recipelType.value == "recipelType_3") {
+            if (element.recipelInfo.recipelType.value === "recipelType_3") {
               this.inspectionType = [];
               this.inspectionSign = 0;
 
@@ -6180,9 +6096,9 @@
                 if (element.recipelDetailEvtList[i].drugStuffId.costItem) {
                   if (
                     element.recipelDetailEvtList[i].drugStuffId.costItem.itemType
-                      .value == "treatmentItemType_0" ||
+                      .value === "treatmentItemType_0" ||
                     element.recipelDetailEvtList[i].drugStuffId.costItem.itemType
-                      .value == "treatmentItemType_1"
+                      .value === "treatmentItemType_1"
                   ) {
                     this.inspectionSign = 1;
                     this.inspectionType.push(0);
@@ -6192,25 +6108,20 @@
               for (let i = 0; i < element.recipelDetailEvtList.length; i++) {
                 if (
                   element.recipelDetailEvtList[i].drugStuffId
-                    .inspectionCheckInfo != undefined
+                    .inspectionCheckInfo !== undefined
                 ) {
                   if (
                     element.recipelDetailEvtList[i].drugStuffId.costItem.itemType
-                      .value == "treatmentItemType_0" ||
+                      .value === "treatmentItemType_0" ||
                     element.recipelDetailEvtList[i].drugStuffId.costItem.itemType
-                      .value == "treatmentItemType_1"
+                      .value === "treatmentItemType_1"
                   ) {
-                    console.log(
-                      element.recipelDetailEvtList[i].drugStuffId.costItem
-                        .inspectionCheckInfo,
-                      "进来了妈"
-                    );
                     this.inspectionType[i] = 1;
                   }
                 }
               }
             }
-            if (element.recipelInfo.recipelType.value == "recipelType_2") {
+            if (element.recipelInfo.recipelType.value === "recipelType_2") {
               let infusion = {
                 defaultNumber: 1, //默认组号
                 infusionProject: [
@@ -6244,7 +6155,7 @@
               //this.excharge=null
               let arr = [];
               for (let i = 0; i < element.recipelDetailEvtList.length; i++) {
-                if (element.recipelDetailEvtList[i].isExtra != 1) {
+                if (element.recipelDetailEvtList[i].isExtra !== 1) {
                   infusion.infusionProject[
                   element.recipelDetailEvtList[i].infuseGroup - 1
                     ].push(element.recipelDetailEvtList[i]);
@@ -6291,13 +6202,12 @@
 
           // this.infusionProject=[]
           // this.infusionProject[0].push([])
-          // console.log(this.infusionProject,'集合查看');
 
           // this.medicalEditTabs.forEach(items=>{
-          //   if(items.type=="recipelType_2"){
+          //   if(items.type==="recipelType_2"){
           //       let count=0
           //       for (let i = 0; i < items.content.recipelDetailEvtList; i++) {
-          //         if(this.medicalEditTabs[i].type=='recipelType_2'){
+          //         if(this.medicalEditTabs[i].type==='recipelType_2'){
           //           if(count<this.medicalEditTabs[i].content.recipelDetailEvtList.infuseGroup){
           //             count=this.medicalEditTabs[i].content.recipelDetailEvtList.infuseGroup
           //           }
@@ -6307,17 +6217,14 @@
           //       for (let i = 1; i < count; i++) {
           //         this.zushu.push(i+1)
           //         }
-          //          console.log(this.zushu,'组数');
           //     items.content.recipelDetailEvtList.forEach(infusionItem=>{
-          //      console.log(infusionItem,'集合查看')
-          //       if(infusionItem.infuseGroup-1==0){
+          //       if(infusionItem.infuseGroup-1===0){
           //         this.infusionProject[0].push(infusionItem)
           //       }else{
           //         this.infusionProject[infusionItem.infuseGroup-1].push(infusionItem)
           //       }
 
           //     // items.content.recipelDetailEvtList.infuseGroup
-          //     console.log(infusionItem,'kankanqiqi')
           //     })
 
           //   }
@@ -6340,77 +6247,33 @@
       },
       //获取数据字典的值
       GetAllOption() {
-        this.GetOption("1014474470772899981");
-        this.GetOption("1014474470772899990");
-        this.GetOption("1014474470772899985");
-        this.GetOption("1014474470772900028");
-        this.GetOption("1014474470772900052");
-        this.GetOption("1014474470772900062");
-        this.GetOption("1014474470772900068");
-        this.GetOption("1014474470772900058");
-        this.GetOption("1088952622484547519");
-        this.GetOption("1008534118685450388");
         this.GetSysParamConfig();
-      },
-      GetOption(optionId) {
-        let model = {
-          params: [{
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: optionId,
-          },],
-        };
-        listDictItemAll(model).then((responseData) => {
-          if (optionId == "1014474470772899981") {
-            this.ChineseUseOption = responseData.data;
-            if (this.isSpecial) {
-              this.ChineseUseOption = this.ChineseUseOption.filter(
-                (item) => item.name == "水冲"
-              );
-            }
-          } else if (optionId == "1014474470772899990")
-            this.FrequencyOption = responseData.data;
-          else if (optionId == "1014474470772899985")
-            this.ChineseTimeOption = responseData.data;
-          else if (optionId == "1014474470772900028")
-            this.WesternUseOption = responseData.data;
-          else if (optionId == "1014474470772900052")
-            this.DayNumOption = responseData.data;
-          else if (optionId == "1014474470772900062")
-            this.infuseUseOption = responseData.data;
-          else if (optionId == "1014474470772900068")
-            this.InfusionOption = responseData.data;
-          else if (optionId == "1014474470772900058")
-            this.ChineseUseTimeOption = responseData.data;
-          else if (optionId == "1088952622484547519")
-            this.RecipelSmallTypeList = responseData.data;
-          else if (optionId == "1008534118685450388") {
-            this.TreatTypeOption = [];
-            if (responseData.data) {
-              responseData.data.forEach((element) => {
-                this.TreatTypeOption.push({
-                  name: element.name,
-                  value: element.value,
-                });
-              });
-            }
-          } else if (optionId == "1654447687630167011") {
-            this.InfectTypeOption = [];
-            if (responseData.data) {
-              responseData.data.forEach((element) => {
-                this.InfectTypeOption.push({
-                  name: element.name,
-                  value: element.value,
-                });
-              });
-            }
+        // 批量加载字典
+        getDictItemsByCode(DICT_CODE.CHINESE_MEDICINE_RECIPEL_USE).then((data) => {
+          this.ChineseUseOption = data;
+          if (this.isSpecial) {
+            this.ChineseUseOption = this.ChineseUseOption.filter((item) => item.name === "水冲");
           }
+        });
+        getDictItemsByCode(DICT_CODE.CHINESE_MEDICINE_RECIPEL_TAKE_FREQUENCY).then((data) => { this.FrequencyOption = data; });
+        getDictItemsByCode(DICT_CODE.CHINESE_MEDICINE_RECIPEL_FREQUENCY).then((data) => { this.ChineseTimeOption = data; });
+        getDictItemsByCode(DICT_CODE.WESTERN_MEDICINE_USE).then((data) => { this.WesternUseOption = data; });
+        getDictItemsByCode(DICT_CODE.RECIPEL_DETAIL_DAYS).then((data) => { this.DayNumOption = data; });
+        getDictItemsByCode(DICT_CODE.INFUSE_USE).then((data) => { this.infuseUseOption = data; });
+        getDictItemsByCode(DICT_CODE.SKIN_TEST).then((data) => { this.InfusionOption = data; });
+        getDictItemsByCode(DICT_CODE.CHINESE_MEDICINE_USE).then((data) => { this.ChineseUseTimeOption = data; });
+        getDictItemsByCode(DICT_CODE.RECIPEL_SMALL_TYPE).then((data) => { this.RecipelSmallTypeList = data; });
+        getDictItemsByCode(DICT_CODE.TREAT_TYPE).then((data) => {
+          this.TreatTypeOption = (data || []).map(e => ({ name: e.name, value: e.value }));
+        });
+        getDictItemsByCode(DICT_CODE.INFECT_TYPE).then((data) => {
+          this.InfectTypeOption = (data || []).map(e => ({ name: e.name, value: e.value }));
         });
       },
       //获取系统参数配置
       GetSysParamConfig() {
         listSysParamConfigAll(this.systemParamConfigSearch).then(responseData => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             if (responseData.data.length >= 1) {
               responseData.data.forEach(data => {
                 if (data.configName === "chronicDays") {
@@ -6420,7 +6283,6 @@
                   this.systemParamConfig.normalDays = new Number(data.configValue);
                 }
               })
-              console.log(this.systemParamConfig, "this.systemParamConfig")
             }
           } else {
             this.showMessage(responseData)
@@ -6432,7 +6294,6 @@
 
       //病历配置恢复默认
       ClearMedicineCofigure() {
-        console.log(this.MedicalRecordModel);
         this.ChooseRecordList.map((item) => {
           this.MedicalRecordModel[`${item.name}`] = "";
         });
@@ -6478,9 +6339,8 @@
           "medicalType_2",
         ];
         //判断是否输入的是英文
-        var pattern2 = new RegExp("[A-Za-z]+");
+        const pattern2 = new RegExp("[A-Za-z]+");
         if (pattern2.test(this.SearchWesternInput)) {
-          // console.log(this.SearchWesternInput,'字符');
           this.SearchWesternModel.params[2].value =
             this.SearchWesternInput.toUpperCase();
           this.SearchWesternModel.params[2].columnName = "drug.pinyin_code";
@@ -6514,7 +6374,7 @@
 // 检查是否已存在字段，若不存在才添加
                 listAll(this.SearchWesternModel,type)
           .then((responseData) => {
-            if (responseData.code == 100) {
+            if (responseData.code === 100) {
               // responseData.data.forEach((element) => {
               //     let isUnpackSell = element.isUnpackSell; //允许拆零销售
               //     let stockNumber = element.stockNumber; //库存数量
@@ -6556,8 +6416,7 @@
           });
 
         // listAll(search).then((res)=>{
-        //   if(res.code==100){
-        //     console.log(res.data,'qiaoqiaokan');
+        //   if(res.code===100){
         //   }
         // }).catch((error)=>{
         //   this.outputError(error)
@@ -6570,9 +6429,8 @@
           "medicalType_2",
         ];
         //判断是否输入的是英文
-        var pattern2 = new RegExp("[A-Za-z]+");
+        const pattern2 = new RegExp("[A-Za-z]+");
         if (pattern2.test(this.SearchInfusion[index])) {
-          // console.log(this.SearchWesternInput,'字符');
           this.SearchWesternModel.params[2].value =
             this.SearchInfusion[index].toUpperCase();
           this.SearchWesternModel.params[2].columnName = "drug.pinyin_code";
@@ -6604,7 +6462,7 @@
           });
         }
         listAll(this.SearchWesternModel, 0).then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             // responseData.data.forEach((element) => {
             //     let isUnpackSell = element.isUnpackSell; //允许拆零销售
             //     let stockNumber = element.stockNumber; //库存数量
@@ -6650,9 +6508,8 @@
         this.SearchChineseModel.params[1].columnName = "drug.type";
         this.SearchChineseModel.params[1].value = ["medicalType_1"];
         //判断是否输入的是英文
-        var pattern3 = new RegExp("[A-Za-z]+");
+        const pattern3 = new RegExp("[A-Za-z]+");
         if (pattern3.test(this.SearchChineseInput)) {
-          // console.log(this.SearchWesternInput,'字符');
           this.SearchChineseModel.params[2].value =
             this.SearchChineseInput.toUpperCase();
           this.SearchChineseModel.params[2].columnName = "drug.pinyin_code";
@@ -6683,7 +6540,7 @@
           });
         }
         listAll(this.SearchChineseModel, type).then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.ChineseMedicineTable = responseData.data;
           }
         });
@@ -6697,7 +6554,7 @@
           row.drug.days.value &&
           row.drug.frequency.value &&
           row.drug.singleDosage &&
-          row.drug.total != 0
+          row.drug.total !== 0
         ) {
           let total = Math.ceil(
             BigNumber(row.drug.singleDosage)
@@ -6723,7 +6580,7 @@
           this.$message.error("已有该药品");
           return;
         }
-        if (count == 5) {
+        if (count === 5) {
           this.$message.error("每个西药处方最多只能添加5个药品");
           return;
         }
@@ -6771,18 +6628,15 @@
 
       //输液表格行点击选择添加到已选择西药处方的表格
       RowClickInfusionTable(row, column, event, index) {
-        console.log(this.medicalClickTabsValue, "就像");
         let content = this.medicalClickTabsValue.content;
         let recipelDetailEvtList =
           this.medicalClickTabsValue.infusion.infusionProject[index];
         let count = 0;
         let hasFlag = false;
-        console.log(row);
 
         recipelDetailEvtList.forEach((element) => {
           if (element.isExtra === 0) {
             count++;
-            console.log(count, "看数据");
             if (row.id === element.drugStuffId.drugStuffId) {
               hasFlag = true;
             }
@@ -6792,7 +6646,7 @@
         //   this.$message.error("已有该药品");
         //   return;
         // }
-        if (count == 5) {
+        if (count === 5) {
           this.$message.error("每个输液处方最多只能添加5个药品");
           return;
         }
@@ -6835,11 +6689,8 @@
           JSON.parse(JSON.stringify(recipelDetailEvt))
         );
         this.$message.success("添加成功！");
-        console.log(drugStuff);
-        console.log(content);
         this.$nextTick(() => {
           this.$refs['transfusion'].slice(-2, -1)[0].focus()
-          console.log("++++++++++++++++++++++", this.$refs['transfusion'])
         })
       },
 
@@ -6851,13 +6702,12 @@
           (0, this.medicalClickTabsValue.content.recipelDetailEvtList.length);
           return
         }
-        // console.log(
         //   this.chineseTest,
         //   "就是"
         // );
-        // if(row.stuffType==1){
+        // if(row.stuffType===1){
         //   for (let i = 0; i < this.chineseTest[item.key-1].length; i++) {
-        //     if(row.drugStuffId.drug.name==this.chineseTest[item.key-1][i]){
+        //     if(row.drugStuffId.drug.name===this.chineseTest[item.key-1][i]){
         //       this.chineseTest[item.key-1].splice(i,1)
         //       //i--;
         //     }
@@ -6881,7 +6731,6 @@
             ].splice(index, 1);
         }
         this.MedicalCalculate();
-        // console.log(row,'传说');
       },
       DeleteExMedicalRow(index, row) {
         this.medicalClickTabsValue.content.recipelDetailEvtList =
@@ -6949,8 +6798,6 @@
 
       },
       GetChineseFee(tabData, rowData) {
-        console.log(tabData);
-        console.log(tabData.content.recipelInfo, "1212");
         if (rowData) {
           let recipelInfo = tabData.content.recipelInfo;
           tabData.content.recipelInfo.dosage = recipelInfo.dosage ?
@@ -6986,9 +6833,8 @@
             },
           ],
         };
-        var pattern2 = new RegExp("[A-Za-z]+");
+        const pattern2 = new RegExp("[A-Za-z]+");
         if (pattern2.test(this.SearchCostItemInput)) {
-          // console.log(this.SearchWesternInput,'字符');
           SearchModel.params[1].value = this.SearchCostItemInput.toUpperCase();
           SearchModel.params[1].columnName = "pinyin_code";
         } else {
@@ -6996,7 +6842,7 @@
           SearchModel.params[1].columnName = "item_name";
         }
         listCostItemAll(SearchModel).then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.TreatmentTable = responseData.data;
           }
         });
@@ -7043,7 +6889,6 @@
         this.$message.success("添加成功！");
         this.$nextTick(() => {
           this.$refs['DiagnosisTreatment'].slice(-2, -1)[0].focus()
-          console.log("++++++++++++++++++++++", this.$refs['DiagnosisTreatment'])
         })
         this.MedicalCalculate();
       },
@@ -7054,7 +6899,6 @@
         this.SurchargeTable = [];
         this.GetSurchargeCostItemTable();
         this.GetSurchargeStuffTable();
-        console.log(this.SurchargeTable);
       },
       GetSurchargeCostItemTable() {
         let SearchModel = {
@@ -7079,17 +6923,16 @@
             },
           ],
         };
-        var pattern3 = new RegExp("[A-Za-z]+");
+        const pattern3 = new RegExp("[A-Za-z]+");
         if (pattern3.test(this.SearchSurchargeInput)) {
           SearchModel.params[1].value = this.SearchSurchargeInput.toUpperCase();
           SearchModel.params[1].columnName = "pinyin_code";
         } else {
-          //console.log(this.SearchSurchargeInput,'字符');
           SearchModel.params[1].value = this.SearchSurchargeInput;
           SearchModel.params[1].columnName = "item_name";
         }
         listCostItemAll(SearchModel).then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             responseData.data.forEach((element) => {
               element["stuffType"] = "3";
               this.SurchargeTable.push(element);
@@ -7125,9 +6968,8 @@
             },
           ],
         };
-        var pattern2 = new RegExp("[A-Za-z]+");
+        const pattern2 = new RegExp("[A-Za-z]+");
         if (pattern2.test(this.SearchSurchargeInput)) {
-          // console.log(this.SearchWesternInput,'字符');
           SearchModel.params[1].value = this.SearchSurchargeInput.toUpperCase();
           SearchModel.params[1].columnName = "stuff.pinyin_code";
         } else {
@@ -7145,7 +6987,7 @@
           value: "0",
         });
         listAll(SearchModel).then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             responseData.data.forEach((element) => {
               element["stuffType"] = "4";
               this.SurchargeTable.push(element);
@@ -7218,7 +7060,7 @@
           recipelDetailEvt.allFee = recipelDetailEvt.drugStuffId.costItem.salePrice * totalDosage;
         }
 
-        if (this.medicalClickTabsValue.type == "recipelType_2") {
+        if (this.medicalClickTabsValue.type === "recipelType_2") {
           this.medicalClickTabsValue.infusion.excharge.push(
             JSON.parse(JSON.stringify(recipelDetailEvt))
           );
@@ -7230,14 +7072,13 @@
         this.$message.success("添加成功！");
         this.$nextTick(() => {
           this.$refs['additionalCharge'].slice(-2, -1)[0].focus()
-          console.log("++++++++++++++++++++++", this.$refs['additionalCharge'])
           this.MedicalCalculate();
         })
 
       },
       getDataFilterTable(data, isExtra, item) {
         let arr = [];
-        if (data.length == undefined) {
+        if (data.length === undefined) {
           arr.push(data);
         } else if (data.length >= 1) {
           for (let i = 0; i < data.length; i++) {
@@ -7247,7 +7088,7 @@
               data[i].isUnpackSell = data[i].drugStuffId && data[i].drugStuffId.isUnpackSell === 1 ? 1 : 0;
             }
             // 根据 isUnpackSell 正确设置总量单位
-            if (data[i].minTotal != undefined) {
+            if (data[i].minTotal !== undefined) {
               // 获取包装规格：药品用 drug.preparation，材料用 stuff.packNumber
               let preparation = 1;
               if (data[i].stuffType === '4') {
@@ -7261,16 +7102,7 @@
                 }
               }
               
-              console.log('数据回显 - 总量转换调试:', {
-                name: data[i].drugStuffId ? data[i].drugStuffId.name : '未知',
-                minTotal: data[i].minTotal,
-                isUnpackSell: data[i].isUnpackSell,
-                preparation: preparation,
-                drug_preparation: data[i].drugStuffId ? data[i].drugStuffId.drug : null,
-                stuff_packNumber: data[i].drugStuffId ? data[i].drugStuffId.stuff : null
-              });
-              
-              if (data[i].isUnpackSell == 1) {
+              if (data[i].isUnpackSell === 1) {
                 // 拆零销售：总量 = 制剂单位总量
                 data[i].total = data[i].minTotal;
               } else {
@@ -7278,28 +7110,27 @@
                 data[i].total = Math.ceil(data[i].minTotal / (preparation || 1));
               }
             }
-            if (data[i].isExtra == 0 && data[i].drugStuffId.drug) {
-              if (data[i].drugStuffId.drug.type.value == "medicalType_0") {
-                //   if(data[i].singleDosage==0&&data[i].singleDosage==" "&&data[i].drugStuffId.drug.singleDosage){
+            if (data[i].isExtra === 0 && data[i].drugStuffId.drug) {
+              if (data[i].drugStuffId.drug.type.value === "medicalType_0") {
+                //   if(data[i].singleDosage===0&&data[i].singleDosage===" "&&data[i].drugStuffId.drug.singleDosage){
                 //   data[i].singleDosage = data[i].drugStuffId.drug.singleDosage
                 // }
-                //console.log(item,'这是一个新址');
                 if (
-                  data[i].singleDosage == 0 &&
-                  data[i].singleDosage == " " &&
+                  data[i].singleDosage === 0 &&
+                  data[i].singleDosage === " " &&
                   data[i].drugStuffId.drug.singleDosage
                 ) {
-                  let flages = false;
+                  let flags = false;
                   for (let i = 0; i < item.costDebug.chineseTest.length; i++) {
                     if (
-                      item.costDebug.chineseTest[i] ==
+                      item.costDebug.chineseTest[i] ===
                       data[i].drugStuffId.drug.name
                     ) {
-                      flages = true;
+                      flags = true;
                       break;
                     }
                   }
-                  if (!flages) {
+                  if (!flags) {
                     data[i].singleDosage = data[i].drugStuffId.drug.singleDosage ?
                       data[i].drugStuffId.drug.singleDosage :
                       "";
@@ -7325,23 +7156,23 @@
                     data[i].drugStuffId.drug.westernMedicineUse;
                 }
               }
-              if (data[i].drugStuffId.drug.type.value == "medicalType_1") {
-                let flages = false;
+              if (data[i].drugStuffId.drug.type.value === "medicalType_1") {
+                let flags = false;
                 if (
-                  data[i].singleDosage == 0 &&
-                  data[i].singleDosage == " " &&
+                  data[i].singleDosage === 0 &&
+                  data[i].singleDosage === " " &&
                   data[i].drugStuffId.drug.singleDosage
                 ) {
                   for (let i = 0; i < item.costDebug.chineseTest.length; i++) {
                     if (
-                      item.costDebug.chineseTest[i] ==
+                      item.costDebug.chineseTest[i] ===
                       data[i].drugStuffId.drug.name
                     ) {
-                      flages = true;
+                      flags = true;
                       break;
                     }
                   }
-                  if (!flages) {
+                  if (!flags) {
                     data[i].singleDosage = data[i].drugStuffId.drug.singleDosage ?
                       data[i].drugStuffId.drug.singleDosage :
                       "";
@@ -7366,7 +7197,7 @@
         //  this.MedicalCalculate()
 
         // if(data.length>1){
-        //   if(data[0].infuseGroup!=undefined){
+        //   if(data[0].infuseGroup!==undefined){
         //    return data.filter((item) => item.isExtra === isExtra);
 
         // }else{
@@ -7378,7 +7209,7 @@
       },
       GetSurchargeFee(index, row) {
         row.singleDosage = row.singleDosage ? row.singleDosage : 0;
-        if (row.isUnpackSell == 1) {
+        if (row.isUnpackSell === 1) {
           row.total = row.singleDosage;
           row.allFee = row.total * row.drugStuffId.retailPrice;
         } else {
@@ -7429,7 +7260,6 @@
           let recipelDetailEvtList = tabElement.content.recipelDetailEvtList ?
             tabElement.content.recipelDetailEvtList :
             [];
-          console.log('123',tabElement.content.recipelDetailEvtList )
           seq++;
           //西药处方
           if (tabElement.type === "recipelType_0") {
@@ -7466,7 +7296,7 @@
                   // minTotal 统一保存制剂单位总量，用于后端库存校验
                   rowElement.minTotal = Math.ceil(calculatedTotalInPreparation);
 
-                  if (rowElement.isUnpackSell == 1) {
+                  if (rowElement.isUnpackSell === 1) {
                     // 拆零销售：total 保存制剂单位总量
                     rowElement.unitPrice = rowElement.drugStuffId.retailPrice;
                     rowElement.total = Math.ceil(calculatedTotalInPreparation);
@@ -7491,7 +7321,7 @@
                 if (
                   rowElement.drugStuffId.surplusStock < rowElement.minTotal &&
                   !this.isReadOnly &&
-                  tabElement.content.recipelInfo.dispensionStatus == 0
+                  tabElement.content.recipelInfo.dispensionStatus === 0
                 ) {
                   if (!this.beyondInventoryType) {
                     this.beyondInventoryType = true;
@@ -7522,10 +7352,10 @@
                 detailSeq++;
                 rowElement.seq = detailSeq;
                 if (
-                  rowElement.singleDosage == " " ||
-                  rowElement.singleDosage == ""
+                  rowElement.singleDosage === " " ||
+                  rowElement.singleDosage === ""
                 ) {
-                  if (recipelInfo.dosage == "") {
+                  if (recipelInfo.dosage === "") {
                     rowElement.singleDosage = "";
                     rowElement.total = BigNumber(0)
                       .multipliedBy(0)
@@ -7557,7 +7387,7 @@
                       .toNumber();
                   }
                 } else {
-                  if (recipelInfo.dosage == "") {
+                  if (recipelInfo.dosage === "") {
                     rowElement.singleDosage = rowElement.singleDosage ?
                       rowElement.singleDosage - 0 :
                       0;
@@ -7597,7 +7427,7 @@
                 if (
                   rowElement.drugStuffId.surplusStock < (rowElement.minTotal || rowElement.total) &&
                   !this.isReadOnly &&
-                  tabElement.content.recipelInfo.dispensionStatus == 0
+                  tabElement.content.recipelInfo.dispensionStatus === 0
                 ) {
                   if (!this.beyondInventoryType) {
                     this.beyondInventoryType = true;
@@ -7663,7 +7493,6 @@
             recipelDetailEvtList = tabElement.content.recipelDetailEvtList ?
               tabElement.content.recipelDetailEvtList :
               [];
-            console.log(this.medicalEditTabs, "kankan");
 
             //  recipelInfo.frequency = recipelInfo.frequency ? recipelInfo.frequency : 0;
             let infusionRecipelDetailEvtList =
@@ -7699,7 +7528,7 @@
                   // minTotal 统一保存制剂单位总量，用于后端库存校验
                   rowElement.minTotal = Math.ceil(calculatedTotalInPreparation);
 
-                  if (rowElement.isUnpackSell == 1) {
+                  if (rowElement.isUnpackSell === 1) {
                     // 拆零销售：total 保存制剂单位总量
                     rowElement.unitPrice = rowElement.drugStuffId.retailPrice;
                     rowElement.total = Math.ceil(calculatedTotalInPreparation);
@@ -7722,7 +7551,7 @@
                 if (
                   rowElement.drugStuffId.surplusStock < (rowElement.minTotal || rowElement.total) &&
                   !this.isReadOnly &&
-                  tabElement.content.recipelInfo.dispensionStatus == 0
+                  tabElement.content.recipelInfo.dispensionStatus === 0
                 ) {
                   if (!this.beyondInventoryType) {
                     this.beyondInventoryType = true;
@@ -7790,26 +7619,24 @@
 
           //每个处方的附加费
           recipelDetailEvtList.forEach((rowElement) => {
-            console.log("精神不好估计按时归还健康卡");
-            // if(rowElement.infuseGroup==undefined){
+            // if(rowElement.infuseGroup===undefined){
             if (rowElement.isExtra === 1) {
               detailSeq++;
               rowElement.seq = detailSeq;
               // rowElement.singleDosage =
-              //   rowElement.singleDosage && rowElement.singleDosage != 0 ?
+              //   rowElement.singleDosage && rowElement.singleDosage !== 0 ?
               //     rowElement.singleDosage :
               //     "";
-              if (rowElement.isUnpackSell == 1) {
+              if (rowElement.isUnpackSell === 1) {
                 rowElement.total = rowElement.singleDosage - 0;
                 rowElement.allFee = BigNumber(rowElement.drugStuffId.retailPrice)
                   .multipliedBy(rowElement.total)
                   .toNumber();
                 rowElement.unitPrice = rowElement.drugStuffId.retailPrice;
-                console.log(rowElement, "奇怪");
                 if (
                   rowElement.drugStuffId.surplusStock < (rowElement.minTotal || rowElement.total) &&
                   !this.isReadOnly &&
-                  tabElement.content.recipelInfo.dispensionStatus == 0
+                  tabElement.content.recipelInfo.dispensionStatus === 0
                 ) {
                   if (!this.beyondInventoryType) {
                     this.beyondStuffInventoryType = true;
@@ -7823,7 +7650,7 @@
                 }
               } else {
                 //材料
-                if (rowElement.stuffType == "4") {
+                if (rowElement.stuffType === "4") {
                   rowElement.total = BigNumber(rowElement.singleDosage - 0)
                     .multipliedBy(rowElement.drugStuffId.stuff.packNumber)
                     .toNumber();
@@ -7831,7 +7658,7 @@
                   if (
                     rowElement.drugStuffId.surplusStock < (rowElement.minTotal || rowElement.total) &&
                     !this.isReadOnly &&
-                    tabElement.content.recipelInfo.dispensionStatus == 0
+                    tabElement.content.recipelInfo.dispensionStatus === 0
                   ) {
                     if (!this.beyondInventoryType) {
                       this.beyondStuffInventoryType = true;
@@ -7845,7 +7672,7 @@
                   }
                 }
                 //诊疗项目
-                else if (rowElement.stuffType == "3") {
+                else if (rowElement.stuffType === "3") {
                   rowElement.total = rowElement.singleDosage - 0;
                 }
 
@@ -7920,7 +7747,7 @@
         if (dailyDosage > 0) {
           // 根据 isUnpackSell 判断总量单位
           let totalInPreparation;
-          if (row.isUnpackSell == 1) {
+          if (row.isUnpackSell === 1) {
             // 总量单位是制剂单位，直接使用
             totalInPreparation = row.total;
           } else {
@@ -7941,7 +7768,7 @@
           }
 
           // 计算费用并更新总金额
-          if (row.isUnpackSell == 1) {
+          if (row.isUnpackSell === 1) {
             row.allFee = (row.total * row.drugStuffId.retailPrice).toFixed(2);
           } else {
             row.allFee = (row.total * row.drugStuffId.price).toFixed(2);
@@ -7976,7 +7803,7 @@
         row.minTotal = Math.ceil(totalInPreparation);
 
         // 根据 isUnpackSell 判断总量单位
-        if (row.isUnpackSell == 1) {
+        if (row.isUnpackSell === 1) {
           // 总量单位是制剂单位，直接使用
           row.total = Math.ceil(totalInPreparation);
           // 计算费用
@@ -7985,14 +7812,6 @@
           // 总量单位是包装单位，需要转换为包装单位：总量 (制剂单位) ÷ 包装规格
           let preparation = (row.drugStuffId.drug && row.drugStuffId.drug.preparation) || 
                             (row.drugStuffId.stuff && row.drugStuffId.stuff.packNumber) || 1;
-          console.log('calculateTotalByDays - 总量转换调试:', {
-            name: row.drugStuffId.name,
-            totalInPreparation: totalInPreparation,
-            isUnpackSell: row.isUnpackSell,
-            preparation: preparation,
-            drug_preparation: row.drugStuffId.drug ? row.drugStuffId.drug.preparation : null,
-            stuff_packNumber: row.drugStuffId.stuff ? row.drugStuffId.stuff.packNumber : null
-          });
           row.total = Math.ceil(totalInPreparation / preparation);
           // 计算费用
           row.allFee = (row.total * row.drugStuffId.price).toFixed(2);
@@ -8006,7 +7825,6 @@
           if (valid) {
             //alert('submit!');
           } else {
-            console.log("error submit!!");
             FormCheck = false;
             return false;
           }
@@ -8018,36 +7836,35 @@
 
         let recipelInfoEvtList = [];
 
-        console.log(this.medicalEditTabs);
         let returnForEach = false;
         let hasSelsmallType = false;
         let numberCheck = false;
-        if (this.medicalEditTabs.length == 0) {
+        if (this.medicalEditTabs.length === 0) {
           this.$message.error("处方数量不能为0");
           return;
         }
         this.medicalEditTabs.forEach((tabElement) => {
           //西药处方
           if (
-            tabElement.type == "recipelType_0" &&
+            tabElement.type === "recipelType_0" &&
             !this.MedicalRecordModel.westernDiagnose
           ) {
             returnForEach = true;
           }
           //中药处方
           if (
-            tabElement.type == "recipelType_1" &&
+            tabElement.type === "recipelType_1" &&
             !this.MedicalRecordModel.chinaDiagnose
           ) {
             returnForEach = true;
           }
           if (
             !tabElement.content.recipelInfo.smallType &&
-            tabElement.type != "recipelType_3"
+            tabElement.type !== "recipelType_3"
           ) {
             hasSelsmallType = true;
           }
-          if (tabElement.content.recipelDetailEvtList.length == 0) {
+          if (tabElement.content.recipelDetailEvtList.length === 0) {
             numberCheck = true;
           }
           recipelInfoEvtList.push(tabElement.content);
@@ -8076,12 +7893,11 @@
           recipelInfoEvtList: recipelInfoEvtList,
           isInstant: this.isInstant,
         };
-        console.log(medicalRecipelEvt);
         let formData = new FormData();
         formData.append("entity", JSON.stringify(medicalRecipelEvt));
         this.hint = false;
         allSaveMedicalRecord(formData).then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.$message.success("操作成功！");
             this.hasBtnFinishVisit = false;
             this.hasBtnPrint = false;
@@ -8094,7 +7910,6 @@
         });
       },
       invalidMedical() {
-        console.log(this.medicalClickTabsValue);
         if (
           !this.medicalClickTabsValue.content ||
           !this.medicalClickTabsValue.content.recipelInfo.id
@@ -8105,7 +7920,7 @@
         let id = this.medicalClickTabsValue.content.recipelInfo.id;
 
         invalidStatus(id).then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.$message.success("处方作废成功！");
             this.cancellation = true;
             this.AlreadyPatientDeletilQuery();
@@ -8115,9 +7930,8 @@
         });
       },
       checkInventory(row) {
-        console.log(row.total, "当前行");
         // 用制剂单位总量和库存（制剂单位）比较
-        const minTotal = row.minTotal || (row.isUnpackSell == 1 ? row.total : row.total * (row.drugStuffId.drug.preparation || 1));
+        const minTotal = row.minTotal || (row.isUnpackSell === 1 ? row.total : row.total * (row.drugStuffId.drug.preparation || 1));
         if (minTotal > row.drugStuffId.surplusStock) {
           //
           if (!this.beyondInventoryType) {
@@ -8133,9 +7947,7 @@
       //默认之展开一行
       // 折叠面板每次只能展开一行
       expandSelect(row, expandedRows) {
-        console.log("expandedRows", expandedRows);
-        console.log("row", row);
-        var that = this;
+        const that = this;
         if (expandedRows.length) {
           that.expands = [];
           if (row) {
@@ -8145,59 +7957,56 @@
         } else {
           that.expands = []; // 默认不展开
         }
-        console.log("that.expands", that.expands);
       },
 
       blmbexpandSelect(row, expandedRows) {
         this.blmbtableData.forEach((item) => {
-          if (item.mbbm == row.mbbm) {
+          if (item.mbbm === row.mbbm) {
             this.blmbList.map((mapitem) => {
-              if (mapitem.name == "personalHistory") {
+              if (mapitem.name === "personalHistory") {
                 mapitem.value = item.grs;
-              } else if (mapitem.name == "allergyHistory") {
+              } else if (mapitem.name === "allergyHistory") {
                 mapitem.value = item.gms;
-              } else if (mapitem.name == "diseaseHistory") {
+              } else if (mapitem.name === "diseaseHistory") {
                 mapitem.value = item.jbs;
-              } else if (mapitem.name == "infectiousHistory") {
+              } else if (mapitem.name === "infectiousHistory") {
                 mapitem.value = item.crbs;
-              } else if (mapitem.name == "surgeryHistory") {
+              } else if (mapitem.name === "surgeryHistory") {
                 mapitem.value = item.sss;
-              } else if (mapitem.name == "transfusionHistory") {
+              } else if (mapitem.name === "transfusionHistory") {
                 mapitem.value = item.sxs;
-              } else if (mapitem.name == "physiqueCheck") {
+              } else if (mapitem.name === "physiqueCheck") {
                 mapitem.value = item.tgjc;
-              } else if (mapitem.name == "emergencyDiagnose") {
+              } else if (mapitem.name === "emergencyDiagnose") {
                 mapitem.value = item.jzzd;
-              } else if (mapitem.name == "emergencyEffect") {
+              } else if (mapitem.name === "emergencyEffect") {
                 mapitem.value = item.jzxg;
-              } else if (mapitem.name == "familyHistory") {
+              } else if (mapitem.name === "familyHistory") {
                 mapitem.value = item.jzs;
-              } else if (mapitem.name == "lunariaHistory") {
+              } else if (mapitem.name === "lunariaHistory") {
                 mapitem.value = item.yjz;
-              } else if (mapitem.name == "pregnancyHistory") {
+              } else if (mapitem.name === "pregnancyHistory") {
                 mapitem.value = item.hys;
-              } else if (mapitem.name == "assistCheck") {
+              } else if (mapitem.name === "assistCheck") {
                 mapitem.value = item.fzjc;
-              } else if (mapitem.name == "nowHistory") {
+              } else if (mapitem.name === "nowHistory") {
                 mapitem.value = item.xbs;
-              } else if (mapitem.name == "beforeHistory") {
+              } else if (mapitem.name === "beforeHistory") {
                 mapitem.value = item.jws;
-              } else if (mapitem.name == "epidemicDisease") {
+              } else if (mapitem.name === "epidemicDisease") {
                 mapitem.value = item.lxbxs;
-              } else if (mapitem.name == "otherCheck") {
+              } else if (mapitem.name === "otherCheck") {
                 mapitem.value = item.qtjc;
-              } else if (mapitem.name == "handlingSituation") {
+              } else if (mapitem.name === "handlingSituation") {
                 mapitem.value = item.clqk;
-              } else if (mapitem.name == "healthEducation") {
+              } else if (mapitem.name === "healthEducation") {
                 mapitem.value = item.gthjkjy;
               }
             });
           }
         });
 
-        console.log("expandedRows", expandedRows);
-        console.log("row", row);
-        var that = this;
+        const that = this;
         if (expandedRows.length) {
           that.blmbexpands = [];
           if (row) {
@@ -8207,7 +8016,6 @@
         } else {
           that.blmbexpands = []; // 默认不展开
         }
-        console.log("that.expands", that.expands);
       },
       //病历模板弹框事件
       blmbclick() {
@@ -8216,7 +8024,6 @@
       },
       //病历历史调用
       onMedicalHistory() {
-        console.log("我是病历历史");
         this.$message.warning("开发中。。。");
       },
       blmbonSizeChange(val) {
@@ -8238,22 +8045,22 @@
         this.blmbcxrc.mbmc = this.blmbcxrc.mbmc;
         getblmblist(this.blmbcxrc)
           .then((responseData) => {
-            if (responseData.code == 100) {
+            if (responseData.code === 100) {
               this.blmbpatientTotal = responseData.data.total;
               if (responseData.data.total > 0) {
                 responseData.data.rows.forEach((item) => {
-                  if (item.mblx == "0") {
+                  if (item.mblx === "0") {
                     item.mblx = "通用";
-                  } else if (item.mblx == "1") {
+                  } else if (item.mblx === "1") {
                     item.mblx = "个人";
                   } else {
                     {
                       item.mblx = "";
                     }
                   }
-                  if (item.bllx == "0") {
+                  if (item.bllx === "0") {
                     item.bllx = "西医病历";
-                  } else if (item.bllx == "1") {
+                  } else if (item.bllx === "1") {
                     item.bllx = "中医病历";
                   } else {
                     {
@@ -8327,146 +8134,144 @@
         this.Getblmbtable();
       },
       diaoyong(row) {
-        console.log("进来没有")
         this.ChooseRecordList = [];
         this.MedicalRecordModel.patientTell = row.zs;
         this.MedicineRecordLabelList.map((item) => {
           if (
-            row.grs != "" &&
+            row.grs !== "" &&
             row.grs != null &&
-            item.name == "personalHistory"
+            item.name === "personalHistory"
           ) {
             this.MedicalRecordModel.personalHistory = row.grs;
             this.ChooseRecordList.push(item);
           } else if (
-            row.gms != "" &&
+            row.gms !== "" &&
             row.gms != null &&
-            item.name == "allergyHistory"
+            item.name === "allergyHistory"
           ) {
             this.MedicalRecordModel.allergyHistory = row.gms;
             this.ChooseRecordList.push(item);
           } else if (
-            row.jbs != "" &&
+            row.jbs !== "" &&
             row.jbs != null &&
-            item.name == "diseaseHistory"
+            item.name === "diseaseHistory"
           ) {
             this.MedicalRecordModel.diseaseHistory = row.jbs;
             this.ChooseRecordList.push(item);
           } else if (
-            row.crbs != "" &&
+            row.crbs !== "" &&
             row.crbs != null &&
-            item.name == "infectiousHistory"
+            item.name === "infectiousHistory"
           ) {
             this.MedicalRecordModel.infectiousHistory = row.crbs;
             this.ChooseRecordList.push(item);
           } else if (
-            row.sss != "" &&
+            row.sss !== "" &&
             row.sss != null &&
-            item.name == "surgeryHistory"
+            item.name === "surgeryHistory"
           ) {
             this.MedicalRecordModel.surgeryHistory = row.sss;
             this.ChooseRecordList.push(item);
           } else if (
-            row.sxs != "" &&
+            row.sxs !== "" &&
             row.sxs != null &&
-            item.name == "transfusionHistory"
+            item.name === "transfusionHistory"
           ) {
             this.MedicalRecordModel.transfusionHistory = row.sxs;
             this.ChooseRecordList.push(item);
           } else if (
-            row.tgjc != "" &&
+            row.tgjc !== "" &&
             row.tgjc != null &&
-            item.name == "physiqueCheck"
+            item.name === "physiqueCheck"
           ) {
             this.MedicalRecordModel.physiqueCheck = row.tgjc;
             this.ChooseRecordList.push(item);
           } else if (
-            row.jzzd != "" &&
+            row.jzzd !== "" &&
             row.jzzd != null &&
-            item.name == "emergencyDiagnose"
+            item.name === "emergencyDiagnose"
           ) {
             this.MedicalRecordModel.emergencyDiagnose = row.jzzd;
             this.ChooseRecordList.push(item);
           } else if (
-            row.jzxg != "" &&
+            row.jzxg !== "" &&
             row.jzxg != null &&
-            item.name == "emergencyEffect"
+            item.name === "emergencyEffect"
           ) {
             this.MedicalRecordModel.emergencyEffect = row.jzxg;
             this.ChooseRecordList.push(item);
           } else if (
-            row.jzs != "" &&
+            row.jzs !== "" &&
             row.jzs != null &&
-            item.name == "familyHistory"
+            item.name === "familyHistory"
           ) {
             this.MedicalRecordModel.familyHistory = row.jzs;
             this.ChooseRecordList.push(item);
           } else if (
-            row.yjz != "" &&
+            row.yjz !== "" &&
             row.yjz != null &&
-            item.name == "lunariaHistory"
+            item.name === "lunariaHistory"
           ) {
             this.MedicalRecordModel.lunariaHistory = row.yjz;
             this.ChooseRecordList.push(item);
           } else if (
-            row.hys != "" &&
+            row.hys !== "" &&
             row.hys != null &&
-            item.name == "pregnancyHistory"
+            item.name === "pregnancyHistory"
           ) {
             this.MedicalRecordModel.pregnancyHistory = row.hys;
             this.ChooseRecordList.push(item);
           } else if (
-            row.fzjc != "" &&
+            row.fzjc !== "" &&
             row.fzjc != null &&
-            item.name == "assistCheck"
+            item.name === "assistCheck"
           ) {
             this.MedicalRecordModel.assistCheck = row.fzjc;
             this.ChooseRecordList.push(item);
           } else if (
-            row.xbs != "" &&
+            row.xbs !== "" &&
             row.xbs != null &&
-            item.name == "nowHistory"
+            item.name === "nowHistory"
           ) {
             this.MedicalRecordModel.nowHistory = row.xbs;
             this.ChooseRecordList.push(item);
           } else if (
-            row.jws != "" &&
+            row.jws !== "" &&
             row.jws != null &&
-            item.name == "beforeHistory"
+            item.name === "beforeHistory"
           ) {
             this.MedicalRecordModel.beforeHistory = row.jws;
             this.ChooseRecordList.push(item);
           } else if (
-            row.lxbxs != "" &&
+            row.lxbxs !== "" &&
             row.lxbxs != null &&
-            item.name == "epidemicDisease"
+            item.name === "epidemicDisease"
           ) {
             this.MedicalRecordModel.epidemicDisease = row.lxbxs;
             this.ChooseRecordList.push(item);
           } else if (
-            row.qtjc != "" &&
+            row.qtjc !== "" &&
             row.qtjc != null &&
-            item.name == "otherCheck"
+            item.name === "otherCheck"
           ) {
             this.MedicalRecordModel.otherCheck = row.qtjc;
             this.ChooseRecordList.push(item);
           } else if (
-            row.clqk != "" &&
+            row.clqk !== "" &&
             row.clqk != null &&
-            item.name == "handlingSituation"
+            item.name === "handlingSituation"
           ) {
             this.MedicalRecordModel.handlingSituation = row.clqk;
             this.ChooseRecordList.push(item);
           } else if (
-            row.gthjkjy != "" &&
+            row.gthjkjy !== "" &&
             row.gthjkjy != null &&
-            item.name == "healthEducation"
+            item.name === "healthEducation"
           ) {
             this.MedicalRecordModel.healthEducation = row.gthjkjy;
             this.ChooseRecordList.push(item);
           }
         });
-        console.log(row, "调用模板")
         this.BasicInfoModel.temperature = row.temperature
         this.BasicInfoModel.pulse = row.pulse
         this.BasicInfoModel.breathe = row.breathe
@@ -8519,7 +8324,7 @@
             this.saveblmblist.chinaDiagnose = this.MedicalRecordModel.chinaDiagnose
             saveblmb(this.saveblmblist)
               .then((responseData) => {
-                if (responseData.code == 100) {
+                if (responseData.code === 100) {
                   this.blmbmbmc.mbmc = "";
                   this.blmbmblx = "0";
                   this.blmbmblx = "0";
@@ -8541,15 +8346,14 @@
       Getrecordlist() {
         this.recordtableData = [];
         getrecordpatlist(this.recordpatid).then((responseData) => {
-          if (responseData.code == 100) {
-            console.log();
+          if (responseData.code === 100) {
             responseData.data.forEach((item) => {
-              if (item.xyzd != "" && item.xyzd != null) {
+              if (item.xyzd !== "" && item.xyzd != null) {
                 item.xyzd;
               } else {
                 item.xyzd = "零售";
               }
-              if (item.zyzd != "" && item.zyzd != null) {
+              if (item.zyzd !== "" && item.zyzd != null) {
                 item.zyzd;
               } else {
                 item.zyzd = "";
@@ -8575,7 +8379,7 @@
         //      });
       },
       jzjlclick() {
-        if (this.recordpatid != "" && this.recordpatid != null) {
+        if (this.recordpatid !== "" && this.recordpatid != null) {
           this.drawer = true;
           this.Getrecordlist();
         } else {
@@ -8597,8 +8401,7 @@
           //根据患者id获取会员信息
           getByPatientId(row.patid)
             .then((res) => {
-              if (res.code == "100") {
-                console.log(res, "卡九分零四开发");
+              if (res.code === 100) {
                 this.member = res.data;
               } else {
                 this.$message.error("后台数据异常请联系管理！");
@@ -8607,8 +8410,7 @@
             .catch();
           getPoverty(row.patid)
             .then((res) => {
-              if (res.code == "100") {
-                console.log(res, "贫困户");
+              if (res.code === 100) {
                 this.poverty = res.data;
               } else {
                 this.$message.error("后台数据异常请联系管理！");
@@ -8617,8 +8419,7 @@
             .catch();
           //   //根据患者id获取会员信息
           // getByPatientId(row.patid).then(res=>{
-          //   if(res.code=='100'){
-          //     console.log(res,'卡九分零四开发');
+          //   if(res.code==='100'){
           //     this.member=res.data
           //   }else{
           //     this.$message.error("后台数据异常请联系管理！")
@@ -8626,15 +8427,14 @@
           // }).catch()
           allQueryMedicalRecord(row.regid).then((responseData) => {
             let arr = responseData.data;
-            console.log(arr, "这是怎么回事");
-            if (responseData.code == 100) {
+            if (responseData.code === 100) {
               let recipelInfoEvtList = responseData.data.recipelInfoEvtList;
               recipelInfoEvtList.forEach((element) => {
                 this.AlreadyPatientDescriptions.push(
                   JSON.parse(JSON.stringify(element.recipelInfo))
                 );
               });
-              this.AlreadyPatientDescriptions.sort(function (a, b) {
+              this.AlreadyPatientDescriptions.sort((a, b) => {
                 a.seq = a.seq ? a.seq : 0;
                 b.seq = b.seq ? b.seq : 0;
                 return a.seq - b.seq;
@@ -8663,23 +8463,18 @@
             }
           });
           // this.GetPatient(itemCopy);
-          console.log(this.MedicalRecordModel, "nuide");
         });
         this.overColor = 0;
         // //this.recordpatid=row.patientId.id;
         // //this.clickChangeColor=row.id
-        // console.log(row.regid,this.clickId);
-        // // if(this.clickId!='' && this.clickId==this.activeSelAlreadyPatientItem.id){
-        // //   console.log("没进来嘛？");
+        // // if(this.clickId!=='' && this.clickId===this.activeSelAlreadyPatientItem.id){
         // //   return
 
         // // }else
-        // if(row.regid!=undefined){
+        // if(row.regid!==undefined){
 
-        //   console.log(this.clickId,row.regid,'书法家看法萨克利夫你来撒快发霉了');
         //    if(this.endHint){
         //   this.clickId=row.regid
-        // // console.log(row.regid, "我的");
         // // if (!this.activeSelAlreadyPatientItem) {
         // //   return;
         // // }
@@ -8708,8 +8503,7 @@
         //   this.AlreadyPatientDescriptions = [];
         //   //根据患者id获取会员信息
         //   getByPatientId(row.patid).then(res=>{
-        //     if(res.code=='100'){
-        //       console.log(res,'卡九分零四开发');
+        //     if(res.code==='100'){
         //       this.member=res.data
         //     }else{
         //       this.$message.error("后台数据异常请联系管理！")
@@ -8718,8 +8512,7 @@
         //   allQueryMedicalRecord(row.regid).then((responseData) => {
 
         //     let arr=responseData.data
-        //     console.log(arr,'这是怎么回事');
-        //     if (responseData.code == 100) {
+        //     if (responseData.code === 100) {
 
         //       let recipelInfoEvtList = responseData.data.recipelInfoEvtList;
         //       recipelInfoEvtList.forEach((element) => {
@@ -8727,13 +8520,11 @@
         //           JSON.parse(JSON.stringify(element.recipelInfo))
         //         );
         //       });
-        //       this.AlreadyPatientDescriptions.sort(function (a, b) {
+        //       this.AlreadyPatientDescriptions.sort((a, b) => {
         //         a.seq = a.seq ? a.seq : 0;
         //         b.seq = b.seq ? b.seq : 0;
         //         return a.seq - b.seq;
         //       });
-        //       console.log(this.AlreadyPatientDescriptions, "utiy");
-        //       console.log(responseData.data, "poiu");
         //       this.MedicalRecordModel = responseData.data.medicalRecord;
         //       this.MedicalRecordModel.registration.id = responseData.registration.id;
         //       this.MedicalRecordModel.registration.treatType = responseData.registration.treatType;
@@ -8748,7 +8539,6 @@
         //     }
         //   });
         //   // this.GetPatient(itemCopy);
-        //   console.log(this.MedicalRecordModel, "nuide");
         // });
         // this.overColor=0
         // }else{
@@ -8787,8 +8577,7 @@
         //   this.AlreadyPatientDescriptions = [];
         //    //根据患者id获取会员信息
         //   getByPatientId(row.patid).then(res=>{
-        //     if(res.code=='100'){
-        //       console.log(res,'卡九分零四开发');
+        //     if(res.code==='100'){
         //       this.member=res.data
         //     }else{
         //       this.$message.error("后台数据异常请联系管理！")
@@ -8796,7 +8585,7 @@
         //   }).catch()
         //   allQueryMedicalRecord(row.regid).then((responseData) => {
         //     let arr=responseData.data
-        //     if (responseData.code == 100) {
+        //     if (responseData.code === 100) {
 
         //       let recipelInfoEvtList = responseData.data.recipelInfoEvtList;
         //       recipelInfoEvtList.forEach((element) => {
@@ -8804,7 +8593,7 @@
         //           JSON.parse(JSON.stringify(element.recipelInfo))
         //         );
         //       });
-        //       this.AlreadyPatientDescriptions.sort(function (a, b) {
+        //       this.AlreadyPatientDescriptions.sort((a, b) => {
         //         a.seq = a.seq ? a.seq : 0;
         //         b.seq = b.seq ? b.seq : 0;
         //         return a.seq - b.seq;
@@ -8825,7 +8614,6 @@
         // });
         // this.overColor=0
         // this.endHint=true
-        // console.log(this.endHint);
         //   }).catch(() => {
         //     this.endHint=false
 
@@ -8837,14 +8625,14 @@
         let searchParam;
         if (zdlx === 'WM') {
            searchParam = this.MedicalRecordModel.westernDiagnose
-        } else if (zdlx == 'TCM') {
+        } else if (zdlx === 'TCM') {
            searchParam = this.MedicalRecordModel.chinaDiagnose
-        } else if(zdlx == 'ZYZH'){
+        } else if(zdlx === 'ZYZH'){
           //中医证候
           searchParam = this.MedicalRecordModel.chinaSyndrome
           this.ZHpopoverVisible = true;
           getZhList(searchParam.trim()).then(res => {
-            if(res.code === '100'){
+            if(res.code === 100){
               this.zyzhList = res.data.records
             }
         }).catch((res) => {
@@ -8854,10 +8642,10 @@
         }
         // 防抖后触发查询，若没有输入则查询所有，若有输入则传入查询条件
         getZdList(searchParam.trim(),zdlx).then(res => {
-          if(res.code === '100'){
+          if(res.code === 100){
           if (zdlx === 'WM') {
             this.WMpopoverVisible = true;
-          } else if (zdlx == 'TCM') {
+          } else if (zdlx === 'TCM') {
             this.TCMpopoverVisible = true;
           }
           this.diagnosesList = res.data.records;
@@ -8883,7 +8671,7 @@
 
      },
       onCreateRegistration() {
-        this.$refs.registrationForm.$emit("openAddRegistrationDialog",this.permission.remove,this.permission.view);
+        this.$refs.registrationForm.openAddRegistrationDialog(this.permission.remove,this.permission.view);
       },
       focusNextInput(index) {
         //先录入药品再回车流程
@@ -9523,7 +9311,7 @@
     },
     mounted() {
       let specialCompany = JSON.parse(sessionStorage.getItem("currentCompany"));
-      if (specialCompany && specialCompany.id == "1088657523871555640") {
+      if (specialCompany && specialCompany.id === "1088657523871555640") {
         this.isSpecial = true;
       }
       this.GetAllOption();
@@ -9537,8 +9325,7 @@
 
     },
     watch: {
-      checkInventory: function (row) {
-        console.log(row, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+      checkInventory(row) {
       },
     },
   };

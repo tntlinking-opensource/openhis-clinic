@@ -3,7 +3,7 @@ package com.geeke.outpatient.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.outpatient.entity.*;
-import com.geeke.outpatient.service.schedulingService;
+import com.geeke.outpatient.service.SchedulingService;
 import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.ResultUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,40 +23,40 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/outpatient/scheduling")
-public class schedulingController extends BaseController {
+public class SchedulingController extends BaseController {
 
     @Autowired
-    private schedulingService schedulingService;
+    private SchedulingService schedulingService;
 
     @PostMapping(value = "listAll")
-    public ResponseEntity<JSONObject> listAll(@RequestBody schedulingDTO strEntity) {
-        //schedulingDTO scheduling = strEntity;//JSONObject.parseObject(strEntity, schedulingDTO.class);
-        List<schedulingDTO> result = schedulingService.getHisuserpblist(strEntity);
+    public ResponseEntity<JSONObject> listAll(@RequestBody SchedulingDTO strEntity) {
+        //SchedulingDTO scheduling = strEntity;//JSONObject.parseObject(strEntity, SchedulingDTO.class);
+        List<SchedulingDTO> result = schedulingService.getHisuserpblist(strEntity);
         return ResponseEntity.ok(ResultUtil.successJson(result));
     }
 
     @PostMapping(value = "listzl")
-    public ResponseEntity<JSONObject> listzl(@RequestBody schedulingDTO strEntity) {
-        //schedulingDTO scheduling = strEntity;//JSONObject.parseObject(strEntity, schedulingDTO.class);
-        List<schedulingDTO> result = schedulingService.getlistzl(strEntity);
+    public ResponseEntity<JSONObject> listzl(@RequestBody SchedulingDTO strEntity) {
+        //SchedulingDTO scheduling = strEntity;//JSONObject.parseObject(strEntity, SchedulingDTO.class);
+        List<SchedulingDTO> result = schedulingService.getlistzl(strEntity);
         return ResponseEntity.ok(ResultUtil.successJson(result));
     }
 
     @PostMapping(value = "listzlrday")
-    public ResponseEntity<JSONObject> listzlrday(@RequestBody schedulingDTO strEntity) {
-        List<schedulingDTO> result = schedulingService.listzlr(strEntity);
+    public ResponseEntity<JSONObject> listzlrday(@RequestBody SchedulingDTO strEntity) {
+        List<SchedulingDTO> result = schedulingService.listzlr(strEntity);
         return ResponseEntity.ok(ResultUtil.successJson(result));
     }
 
     @PostMapping(value = "listmx")
-    public ResponseEntity<JSONObject> listmx(@RequestBody schedulingDTO strEntity) {
-        //schedulingDTO scheduling = strEntity;//JSONObject.parseObject(strEntity, schedulingDTO.class);
-        List<schedulingmxDTO> result = schedulingService.getlistmx(strEntity);
+    public ResponseEntity<JSONObject> listmx(@RequestBody SchedulingDTO strEntity) {
+        //SchedulingDTO scheduling = strEntity;//JSONObject.parseObject(strEntity, SchedulingDTO.class);
+        List<SchedulingmxDTO> result = schedulingService.getlistmx(strEntity);
         return ResponseEntity.ok(ResultUtil.successJson(result));
     }
 
     @PostMapping(value = "save")
-    public ResponseEntity<JSONObject> save(@RequestBody scheduling entity) {
+    public ResponseEntity<JSONObject> save(@RequestBody Scheduling entity) {
         entity.setIsLocked("0");
         int countlist= schedulingService.listcount(entity);
         String refdata=null;
@@ -68,7 +68,7 @@ public class schedulingController extends BaseController {
         return ResponseEntity.ok(ResultUtil.successJson(refdata));
     }
     @PostMapping(value = "delete")
-    public ResponseEntity<JSONObject>delete(@RequestBody scheduling entity){
+    public ResponseEntity<JSONObject>delete(@RequestBody Scheduling entity){
         Date cs= entity.getSchedulingtime();
 //        String data = "2021-02-24 24:21:00";
 //        SimpleDateFormat sdf = new SimpleDateFormat ("yyyy-MM-dd");

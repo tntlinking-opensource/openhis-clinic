@@ -274,7 +274,7 @@
       </div> -->
     </div>
     <span slot='footer' class='dialog-footer'>
-      <el-button :disabled="flage" type='primary' :plain='true' @click="submitForm('formLabelAlign')">保 存</el-button>
+      <el-button :disabled="flag" type='primary' :plain='true' @click="submitForm('formLabelAlign')">保 存</el-button>
       <el-button :plain='true' type="primary" @click='onDialogClose()'>取 消</el-button>
     </span>
   </el-dialog>
@@ -282,7 +282,6 @@
 
 <script>
   import BaseUI from "@/views/components/baseUI";
-  import OperationIcon from "@/components/OperationIcon";
   import VDistpicker from 'v-distpicker';
   import {saveblmb, selectmbbm, updatembbm} from '@/api/outpatient/blmb'
 
@@ -291,7 +290,6 @@
     extends: BaseUI,
     name: "blmb-form",
     components: {
-      OperationIcon,
       VDistpicker
     },
     props: ['closeValue'],
@@ -356,12 +354,12 @@
           if (valid) {
             this.formLabelAlign.mblx = this.mblx;
             this.formLabelAlign.bllx = this.bllx;
-            if (this.formLabelAlign.mbbm != '' && this.formLabelAlign.mbbm != null) {
+            if (this.formLabelAlign.mbbm !== '' && this.formLabelAlign.mbbm != null) {
               this.formLabelAlign.updatedBy = currentUser.name + "(" + currentUser.loginname + ")",
                 this.Updateblmbinfo(this.formLabelAlign)
             } else {
               saveblmb(this.formLabelAlign).then((responseData) => {
-                if (responseData.code == 100) {
+                if (responseData.code === 100) {
                   this.onDialogClose();
                   this.$message.success(responseData.msg);
                 }
@@ -371,7 +369,6 @@
                 });
             }
           } else {
-            console.log('error submit!!');
             return false;
           }
         });
@@ -392,7 +389,7 @@
       Getselectmbbm(types) {
         this.blmbcxrc.mbbm = types.mbbm;
         selectmbbm(this.blmbcxrc).then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             responseData.data.forEach(values => {
               this.bllx = values.bllx;
               this.mblx = values.mblx;
@@ -436,7 +433,7 @@
       },
       Updateblmbinfo(values) {
         updatembbm(values).then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.onDialogClose();
             this.$message.success(responseData.msg);
           }
@@ -447,66 +444,40 @@
       },
     },
     mounted: function () {
-      this.$nextTick(() => {
-        this.$on('openAddworkbenchDialog', function (types) {
-          let titles = "";
-          if (types == "") {
-            titles = "新增"
-          } else if (types != "") {
-            titles = "修改"
-          } else {
-            titles = ""
-          }
-          ;
-          if (types != "" && types != null) {
-            this.Getselectmbbm(types);
-          } else {
-            this.mblx = "0",
-              this.bllx = "0",
-              this.formLabelAlign = {
-                mbbm: '',
-                companyId: currentUser.company.id,
-                delFlag: '0',
-                createdBy: currentUser.name + "(" + currentUser.loginname + ")",
-                createdTime: '',
-                updatedBy: '',
-                updatedTime: '',
-                createdID: currentUser.id,
-                mbmc: '',
-                mblx: '',
-                bllx: '',
-                zs: '',
-                grs: '',
-                gms: '',
-                jbs: '',
-                crbs: '',
-                sss: '',
-                sxs: '',
-                tgjc: '',
-                jzzd: '',
-                jzxg: '',
-                jzs: '',
-                yjz: '',
-                hys: '',
-                fzjc: '',
-                xbs: '',
-                jws: '',
-                lxbxs: '',
-                qtjc: '',
-                clqk: '',
-                gthjkjy: '',
-              };
-          }
-          this.dialogProps.action = 'add'
-          this.dialogProps.title = titles + '模板信息'
-          this.tabIndex = '1'
-          this.dialogProps.visible = true
-          this.province = ''
-          this.city = ''
-          this.area = ''
-        })
-      });
-    }
+    },
+    methods: {
+      openAddworkbenchDialog(types) {
+        let titles = "";
+        if (types === "") {
+          titles = "新增"
+        } else if (types !== "") {
+          titles = "修改"
+        } else {
+          titles = ""
+        }
+        if (types !== "" && types != null) {
+          this.Getselectmbbm(types);
+        } else {
+          this.mblx = "0"
+          this.bllx = "0"
+          this.formLabelAlign = {
+            mbbm: '', companyId: currentUser.company.id, delFlag: '0',
+            createdBy: currentUser.name + "(" + currentUser.loginname + ")",
+            createdTime: '', updatedBy: '', updatedTime: '', createdID: currentUser.id,
+            mbmc: '', mblx: '', bllx: '', zs: '', grs: '', gms: '', jbs: '', crbs: '',
+            sss: '', sxs: '', tgjc: '', jzzd: '', jzxg: '', jzs: '', yjz: '', hys: '',
+            fzjc: '', xbs: '', jws: '', lxbxs: '', qtjc: '', clqk: '', gthjkjy: '',
+          };
+        }
+        this.dialogProps.action = 'add'
+        this.dialogProps.title = titles + '模板信息'
+        this.tabIndex = '1'
+        this.dialogProps.visible = true
+        this.province = ''
+        this.city = ''
+        this.area = ''
+      },
+    },
   }
 </script>
 

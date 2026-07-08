@@ -1,61 +1,19 @@
 import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getRecipelInfoById = (id) =>
-    request({
-        url: '/outpatient/recipelInfo/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/outpatient/recipelInfo')
 
-export const listRecipelInfoPage = (search) =>
-    request({
-        url: '/outpatient/recipelInfo/list',
-        method: 'post',
-        data: search
-    })
+// 导出标准CRUD接口（保持向后兼容）
+export const getRecipelInfoById = baseApi.getById
+export const listRecipelInfoPage = baseApi.listPage
+export const listRecipelInfoAll = baseApi.listAll
+export const saveRecipelInfo = baseApi.save
+export const deleteRecipelInfo = baseApi.delete
+export const bulkInsertRecipelInfo = baseApi.bulkInsert
+export const bulkUpdateRecipelInfo = baseApi.bulkUpdate
+export const bulkDeleteRecipelInfo = baseApi.bulkDelete
 
-export const listRecipelInfoAll = (search) =>
-    request({
-        url: '/outpatient/recipelInfo/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveRecipelInfo = (recipelInfo) =>
-    request({
-        url: '/outpatient/recipelInfo/save',
-        method: 'post',
-        data: recipelInfo
-    })
-
-export const deleteRecipelInfo = (recipelInfo) =>
-    request({
-        url: '/outpatient/recipelInfo/delete',
-        method: 'post',
-        data: recipelInfo
-    })
-
-export const bulkInsertRecipelInfo = (recipelInfos) =>
-    request({
-        url: '/outpatient/recipelInfo/bulkInsert',
-        method: 'post',
-        data: recipelInfos
-    })
-
-export const bulkUpdateRecipelInfo = (recipelInfos) =>
-    request({
-        url: '/outpatient/recipelInfo/bulkUpdate',
-        method: 'post',
-        data: recipelInfos
-    })
-
-export const bulkDeleteRecipelInfo = (recipelInfos) =>
-    request({
-        url: '/outpatient/recipelInfo/bulkDelete',
-        method: 'post',
-        data: recipelInfos
-    })
-
+// 自定义接口
 export const invalidStatus = (id) =>
     request({
         url: `/outpatient/recipelInfo/invalid?id=${id}`,

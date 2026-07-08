@@ -99,13 +99,13 @@ export default {
           treePermission(),
           listDataPermissionByRoleId(role.id)
         ])
-        if(listPermissionRespData.code == 100 && treePermissionRespData.code == 100 && listDataPermissionRespData.code == 100) {
+        if(listPermissionRespData.code === 100 && treePermissionRespData.code === 100 && listDataPermissionRespData.code === 100) {
           this.permissionTreeNodes = treePermissionRespData.data
           this.permissionKeys = listPermissionRespData.data
           this.dataPermissions = listDataPermissionRespData.data
 
         } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : (treePermissionRespData.code != 100 ? treePermissionRespData : listDataPermissionRespData))
+          this.showMessage(listPermissionRespData.code !== 100 ? listPermissionRespData : (treePermissionRespData.code !== 100 ? treePermissionRespData : listDataPermissionRespData))
         }
 
         this.loading = false
@@ -142,7 +142,7 @@ export default {
           })
       }
       savePermission(this.role.id, permission).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           this.dialogProps.visible = false
         } else {
           this.showMessage(responseData)
@@ -158,14 +158,14 @@ export default {
       }
       for(let idx = 0; idx < data.children.length; idx++) {
         let item = data.children[idx]
-        if(item.type == 'router') {
+        if(item.type === 'router') {
           return false
         }
       }
       return true
     },
     canDataPermission(data, node) {
-      if(data.type == 'router' && this.isRouterLeaf(data)) {
+      if(data.type === 'router' && this.isRouterLeaf(data)) {
         // 全选 或半选状态
         if(this.isHalfOrChecked(node)) {
           // 元数据配置文件存在
@@ -197,19 +197,19 @@ export default {
     },
     onDataPermission(data) {
       if(data.code) {
-        this.$refs.dataPermission.$emit('openDataPermission', data.code, this.role.id, data.id)
+        this.$refs.dataPermission.openDataPermission(data.code, this.role.id, data.id)
       }
     }
   },
   mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openSetPermissionDialog', function(role) {
-        this.dialogProps.visible = true
-        this.searchText = ''
-        this.componentInit(role);
-      })
-    })
-  }
+  },
+  methods: {
+    openSetPermissionDialog(role) {
+      this.dialogProps.visible = true
+      this.searchText = ''
+      this.componentInit(role);
+    },
+  },
 }
 </script>
 <style lang='scss' scoped>

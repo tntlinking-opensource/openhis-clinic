@@ -11,22 +11,15 @@ import com.geeke.member.service.MemberSetService;
 import com.geeke.outpatient.entity.RecipelInfoEvt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.alibaba.fastjson.JSONObject;
 import com.geeke.member.entity.MemberManagement;
 import com.geeke.member.service.MemberManagementService;
+import com.geeke.common.controller.CrudController;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
-import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.ResultUtil;
-import com.geeke.utils.StringUtils;
 
 /**
  * 会员卡管理Controller
@@ -35,10 +28,10 @@ import com.geeke.utils.StringUtils;
  */
 @RestController
 @RequestMapping(value = "/member/memberManagement")
-public class MemberManagementController extends BaseController {
+public class MemberManagementController extends CrudController<MemberManagementService, MemberManagement> {
 
 	@Autowired
-	private MemberManagementService memberManagementService;
+	protected MemberManagementService memberManagementService;
 
 	@Autowired
     private MemberSetService memberSetService;
@@ -48,7 +41,13 @@ public class MemberManagementController extends BaseController {
 
 	@Autowired
     private MemberManagementDetailService memberManagementDetailService;
-	
+
+    @Override
+    protected MemberManagementService getService() {
+        return memberManagementService;
+    }
+
+    @Override
     @GetMapping("/{id}")
     public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
         MemberManagement entity = memberManagementService.get(id);
@@ -61,25 +60,8 @@ public class MemberManagementController extends BaseController {
         entity.setMemberManagementDetails(memberManagementDetails);
         return ResponseEntity.ok(ResultUtil.successJson(entity));
     }
-    
-    @PostMapping(value = {"list", ""})
-    public ResponseEntity<JSONObject> listPage(@RequestBody SearchParams searchParams) {
-        Page<MemberManagement> result = memberManagementService.listPage(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
-    
-    @PostMapping(value = "listAll")
-    public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
-        List<MemberManagement> result = memberManagementService.listAll(searchParams.getParams(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
 
-    @PostMapping(value = "save")
-    public ResponseEntity<JSONObject> save(@RequestBody MemberManagement entity) {
-        String id = memberManagementService.save(entity).getId();
-        return ResponseEntity.ok(ResultUtil.successJson(id));
-    }
-  
+    @Override
     @PostMapping(value = "delete")
     public ResponseEntity<JSONObject> delete(@RequestBody MemberManagement entity) {
         int rows = memberManagementService.delete(entity);
@@ -87,24 +69,6 @@ public class MemberManagementController extends BaseController {
         if(rows>0){
             memberSetService.addNumber(entity.getMemberSet().getId());
         }
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
-
-    @PostMapping(value = "bulkInsert")
-    public ResponseEntity<JSONObject> bulkInsert(@RequestBody List<MemberManagement> entitys) {
-        List<String> ids = memberManagementService.bulkInsert(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkUpdate")
-    public ResponseEntity<JSONObject> bulkUpdate(@RequestBody List<MemberManagement> entitys) {
-        List<String> ids = memberManagementService.bulkUpdate(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkDelete")
-    public ResponseEntity<JSONObject> bulkDelete(@RequestBody List<MemberManagement> entitys) {
-        int rows = memberManagementService.bulkDelete(entitys);
         return ResponseEntity.ok(ResultUtil.successJson(rows));
     }
 

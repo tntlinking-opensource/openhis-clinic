@@ -85,7 +85,7 @@
     },
     watch:  {
       value(newVal, oldVal) {
-        if(newVal != oldVal) {
+        if(newVal !== oldVal) {
           this.$nextTick(() => {
             setValue(this.$refs.numberInput, this.value)
           })

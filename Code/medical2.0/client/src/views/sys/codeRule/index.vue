@@ -3,7 +3,7 @@
     <!-- 历史记录  -->
     <History :bussObject='curentRow' ></History>
     <!-- 编辑窗口  -->
-    <codeRule-form ref='codeRuleForm' :permission='permission' v-on:save-finished='getCodeRuleList()'></codeRule-form>
+    <codeRule-form ref='codeRuleForm' :permission='permission' @save-finished='loadData'></codeRule-form>
     <div class="page-container">
       <!--  搜索栏  开始 -->
       <div class='query-form-container'>
@@ -25,7 +25,7 @@
                   <el-tooltip  effect="light" content="更多" placement="top-start">
                     <el-button type="primary" icon="el-icon-d-arrow-right" @click='onMoreCodition()' :plain='true'></el-button>
                   </el-tooltip>
-                </el-button-group> 
+                </el-button-group>
               </el-col>
             </el-form>
           </el-row>
@@ -35,7 +35,7 @@
       <!-- 工具栏 开始 -->
       <div class="page-container-header-end">
         <div>
-          <el-button v-show='permission.add' type='primary' icon='el-icon-plus'  @click='onCreateCodeRule()'>添加</el-button>
+          <el-button v-show='permission.add' type='primary' icon='el-icon-plus'  @click='onCreateEntity("codeRuleForm")'>添加</el-button>
         </div>
       </div>
       <!-- 工具栏 结束 -->
@@ -46,8 +46,8 @@
             <el-table class='drag_table' :data='codeRuleList' border @sort-change='onSortChange' @header-dragend='onChangeWidth' :cell-class-name='cellClassName' :header-cell-class-name='headerCellClassName' highlight-current-row>
               <el-table-column v-for="(cv, index) in columnViews" v-if='cv.display' :prop='cv.prop' :key="`columnViews_${index}`" :label='cv.label' sortable='custom' :align='cv.align' :min-width='cv.miniWidth+"px"' :width='cv.width+"px"' header-align='center' :column-key='index.toString()' :render-header="renderHeader">
                 <template slot-scope='{row,$index}'>
-                  <span v-if='columnViews[index].showType == "Switch" || columnViews[index].showType == "Checkbox" || columnViews[index].showType == "Radio"'>
-                    <li v-if='getAttrValue(row, columnViews[index].prop) == "1"' class='el-icon-check' style='color:#F56C6C;'></li>
+                  <span v-if='columnViews[index].showType === "Switch" || columnViews[index].showType === "Checkbox" || columnViews[index].showType === "Radio"'>
+                    <li v-if='getAttrValue(row, columnViews[index].prop) === "1"' class='el-icon-check' style='color:#F56C6C;'></li>
                   </span>
                   <span v-else>{{ getAttrValue(row, columnViews[index].prop, columnViews[index].javaType)}}</span>
                 </template>
@@ -61,19 +61,19 @@
                 </template>
                 <template slot-scope='scope'>
                   <OperationIcon v-show='permission.view' type='info' content='查看' placement='top-start' icon-name='el-icon-view'
-                    @click='onViewCodeRule(scope.$index, scope.row)'></OperationIcon>
+                    @click='onViewEntity(scope.$index, scope.row, "codeRuleForm")'></OperationIcon>
                   <OperationIcon v-show='permission.edit' type='primary' content='编辑' placement='top-start' icon-name='el-icon-edit'
-                    @click='onEditCodeRule(scope.$index, scope.row)'></OperationIcon>
+                    @click='onEditEntity(scope.$index, scope.row, "codeRuleForm")'></OperationIcon>
                   <OperationIcon v-show='permission.add' type='primary' content='复制' placement='top-start' icon-name='el-icon-document'
-                    @click='onCopyCodeRule(scope.$index, scope.row)'></OperationIcon>
-                  <OperationIcon v-show='permission.remove' type='danger' content='删除' placement='top-start' icon-name='el-icon-delete'
-                    @click='onDeleteCodeRule(scope.$index, scope.row)'></OperationIcon>
+                    @click='onCopyEntity(scope.$index, scope.row, "codeRuleForm")'></OperationIcon>
                   <OperationIcon v-show='permission.view' type='info' content='历史记录' placement='top-start' icon-name='el-icon-info'
                     @click='onShowHistory(scope.$index, scope.row)'></OperationIcon>
+                  <OperationIcon v-show='permission.remove' type='danger' content='删除' placement='top-start' icon-name='el-icon-delete'
+                    @click='onDeleteEntity(scope.$index, scope.row, deleteCodeRule)'></OperationIcon>
                 </template>
               </el-table-column>
             </el-table>
-    	  </div>
+        </div>
         </el-col>
       </el-row>
       <!-- 表格栏  结束 -->
@@ -98,9 +98,8 @@
 </template>
 
 <script>
-import { validatenull } from '@/utils/validate'
 import { listCodeRulePage, getCodeRuleById, deleteCodeRule } from '@/api/sys/codeRule'
-import { listResourcePermission } from '@/api/admin/common/permission'
+import listViewMixin from '@/mixins/listViewMixin'
 import CodeRuleForm from './codeRuleForm'
 import ExportExcelButton from '@/components/ExportExcelButton'
 import ViewColumnsSelect from '@/views/components/ViewColumnsSelect'
@@ -110,6 +109,7 @@ import OperationIcon from '@/components/OperationIcon'
 import History from '@/views/components/history'
 export default {
   extends: MainUI,
+  mixins: [listViewMixin],
   components: {
     CodeRuleForm,
     ExportExcelButton,
@@ -120,30 +120,18 @@ export default {
   },
   data() {
     return {
-      permission: {
-        view: false,
-        add: false,
-        edit: false,
-        remove: false,
-        export: false
-      },
-      queryTypes: {
-        'name': 'like',
-      },
+      // listViewMixin 配置
+      listApi: listCodeRulePage,
+      getApi: getCodeRuleById,
+      deleteApi: deleteCodeRule,
+      entityName: 'CodeRule',
+      permissionPrefix: 'codeRule',
+
       queryModel: {
         'name': '',   // 名称
       },
-      search: {
-        params: [],
-        offset: 0,
-        limit: 10,
-        columnName: '',       // 排序字段名
-        order: ''             // 排序
-      },
-      currentPage: 1,
       codeRuleTotal: 0,
       codeRuleList: [],
-
 
       oprColumnWidth: 140,  // 操作列宽
       tableId: '443038039937040385',
@@ -151,176 +139,22 @@ export default {
     }
   },
   methods: {
-    getCodeRuleList() {
-      this.setLoad()
-      /* 查询参数 和数据权限 */
-      this.search.params = []
-      if(this.moreCodition) {
-        this.search.params = this.search.params.concat(this.compositeCondition())
-      }else{
-        // 查询参数: 名称
-        this.search.params.push({
-      	  columnName: 'name',
-      	  queryType: 'like',
-          value: this.queryModel.name
-        })
-      }
-      // 数据权限: 系统编号规则sys_code_rule
-      this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-      listCodeRulePage(this.search).then(responseData => {
-        if(responseData.code == 100) {
-          this.codeRuleTotal = responseData.data.total
-          this.codeRuleList = responseData.data.rows
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onSearch() {
-      if(this.moreCodition) {
-        this.search.offset = 0
-        this.currentPage = 1
-        this.getCodeRuleList()
+    appendSearchParams() {
+      if (this.moreCodition) {
+        this.search.params = this.compositeCondition()
       } else {
-        this.$refs['queryForm'].validate(valid => {
-          if (valid) {
-            this.search.offset = 0
-            this.currentPage = 1
-            this.getCodeRuleList()
-          } else {
-            return false
-          }
-        })
+        this.search.params = [
+          { columnName: 'name', queryType: 'like', value: this.queryModel.name }
+        ]
       }
+      this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
     },
-    onSizeChange(val) {
-      this.currentPage = 1
-      this.search.limit = val;
-      this.search.offset = (this.currentPage - 1) * val
-      this.getCodeRuleList()
-    },
-    onCurrentChange(val) {
-      this.search.offset = (val - 1) * this.search.limit
-      this.currentPage = val
-      this.getCodeRuleList()
-    },
-    async pageInit() {
-      this.setLoad()
-      try {
-        this.initOptions(this.queryModel)
-        this.search.params = []
-        // 数据权限: 系统编号规则sys_code_rule
-        this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-        let [listCodeRuleRespData, listPermissionRespData] = await Promise.all([
-          listCodeRulePage(this.search),
-          listResourcePermission(this.$route.meta.routerId)
-        ])
-        if(listCodeRuleRespData.code == 100 && listPermissionRespData.code == 100) {
-          this.codeRuleTotal = listCodeRuleRespData.data.total
-          this.codeRuleList = listCodeRuleRespData.data.rows
-          this.permission.view = listPermissionRespData.data.find(item => {
-            return item.permission === 'codeRule:read'
-          })
-          this.permission.export = listPermissionRespData.data.find(item => {
-            return item.permission === 'codeRule:export'
-          })
-          this.permission.add = listPermissionRespData.data.find(item => {
-            return item.permission === 'codeRule:create'
-          })
-          this.permission.edit = listPermissionRespData.data.find(item => {
-            return item.permission === 'codeRule:update'
-          })
-          this.permission.remove = listPermissionRespData.data.find(item => {
-            return item.permission === 'codeRule:delete'
-          })
-        } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listCodeRuleRespData)
-        }
-        this.resetLoad()
-      } catch(error) {
-        this.outputError(error)
-      }
-    },
-    onViewCodeRule(index, row) {
-      this.setLoad()
-      getCodeRuleById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.codeRuleForm.$emit('openViewCodeRuleDialog', responseData.data)
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onCreateCodeRule() {
-      this.$refs.codeRuleForm.$emit('openAddCodeRuleDialog')
-    },
-    onEditCodeRule(index, row) {
-      this.setLoad()
-      getCodeRuleById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.codeRuleForm.$emit('openEditCodeRuleDialog', responseData.data)
-        }else{
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onCopyCodeRule(index, row) {
-      this.setLoad()
-      getCodeRuleById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.codeRuleForm.$emit('openCopyCodeRuleDialog', responseData.data)
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onDeleteCodeRule(index, row) {
-      this.$confirm('确定删除吗？', '确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.setLoad()
-        deleteCodeRule(row).then(responseData => {
-          if(responseData.code == 100) {
-            this.getCodeRuleList()
-            this.showMessage({type: 'success', msg: '删除成功'})
-          } else {
-            this.showMessage(responseData)
-          }
-          this.resetLoad()
-        }).catch(error => {
-          this.outputError(error)
-        })
-      }).catch(() => {})
-    },
-    onSortChange( orderby ) {
-      if(validatenull(orderby.prop)) {
-        this.search.columnName = ''
-        this.search.order = ''
-      } else  {
-        this.search.columnName = orderby.prop
-        this.search.order = orderby.order === 'descending' ? 'desc' : 'asc'
-      }
-
-      this.getCodeRuleList()
+    handleListResponse(responseData) {
+      this.codeRuleTotal = responseData.data.total
+      this.codeRuleList = responseData.data.rows
     },
     initOptions(This) {
     }
-  },
-  watch: {
   },
   mounted() {
     this.pageInit()

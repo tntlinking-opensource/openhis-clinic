@@ -1,11 +1,11 @@
 package com.geeke.stock.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.geeke.common.controller.CrudController;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
 import com.geeke.stock.entity.Drug;
 import com.geeke.stock.service.DrugService;
-import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.ResultUtil;
 import com.geeke.utils.constants.ErrorEnum;
 import io.swagger.annotations.ApiOperation;
@@ -27,15 +27,14 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/stock/drug")
-public class DrugController extends BaseController {
+public class DrugController extends CrudController<DrugService, Drug> {
 
     @Autowired
-    private DrugService drugService;
+    protected DrugService drugService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
-        Drug entity = drugService.get(id);
-        return ResponseEntity.ok(ResultUtil.successJson(entity));
+    @Override
+    protected DrugService getService() {
+        return drugService;
     }
 
     @PostMapping(value = {"list", ""})
@@ -134,30 +133,6 @@ public class DrugController extends BaseController {
         return ResponseEntity.ok(ResultUtil.successJson(id));
     }
 
-    @PostMapping(value = "delete")
-    public ResponseEntity<JSONObject> delete(@RequestBody Drug entity) {
-        int rows = drugService.delete(entity);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
-
-    @PostMapping(value = "bulkInsert")
-    public ResponseEntity<JSONObject> bulkInsert(@RequestBody List<Drug> entitys) {
-        List<String> ids = drugService.bulkInsert(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-
-    @PostMapping(value = "bulkUpdate")
-    public ResponseEntity<JSONObject> bulkUpdate(@RequestBody List<Drug> entitys) {
-        List<String> ids = drugService.bulkUpdate(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-
-    @PostMapping(value = "bulkDelete")
-    public ResponseEntity<JSONObject> bulkDelete(@RequestBody List<Drug> entitys) {
-        int rows = drugService.bulkDelete(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
-
     @PostMapping(value = "updateAllIndate")
     public ResponseEntity<JSONObject> updateAllIndate(@RequestBody Drug drug) {
         int i = drugService.updateAllIndate(drug.getIndate(), drug.getCompany().getId());
@@ -179,14 +154,12 @@ public class DrugController extends BaseController {
     @PostMapping("/uploadExcel")
     @ApiOperation("excel")
     public ResponseEntity taskUploadExcel(@RequestParam(value = "file") MultipartFile file) {
-        List<String> error = new ArrayList<>();
         try {
-            error = drugService.excel(file);
-        } catch (Exception e) {
+            List<String> error = drugService.excel(file);
             return ResponseEntity.ok(ResultUtil.successJson(error));
-            // return ResponseEntity.ok(new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, e.getMessage())));
+        } catch (Exception e) {
+            return ResponseEntity.ok(ResultUtil.warningJson(ErrorEnum.E_50001, e.getMessage()));
         }
-        return ResponseEntity.ok(ResultUtil.successJson(error));
     }
 
     /**

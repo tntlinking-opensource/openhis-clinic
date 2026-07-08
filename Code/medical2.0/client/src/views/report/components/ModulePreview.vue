@@ -25,7 +25,7 @@
     font-size: 20px;
     > div {
       flex: 1;
-      /deep/ .bg {
+      ::v-deep .bg {
         height: calc(100vh - 114px) !important;
       }
     }

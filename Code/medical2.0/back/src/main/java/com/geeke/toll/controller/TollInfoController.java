@@ -1,13 +1,15 @@
 package com.geeke.toll.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.geeke.common.constants.BizConstants;
+import com.geeke.common.controller.CrudController;
 import com.geeke.common.controller.SearchParams;
+import com.geeke.common.service.ServiceException;
 import com.geeke.common.data.Page;
 import com.geeke.outpatient.entity.*;
 import com.geeke.outpatient.service.MedicalRecordService;
 import com.geeke.outpatient.service.RecipelInfoService;
 import com.geeke.outpatient.service.RegistrationService;
-import com.geeke.sys.controller.BaseController;
 import com.geeke.toll.entity.*;
 import com.geeke.toll.service.TollInfoService;
 import com.geeke.utils.ResultUtil;
@@ -30,44 +32,32 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping(value = "/toll/tollInfo")
-public class TollInfoController extends BaseController {
+public class TollInfoController extends CrudController<TollInfoService, TollInfo> {
 
 	@Autowired
-	private TollInfoService tollInfoService;
+	protected TollInfoService tollInfoService;
 	@Autowired
     private RecipelInfoService recipelInfoService;
 	@Autowired
     private RegistrationService registrationService;
 	@Autowired
     private MedicalRecordService medicalRecordService;
-	
+
+    @Override
+    protected TollInfoService getService() {
+        return tollInfoService;
+    }
+
     @GetMapping("/getTollInfoByRegistrationId/{registrationId}")
     public ResponseEntity<JSONObject> getTollInfoByRegistrationId(@PathVariable("registrationId") String registrationId) {
         TollInfo entity = tollInfoService.getTollInfoByRegistrationId(registrationId);
         return ResponseEntity.ok(ResultUtil.successJson(entity));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
-        TollInfo entity = tollInfoService.get(id);
-        return ResponseEntity.ok(ResultUtil.successJson(entity));
-    }
-
-    @PostMapping(value = {"list", ""})
-    public ResponseEntity<JSONObject> listPage(@RequestBody SearchParams searchParams) {
-        Page<TollInfo> result = tollInfoService.listPage(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
-    
-    @PostMapping(value = "listAll")
-    public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
-        List<TollInfo> result = tollInfoService.listAll(searchParams.getParams(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
-
+    @Override
     @PostMapping(value = "save")
     public ResponseEntity<JSONObject> save(@RequestBody TollInfo entity) {
-        if("amountStatus_2".equals(entity.getAmountStatus().getValue())){
+        if(BizConstants.AMOUNT_STATUS_REFUNDED.equals(entity.getAmountStatus().getValue())){
             TollInfo tollInfoByRegistrationId = tollInfoService.getTollInfoByRegistrationId(entity.getRegistrationFeeId());
             tollInfoByRegistrationId.setReturnType(1);
             tollInfoService.save(tollInfoByRegistrationId);
@@ -75,30 +65,6 @@ public class TollInfoController extends BaseController {
         }
         String id = tollInfoService.save(entity).getId();
         return ResponseEntity.ok(ResultUtil.successJson(id));
-    }
-  
-    @PostMapping(value = "delete")
-    public ResponseEntity<JSONObject> delete(@RequestBody TollInfo entity) {
-        int rows = tollInfoService.delete(entity);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
-
-    @PostMapping(value = "bulkInsert")
-    public ResponseEntity<JSONObject> bulkInsert(@RequestBody List<TollInfo> entitys) {
-        List<String> ids = tollInfoService.bulkInsert(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkUpdate")
-    public ResponseEntity<JSONObject> bulkUpdate(@RequestBody List<TollInfo> entitys) {
-        List<String> ids = tollInfoService.bulkUpdate(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkDelete")
-    public ResponseEntity<JSONObject> bulkDelete(@RequestBody List<TollInfo> entitys) {
-        int rows = tollInfoService.bulkDelete(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
     }
 
     @PostMapping(value = "tollTotalForm")
@@ -127,7 +93,7 @@ public class TollInfoController extends BaseController {
     {
         if(StringUtils.isNullOrEmpty(chargeStatus))
         {
-            throw new RuntimeException("参数有误");
+            throw new ServiceException("参数有误");
         }
         MedicalRecipelEvt medicalRecipelEvt = medicalRecordService.allQuery(registration,chargeStatus);
         return ResponseEntity.ok(ResultUtil.successJson(medicalRecipelEvt));

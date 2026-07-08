@@ -3,7 +3,7 @@
     <!-- 历史记录  -->
     <History :bussObject='curentRow'></History>
     <!-- 编辑窗口  -->
-    <patient-form ref='patientForm' :permission='permission' v-on:save-finished='getPatientList()'></patient-form>
+    <patient-form ref='patientForm' :permission='permission' @save-finished='getPatientList'></patient-form>
     <el-card class="page-container">
       <!--  搜索栏  开始 -->
       <div class='query-form-container'>
@@ -178,11 +178,8 @@
   import {listDiagnosisPage, getDiagnosisById, saveDiagnosis, deleteDiagnosis } from '@/api/outpatient/remoteDiagnosisTreatment'
   import {listResourcePermission} from '@/api/admin/common/permission'
   import PatientForm from './patientForm'
-  import ExportExcelButton from '@/components/ExportExcelButton'
-  import ViewColumnsSelect from '@/views/components/ViewColumnsSelect'
   import QueryForm from '@/views/components/queryForm'
   import MainUI from '@/views/components/mainUI'
-  import OperationIcon from '@/components/OperationIcon'
   import History from '@/views/components/history'
   import {getLocalToken} from '@/utils/auth';
   import axios from 'axios'
@@ -200,10 +197,7 @@
     extends: MainUI,
     components: {
       PatientForm,
-      ExportExcelButton,
-      ViewColumnsSelect,
       QueryForm,
-      OperationIcon,
       History
     },
     data() {
@@ -355,7 +349,7 @@
         // 数据权限: 患者表patient
         this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
         listDiagnosisPage(this.search).then(responseData => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.patientTotal = responseData.data.total
             this.patientList = responseData.data.rows
           } else {
@@ -373,7 +367,6 @@
 
         let myDate = new Date();
         let lw = new Date(myDate.getTime() - 1000 * 60 * 60 * 24 * 30); //最后一个数字30可改，30天的意思
-        console.log(lw.getDate());
         let lastY = lw.getFullYear();
         let lastM = lw.getMonth() + 1;
         let lastD = lw.getDate();
@@ -429,11 +422,10 @@
             listDiagnosisPage(this.search),
             listResourcePermission(this.$route.meta.routerId)
           ])
-          if (listPatientRespData.code == 100 && listPermissionRespData.code == 100) {
+          if (listPatientRespData.code === 100 && listPermissionRespData.code === 100) {
             this.patientTotal = listPatientRespData.data.total
             this.patientList = listPatientRespData.data.rows
             for (let i = 0; i < this.patientList.length; i++) {
-              console.log(this.patientList[i].diagnosisTime)
               if (this.patientList[i].diagnosisTime) {
                 this.patientList[i].diagnosisTime = this.patientList[i].diagnosisTime.replace("T", " ")
               }
@@ -454,7 +446,7 @@
               return item.permission === 'patient:delete'
             })
           } else {
-            this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listPatientRespData)
+            this.showMessage(listPermissionRespData.code !== 100 ? listPermissionRespData : listPatientRespData)
           }
           this.resetLoad()
         } catch (error) {
@@ -465,8 +457,8 @@
       submit(index, row) {
         this.setLoad()
         getDiagnosisById(row.id).then(responseData => {
-          if (responseData.code == 100) {
-            this.$refs.patientForm.$emit('openViewPatientDialog', responseData.data)
+          if (responseData.code === 100) {
+            this.$refs.patientForm.openViewPatientDialog(responseData.data)
           } else {
             this.showMessage(responseData)
           }
@@ -479,8 +471,8 @@
       viewDiagnosis(index, row) {
         this.setLoad()
         getDiagnosisById(row.id).then(responseData => {
-          if (responseData.code == 100) {
-            this.$refs.patientForm.$emit('openCopyPatientDialog', responseData.data)
+          if (responseData.code === 100) {
+            this.$refs.patientForm.openCopyPatientDialog(responseData.data)
           } else {
             this.showMessage(responseData)
           }
@@ -494,10 +486,8 @@
         await this.$axios.post('/token/Auth/GetAppFrienAuthToken', loginForm, config)
           .then((response) => {
             this.tokenData = response.data.BusData.data.Token
-            console.log(response.data.BusData.data.Token)
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
       },
       // 重新申请发起会议
@@ -526,8 +516,7 @@
 
             }
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
       },
 
@@ -558,7 +547,7 @@
             } else if (response.data.BusData.code === 10000) {
               this.conferenceReturn = response.data.BusData
               // window.open('https://61.172.179.30:17015/' + this.conferenceReturn.data.roompath,'_blank')
-              var i = {
+              const i = {
                 "rtcuserid": this.conferenceReturn.data.rtcuserid,
                   "roomid": this.conferenceReturn.data.roomid,
                   "username": this.conferenceReturn.data.username,
@@ -567,9 +556,8 @@
                   "device": this.conferenceReturn.data.device
               }
               // var a = 'https://61.172.179.30:17015/' + this.conferenceReturn.data.roompath
-              // console.log(i,a)
-              var child = window.open('https://61.172.179.30:17015/' + this.conferenceReturn.data.roompath);
-              setTimeout(function () {
+              const child = window.open('https://61.172.179.30:17015/' + this.conferenceReturn.data.roompath);
+              setTimeout(() => {
                 child.postMessage(i, "*");
               }, 3000);
 
@@ -580,8 +568,7 @@
 
             }
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
       },
 
@@ -614,13 +601,9 @@
         })
           .then((response) => {
             this.hisPatient = response.data.BusData.data
-            console.log("his患者会诊信息"+JSON.stringify(this.hisPatient))
-            console.log(response);
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
-        console.log("row.id" + row.id)
         await this.$axios.post('apis/RemoteTreated/TreatedApplyCancel', {
           Data: {
             ApplyId: this.hisPatient.Id
@@ -636,7 +619,7 @@
           if (response.data.BusData.code === 10000){
             row.diagnosisTime = null;
             saveDiagnosis(row).then(responseData => {
-              if (responseData.code == 100) {
+              if (responseData.code === 100) {
                 this.reset()
               } else {
                 this.reset()
@@ -649,20 +632,18 @@
           } else {
             this.$message.warning("诊疗申请信息异常，请联系管理员后重新发送申请!")
           }
-          console.log(response);
         })
           .catch((error) => {
-            console.log(error);
           });
       },
       onCreatePatient() {
-        this.$refs.patientForm.$emit('openAddPatientDialog')
+        this.$refs.patientForm.openAddPatientDialog()
       },
       onEditPatient(index, row) {
         this.setLoad()
         getDiagnosisById(row.id).then(responseData => {
-          if (responseData.code == 100) {
-            this.$refs.patientForm.$emit('openEditPatientDialog', responseData.data)
+          if (responseData.code === 100) {
+            this.$refs.patientForm.openEditPatientDialog(responseData.data)
           } else {
             this.showMessage(responseData)
           }
@@ -674,8 +655,8 @@
       onCopyPatient(index, row) {
         this.setLoad()
         getDiagnosisById(row.id).then(responseData => {
-          if (responseData.code == 100) {
-            this.$refs.patientForm.$emit('openCopyPatientDialog', responseData.data)
+          if (responseData.code === 100) {
+            this.$refs.patientForm.openCopyPatientDialog(responseData.data)
           } else {
             this.showMessage(responseData)
           }
@@ -691,7 +672,6 @@
           type: 'warning'
         }).then(() => {
           this.setLoad()
-          console.log("row.id"+row.id)
           row.diagnosisTime = null;
           deleteDiagnosis(row).then(responseData => {
             if (responseData.code === 100) {
@@ -755,7 +735,7 @@
 
   ;
 
-  /deep/ .el-table {
+  ::v-deep .el-table {
     .el-table__fixed-body-wrapper {
       top: 47px !important;
     }
@@ -763,19 +743,19 @@
 
   ;
 
-  /deep/ .el-table__fixed-right-patch {
+  ::v-deep .el-table__fixed-right-patch {
     width: 5px !important
   }
 
   ;
 
-  /deep/ .el-table colgroup col[name='gutter'] {
+  ::v-deep .el-table colgroup col[name='gutter'] {
     width: 5px !important
   }
 
   ;
 
-  /deep/ .el-table__body {
+  ::v-deep .el-table__body {
     width: 100% !important
   }
 
@@ -783,16 +763,16 @@
 
   .drag_table {
     // 设置表格header的高度
-    /deep/ th {
+    ::v-deep th {
       height: 44px;
     }
 
-    /deep/ th.gutter:last-of-type {
+    ::v-deep th.gutter:last-of-type {
       height: 0 !important;
     }
 
     // 设置表格body的高度
-    /deep/ .el-table__body-wrapper {
+    ::v-deep .el-table__body-wrapper {
       //解决数据展示超出body高度不滚动bug
       overflow-y: auto;
       // 减去的是表格header的高度
@@ -806,7 +786,7 @@
   }
 </style>
 <style scoped>
-  /deep/ .el-table__body-wrapper {
+  ::v-deep .el-table__body-wrapper {
     height: calc(100% - 44px) !important;
   }
 </style>

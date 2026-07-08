@@ -312,10 +312,10 @@ pickerOptions: {
   },
     methods: {
       stateFormat(row, column) {
-        if (row.fl =="stuffType_0") {
+        if (row.fl ==="stuffType_0") {
           return '医用材料'
         }
-        else if(row.fl =="stuffType_1"){
+        else if(row.fl ==="stuffType_1"){
           return '非医用材料'
         } else  {
           return ''
@@ -425,13 +425,13 @@ this.Getypjxclist();
     this.YpjxcRc.kssj=this.TimeInterval[0];
   this.YpjxcRc.jssj=this.TimeInterval[1]
   }
-  this.YpjxcRc.zt=this.formInline.zt=="qb"?"":this.formInline.zt;
-    this.YpjxcRc.lx=this.formInline.lx=="qb"?"":this.formInline.lx;
+  this.YpjxcRc.zt=this.formInline.zt==="qb"?"":this.formInline.zt;
+    this.YpjxcRc.lx=this.formInline.lx==="qb"?"":this.formInline.lx;
 this.YpjxcRc.spm=this.formInline.spm;
 this.YpjxcRc.ph=this.formInline.ph;
 this.YpjxcRc.orderby=this.YpjxcRc.orderby;
 getcljxcmanagementlist(this.YpjxcRc).then((responseData)=>{
-if (responseData.code == 100){
+if (responseData.code === 100){
   this.patientTotal=responseData.data.total;
   if(responseData.data.total>0){
   responseData.data.rows.forEach((item)=>{

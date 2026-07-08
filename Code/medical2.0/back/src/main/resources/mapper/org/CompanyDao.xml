@@ -523,9 +523,11 @@
         select
         a.id,a.name
         from org_company a
-        left join
+        inner join
         user_tenant ut on a.id = ut.tenant_id
-        where ut.login_name  = #{loginName}
+        inner join
+        sys_user u on ut.user_id = u.id
+        where u.login_name = #{loginName}
         and ut.del_flag = '0' and a.status = 1
     </select>
     <select id="getCompanys" resultType="com.geeke.org.entity.Company">
@@ -541,10 +543,10 @@
 
 
     <select id="getInstitution" resultType="String">
- select
-        a.id
-        from org_company a
-        where a.parent_id = (SELECT parent_id FROM org_company WHERE id=#{companyId}) and a.is_institution = 1;
+        SELECT a.id
+        FROM org_company a
+        INNER JOIN org_company b ON b.id = #{companyId} AND a.parent_id = b.parent_id
+        WHERE a.is_institution = 1
     </select>
 
 

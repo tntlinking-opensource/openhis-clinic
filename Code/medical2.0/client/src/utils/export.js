@@ -2,10 +2,8 @@
 const Excel = require('exceljs')
 
 import FileSaver from 'file-saver'
-export var testaaa = function (){
-  console.log("...");
-}
-export var exportExcel = function(luckysheet, value, needFormula) {
+
+export const exportExcel = (luckysheet, value, needFormula) => {
   // 参数为luckysheet.getluckysheetfile()获取的对象
   // 1.创建工作簿，可以为工作簿添加属性
   const workbook = new Excel.Workbook()
@@ -13,7 +11,7 @@ export var exportExcel = function(luckysheet, value, needFormula) {
   if (Object.prototype.toString.call(luckysheet) === '[object Object]') {
     luckysheet = [luckysheet]
   }
-  luckysheet.forEach(function(table) {
+  luckysheet.forEach((table) => {
     if (table.data.length === 0) return  true
     // ws.getCell('B2').fill = fills.
     const worksheet = workbook.addWorksheet(table.name)
@@ -33,15 +31,14 @@ export var exportExcel = function(luckysheet, value, needFormula) {
       const blob = new Blob([data], {
         type: 'application/vnd.ms-excel;charset=utf-8'
       })
-      console.log("导出成功！")
-  FileSaver.saveAs(blob, `${value}.xlsx`)
+      FileSaver.saveAs(blob, `${value}.xlsx`)
 })
   return buffer
 }
 
-var setMerge = function(luckyMerge = {}, worksheet) {
+const setMerge = (luckyMerge = {}, worksheet) => {
   const mergearr = Object.values(luckyMerge)
-  mergearr.forEach(function(elem) {
+  mergearr.forEach((elem) => {
     // elem格式：{r: 0, c: 0, rs: 1, cs: 2}
     // 按开始行，开始列，结束行，结束列合并（相当于 K10:M12）
     worksheet.mergeCells(
@@ -53,10 +50,10 @@ var setMerge = function(luckyMerge = {}, worksheet) {
   })
 }
 
-var setBorder = function(luckyBorderInfo, worksheet) {
+const setBorder = (luckyBorderInfo, worksheet) => {
   if (!Array.isArray(luckyBorderInfo)) return
   // console.log('luckyBorderInfo', luckyBorderInfo)
-  luckyBorderInfo.forEach(function(elem) {
+  luckyBorderInfo.forEach((elem) => {
     // 现在只兼容到borderType 为range的情况
     // console.log('ele', elem)
     if (elem.rangeType === 'range') {
@@ -90,10 +87,10 @@ var setBorder = function(luckyBorderInfo, worksheet) {
     // worksheet.getCell(rang.row_focus + 1, rang.column_focus + 1).border = border
   })
 }
-var setStyleAndValue = function(cellArr, worksheet, needFormula) {
+const setStyleAndValue = (cellArr, worksheet, needFormula) => {
   if (!Array.isArray(cellArr)) return
-  cellArr.forEach(function(row, rowid) {
-    row.every(function(cell, columnid) {
+  cellArr.forEach((row, rowid) => {
+    row.every((cell, columnid) => {
       if (!cell) return true
       let fill = fillConvert(cell.bg)
 
@@ -110,7 +107,6 @@ var setStyleAndValue = function(cellArr, worksheet, needFormula) {
       let value = ''
 
       if (cell.f && needFormula) {
-        debugger
         value = { formula: cell.f, result: cell.v }
       } else if (!cell.v && cell.ct && cell.ct.s) {
         // xls转为xlsx之后，内部存在不同的格式，都会进到富文本里，即值不存在与cell.v，而是存在于cell.ct.s之后
@@ -138,7 +134,7 @@ var setStyleAndValue = function(cellArr, worksheet, needFormula) {
   })
 }
 
-var fillConvert = function(bg) {
+const fillConvert = (bg) => {
   if (!bg) {
     return {}
   }
@@ -160,7 +156,7 @@ var fillConvert = function(bg) {
   return fill
 }
 
-var fontConvert = function(
+const fontConvert = (
   ff = 0,
   fc = '#000000',
   bl = 0,
@@ -168,7 +164,7 @@ var fontConvert = function(
   fs = 10,
   cl = 0,
   ul = 0
-) {
+) => {
   // luckysheet：ff(样式), fc(颜色), bl(粗体), it(斜体), fs(大小), cl(删除线), ul(下划线)
   const luckyToExcel = {
     0: '微软雅黑',
@@ -184,7 +180,7 @@ var fontConvert = function(
     10: 'Times New Roman ',
     11: 'Tahoma ',
     12: 'Verdana',
-    num2bl: function(num) {
+    num2bl(num) {
       return num === 0 ? false : true
     }
   }
@@ -210,12 +206,12 @@ var fontConvert = function(
   return font
 }
 
-var alignmentConvert = function(
+const alignmentConvert = (
   vt = 'default',
   ht = 'default',
   tb = 'default',
   tr = 'default'
-) {
+) => {
   // luckysheet:vt(垂直), ht(水平), tb(换行), tr(旋转)
   const luckyToExcel = {
     vertical: {
@@ -256,7 +252,7 @@ var alignmentConvert = function(
   return alignment
 }
 
-var borderConvert = function(borderType, style = 1, color = '#000') {
+const borderConvert = (borderType, style = 1, color = '#000') => {
   // 对应luckysheet的config中borderinfo的的参数
   if (!borderType) {
     return {}
@@ -288,7 +284,7 @@ var borderConvert = function(borderType, style = 1, color = '#000') {
   }
 
   let color1
-  if (fc.indexOf('rgb') === -1) {
+  if (color.indexOf('rgb') === -1) {
     color1 = color.replace('#', '')
   } else {
     color1 = color.colorHex().replace('#', '')
@@ -375,17 +371,18 @@ function createCellPos(n) {
 }
 
 
-String.prototype.colorHex = function () {
-  // RGB颜色值的正则
-  var reg = /^(rgb|RGB)/;
-  var color = this;
-  if (reg.test(color)) {
-    var strHex = "#";
-    // 把RGB的3个数值变成数组
-    var colorArr = color.replace(/(?:\(|\)|rgb|RGB)*/g, "").split(",");
-    // 转成16进制
-    for (var i = 0; i < colorArr.length; i++) {
-      var hex = Number(colorArr[i]).toString(16);
+/**
+ * Standalone function to convert an RGB color string to hex format.
+ * @param {string} str - RGB color string (e.g. "rgb(255, 0, 0)") or already hex
+ * @returns {string} Hex color string (e.g. "#ff0000")
+ */
+export function colorHex(str) {
+  const reg = /^(rgb|RGB)/;
+  if (reg.test(str)) {
+    let strHex = "#";
+    const colorArr = str.replace(/(?:\(|\)|rgb|RGB)*/g, "").split(",");
+    for (let i = 0; i < colorArr.length; i++) {
+      let hex = Number(colorArr[i]).toString(16);
       if (hex === "0") {
         hex += hex;
       }
@@ -393,7 +390,6 @@ String.prototype.colorHex = function () {
     }
     return strHex;
   } else {
-    return String(color);
+    return String(str);
   }
-};
-
+}

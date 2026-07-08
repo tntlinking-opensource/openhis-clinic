@@ -191,71 +191,23 @@
 </template>
 
 <script>
-import { validatenull } from "@/utils/validate";
-import ExportExcelButton from "@/components/ExportExcelButton";
-import ViewColumnsSelect from "@/views/components/ViewColumnsSelect";
-import QueryForm from "@/views/components/queryForm";
-import MainUI from "@/views/components/mainUI";
-import OperationIcon from "@/components/OperationIcon";
-import { listDictItemAll } from "@/api/sys/dictItem";
-import { getList,getAmount } from "@/api/stock/dispensing";
+import reportViewMixin from '@/mixins/reportViewMixin'
 import { BigNumber } from "bignumber.js";
-import { getDrugSales, getDrugSalesStat,exportExcel} from "@/api/toll/drugDetail";
+import { getDrugSales, getDrugSalesStat, exportExcel } from "@/api/toll/drugDetail";
 export default {
-  extends: MainUI,
+  mixins: [reportViewMixin],
   data() {
     return {
+      listApi: getDrugSales,
+      statApi: getDrugSalesStat,
+      exportApi: exportExcel,
+      entityName: 'DrugDetail',
+      permissionPrefix: 'drugDetail',
+      exportColumnName: 'drugDetail',
       queryModel: {
-        name:'',
-        recipelCode:'',
-        type:'',
-        dateRange:[this.addCreateDate(),new Date()]
-      },
-      search: {
-        offset: 0,
-        limit: 20,
-        order: "",
-        columnName: "",
-        params: [
-          {
-            columnName: "company_id",
-            queryType: "=",
-            value: currentUser.company.id,
-          },
-          {
-            logic: "AND",
-            queryType: "("
-          },
-          {
-            columnName: "create_date",
-            logic: "",
-            queryType: 'between',
-            value: [],
-          },
-          {
-            logic: "",
-            queryType: ")"
-          },
-        ],
-      },
-      currentPage: 1,
-      pageSize: 20,
-      dispensingTotal: 0,
-      dispensingList: [],
-      oprColumnWidth: 140, // 操作列宽
-      filerData: {
-        pickerOptions: {
-          disabledDate(time) {
-            return time.getTime() > Date.now() - 8.64e6;
-          },
-        },
-      },
-      allTotal:{}, //总计
-      type_List: [], // 药品类型
-      queryTypes: {
-        goods_name: "like",
-        type: "=",
-        bar_code: "like",
+        name: '',
+        type: '',
+        dateRange: [this.addCreateDate(), new Date()]
       },
     };
   },
@@ -266,55 +218,21 @@ export default {
   },
   methods: {
     exportExcel(){
-      this.search.columnName = 'drugDetail'
-      exportExcel(this.search).then((res)=>{
-         const filename = decodeURI(res.headers.split(';')[1].split('=')[1]) || '.xls'
-                const blob = new Blob([res.data], {
-
-                type: 'application/octet-stream'
-
-              })
-
-                let url = window.URL.createObjectURL(blob);
-
-                let link = document.createElement('a');
-
-                link.style.display = 'none';
-
-                link.href = url;
-
-                link.setAttribute('download', filename);
-
-                document.body.appendChild(link);
-
-                link.click()
-      }).catch((error)=>{
+      this.search.columnName = this.exportColumnName
+      if (!this.exportApi) return
+      this.exportApi(this.search).then((res) => {
+        const filename = decodeURI(res.headers.split(';')[1].split('=')[1]) || '.xls'
+        const blob = new Blob([res.data], { type: 'application/octet-stream' })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.style.display = 'none'
+        link.href = url
+        link.setAttribute('download', filename)
+        document.body.appendChild(link)
+        link.click()
+      }).catch((error) => {
         this.outputError(error)
       })
-    },
-    addCreateDate(){
-       let myDate = new Date();
-        let lw = new Date(myDate.getTime() - 1000 * 60 * 60 * 24 * 30); //最后一个数字30可改，30天的意思
-        console.log(lw.getDate());
-        let lastY = lw.getFullYear();
-        let lastM = lw.getMonth() + 1;
-        let lastD = lw.getDate();
-        let housrs= lw.getHours();
-        let minutes=lw.getMinutes()
-        let seconds=lw.getSeconds()
-        let startData =
-          lastY +
-          "-" +
-          (lastM < 10 ? "0" + lastM : lastM) +
-          "-" +
-          (lastD < 10 ? "0" + lastD : lastD)+
-          " "+housrs+":"+minutes+":"+seconds //三十天之前日期
-          let returnDate=new Date(startData)
-        return returnDate;
-
-    },
-    indexMethod(index){
-       return (this.currentPage-1)*this.search.limit+index +1;
     },
     getTotal(param){
       let { columns, data } = param;
@@ -327,199 +245,58 @@ export default {
           }
       })
       arr[5] = new BigNumber(Number(this.allTotal.allFee)).toFormat(2)+'元'
-      // // arr[4] = this.allTotal.numberAmount
-      // arr[10] = new BigNumber(Number(this.allTotal.priceTotalAmount)).toFormat(2)
-      // arr[11] = new BigNumber(Number(this.allTotal.profitAmount)).toFormat(2)
-      console.log(arr)
       return arr
     },
-    init() {
-        if (this.queryModel.dateRange && this.queryModel.dateRange.length) {
-           this.queryModel.dateRange[0]=this.$moment(this.queryModel.dateRange[0]).format(
-              "YYYY-MM-DD HH:mm:ss"
-            )
-          this.queryModel.dateRange[1]=this.$moment(this.queryModel.dateRange[1]).format(
-                  "YYYY-MM-DD HH:mm:ss"
-                )
-        this.search.params[2].value=this.queryModel.dateRange
-
+    appendSearchParams() {
+      this.search.params = [
+        {
+          columnName: "company_id",
+          queryType: "=",
+          value: currentUser.company.id,
+        },
+      ]
+      if(this.queryModel.dateRange && this.queryModel.dateRange.length){
+        this.queryModel.dateRange[0]=this.$moment(this.queryModel.dateRange[0]).format("YYYY-MM-DD HH:mm:ss")
+        this.queryModel.dateRange[1]=this.$moment(this.queryModel.dateRange[1]).format("YYYY-MM-DD HH:mm:ss")
+        this.search.params.push(
+          { logic: "AND", queryType: "(" },
+          { columnName: "create_date", logic: "", queryType: 'between', value: this.queryModel.dateRange },
+          { logic: "", queryType: ")" }
+        )
       }
-      this.setLoad();
-      getDrugSales(this.search).then((res) => {
-        console.log(res,'看看这个');
-        // getAmount(this.search).then(response=>{
-          if(res.code=="100"){
-             this.dispensingList=res.data.rows
-            this.dispensingTotal = res.data.total
-            getDrugSalesStat(this.search).then((res)=>{
-              if(res.code=="100"){
-                  this.allTotal=res.data
-                 this.resetLoad();
-              }
-            }).catch(()=>{})
-          }
-
-        // })
-      });
-    },
-    onSearch() {
-        this.currentPage = 1;
-        this.search = {
-          columnName:"",
-          limit: this.pageSize,
-          offset: this.currentPage - 1,
-          order: "",
-          params:[
-            {
-              columnName: "company_id",
-              queryType: "=",
-              value: currentUser.company.id,
-            },
-          ]
+      this.search.params.push({
+        columnName: "d.type",
+        queryType: "=",
+        value: validatenull(this.queryModel.type.value) ? "" : this.queryModel.type.value,
+      })
+      if(this.queryModel.name!==undefined && this.queryModel.name!==''){
+        const pattern2 = new RegExp("[A-Za-z]+");
+        if (pattern2.test(this.queryModel.name)) {
+          this.search.params.push({
+            columnName: "d.pinyin_code",
+            queryType: "like",
+            value: this.queryModel.name.toUpperCase(),
+          })
+        } else {
+          this.search.params.push({
+            columnName: "d.goods_name",
+            queryType: "like",
+            value: this.queryModel.name,
+          })
         }
-        if(this.queryModel.dateRange && this.queryModel.dateRange.length){
-          this.search.params.push(
-             {
-            logic: "AND",
-            queryType: "("
-          },
-          {
-            columnName: "create_date",
-            logic: "",
-            queryType: 'between',
-            value: [],
-          },
-          {
-            logic: "",
-            queryType: ")"
-          },
-          )
-        }
-
-        this.search.params.push({
-              columnName: "d.type",
-              queryType: "=",
-              value: validatenull(this.queryModel.type.value)
-                    ? ""
-                    : this.queryModel.type.value,
-            });
-
-        if(this.queryModel.name!=undefined && this.queryModel.name!=''){
-
-             var pattern2 = new RegExp("[A-Za-z]+");
-                if (pattern2.test(this.queryModel.name)) {
-                  this.search.params.push(
-                    {
-                      columnName: "d.pinyin_code",
-                      queryType: "like",
-                      value: this.queryModel.name.toUpperCase(),
-                    },
-
-                  )
-                } else {
-                  this.search.params.push(
-                    {
-                      columnName: "d.goods_name",
-                      queryType: "like",
-                      value: this.queryModel.name,
-                    },
-
-                  )
-                }
-          }
-
-        this.init();
+      }
     },
     resetCondition(){
       this.queryModel = {
-        name:'',
-        recipelCode:'',
-        type:'',
-        dateRange:[this.addCreateDate(),new Date()]
+        name: '',
+        type: '',
+        dateRange: [this.addCreateDate(), new Date()]
       }
       this.currentPage = 1;
-      this.search = {
-        offset: 0,
-        limit: this.pageSize,
-        order: "",
-        columnName: "",
-        params: [
-          {
-            columnName: "company_id",
-            queryType: "=",
-            value: currentUser.company.id,
-          },
-           {
-            logic: "AND",
-            queryType: "("
-          },
-          {
-            columnName: "create_date",
-            logic: "",
-            queryType: 'between',
-            value: [],
-          },
-          {
-            logic: "",
-            queryType: ")"
-          },
-        ],
-      }
-      this.init()
+      this.onSearch()
     },
-    onSizeChange(val) {
-      this.currentPage = 1;
-      this.search.limit = val;
-      this.search.offset = (this.currentPage - 1) * val;
-      this.init();
-    },
-    onCurrentChange(val) {
-      this.search.offset = (val - 1) * this.search.limit;
-      this.currentPage = val;
-      this.init();
-    },
-    initOptions(This) {
-      let type_search = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "1004078055755374603",
-          },
-        ],
-      };
-      // 响应字段的条件操作符，替换成触发字段的操作符
-      type_search.params.forEach((item) => {
-        if (this.queryTypes[item.columnName]) {
-          item.queryType = this.queryTypes[item.columnName];
-        }
-      });
-      // 字段对应表上filter条件
-      type_search.params.push.apply(type_search.params, []);
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(
-        type_search.params,
-        this.$route.meta.routerId,
-        "4005"
-      );
-      this.type_List.splice(0, this.type_List.length);
-      listDictItemAll(type_search).then((responseData) => {
-        this.type_List = responseData.data;
-      });
-    },
-    bigNum(num){
-      if(num||num==='0'){
-        return new BigNumber(num).toFormat(2)
-      }else{
-        return ''
-      }
-    }
   },
   watch: {},
-  mounted() {
-    this.initOptions()
-    this.init();
-  },
 };
 </script>
 <style lang="scss" scoped>
@@ -530,7 +307,7 @@ export default {
   padding: 0px 0px 10px 0px;
 }
 .typeClass{
-  /deep/ .el-input{
+  ::v-deep .el-input{
     width: 100% !important;
     input{
       width: 100% !important;
@@ -539,7 +316,7 @@ export default {
   }
 }
 .el-col{
-  /deep/ .el-range-separator{
+  ::v-deep .el-range-separator{
     width: 10%;
   }
 }
@@ -550,7 +327,7 @@ export default {
     text-align: right;
   }
 }
-/deep/ .el-table__footer-wrapper{
+::v-deep .el-table__footer-wrapper{
   td:not(:nth-of-type(1)){
     .cell{
       display: inline-block;
@@ -563,10 +340,10 @@ export default {
 .el-table::before{
   height: 0;
 }
-/deep/ .el-table colgroup col[name='gutter']{
+::v-deep .el-table colgroup col[name='gutter']{
   width:5px !important
 }
-/deep/ .el-table__body{
+::v-deep .el-table__body{
   width:100% !important
 }
 </style>

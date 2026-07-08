@@ -14,7 +14,7 @@ import java.util.List;
 
 
 @Service("blmbService")
-@Transactional(readOnly = false)
+@Transactional(readOnly = true)
 public class BlmbService {
 
     @Autowired
@@ -25,6 +25,7 @@ public class BlmbService {
      * @param blmb
      * @return
      */
+    @Transactional(readOnly = false)
     public int insert(Blmb blmb){
         blmb.setMbbm(IdGen.uuid());
         blmb.setCreatedTime(new Date());
@@ -41,6 +42,7 @@ public class BlmbService {
         return new Page<>((long) total,list);
     }
 
+    @Transactional(readOnly = false)
     public int deletembbm(Blmcxrc blmcxrc){
         blmcxrc.setUpdatedTime(new Date());
         return blmbdao.deletembbm(blmcxrc);
@@ -49,6 +51,7 @@ public class BlmbService {
     public List<Blmb> selectmbbm(Blmcxrc blmcxrc){
         return blmbdao.selectmbbm(blmcxrc);
     }
+    @Transactional(readOnly = false)
     public int updatembbm(Blmb blmb){
         blmb.setUpdatedTime(new Date());
         return blmbdao.updatembbm(blmb);

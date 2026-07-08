@@ -167,6 +167,9 @@ export default {
     routers() {
       let items = [];
       let routers = getLocalRouters()
+      if (!routers || !Array.isArray(routers)) {
+        return items;
+      }
       for (let router of routers) {
         let routerProperties = JSON.parse(router.properties)
         let item = {
@@ -192,11 +195,10 @@ export default {
     ...Vuex.mapGetters(['menus', 'breadcrumbItems', 'settings', 'sys'])
   },
   mounted() {
-    console.log(this.$router,'====');
     this.connectWebSocket()
     let setting = getLocalSysSetting()
     this.sysLogo =   require('@/assets/images/projectLogo.png');
-    this.changeWebTitle(setting.sysAbbrname)
+    this.changeWebTitle(setting ? setting.sysAbbrname : '云诊所')
     this.doGetCurrentUsername();
     if(this.$store.getters.toPath){
       let routers = getLocalRouters()
@@ -232,24 +234,23 @@ export default {
           }
         }catch (e) {
           this.reconnect();
-          console.log(e)
+          console.error(e)
         }
       }
     },
     start(){
-      const self = this;
-      self.timeoutObj && clearTimeout(self.timeoutObj);
-      self.serverTimeoutObj && clearTimeout(self.serverTimeoutObj);
-      self.timeoutObj = setTimeout(function(){
-        if (self.websocket.readyState === 1) {
-          self.websocket.send("heartCheck");
-        }else{
-          self.reconnect();
+      this.timeoutObj && clearTimeout(this.timeoutObj);
+      this.serverTimeoutObj && clearTimeout(this.serverTimeoutObj);
+      this.timeoutObj = setTimeout(() => {
+        if (this.websocket.readyState === 1) {
+          this.websocket.send("heartCheck");
+        } else {
+          this.reconnect();
         }
-        self.serverTimeoutObj = setTimeout(function() {
-          self.websocket.close();
-        }, self.timeout);
-      }, self.timeout)
+        this.serverTimeoutObj = setTimeout(() => {
+          this.websocket.close();
+        }, this.timeout);
+      }, this.timeout);
     },
     reset(){
       clearTimeout(this.timeoutObj);
@@ -257,16 +258,15 @@ export default {
       this.start();
     },
     reconnect() {
-      const that = this;
-      if(that.lockReconnect) {
+      if (this.lockReconnect) {
         return;
       }
-      that.lockReconnect = true;
-      that.timeoutnum && clearTimeout(that.timeoutnum);
-      that.timeoutnum = setTimeout(function () {
-        that.connectWebSocket();
-        that.lockReconnect = false;
-      },20 * 1000);
+      this.lockReconnect = true;
+      this.timeoutnum && clearTimeout(this.timeoutnum);
+      this.timeoutnum = setTimeout(() => {
+        this.connectWebSocket();
+        this.lockReconnect = false;
+      }, 20 * 1000);
     },
     initWebSocket(){
       this.websocket.onerror = this.setErrorMessage;
@@ -275,7 +275,6 @@ export default {
       this.websocket.onclose = this.setOncloseMessage;
     },
     setOnopenMessage(){
-      console.log("连接成功");
       this.start();
     },
     setOnmessageMessage(event){
@@ -308,11 +307,10 @@ export default {
       }
     },
     setOncloseMessage(){
-      console.log('连接关闭');
       this.reconnect();
     },
     setErrorMessage(){
-      console.log("连接异常");
+      console.error("连接异常");
       this.reconnect();
     },
 
@@ -479,7 +477,7 @@ export default {
     },
 
     openPersonalInfoDialog() {
-      this.$refs.personalInfo.$emit('openPersonalInfoDialog')
+      this.$refs.personalInfo.openPersonalInfoDialog()
     },
 
     doGetCurrentUsername() {
@@ -508,7 +506,7 @@ export default {
     },
     onOpenSetting(type, onType) {
       this.$nextTick(() => {
-        this.$refs[type].$emit(onType)
+        this.$refs[type][onType]()
       })
     },
     changeFavicon(icon) {
@@ -577,7 +575,7 @@ export default {
     overflow: hidden;
     position: relative;
 
-    /deep/ .el-tabs {
+    ::v-deep .el-tabs {
       .el-tabs__header {
         margin: 0;
         border-bottom: none;

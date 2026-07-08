@@ -4,6 +4,8 @@
     
     <sql id="dictItemColumns">
         a.id AS "id",
+        a.company_id AS "company.id",
+        IFNULL(company.name,'') AS "company.name",
         a.dict_type_id AS "dictType.id",
         IFNULL(dictType.name,'') AS "dictType.name",
         IFNULL(dictType.code,'') AS "dictType.code",
@@ -16,8 +18,9 @@
         a.update_date AS "updateDate",
         a.del_flag AS "delFlag"
     </sql>
-    
+
     <sql id="dictItemJoins">
+        LEFT JOIN org_company company ON company.id = a.company_id
         LEFT JOIN sys_dict_type dictType ON dictType.id = a.dict_type_id
     </sql>
     
@@ -86,6 +89,7 @@
     <insert id="insert">
         INSERT INTO sys_dict_item(
             id,
+            company_id,
             dict_type_id,
             name,
             value,
@@ -97,7 +101,8 @@
             del_flag
         ) VALUES (
             #{id},
-            #{dictType.id},                    
+            #{company.id},
+            #{dictType.id},
             #{name},
             #{value},
             #{remarks},
@@ -134,6 +139,7 @@
     <insert id="bulkInsert" parameterType="java.util.List">
         INSERT INTO sys_dict_item(
             id,
+            company_id,
             dict_type_id,
             name,
             value,
@@ -143,11 +149,12 @@
             update_by,
             update_date,
             del_flag
-        ) VALUES 
+        ) VALUES
         <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
         (
             #{entity.id},
-            #{entity.dictType.id},                    
+            #{entity.company.id},
+            #{entity.dictType.id},
             #{entity.name},
             #{entity.value},
             #{entity.remarks},
@@ -214,5 +221,17 @@
         FROM sys_dict_item a
         WHERE a.name = #{name}
         and a.dict_type_id = #{id}
+    </select>
+
+    <!-- 根据字典类型code获取所有字典项 -->
+    <select id="listByDictTypeCode" resultType="com.geeke.sys.entity.DictItem">
+        SELECT
+            <include refid="dictItemColumns"/>
+        FROM sys_dict_item a
+        <include refid="dictItemJoins"/>
+        WHERE dictType.code = #{code}
+          AND a.del_flag = '0'
+          AND dictType.del_flag = '0'
+        ORDER BY a.create_date
     </select>
 </mapper>

@@ -23,9 +23,9 @@
             </div>
         </div>
       <!--  搜索栏  开始 -->
-     <div v-if="activeName=='0'" style="padding-top:10px">
+     <div v-if="activeName==='0'" style="padding-top:10px">
          <!-- 按批号和商品进行显示 -->
-        <div v-if="tabPosition=='0' && dispensingList!=null">
+        <div v-if="tabPosition==='0' && dispensingList!=null">
              <div class='query-form-container'>
           <el-row class='search-row'>
             <el-form :model='queryModel' @submit.native.prevent label-position="left" label-width='70px' ref='queryForm' :inline-message='true'>
@@ -187,7 +187,7 @@
 
 
 <!-- 药品查询 -->
-          <div v-else-if="tabPosition=='1' && dispensingList!=null">
+          <div v-else-if="tabPosition==='1' && dispensingList!=null">
             <div class='query-form-container'>
           <el-row class='search-row'>
             <el-form :model='queryModel' @submit.native.prevent label-position="left" label-width='70px' ref='queryForm' :inline-message='true'>
@@ -316,7 +316,7 @@
                 </el-table-column>
                 <el-table-column prop="bid" label="成本合计(元)" >
                     <template slot-scope="scope">
-                        {{scope.row.bid==undefined?0:scope.row.bid}}
+                        {{scope.row.bid===undefined?0:scope.row.bid}}
                     </template>
                 </el-table-column>
               <el-table-column prop="inventory" label="剩余数量" >
@@ -336,7 +336,7 @@
 
     <div v-else>
          <!-- 按批号和商品进行显示 -->
-        <div v-if="tabPosition=='0' && stuffList!=null">
+        <div v-if="tabPosition==='0' && stuffList!=null">
              <div class='query-form-container'>
           <el-row class='search-row'>
             <el-form :model='stuffQueryModel' @submit.native.prevent label-position="left" label-width='70px' ref='queryForm' :inline-message='true'>
@@ -499,7 +499,7 @@
 
 <!-- 按材料商品 -->
 
-          <div v-else-if="tabPosition=='1' && stuffList!=null">
+          <div v-else-if="tabPosition==='1' && stuffList!=null">
             <div class='query-form-container'>
           <el-row class='search-row'>
             <el-form :model='stuffQueryModel' @submit.native.prevent label-position="left" label-width='70px' ref='queryForm' :inline-message='true'>
@@ -627,7 +627,7 @@
                 </el-table-column>
                 <el-table-column prop="bid" label="成本合计(元)" >
                     <template slot-scope="scope">
-                        {{scope.row.bid==undefined?0:scope.row.bid}}
+                        {{scope.row.bid===undefined?0:scope.row.bid}}
                     </template>
                 </el-table-column>
               <el-table-column prop="inventory" label="剩余数量" >
@@ -666,16 +666,14 @@
 
 <script>
 import { validatenull } from "@/utils/validate";
-import ExportExcelButton from "@/components/ExportExcelButton";
-import ViewColumnsSelect from "@/views/components/ViewColumnsSelect";
-import QueryForm from "@/views/components/queryForm";
 import MainUI from "@/views/components/mainUI";
 import {listSupplierAll} from "@/api/stock/supplier"
-import OperationIcon from "@/components/OperationIcon";
 import { listDictItemAll } from "@/api/sys/dictItem";
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 import { getList,getAmount } from "@/api/stock/dispensing";
 import { BigNumber } from "bignumber.js";
 import { getDrug,getDrugSalesStat,getBatchNumberDrug,getStuff,getStuffSalesStat,getBatchNumberStuff,getDrugSalesStatByNumber,getStuffSalesStatNumber,exportTable} from "@/api/stock/currentInventory";
+import { downloadBlob } from '@/utils/downloadBlob'
 export default {
   extends: MainUI,
   data() {
@@ -774,141 +772,42 @@ export default {
   },
   methods: {
 
+      //导出辅助方法
+      doExport(search, filename) {
+        exportTable(search).then((res) => {
+          downloadBlob(res, filename)
+        }).catch((error) => {
+          this.outputError(error)
+        })
+      },
+
       //药品信息导出
-      exportTable(){
-       if(this.activeName=='0'){
-          if(this.tabPosition=='0'){
-             //按照批号导出
-             this.search.columnName = '2'
-             exportTable(this.search).then((res)=>{
-                console.log(res,'这是个啥');
-              //const filename = decodeURI(res.headers['content-disposition'].split(';')[1].split('=')[1]) || '.xls'
-                const filename = "药品当前库存-按批号.xls"
-                const blob = new Blob([res.data], {
-
-                type: 'application/octet-stream'
-
-              })
-
-                let url = window.URL.createObjectURL(blob);
-
-                let link = document.createElement('a');
-
-                link.style.display = 'none';
-
-                link.href = url;
-
-                link.setAttribute('download', filename);
-
-                document.body.appendChild(link);
-
-                link.click()
-             }).catch((error)=>{
-               this.outputError(error)
-             })
-          }else{
-            //按照商品导出
-            this.search.columnName = '1'
-              exportTable(this.search).then((res)=>{
-                console.log(res,'这是个啥');
-              //const filename = decodeURI(res.headers['content-disposition'].split(';')[1].split('=')[1]) || '.xls'
-                const filename = "药品当前库存-按商品.xls"
-                const blob = new Blob([res.data], {
-
-                type: 'application/octet-stream'
-
-              })
-
-                let url = window.URL.createObjectURL(blob);
-
-                let link = document.createElement('a');
-
-                link.style.display = 'none';
-
-                link.href = url;
-
-                link.setAttribute('download', filename);
-
-                document.body.appendChild(link);
-
-                link.click()
-              }).catch((error)=>{
-                this.outputError(error)
-              })
+      exportTable() {
+        if (this.activeName === '0') {
+          if (this.tabPosition === '0') {
+            this.doExport({ ...this.search, columnName: '2' }, '药品当前库存-按批号.xlsx')
+          } else {
+            this.doExport({ ...this.search, columnName: '1' }, '药品当前库存-按商品.xlsx')
           }
-       }else{
-         if(this.tabPosition=='0'){
-           //按照批号导出
-            this.stuffSearch.columnName = '4'
-               exportTable(this.stuffSearch).then((res)=>{
-                console.log(res,'这是个啥');
-              //const filename = decodeURI(res.headers['content-disposition'].split(';')[1].split('=')[1]) || '.xls'
-                const filename = "材料当前库存-按批号.xls"
-                const blob = new Blob([res.data], {
-
-                type: 'application/octet-stream'
-
-              })
-
-                let url = window.URL.createObjectURL(blob);
-
-                let link = document.createElement('a');
-
-                link.style.display = 'none';
-
-                link.href = url;
-
-                link.setAttribute('download', filename);
-
-                document.body.appendChild(link);
-
-                link.click()
-              }).catch((error)=>{
-                this.outputError(error)
-              })
-         }else{
-            //按照商品导出
-              this.stuffSearch.columnName = '3'
-               exportTable(this.stuffSearch).then((res)=>{
-                console.log(res,'这是个啥');
-              //const filename = decodeURI(res.headers['content-disposition'].split(';')[1].split('=')[1]) || '.xls'
-                const filename = "材料当前库存-按商品.xls"
-                const blob = new Blob([res.data], {
-
-                type: 'application/octet-stream'
-
-              })
-
-                let url = window.URL.createObjectURL(blob);
-
-                let link = document.createElement('a');
-
-                link.style.display = 'none';
-
-                link.href = url;
-
-                link.setAttribute('download', filename);
-
-                document.body.appendChild(link);
-
-                link.click()
-              }).catch((error)=>{
-                this.outputError(error)
-              })
-         }
-       }
+        } else {
+          if (this.tabPosition === '0') {
+            this.doExport({ ...this.stuffSearch, columnName: '4' }, '材料当前库存-按批号.xlsx')
+          } else {
+            this.doExport({ ...this.stuffSearch, columnName: '3' }, '材料当前库存-按商品.xlsx')
+          }
+        }
       },
 
       //材料按批号
       stuffBatchNumber(type,limit,offset){
         this.stuffList =null
-        if(type==1){
+        if(type===1){
           this.currentPage=1
         }
         this.stuffSearch = {
           columnName:"",
-          limit: type==1?this.pageSize:type==2?limit:limit,
-          offset: type==1?this.currentPage - 1:type==2?0:offset,
+          limit: type===1?this.pageSize:type===2?limit:limit,
+          offset: type===1?this.currentPage - 1:type===2?0:offset,
           order: "",
           params:[
             {
@@ -948,9 +847,9 @@ export default {
           ]
         }
 
-        if(this.stuffQueryModel.name!=undefined && this.stuffQueryModel.name!=''){
+        if(this.stuffQueryModel.name!==undefined && this.stuffQueryModel.name!==''){
 
-             var pattern2 = new RegExp("[A-Za-z]+");
+             const pattern2 = new RegExp("[A-Za-z]+");
                 if (pattern2.test(this.stuffQueryModel.name)) {
                   this.stuffSearch.params.push(
                     {
@@ -971,8 +870,8 @@ export default {
                   )
                 }
           }
-          if(this.stuffQueryModel.inventory && this.stuffQueryModel.inventory!=''){
-              if(this.stuffQueryModel.inventory=='0'){
+          if(this.stuffQueryModel.inventory && this.stuffQueryModel.inventory!==''){
+              if(this.stuffQueryModel.inventory==='0'){
                    this.stuffSearch.params.push(
                     {
                       columnName: "a.storage_stock-a.used_stock-a.reimburse_stock",
@@ -988,7 +887,7 @@ export default {
                     })
               }
           }
-          if(this.tabPosition=='0'&&this.stuffQueryModel.supplier){
+          if(this.tabPosition==='0'&&this.stuffQueryModel.supplier){
             this.stuffSearch.params.push(
                 {
                     columnName: "supplierId.supplier_id",
@@ -1017,13 +916,11 @@ export default {
           }
             this.setLoad();
             getBatchNumberStuff(this.stuffSearch).then((res) => {
-                console.log(res,'看看这个');
-                if(res.code=="100"){
+                if(res.code==="100"){
                     this.stuffList=res.data.rows
                     this.dispensingTotal = res.data.total
                     getStuffSalesStatNumber(this.stuffSearch).then((res)=>{
-                    if(res.code=="100"){
-                        console.log(res.data,'获取计算价格');
+                    if(res.code==="100"){
                         this.allTotal = res.data
                         this.resetLoad();
                     }
@@ -1069,9 +966,9 @@ export default {
           ]
         }
 
-        if(this.stuffQueryModel.name!=undefined && this.stuffQueryModel.name!=''){
+        if(this.stuffQueryModel.name!==undefined && this.stuffQueryModel.name!==''){
 
-             var pattern2 = new RegExp("[A-Za-z]+");
+             const pattern2 = new RegExp("[A-Za-z]+");
                 if (pattern2.test(this.stuffQueryModel.name)) {
                   this.stuffSearch.params.push(
                     {
@@ -1092,8 +989,8 @@ export default {
                   )
                 }
           }
-          if(this.stuffQueryModel.inventory && this.stuffQueryModel.inventory!=''){
-              if(this.stuffQueryModel.inventory=='0'){
+          if(this.stuffQueryModel.inventory && this.stuffQueryModel.inventory!==''){
+              if(this.stuffQueryModel.inventory==='0'){
                    this.stuffSearch.params.push(
                     {
                       columnName: "stock.storage_stock-stock.used_stock-stock.reimburse_stock",
@@ -1116,7 +1013,7 @@ export default {
       //计算材料的售价合计
       getStuffPriceTotal(item){
           let price;
-          if(this.tabPosition=='0'){
+          if(this.tabPosition==='0'){
               price = (((item.stuff.priceOutSell)/item.stuff.packNumber)*(item.storageStock-item.usedStock-item.reimburseStock)).toFixed(2)
           }else{
 
@@ -1128,23 +1025,9 @@ export default {
       //材料初始化获取类型
       stuffInitOptions(){
           this.tabPosition = '1'
-          let type_search = {
-        params: [{'columnName':'dict_type_id', 'queryType': '=', 'value': '1004462867645374476'}]
-      }
-      // 响应字段的条件操作符，替换成触发字段的操作符
-      type_search.params.forEach(item => {
-        if(this.queryTypes[item.columnName]) {
-          item.queryType = this.queryTypes[item.columnName]
-        }
-      })
-      // 字段对应表上filter条件
-        type_search.params.push.apply(type_search.params, [])
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(type_search.params, this.$route.meta.routerId, '4005')
-      this.stuffTypeList.splice(0, this.stuffTypeList.length)
-      listDictItemAll(type_search).then(responseData => {
-        this.stuffTypeList = responseData.data
-      })
+          getDictItemsByCode(DICT_CODE.STUFF_TYPE).then((data) => {
+            this.stuffTypeList = data
+          })
       },
       stuffInit(){
             let salesSearch={
@@ -1167,13 +1050,11 @@ export default {
           }
             this.setLoad();
             getStuff(this.stuffSearch).then((res) => {
-                console.log(res,'看看这个');
-                if(res.code=="100"){
+                if(res.code==="100"){
                     this.stuffList=res.data.rows
                     this.dispensingTotal = res.data.total
                     getStuffSalesStat(salesSearch).then((res)=>{
-                    if(res.code=="100"){
-                        console.log(res.data,'获取计算价格');
+                    if(res.code==="100"){
                         this.allTotal = res.data
                         this.resetLoad();
                     }
@@ -1198,7 +1079,7 @@ export default {
                 ],
             }
                 listSupplierAll(supplierSearch).then((res)=>{
-                    if(res.code==100){
+                    if(res.code===100){
                         this.stuffSupplierList = res.data
                     }
                 }).catch((error)=>{
@@ -1214,7 +1095,7 @@ export default {
       getPriceTotal(item){
           let price;
 
-           if(this.tabPosition=='0'){
+           if(this.tabPosition==='0'){
                price = ((item.drug.price/item.drug.preparation)*(item.storageStock-item.usedStock-item.reimburseStock)).toFixed(2)
            }else{
                price = ((item.price/item.preparation)*item.inventory).toFixed(2)
@@ -1233,7 +1114,6 @@ export default {
     addCreateDate(){
        let myDate = new Date();
         let lw = new Date(myDate.getTime() - 1000 * 60 * 60 * 24 * 30); //最后一个数字30可改，30天的意思
-        console.log(lw.getDate());
         let lastY = lw.getFullYear();
         let lastM = lw.getMonth() + 1;
         let lastD = lw.getDate();
@@ -1264,7 +1144,7 @@ export default {
             arr[index] = ''
           }
       })
-     if(this.tabPosition=='0'){
+     if(this.tabPosition==='0'){
          arr[8] = new BigNumber(Number(this.allTotal.totalSellingPrice)).toFormat(2)
          arr[10] = new BigNumber(Number(this.allTotal.totalPrice)).toFormat(2)
      }else{
@@ -1277,7 +1157,6 @@ export default {
       // // arr[4] = this.allTotal.numberAmount
       // arr[10] = new BigNumber(Number(this.allTotal.priceTotalAmount)).toFormat(2)
       // arr[11] = new BigNumber(Number(this.allTotal.profitAmount)).toFormat(2)
-      console.log(arr)
       return arr
     },
     init() {
@@ -1296,13 +1175,11 @@ export default {
           }
       this.setLoad();
       getDrug(this.search).then((res) => {
-        console.log(res,'看看这个');
-          if(res.code=="100"){
+          if(res.code==="100"){
              this.dispensingList=res.data.rows
             this.dispensingTotal = res.data.total
             getDrugSalesStat(this.search).then((res)=>{
-              if(res.code=="100"){
-                  console.log(res.data,'获取计算价格');
+              if(res.code==="100"){
                   this.allTotal = res.data
                  this.resetLoad();
               }
@@ -1313,13 +1190,13 @@ export default {
 
     //药品批号获取药品库存
     drugBatchNumber(type,limit,offset){
-        if(type==1){
+        if(type===1){
           this.currentPage =1
         }
         this.search = {
           columnName:"",
-          limit: type==1?this.pageSize:type==2?limit:limit,
-          offset:type==1?this.currentPage - 1:type==2?0:offset,
+          limit: type===1?this.pageSize:type===2?limit:limit,
+          offset:type===1?this.currentPage - 1:type===2?0:offset,
           order: "",
           params:[
             {
@@ -1354,9 +1231,9 @@ export default {
           ]
         }
 
-        if(this.queryModel.name!=undefined && this.queryModel.name!=''){
+        if(this.queryModel.name!==undefined && this.queryModel.name!==''){
 
-             var pattern2 = new RegExp("[A-Za-z]+");
+             const pattern2 = new RegExp("[A-Za-z]+");
                 if (pattern2.test(this.queryModel.name)) {
                   this.search.params.push(
                     {
@@ -1377,8 +1254,8 @@ export default {
                   )
                 }
           }
-          if(this.queryModel.inventory && this.queryModel.inventory!=''){
-              if(this.queryModel.inventory=='0'){
+          if(this.queryModel.inventory && this.queryModel.inventory!==''){
+              if(this.queryModel.inventory==='0'){
                    this.search.params.push(
                     {
                       columnName: "a.storage_stock-a.used_stock-a.reimburse_stock",
@@ -1394,7 +1271,7 @@ export default {
                     })
               }
             }
-        if(this.tabPosition=='0'&&this.queryModel.supplier){
+        if(this.tabPosition==='0'&&this.queryModel.supplier){
             this.search.params.push(
                 {
                     columnName: "supplierId.supplier_id",
@@ -1419,13 +1296,11 @@ export default {
 
         this.setLoad();
      getBatchNumberDrug(this.search).then((res) => {
-        console.log(res,'看看这个');
-          if(res.code=="100"){
+          if(res.code==="100"){
              this.dispensingList=res.data.rows
             this.dispensingTotal = res.data.total
             getDrugSalesStatByNumber(this.search).then((res)=>{
-              if(res.code=="100"){
-                  console.log(res.data,'获取计算价格');
+              if(res.code==="100"){
                   this.allTotal = res.data
                  this.resetLoad();
               }
@@ -1464,9 +1339,9 @@ export default {
           ]
         }
 
-        if(this.queryModel.name!=undefined && this.queryModel.name!=''){
+        if(this.queryModel.name!==undefined && this.queryModel.name!==''){
 
-             var pattern2 = new RegExp("[A-Za-z]+");
+             const pattern2 = new RegExp("[A-Za-z]+");
                 if (pattern2.test(this.queryModel.name)) {
                   this.search.params.push(
                     {
@@ -1487,8 +1362,8 @@ export default {
                   )
                 }
           }
-          if(this.queryModel.inventory && this.queryModel.inventory!=''){
-              if(this.queryModel.inventory=='0'){
+          if(this.queryModel.inventory && this.queryModel.inventory!==''){
+              if(this.queryModel.inventory==='0'){
                    this.search.params.push(
                     {
                       columnName: "stock.storage_stock-stock.used_stock-stock.reimburse_stock",
@@ -1508,7 +1383,7 @@ export default {
         this.init();
     },
     resetCondition(){
-      if(this.activeName=='0'){
+      if(this.activeName==='0'){
         this.queryModel = {
         name:'',
         type:'',
@@ -1530,7 +1405,7 @@ export default {
           }
         ],
       }
-     if(this.tabPosition=='0'){
+     if(this.tabPosition==='0'){
          this.drugBatchNumber(1)
      }else{
           this.init()
@@ -1561,7 +1436,7 @@ export default {
                     }
                 ],
           }
-           if(this.tabPosition=='0'){
+           if(this.tabPosition==='0'){
                 this.currentPage = 1
                 this.stuffBatchNumber(1)
              }else{
@@ -1572,10 +1447,10 @@ export default {
     onSizeChange(val) {
       this.currentPage = 1;
 
-      if(this.activeName=='0'){
+      if(this.activeName==='0'){
          this.search.limit = val;
          this.search.offset = (this.currentPage - 1) * val;
-         if(this.tabPosition=='0'){
+         if(this.tabPosition==='0'){
 
            this.drugBatchNumber(2,this.search.limit,0)
          }else{
@@ -1584,7 +1459,7 @@ export default {
       }else{
         this.stuffSearch.limit = val;
         this.stuffSearch.offset = (this.currentPage - 1) * val;
-         if(this.tabPosition=='0'){
+         if(this.tabPosition==='0'){
            this.stuffBatchNumber(2,this.stuffSearch.limit,0);
          }else{
             this.stuffInit()
@@ -1594,16 +1469,16 @@ export default {
     onCurrentChange(val) {
 
       this.currentPage = val;
-       if(this.activeName=='0'){
+       if(this.activeName==='0'){
            this.search.offset = (val - 1) * this.search.limit;
-           if(this.tabPosition=='0'){
+           if(this.tabPosition==='0'){
            this.drugBatchNumber(3,this.search.limit,this.search.offset)
          }else{
             this.init();
          }
       }else{
         this.stuffSearch.offset = (val-1) * this.stuffSearch.limit
-          if(this.tabPosition=='0'){
+          if(this.tabPosition==='0'){
            this.stuffBatchNumber(3,this.stuffSearch.limit,this.stuffSearch.offset);
          }else{
             this.stuffInit()
@@ -1612,32 +1487,8 @@ export default {
     },
     initOptions(This) {
       this.tabPosition = '1'
-      let type_search = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "1004078055755374603",
-          },
-        ],
-      };
-      // 响应字段的条件操作符，替换成触发字段的操作符
-      type_search.params.forEach((item) => {
-        if (this.queryTypes[item.columnName]) {
-          item.queryType = this.queryTypes[item.columnName];
-        }
-      });
-      // 字段对应表上filter条件
-      type_search.params.push.apply(type_search.params, []);
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(
-        type_search.params,
-        this.$route.meta.routerId,
-        "4005"
-      );
-      this.type_List.splice(0, this.type_List.length);
-      listDictItemAll(type_search).then((responseData) => {
-        this.type_List = responseData.data;
+      getDictItemsByCode(DICT_CODE.MEDICAL_TYPE).then((data) => {
+        this.type_List = data;
       });
 
       //获取供应商
@@ -1657,7 +1508,7 @@ export default {
         ],
       }
         listSupplierAll(supplierSearch).then((res)=>{
-            if(res.code==100){
+            if(res.code===100){
                 this.supplierList = res.data
             }
         }).catch((error)=>{
@@ -1674,7 +1525,7 @@ export default {
     }
   },
   updated(){
-    if(this.activeName=='0'){
+    if(this.activeName==='0'){
       if(this.$refs.mutipleTable1){
         this.$nextTick(() => {
                   // tableRef是el-table绑定的ref属性值
@@ -1693,14 +1544,12 @@ export default {
   watch: {
      tabPosition:{
           handler(newVal, oldVal) {
-            //   console.log(newVal,'获取变换值');
             //  this.dispensingList=[]
             //  this.stuffList=[]
-            if(this.activeName=='0'){
+            if(this.activeName==='0'){
               this.dispensingList = null
-                console.log(this.tabPosition,'状态')
                 //按药品批号获取
-                if(this.tabPosition=="0"){
+                if(this.tabPosition==="0"){
                     this.currentPage = 1
                     this.drugBatchNumber(1)
                 }else{
@@ -1708,7 +1557,7 @@ export default {
                 }
           }else{
               this.stuffList = null
-              if(this.tabPosition == '0'){
+              if(this.tabPosition === '0'){
                 this.currentPage = 1
                   this.stuffBatchNumber(1)
               }else{
@@ -1744,7 +1593,7 @@ export default {
                 inventory:"",
               }
               this.tabPosition = '1'
-              if(newVal=='0'){
+              if(newVal==='0'){
                   this.currentPage = 1;
                     this.search = {
                     offset: 0,
@@ -1805,7 +1654,7 @@ export default {
   padding: 0px 0px 10px 0px;
 }
 .typeClass{
-  /deep/ .el-input{
+  ::v-deep .el-input{
     width: 90% !important;
     input{
       width: 90% !important;
@@ -1814,7 +1663,7 @@ export default {
   }
 }
 .el-col{
-  /deep/ .el-range-separator{
+  ::v-deep .el-range-separator{
     width: 10%;
   }
 }
@@ -1825,7 +1674,7 @@ export default {
     text-align: right;
   }
 }
-/deep/ .el-table__footer-wrapper{
+::v-deep .el-table__footer-wrapper{
   td:not(:nth-of-type(1)){
     .cell{
       display: inline-block;
@@ -1838,14 +1687,14 @@ export default {
 .el-table::before{
   height: 0;
 }
-/deep/ .el-table colgroup col[name='gutter']{
+::v-deep .el-table colgroup col[name='gutter']{
   width:5px !important
 }
-/deep/ .el-table__body{
+::v-deep .el-table__body{
   width:100% !important
 }
 // 设置表格body的高度
- /deep/.el-table__body-wrapper {
+ ::v-deep.el-table__body-wrapper {
   //解决数据展示超出body高度不滚动bug
   overflow-y: auto;
    // 减去的是表格header的高度

@@ -95,10 +95,10 @@
             </el-table-column>
             <el-table-column prop="type" label="物品类型" width="80px">
               <template slot-scope="scope">
-                <span v-if="scope.row.type=='1'">
+                <span v-if="scope.row.type==='1'">
                   药品
                 </span>
-                <span v-if="scope.row.type=='2'">
+                <span v-if="scope.row.type==='2'">
                   材料
                 </span>
               </template>
@@ -117,9 +117,9 @@
             <el-table-column label="操作" align="center" width="120">
               <template slot-scope="scope">
                <OperationIcon  content='查看'  type="info"  icon-name="el-icon-view"  @click="onView(scope.$index,scope.row)"></OperationIcon>
-               <OperationIcon v-if="scope.row.status==1"  content='审核'  type="primary"  icon-name="el-icon-document"  @click="onAudit(scope.$index,scope.row)"></OperationIcon>
-                <OperationIcon v-if="scope.row.status==1"  content='编辑'  type="primary"  icon-name="el-icon-edit"  @click="onUpdate(scope.$index,scope.row)"></OperationIcon>
-                <OperationIcon v-if="scope.row.status==1"  content='撤消'  type="primary"  icon-name="el-icon-delete"  @click="onCancel(scope.$index,scope.row)"></OperationIcon>
+               <OperationIcon v-if="scope.row.status===1"  content='审核'  type="primary"  icon-name="el-icon-document"  @click="onAudit(scope.$index,scope.row)"></OperationIcon>
+                <OperationIcon v-if="scope.row.status===1"  content='编辑'  type="primary"  icon-name="el-icon-edit"  @click="onUpdate(scope.$index,scope.row)"></OperationIcon>
+                <OperationIcon v-if="scope.row.status===1"  content='撤消'  type="primary"  icon-name="el-icon-delete"  @click="onCancel(scope.$index,scope.row)"></OperationIcon>
               </template>
             </el-table-column>
           </el-table>
@@ -201,7 +201,7 @@ import OperationIcon from '@/components/OperationIcon'
             // },
           },
         },
-        company_id: "998324809623052308" /*诊所ID*/ ,
+        company_id: "" /*诊所ID - 由currentUser.company.id动态获取*/ ,
         examine_destroy_id: "1005787933775863932",
         examine_destroy_value: "supplierStorageExamineStatus_2" /*作废状态value*/ ,
         storageTableCurrentPage: 1,
@@ -325,7 +325,7 @@ import OperationIcon from '@/components/OperationIcon'
           type: 'warning'
         }).then(() => {
           examineSupplierOutbound(row.id).then(res => {
-            if (res.code == 100) {
+            if (res.code === 100) {
               this.$message({
                 type: 'success',
                 message: '审核成功'
@@ -335,7 +335,7 @@ import OperationIcon from '@/components/OperationIcon'
             }
             this.querySupplierStorageList()
           }).catch(error => {
-            console.log('操作失败',error);
+            console.error('操作失败',error);
           })
         }).catch(() => {})
       },
@@ -347,7 +347,7 @@ import OperationIcon from '@/components/OperationIcon'
           type: 'warning'
         }).then(() => {
           cancelSupplierOutbound(row.id).then(res => {
-            if (res.code == 100) {
+            if (res.code === 100) {
               that.$message({
                 type: 'success',
                 message: '撤消成功'
@@ -358,24 +358,23 @@ import OperationIcon from '@/components/OperationIcon'
             that.querySupplierStorageList()
           }).catch(error => {
             //this.outputError(error)
-            console.log('撤消失败',error);
+            console.error('撤消失败',error);
           })
         }).catch(() => {})
       },
       onUpdate(index, row) {
         let outboundId = row.id;
-        console.log('onupdate', this);
         this.dialogTitle = "修改出库单";
         this.$refs.uAddStorage.openDialog(outboundId);
       },
       selectionChange(rows) {
-        if (rows.length == 0) {
+        if (rows.length === 0) {
           this.btnType = false;
         }
         this.selectStorage = rows;
       },
       pageInit() {
-        var day = new Date();
+        const day = new Date();
         // this.condition.dateRange = [
         //   new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, 0),
         //   new Date(day.getFullYear(), day.getMonth(), day.getDate(), 23, 59, 59),
@@ -511,16 +510,13 @@ import OperationIcon from '@/components/OperationIcon'
         });
         listSupplierOutbound(this.supplierStorageSearch)
           .then((responseData) => {
-            if (responseData.code == 100) {
-              // console.log(responseData,'aaaaa');
+            if (responseData.code === 100) {
               if (responseData.data.rows != null) {
                 let arr = []
                 arr = responseData.data.rows;
                 // for (let i = 0; i < arr.length; i++) {
 
                 //   getSupplierStockBySid(arr[i].id).then((res)=>{
-                // //    console.log(res,"七管");
-                //   // console.log(res.data.norms.split("*")[1].split("/")[0].split("")[res.data.norms.split("*")[1].split("/")[0].split("").length-1],"qiege");
                 //        if(res.data[0].stuff.name==''){
                 //        arr[i].types='药品'
 
@@ -579,10 +575,9 @@ import OperationIcon from '@/components/OperationIcon'
         ];
         listSupplierStockPage(this.supplierStockSearch)
           .then((responseData) => {
-            if (responseData.code == 100) {
+            if (responseData.code === 100) {
               this.storageDetailTableTotal = responseData.data.total;
               this.invalid = responseData.data.rows
-              console.log(this.invalid, 'qiqi');
               let initalArr = []
               initalArr = responseData.data.rows;
 
@@ -590,7 +585,7 @@ import OperationIcon from '@/components/OperationIcon'
               for (let i = 0; i < initalArr.length; i++) {
                 initalArr[i].code = this.selectStorage.code
                 this.initialNum.push(initalArr[i].number)
-                if (initalArr[i].drug.goodsName != '') {
+                if (initalArr[i].drug.goodsName !== '') {
                   initalArr[i].number = Math.floor(initalArr[i].number / initalArr[i].drug.preparation) >= 0 ? Math
                     .floor(initalArr[i].number / initalArr[i].drug.preparation) + (initalArr[i].norms.split("/")[1]) +
                     ((initalArr[i].number % initalArr[i].drug.preparation > 0) ? (initalArr[i].number % initalArr[i]
@@ -598,7 +593,7 @@ import OperationIcon from '@/components/OperationIcon'
                       .norms.split("*")[1].split("/")[0].split("").length - 1] : "") : initalArr[i].number +
                     initalArr[i].norms.split("*")[1].split("/")[0].split("")[initalArr[i].norms.split("*")[1].split(
                       "/")[0].split("").length - 1]
-                } else if (initalArr[i].stuff.name != '') {
+                } else if (initalArr[i].stuff.name !== '') {
                   initalArr[i].number = Math.floor(initalArr[i].number / initalArr[i].stuff.packNumber) >= 0 ? Math
                     .floor(initalArr[i].number / initalArr[i].stuff.packNumber) + (initalArr[i].norms.split("*")[1]) +
                     ((initalArr[i].number % initalArr[i].stuff.packNumber > 0) ? (initalArr[i].number % initalArr[i]
@@ -607,9 +602,7 @@ import OperationIcon from '@/components/OperationIcon'
                       "")[initalArr[i].norms.split("*")[0].split("").length - 1]
                 }
               }
-              console.log(initalArr, 'dada');
               this.storageDetailTable = initalArr;
-              console.log(this.storageDetailTable, "----");
             } else {
               this.$message.error(responseData);
             }
@@ -623,7 +616,7 @@ import OperationIcon from '@/components/OperationIcon'
       editAndAddOutbound(type) {
         this.addType = type
         this.isAdd = 1;
-        if (this.addType == 1) {
+        if (this.addType === 1) {
           this.dialogTitle = "新增药品出库单";
         } else {
           this.dialogTitle = "新增材料出库单";
@@ -638,7 +631,7 @@ import OperationIcon from '@/components/OperationIcon'
         this.querySupplierStorageList();
       },
       resetCondition() {
-        var day = new Date();
+        const day = new Date();
         this.condition = {
           supplier: {
             id: null,
@@ -712,7 +705,7 @@ import OperationIcon from '@/components/OperationIcon'
             factory: '',
           }
 
-          if (this.storageDetailTable[i].drug.goodsName == '') {
+          if (this.storageDetailTable[i].drug.goodsName === '') {
             arr.name = this.storageDetailTable[i].stuff.name
           } else {
             arr.name = this.storageDetailTable[i].drug.goodsName
@@ -737,7 +730,6 @@ import OperationIcon from '@/components/OperationIcon'
           allRetailPrices += this.storageDetailTable[i].allRetailPrice
 
         }
-        //  console.log(formatDate(new Date(),"yyyy-MM-dd"),'字符串');
         let num = biaoge.length
         biaoge[num] = {
           code: '合计',
@@ -813,7 +805,7 @@ import OperationIcon from '@/components/OperationIcon'
         }
 
         for (let i = 0; i < biaoge.length; i++) {
-          if (i == biaoge.length - 1) {
+          if (i === biaoge.length - 1) {
             contentWs["A" + (i + 2)] = {
               t: "s",
               v: biaoge[i].code,
@@ -1109,7 +1101,7 @@ import OperationIcon from '@/components/OperationIcon'
                 }
               }
             }
-            if (biaoge[i].beizhu == '') {
+            if (biaoge[i].beizhu === '') {
               contentWs["O" + (i + 2)] = {
                 t: "s",
                 v: "",
@@ -1507,7 +1499,7 @@ import OperationIcon from '@/components/OperationIcon'
                 }
               }
             }
-            if (biaoge[i].beizhu == '') {
+            if (biaoge[i].beizhu === '') {
               contentWs["O" + (i + 2)] = {
                 t: "s",
                 v: "",
@@ -1666,13 +1658,13 @@ import OperationIcon from '@/components/OperationIcon'
         if (typeof ArrayBuffer !== "undefined") {
           const buf = new ArrayBuffer(s.length);
           const view = new Uint8Array(buf);
-          for (let i = 0; i != s.length; ++i) {
+          for (let i = 0; i !== s.length; ++i) {
             view[i] = s.charCodeAt(i) & 0xff
           }
           return buf;
         } else {
           const buf = new Array(s.length);
-          for (let i = 0; i != s.length; ++i) {
+          for (let i = 0; i !== s.length; ++i) {
             buf[i] = s.charCodeAt(i) & 0xff;
           }
           return buf;
@@ -1730,15 +1722,15 @@ import OperationIcon from '@/components/OperationIcon'
     font-size: 12px;
   }
 
-  /deep/ .el-table__fixed-right-patch {
+  ::v-deep .el-table__fixed-right-patch {
     width: 5px !important
   }
 
-  /deep/ .el-table colgroup col[name='gutter'] {
+  ::v-deep .el-table colgroup col[name='gutter'] {
     width: 5px !important
   }
 
-  /deep/ .el-table__body {
+  ::v-deep .el-table__body {
     width: 100% !important
   }
 </style>

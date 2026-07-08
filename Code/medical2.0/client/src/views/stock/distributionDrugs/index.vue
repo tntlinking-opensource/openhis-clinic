@@ -100,7 +100,7 @@
                 <span>{{ scope.row.code }}</span>
                 <span
                   class="examine"
-                  v-if="scope.row.examine.name == '已作废'"
+                  v-if="scope.row.examine.name === '已作废'"
                   >{{ scope.row.examine.name }}</span
                 >
               </div>
@@ -114,7 +114,7 @@
           <!-- <el-table-column prop="number" label="明细数量"></el-table-column> -->
           <el-table-column prop="type" label="物品类型" width="80px">
             <template slot-scope="scope">
-              <span v-if="scope.row.type=='1'">
+              <span v-if="scope.row.type==='1'">
                  药品
               </span>
               <span v-else>
@@ -164,7 +164,7 @@
           </el-table-column>
           <el-table-column prop="drug.goodsName" label="药品/材料名称">
             <template slot-scope="scope">
-              <span v-if="scope.row.drug.goodsName==''">{{ scope.row.stuff.name }}</span>
+              <span v-if="scope.row.drug.goodsName===''">{{ scope.row.stuff.name }}</span>
               <span v-else>{{ scope.row.drug.goodsName }}</span>
             </template>
           </el-table-column>
@@ -183,11 +183,11 @@
           <el-table-column prop="bid" label="进价" width="60px"></el-table-column>
           <el-table-column prop="leastBid" label="最小单位进价" width="100px"></el-table-column>
           <el-table-column prop="allBid" label="总进价" width="100px">
-            <template slot-scope="scope" v-if="systemParamConfig==2">
+            <template slot-scope="scope" v-if="systemParamConfig===2">
              <!-- {{scope.row.leastBid*scope.row.inventory}}-->
              {{scope.row.allBid}}
             </template>
-            <template slot-scope="scope" v-if="systemParamConfig==1">
+            <template slot-scope="scope" v-if="systemParamConfig===1">
               <!-- {{scope.row.leastBid*scope.row.inventory}}-->
               {{scope.row.allRetailPrice}}
             </template>
@@ -281,6 +281,7 @@ import {
   getSupplierStockBySid,
 } from "@/api/stock/supplierStock";
 import { listDictItemAll } from "@/api/sys/dictItem";
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 
  import FileSaver from 'file-saver'
  import * as XLSX from 'xlsx'
@@ -299,7 +300,7 @@ export default {
           // },
         },
       },
-      company_id: "998324809623052308" /*诊所ID*/,
+      company_id: "", /*诊所ID - 由currentUser.company.id动态获取*/
       examine_destroy_id: "1005787933775863932",
       examine_destroy_value: "supplierStorageExamineStatus_2" /*作废状态value*/,
       storageTableCurrentPage: 1,
@@ -370,7 +371,7 @@ export default {
   },
   methods: {
     selectionChange(rows){
-      if(rows.length==0){
+      if(rows.length===0){
         this.btnType = false;
       }
       this.selectStorage = rows;
@@ -379,8 +380,8 @@ export default {
     // 进价是否为零售价
     GetSysParamConfig(){
       listSysParamConfigAll(this.systemParamConfigSearch).then(responseData => {
-        if(responseData.code == 100) {
-          if (responseData.data.length >= 1){
+        if(responseData.code === 100) {
+          if (Array.isArray(responseData.data) && responseData.data.length >= 1){
             responseData.data.forEach(data=>{
               if (data.configName === "retailPrice") {
                 /*if (data.configValue){
@@ -391,7 +392,6 @@ export default {
                 this.systemParamConfig = ("true" === data.configValue) ? 1 : 2
               }
             })
-            console.log(this.systemParamConfig,"this.systemParamConfig")
           }
         } else {
           this.showMessage(responseData)
@@ -402,7 +402,6 @@ export default {
     },
     //查询明细
     searchDetail(){
-      console.log(this.systemParamConfig+"== systemParamConfig")
       this.storageDetailTable = []
       this.storageDetailTableTotal = null
       this.invalid = []
@@ -417,7 +416,7 @@ export default {
         ];
         listSupplierStockPage(this.supplierStockSearch)
         .then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             if(!responseData.data.rows) return
             this.storageDetailTableTotal += responseData.data.total;
             this.invalid.push(...responseData.data.rows)
@@ -428,11 +427,11 @@ export default {
               initalArr[i].code = item.code
               initalArr[i].supplier = item.supplier.name
               this.initialNum.push(initalArr[i].number)
-              if(initalArr[i].drug.goodsName!=''){
+              if(initalArr[i].drug.goodsName!==''){
                   initalArr[i].inventory = initalArr[i].number
                   initalArr[i].number=Math.floor(initalArr[i].number/initalArr[i].drug.preparation) >= 0 ? Math.floor(initalArr[i].number/initalArr[i].drug.preparation)+(initalArr[i].drug.pack.name)+((initalArr[i].number%initalArr[i].drug.preparation > 0) ? (initalArr[i].number%initalArr[i].drug.preparation) + initalArr[i].drug.preparationUnit.name:""):initalArr[i].number+initalArr[i].drug.preparationUnit.name
                   initalArr[i].allRetailPrice=initalArr[i].allRetailPrice//initalArr[i].retailPrice/initalArr[i].drug.preparation
-               }else if(initalArr[i].stuff.name!=''){
+               }else if(initalArr[i].stuff.name!==''){
                   initalArr[i].inventory = initalArr[i].number
                   initalArr[i].number=Math.floor(initalArr[i].number/initalArr[i].stuff.packNumber) >= 0 ? Math.floor(initalArr[i].number/initalArr[i].stuff.packNumber)+initalArr[i].stuff.packUnit.name+((initalArr[i].number%initalArr[i].stuff.packNumber > 0) ? (initalArr[i].number%initalArr[i].stuff.packNumber)+initalArr[i].stuff.minUnit.name:""):initalArr[i].number+initalArr[i].stuff.minUnit.name
                   initalArr[i].allRetailPrice=initalArr[i].allRetailPrice//initalArr[i].retailPrice/initalArr[i].stuff.packNumber
@@ -457,7 +456,7 @@ export default {
       this.searchDetail();
     },*/
     pageInit() {
-      var day = new Date();
+      const day = new Date();
       // this.condition.dateRange = [
       //   new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, 0),
       //   new Date(day.getFullYear(), day.getMonth(), day.getDate(), 23, 59, 59),
@@ -472,7 +471,7 @@ export default {
       ];
       listSupplierAll(this.supplierSearch)
         .then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.supplierList = responseData.data;
           } else {
             this.$message.error(responseData);
@@ -482,15 +481,8 @@ export default {
           this.$message.error(error);
         });
 
-      this.statusSearch.params = [
-        {
-          columnName: "dict_type_id",
-          queryType: "=",
-          value: "1005787933775863928",
-        },
-      ];
-      listDictItemAll(this.statusSearch).then((responseData) => {
-        this.statusList = responseData.data;
+      getDictItemsByCode(DICT_CODE.SUPPLIER_STORAGE_EXAMINE_STATUS).then((data) => {
+        this.statusList = data;
       });
       this.querySupplierStorageList();
     },
@@ -560,16 +552,13 @@ export default {
       });
       listSupplierStoragePage(this.supplierStorageSearch)
         .then((responseData) => {
-          if (responseData.code == 100) {
-           // console.log(responseData,'aaaaa');
+          if (responseData.code === 100) {
            if(responseData.data.rows!=null){
               let arr=[]
             arr = responseData.data.rows;
             // for (let i = 0; i < arr.length; i++) {
 
             //   getSupplierStockBySid(arr[i].id).then((res)=>{
-            // //    console.log(res,"七管");
-            //   // console.log(res.data.norms.split("*")[1].split("/")[0].split("")[res.data.norms.split("*")[1].split("/")[0].split("").length-1],"qiege");
             //        if(res.data[0].stuff.name==''){
             //        arr[i].types='药品'
 
@@ -625,10 +614,9 @@ export default {
       ];
       listSupplierStockPage(this.supplierStockSearch)
         .then((responseData) => {
-           if (responseData.code == 100) {
+           if (responseData.code === 100) {
              this.storageDetailTableTotal = responseData.data.total;
               this.invalid=responseData.data.rows
-             console.log(this.invalid,'qiqi');
             let initalArr=[]
             initalArr=responseData.data.rows;
 
@@ -636,15 +624,13 @@ export default {
             for (let i = 0; i < initalArr.length; i++) {
               initalArr[i].code = this.selectStorage.code
               this.initialNum.push(initalArr[i].number)
-              if(initalArr[i].drug.goodsName!=''){
+              if(initalArr[i].drug.goodsName!==''){
                   initalArr[i].number=Math.floor(initalArr[i].number/initalArr[i].drug.preparation) >= 0 ? Math.floor(initalArr[i].number/initalArr[i].drug.preparation)+(initalArr[i].norms.split("/")[1])+((initalArr[i].number%initalArr[i].drug.preparation > 0) ? (initalArr[i].number%initalArr[i].drug.preparation) + initalArr[i].norms.split("*")[1].split("/")[0].split("")[initalArr[i].norms.split("*")[1].split("/")[0].split("").length-1]:""):initalArr[i].number+initalArr[i].norms.split("*")[1].split("/")[0].split("")[initalArr[i].norms.split("*")[1].split("/")[0].split("").length-1]
-                }else if(initalArr[i].stuff.name!=''){
+                }else if(initalArr[i].stuff.name!==''){
                   initalArr[i].number=Math.floor(initalArr[i].number/initalArr[i].stuff.packNumber) >= 0 ? Math.floor(initalArr[i].number/initalArr[i].stuff.packNumber)+(initalArr[i].norms.split("*")[1])+((initalArr[i].number%initalArr[i].stuff.packNumber > 0) ? (initalArr[i].number%initalArr[i].stuff.packNumber)+initalArr[i].norms.split("*")[0].split("")[initalArr[i].norms.split("*")[0].split("").length-1]:""):initalArr[i].number+initalArr[i].norms.split("*")[0].split("")[initalArr[i].norms.split("*")[0].split("").length-1]
               }
             }
-            console.log(initalArr,'dada');
             this.storageDetailTable = initalArr;
-            console.log(this.storageDetailTable, "----");
            } else {
              this.$message.error(responseData);
            }
@@ -656,7 +642,6 @@ export default {
       this.otherInfo.invoiceNumber = row.invoiceNumber;
     },
     getDetailSummaries(param) {
-      console.log(param);
       const { columns, data } = param;
       const sums = [];
       columns.forEach((column, index) => {
@@ -690,7 +675,7 @@ export default {
         this.addType = type
         this.isAdd = 1;
         this.dialogVisible = true;
-        if(this.addType == 1){
+        if(this.addType === 1){
           this.dialogTitle = "新增药品入库单";
         }else{
           this.dialogTitle = "新增材料入库单";
@@ -702,7 +687,7 @@ export default {
       this.querySupplierStorageList();
     },
     resetCondition() {
-      var day = new Date();
+      const day = new Date();
       this.condition = {
         supplier: {
           id: null,
@@ -736,10 +721,8 @@ export default {
     },
     destoryStorage() {
        //  this.selectStorage.number=this.initialNum
-      if (this.selectStorage.length==1&&this.invalid.length>0) {
-        // console.log(this.selectStorage.examine.id);
-        console.log(this.examine_destroy_id);
-        if (this.selectStorage[0].examine.value == this.examine_destroy_value) {
+      if (this.selectStorage.length===1&&this.invalid.length>0) {
+        if (this.selectStorage[0].examine.value === this.examine_destroy_value) {
           this.$message({
             message: "已作废入库单不用重复作废",
             type: "warning",
@@ -772,11 +755,11 @@ export default {
             this.selectStorage[0].examine.id = this.examine_destroy_id;
             this.selectStorage[0].examine.value = this.examine_destroy_value;
 
-            var destoryList = [];
+            const destoryList = [];
             destoryList.push(this.selectStorage[0]);
             bulkUpdateSupplierStorage1(this.selectStorage[0])
               .then((responseData) => {
-                if (responseData.code == 100) {
+                if (responseData.code === 100) {
                   this.$message({ message: "作废成功", type: "success" });
                   this.querySupplierStorageList();
                 } else {
@@ -792,7 +775,7 @@ export default {
           });
       } else if(this.selectStorage.length>1) {
         this.$message({ message: "一次只能选择一个入库单作废", type: "error" });
-      }else if(this.invalid.length==0){
+      }else if(this.invalid.length===0){
         this.$message({ message: "请先查询明细", type: "error" });
       }
      },
@@ -837,7 +820,7 @@ export default {
           factory:'',
         }
 
-          if(this.storageDetailTable[i].drug.goodsName==''){
+          if(this.storageDetailTable[i].drug.goodsName===''){
             arr.name=this.storageDetailTable[i].stuff.name
           }else{
             arr.name=this.storageDetailTable[i].drug.goodsName
@@ -862,7 +845,6 @@ export default {
           allRetailPrices+=this.storageDetailTable[i].allRetailPrice
 
         }
-     //  console.log(formatDate(new Date(),"yyyy-MM-dd"),'字符串');
         let num=biaoge.length
          biaoge[num]={
              code:'合计',
@@ -938,7 +920,7 @@ export default {
             }
 
             for (let i = 0; i < biaoge.length; i++) {
-             if(i==biaoge.length-1){
+             if(i===biaoge.length-1){
                 contentWs["A"+(i+2)]={
                     t:"s",
                     v:biaoge[i].code,
@@ -1122,7 +1104,7 @@ export default {
                     }
                   }
                 }
-                if(biaoge[i].beizhu==''){
+                if(biaoge[i].beizhu===''){
                    contentWs["O"+(i+2)]={
                     t:"s",
                     v:"",
@@ -1392,7 +1374,7 @@ export default {
                     }
                   }
                 }
-                if(biaoge[i].beizhu==''){
+                if(biaoge[i].beizhu===''){
                    contentWs["O"+(i+2)]={
                     t:"s",
                     v:"",
@@ -1496,13 +1478,13 @@ export default {
         if(typeof ArrayBuffer !=="undefined"){
           const buf=new ArrayBuffer(s.length);
           const view=new Uint8Array(buf);
-          for(let i=0;i!=s.length;++i){
+          for(let i=0;i!==s.length;++i){
             view[i]=s.charCodeAt(i)&0xff
           }
           return buf;
         }else{
           const buf=new Array(s.length);
-          for(let i=0;i!=s.length;++i){
+          for(let i=0;i!==s.length;++i){
             buf[i]=s.charCodeAt(i)&0xff;
           }
           return buf;
@@ -1557,13 +1539,13 @@ export default {
   white-space: nowrap;
   font-size: 12px;
 }
-/deep/ .el-table__fixed-right-patch{
+::v-deep .el-table__fixed-right-patch{
     width:5px !important
   }
-  /deep/ .el-table colgroup col[name='gutter']{
+  ::v-deep .el-table colgroup col[name='gutter']{
     width:5px !important
   }
-  /deep/ .el-table__body{
+  ::v-deep .el-table__body{
     width:100% !important
   }
 </style>

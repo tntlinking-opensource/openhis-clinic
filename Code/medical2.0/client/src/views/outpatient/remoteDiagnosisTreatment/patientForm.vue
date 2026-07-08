@@ -10,7 +10,7 @@
     <div slot="title" class="dialog-header">
       {{ dialogProps.title }}
       <OperationIcon
-        v-show="dialogProps.action == 'view' && permission.edit"
+        v-show="dialogProps.action === 'view' && permission.edit"
         type="primary"
         text="编辑"
         placement="top-start"
@@ -28,7 +28,7 @@
       class="edit-form"
       style="marginTop: 10px"
     >
-      <div class="tab-item" v-show="tabIndex == '1'">
+      <div class="tab-item" v-show="tabIndex === '1'">
         <el-row>
           <el-col :span="24 / 2">
             <el-form-item label="患者姓名" prop="name">
@@ -143,18 +143,20 @@
       </div>
     </el-form>
     <span slot='footer' class='dialog-footer'>
-      <el-button v-if='dialogProps.action != "view"' :disabled="flage" type='primary' :plain='true'
+      <el-button v-if='dialogProps.action !== "view"' :disabled="flag" type='primary' :plain='true'
                  @click='onSubmit("patientForm")'>提 交
       </el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span>
   </el-dialog>
 </template>
 <script>
   import {listDictItemAll} from "@/api/sys/dictItem";
+  import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
   import {listAdministrativeDivisionAll} from "@/api/org/administrativeDivision";
   import {saveDiagnosis, modifiedState} from "@/api/outpatient/remoteDiagnosisTreatment";
+  import {getPatient as getRemotePatient, patientSelfReg, remoteTreatedApplyZfOnly} from "@/api/remoteApis";
   import BaseUI from "@/views/components/baseUI";
   import OperationIcon from "@/components/OperationIcon";
   import VDistpicker from 'v-distpicker'
@@ -180,18 +182,18 @@
     data() {
       //身份证校验
       const isCnNewID = (rule, value, callback) => {
-        var arrExp = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];//加权因子
-        var arrValid = [1, 0, "X", 9, 8, 7, 6, 5, 4, 3, 2];//校验码
+        const arrExp = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];//加权因子
+        const arrValid = [1, 0, "X", 9, 8, 7, 6, 5, 4, 3, 2];//校验码
         if (/^\d{17}\d|x$/i.test(value)) {
-          var sum = 0, idx;
-          for (var i = 0; i < value.length - 1; i++) {
+          let sum = 0, idx;
+          for (let i = 0; i < value.length - 1; i++) {
             // 对前17位数字与权值乘积求和
             sum += parseInt(value.substr(i, 1), 10) * arrExp[i];
           }
           // 计算模（固定算法）
           idx = sum % 11;
           // 检验第18为是否与校验码相等
-          if (arrValid[idx] == value.substr(17, 1).toUpperCase()) {
+          if (arrValid[idx] === value.substr(17, 1).toUpperCase()) {
             callback()
           } else {
             callback("身份证格式有误")
@@ -210,7 +212,7 @@
         province: '',
         city: '',
         area: '',
-        flage: false,//防止重复提交
+        flag: false,//防止重复提交
         withPatientNexus_List: [], // 与患者关系
         dialogProps: {
           visible: false,
@@ -252,20 +254,17 @@
     methods: {
       //通过获取身份证号获取出生年月日
       getBirthday() {
-        if (this.bizFormModel.card.length == 18) {
+        if (this.bizFormModel.card.length === 18) {
           let birthDay = this.bizFormModel.card.substring(6, 14)
-          console.log(birthDay, '获取身份证号');
           let year = birthDay.substring(0, 4)
           let month = birthDay.substring(4, 6)
           let day = birthDay.substring(6)
           let newBirthday = year + "-" + month + "-" + day
-          console.log(newBirthday, '获取身份证号-生日');
           this.bizFormModel.birthday = newBirthday
           this.birthdayChanges()
 
           // 性别
           let sexStr = this.bizFormModel.card.substring(16, 17)
-          console.log(sexStr, '获取身份证号-性别');
           // 0女1男
           let sexName = "男";
           if (parseInt(sexStr) % 2 === 0) {
@@ -276,7 +275,7 @@
               return item.name === sexName
             })
           }
-        } else if (this.bizFormModel.card.length == 0) {
+        } else if (this.bizFormModel.card.length === 0) {
           this.bizFormModel.birthday = ""
           this.bizFormModel.gender = {
             value: null,
@@ -310,7 +309,6 @@
         }
         ;
         const duration = this.$moment.duration(this.$moment().diff(this.bizFormModel.birthday));
-        console.log(duration, '年龄');
         this.bizFormModel.age = duration.years();
         this.bizFormModel.month = duration.months();
         if (this.bizFormModel.age < 12) {
@@ -397,17 +395,16 @@
         this.$axios.post('/token/Auth/GetAppFrienAuthToken', loginForm, config)
           .then((response) => {
             this.tokenData = response.data.BusData.data.Token
-            console.log(response.data.BusData.data.Token)
           })
           .catch(function (error) {
-            console.log(error);
+            console.error(error);
           });
       },
       // 状态修改
       statusEdit(index) {
         this.bizFormModel.status = index
         saveDiagnosis(this.bizFormModel).then(responseData => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
           } else {
             this.showMessage(responseData)
           }
@@ -419,90 +416,46 @@
       async getPatient() {
         this.bizFormModel.patientId = null
         this.bizFormModel.patientKh = null
-        await this.$axios.post('apis/Patient/GetPatient', {
-          Data: {
-            zjh: this.bizFormModel.card,
-            xm: this.bizFormModel.name
-          },
-          OrganizeId: this.bizFormModel.hospitalId,
-          AppId: "Oh_Newtouch_Clinic",
-          Timestamp: new Date()
-        }, {
-          headers: {
-            Authorization: "Bearer " + this.tokenData
-          }
-        }).then((response) => {
-          console.log("this.bizFormModel.PatientId2222222," + this.bizFormModel.patientId)
+        await getRemotePatient(
+          { zjh: this.bizFormModel.card, xm: this.bizFormModel.name },
+          this.bizFormModel.hospitalId, this.tokenData
+        ).then((response) => {
           if (response.data.BusData.code === 40004) {
-            this.$axios.post('apis/Patient/PatientSelfReg', {
-              Data: {
-                zjh: this.bizFormModel.card,
-                xm: this.bizFormModel.name,
-                xb: this.bizFormModel.gender = "男" ? "1" : "2"
-              },
-              OrganizeId: this.bizFormModel.hospitalId,
-              AppId: "Oh_Newtouch_Clinic",
-              Timestamp: new Date()
-            }, {
-              headers: {
-                Authorization: "Bearer " + this.tokenData
-              }
-            }).then((response) => {
-              console.log("创建信息kakan hou oa" + JSON.stringify(response.data.BusData.data.patid))
+            patientSelfReg(
+              { zjh: this.bizFormModel.card, xm: this.bizFormModel.name, xb: this.bizFormModel.gender === "男" ? "1" : "2" },
+              this.bizFormModel.hospitalId, this.tokenData
+            ).then((response) => {
               this.bizFormModel.patientId = response.data.BusData.data.patid
               this.bizFormModel.patientKh = response.data.BusData.data.kh
-              console.log("this.bizFormModel.patientId"+this.bizFormModel.patientId)
-              console.log("this.bizFormModel.patientKh"+this.bizFormModel.patientKh)
-            })
-              .catch((error) => {
-                console.log(error);
-              });
-          } else if(response.data.BusData.code !== 40004) {
-            // console.log("创建信息kakan hou oa" + JSON.stringify(response.data))
+            }).catch((error) => { console.error(error); });
+          } else if (response.data.BusData.code !== 40004) {
             this.bizFormModel.patientId = response.data.BusData.data[0].patid
             this.bizFormModel.patientKh = response.data.BusData.data[0].kh
           }
-
-        }).catch((error) => {
-          console.log(error);
-        });
+        }).catch((error) => { console.error(error); });
       },
       async onSubmit(formName) {
         // 获取远程诊所token
         await this.$axios.post('/token/Auth/GetAppFrienAuthToken', loginForm, config)
           .then((response) => {
             this.tokenData = response.data.BusData.data.Token
-            console.log(response.data.BusData.data.Token)
           })
           .catch(function (error) {
-            console.log(error);
+            console.error(error);
           });
-        this.flage = true
+        this.flag = true
         // 提交远程会诊申请
         await this.getPatient()
         await this.getPatient()
-        await this.$axios.post('apis/RemoteTreated/RemoteTreatedApplyZfOnly', {
-          Data: {
-            sqsj: this.bizFormModel.diagnosisTime,
-            ks: this.bizFormModel.departmentId,
-            ysgh: this.bizFormModel.medicId,
-            patid: this.bizFormModel.patientId,
-            kh: this.bizFormModel.patientKh,
-            xm: this.bizFormModel.name,
-            sqr: this.bizFormModel.createBy,
-            sqlsh: this.bizFormModel.id,
-            sqrgh: currentUser.id,
-            ApplyOrg: currentUser.company.id,
-            ApplyOrgName: this.bizFormModel.company.name
-          },
-          OrganizeId: this.bizFormModel.hospitalId,
-          AppId: "Oh_Newtouch_Clinic",
-          Timestamp: new Date()
-        }, {
-          headers: {
-            Authorization: "Bearer " + this.tokenData
-          }
-        })
+        await remoteTreatedApplyZfOnly(
+          { sqsj: this.bizFormModel.diagnosisTime, ks: this.bizFormModel.departmentId,
+            ysgh: this.bizFormModel.medicId, patid: this.bizFormModel.patientId,
+            kh: this.bizFormModel.patientKh, xm: this.bizFormModel.name,
+            sqr: this.bizFormModel.createBy, sqlsh: this.bizFormModel.id,
+            sqrgh: currentUser.id, ApplyOrg: currentUser.company.id,
+            ApplyOrgName: this.bizFormModel.company.name },
+          this.bizFormModel.hospitalId, this.tokenData
+        )
           .then((response) => {
             if (response.data.BusData.code === 10000) {
               this.setLoad()
@@ -511,7 +464,7 @@
               this.statusEdit("1")
               this.$message.success("保存成功！")
               modifiedState(this.bizFormModel).then(responseData => {
-                if (responseData.code == 100) {
+                if (responseData.code === 100) {
                 } else {
                   this.showMessage(responseData)
                 }
@@ -525,39 +478,39 @@
 
           })
           .catch(function (error) {
-            console.log(error);
+            console.error(error);
           });
         this.resetLoad()
         this.$refs.index.reset();
       },
       doSave() {
-        let flageCard = false
+        let flagCard = false
         //校验身份证号码
         if (this.bizFormModel.card) {
-          var arrExp = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];//加权因子
-          var arrValid = [1, 0, "X", 9, 8, 7, 6, 5, 4, 3, 2];//校验码
+          const arrExp = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];//加权因子
+          const arrValid = [1, 0, "X", 9, 8, 7, 6, 5, 4, 3, 2];//校验码
           if (/^\d{17}\d|x$/i.test(this.bizFormModel.card)) {
-            var sum = 0, idx;
-            for (var i = 0; i < this.bizFormModel.card.length - 1; i++) {
+            let sum = 0, idx;
+            for (let i = 0; i < this.bizFormModel.card.length - 1; i++) {
               // 对前17位数字与权值乘积求和
               sum += parseInt(this.bizFormModel.card.substr(i, 1), 10) * arrExp[i];
             }
             // 计算模（固定算法）
             idx = sum % 11;
             // 检验第18为是否与校验码相等
-            if (arrValid[idx] == this.bizFormModel.card.substr(17, 1).toUpperCase()) {
-              flageCard = true
+            if (arrValid[idx] === this.bizFormModel.card.substr(17, 1).toUpperCase()) {
+              flagCard = true
             } else {
-              flageCard = false
+              flagCard = false
             }
           } else {
-            flageCard = false
+            flagCard = false
           }
         }
 
-        if (!flageCard && this.bizFormModel.card) {
+        if (!flagCard && this.bizFormModel.card) {
           this.$message.error("身份证号码不正确，请重新输入")
-          this.flage = false
+          this.flag = false
           return;
         }
 
@@ -567,16 +520,16 @@
         this.bizFormModel.area = this.area
         // this.bizFormModel.id=""
         saveDiagnosis(this.bizFormModel).then(responseData => {
-          this.flage = false
-          if (responseData.code == 100) {
+          this.flag = false
+          if (responseData.code === 100) {
             this.dialogProps.visible = false
             this.$emit('save-finished')
           } else {
-            this.flage = false
+            this.flag = false
             this.showMessage(responseData)
           }
         }).catch(error => {
-          this.flage = false
+          this.flag = false
           this.outputError(error)
         })
       },
@@ -644,46 +597,11 @@
           this.province_List = responseData.data;
         });
 
-        let gender_search = {
-          params: [
-            {
-              columnName: "dict_type_id",
-              queryType: "=",
-              value: "1008489176147648522",
-            },
-          ],
-        };
-        // 字段对应表上filter条件
-        gender_search.params.push.apply(gender_search.params, []);
-        // 数据权限: 字典项sys_dict_item
-        this.pushDataPermissions(
-          gender_search.params,
-          this.$route.meta.routerId,
-          "4005"
-        );
-        this.gender_List.splice(0, this.gender_List.length);
-        listDictItemAll(gender_search).then((responseData) => {
-          this.gender_List = responseData.data;
+        getDictItemsByCode(DICT_CODE.GENDER).then((data) => {
+          this.gender_List = data;
         });
-        let withPatientNexus_search = {
-          params: [
-            {
-              columnName: "dict_type_id",
-              queryType: "=",
-              value: "1008489176147648526",
-            },
-          ],
-        };
-        // 字段对应表上filter条件
-        withPatientNexus_search.params.push.apply(
-          withPatientNexus_search.params,
-          []
-        );
-        // 数据权限: 字典项sys_dict_item
-        this.pushDataPermissions(withPatientNexus_search.params, this.$route.meta.routerId, '4005')
-        this.withPatientNexus_List.splice(0, this.withPatientNexus_List.length)
-        listDictItemAll(withPatientNexus_search).then(responseData => {
-          this.withPatientNexus_List = responseData.data
+        getDictItemsByCode(DICT_CODE.WITH_PATIENT_NEXUS).then((data) => {
+          this.withPatientNexus_List = data
         })
       },
       // 获取到省市区三级联动的值
@@ -700,11 +618,41 @@
 
         this.area = data.value
 
-      }
+      },
+      openViewPatientDialog(patient) {
+        this.dialogProps.action = 'edit'
+        this.dialogProps.title = '提交申请'
+        this.bizFormModel = {...this.initFormModel(), ...patient}
+        this.initOptions(this.bizFormModel)
+        this.tabIndex = '1'
+        this.dialogProps.visible = true
+        this.province = this.bizFormModel.province
+        this.city = this.bizFormModel.city
+        this.area = this.bizFormModel.area
+      },
+      openAddPatientDialog() {
+        this.dialogProps.action = 'add'
+        this.dialogProps.title = '添加患者信息'
+        this.bizFormModel = this.initFormModel(this.user)
+        this.initOptions(this.bizFormModel)
+        this.tabIndex = '1'
+        this.dialogProps.visible = true
+        this.province = ''
+        this.city = ''
+        this.area = ''
+      },
+      openCopyPatientDialog(patient) {
+        this.dialogProps.action = 'view'
+        this.dialogProps.title = '查看详细信息'
+        this.bizFormModel = {...this.initFormModel(this.user), ...patient}
+        this.initOptions(this.bizFormModel)
+        this.tabIndex = '1'
+        this.bizFormModel.id = null   //把id设置为空，添加一个新的
+        this.dialogProps.visible = true
+      },
     },
     watch: {
       'this.bizFormModel.age': function () {
-        console.log(this.bizFormModel.age, '年龄');
         if (this.bizFormModel.age < 12) {
           formRules.guardianName[0].required = true
           formRules.guardianPhone[0].required = true
@@ -714,41 +662,6 @@
         }
       }
     },
-    mounted: function () {
-      this.$nextTick(() => {
-        this.$on('openViewPatientDialog', function (patient) {
-          this.dialogProps.action = 'edit'
-          this.dialogProps.title = '提交申请'
-          this.bizFormModel = {...this.initFormModel(), ...patient}
-          this.initOptions(this.bizFormModel)
-          this.tabIndex = '1'
-          this.dialogProps.visible = true
-          this.province = this.bizFormModel.province
-          this.city = this.bizFormModel.city
-          this.area = this.bizFormModel.area
-        })
-        this.$on('openAddPatientDialog', function () {
-          this.dialogProps.action = 'add'
-          this.dialogProps.title = '添加患者信息'
-          this.bizFormModel = this.initFormModel(this.user)
-          this.initOptions(this.bizFormModel)
-          this.tabIndex = '1'
-          this.dialogProps.visible = true
-          this.province = ''
-          this.city = ''
-          this.area = ''
-        })
-        this.$on('openCopyPatientDialog', function (patient) {
-          this.dialogProps.action = 'view'
-          this.dialogProps.title = '查看详细信息'
-          this.bizFormModel = {...this.initFormModel(this.user), ...patient}
-          this.initOptions(this.bizFormModel)
-          this.tabIndex = '1'
-          this.bizFormModel.id = null   //把id设置为空，添加一个新的
-          this.dialogProps.visible = true
-        })
-      })
-    }
   }
 </script>
 <style lang="scss">

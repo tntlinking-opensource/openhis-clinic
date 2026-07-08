@@ -1,43 +1,52 @@
+/**
+ * 报表专用HTTP客户端
+ * 用于报表模块的API请求，使用 Authorization 头而非 X-Token
+ */
 import axios from 'axios'
-import { getLocalToken } from '@/utils/auth'
+import { getLocalToken, removeLocalToken } from '@/utils/auth'
+import router from '@/router'
 
 // 创建axios实例
 const service = axios.create({
-    // api的base_url
     baseURL: process.env.REPORT_SERVER_URL,
-    // baseURL: 'http://59.80.34.149/dataease/backend/',
-    // 请求超时时间
     timeout: 40000
 })
 
 // request拦截器
 service.interceptors.request.use(config => {
-    // Do something before request is sent
     if (getLocalToken()) {
-        // 让每个请求携带token--['X-Token']为自定义key 请根据实际情况自行修改
         config.headers['Authorization'] = getLocalToken()
     }
-  
-  return config
+    return config
 }, error => {
-    // Do something with request error
-  Promise.reject(error)
+    return Promise.reject(error)
 })
 
-// respone拦截器
+// response拦截器
 service.interceptors.response.use(
     response => {
-      return response.data
+        return response.data
     },
     error => {
-      let errorData = {
-        type: 'error',
-        code: error.response && error.response.status ? error.response.status: '1',
-        msg: error.message ? error.message: '未知的错误',
-        data: error.response && error.response.data ? error.response.data: error
-      }
+        let errorData = {
+            type: 'error',
+            code: error.response && error.response.status ? error.response.status : '1',
+            msg: error.message ? error.message : '未知的错误',
+            data: error.response && error.response.data ? error.response.data : error
+        }
 
-      return errorData
+        // 处理 401 错误（未授权/未登录）— 与 request.js 保持一致
+        if (error.response && error.response.status === 401) {
+            removeLocalToken()
+            ELEMENT.Message({
+                message: '登录已过期，请重新登录',
+                type: 'warning',
+                duration: 2000
+            })
+            router.replace('/login')
+        }
+
+        return Promise.reject(errorData)
     })
 
 export default service

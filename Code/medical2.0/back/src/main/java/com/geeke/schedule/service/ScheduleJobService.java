@@ -6,12 +6,10 @@ import com.geeke.utils.CronUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.geeke.common.service.CrudService;
-import com.geeke.config.exception.CommonJsonException;
+import com.geeke.common.service.ServiceException;
 import com.geeke.schedule.dao.ScheduleJobDao;
 import com.geeke.schedule.entity.ScheduleJob;
-import com.geeke.utils.ResultUtil;
 import com.geeke.utils.StringUtils;
-import com.geeke.utils.constants.ErrorEnum;
 import com.google.common.collect.Maps;
 
 /**
@@ -30,7 +28,7 @@ public class ScheduleJobService extends CrudService<ScheduleJobDao, ScheduleJob>
     public ScheduleJob save(ScheduleJob entity) {
         String cron = entity.getCron();
         if (StringUtils.isEmpty(cron)|| ! CronUtils.isValid(cron)){
-            throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_90003, "cron表达式参数异常"));
+            throw new ServiceException("cron表达式参数异常");
         }
         return super.save(entity);
     }

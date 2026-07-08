@@ -8,113 +8,140 @@ import org.apache.shiro.authz.UnauthenticatedException;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.servlet.http.HttpServletRequest;
 
 /**
+ * 统一异常拦截
  * @author: hxy
- * @description: 统一异常拦截
  * @date: 2017/10/24 10:31
  */
 @ControllerAdvice
 @ResponseBody
 public class GlobalExceptionHandler {
-    private Logger logger = LoggerFactory.getLogger("GlobalExceptionHandler");
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    /**
+     * 构建统一错误响应
+     */
+    private JSONObject buildErrorResponse(String code, String msg, String msgType) {
+        JSONObject json = new JSONObject();
+        json.put(Constants.RETURN_CODE, code);
+        json.put(Constants.RETURN_MSG, msg);
+        json.put(Constants.RETURN_MSG_TYPE, msgType);
+        json.put(Constants.RETURN_DATA, new JSONObject());
+        return json;
+    }
+
+    /**
+     * 通用异常拦截 — 不向客户端暴露堆栈信息
+     */
     @ExceptionHandler(value = Exception.class)
-    public JSONObject defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
-        String errorPosition = "";
-        //如果错误堆栈信息存在
-        if (e.getStackTrace().length > 0) {
-            StackTraceElement element = e.getStackTrace()[0];
-            String fileName = element.getFileName() == null ? "未找到错误文件" : element.getFileName();
-            int lineNumber = element.getLineNumber();
-            errorPosition = fileName + ":" + lineNumber;
-        }
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put(Constants.RETURN_CODE, ErrorEnum.E_400.getErrorCode());
-        jsonObject.put(Constants.RETURN_MSG, ErrorEnum.E_400.getErrorMsg());
-        jsonObject.put(Constants.RETURN_MSG_TYPE, Constants.MSG_TYPE_ERROR);
-        JSONObject errorObject = new JSONObject();
-        errorObject.put("errorLocation", e.toString() + "    错误位置:" + errorPosition);
-        jsonObject.put(Constants.RETURN_DATA, errorObject);
-        logger.error("异常", e);
-        return jsonObject;
+    public ResponseEntity<JSONObject> defaultErrorHandler(HttpServletRequest req, Exception e) {
+        logger.error("请求异常: {} {}", req.getMethod(), req.getRequestURI(), e);
+        JSONObject result = buildErrorResponse(ErrorEnum.E_400.getErrorCode(), ErrorEnum.E_400.getErrorMsg(), Constants.MSG_TYPE_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+    }
+
+    /**
+     * 业务逻辑异常拦截 — 返回具体业务错误信息给前端
+     * 用于 Service 层抛出的业务校验异常
+     */
+    @ExceptionHandler(com.geeke.common.service.ServiceException.class)
+    public ResponseEntity<JSONObject> serviceExceptionHandler(com.geeke.common.service.ServiceException e) {
+        logger.warn("业务异常: {}", e.getMessage());
+        JSONObject result = buildErrorResponse(ErrorEnum.E_400.getErrorCode(), e.getMessage(), Constants.MSG_TYPE_WARNING);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+    }
+
+    /**
+     * RuntimeException 拦截 — 返回错误信息，不暴露堆栈
+     */
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<JSONObject> runtimeExceptionHandler(RuntimeException e) {
+        logger.error("运行时异常: {}", e.getMessage(), e);
+        JSONObject result = buildErrorResponse(ErrorEnum.E_400.getErrorCode(), "系统内部错误", Constants.MSG_TYPE_ERROR);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+    }
+
+    /**
+     * @Valid 参数校验失败拦截
+     * 当 @RequestBody 上的实体字段不满足 @NotNull 等约束时触发
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<JSONObject> validationExceptionHandler(MethodArgumentNotValidException e) {
+        String message = e.getBindingResult().getFieldErrors().stream()
+                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+                .reduce((a, b) -> a + "; " + b)
+                .orElse("参数校验失败");
+        logger.warn("参数校验失败: {}", message);
+        JSONObject result = buildErrorResponse(ErrorEnum.E_400.getErrorCode(), message, Constants.MSG_TYPE_WARNING);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
     }
 
     /**
      * GET/POST请求方法错误的拦截器
-     * 因为开发时可能比较常见,而且发生在进入controller之前,上面的拦截器拦截不到这个错误
-     * 所以定义了这个拦截器
-     *
-     * @return
-     * @throws Exception
      */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public JSONObject httpRequestMethodHandler() throws Exception {
-        return ResultUtil.errorJson(ErrorEnum.E_500);
-    }
-
-    /**
-     * 本系统自定义错误的拦截器
-     * 拦截到此错误之后,就返回这个类里面的json给前端
-     * 常见使用场景是参数校验失败,抛出此错,返回错误信息给前端
-     *
-     * @param commonJsonException
-     * @return
-     * @throws Exception
-     */
-    @ExceptionHandler(CommonJsonException.class)
-    public JSONObject commonJsonExceptionHandler(CommonJsonException commonJsonException) throws Exception {
-        return commonJsonException.getResultJson();
+    public ResponseEntity<JSONObject> httpRequestMethodHandler(HttpRequestMethodNotSupportedException e) {
+        logger.warn("请求方法不支持: {}", e.getMessage());
+        JSONObject result = buildErrorResponse(ErrorEnum.E_400.getErrorCode(), "请求方法不支持: " + e.getMethod(), Constants.MSG_TYPE_ERROR);
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(result);
     }
 
     /**
      * 权限不足报错拦截
-     *
-     * @return
-     * @throws Exception
      */
     @ExceptionHandler(UnauthorizedException.class)
-    public JSONObject unauthorizedExceptionHandler() throws Exception {
-        return ResultUtil.errorJson(ErrorEnum.E_502);
+    public ResponseEntity<JSONObject> unauthorizedExceptionHandler() {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ResultUtil.errorJson(ErrorEnum.E_502));
+    }
+
+    /**
+     * 请求体JSON格式错误拦截
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<JSONObject> httpMessageNotReadableHandler(HttpMessageNotReadableException e) {
+        logger.warn("请求体格式错误: {}", e.getMessage());
+        JSONObject result = buildErrorResponse(ErrorEnum.E_400.getErrorCode(), "请求体格式错误，请检查JSON格式", Constants.MSG_TYPE_ERROR);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+    }
+
+    /**
+     * 缺少请求参数拦截
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<JSONObject> missingParamHandler(MissingServletRequestParameterException e) {
+        logger.warn("缺少请求参数: {}", e.getMessage());
+        JSONObject result = buildErrorResponse(ErrorEnum.E_400.getErrorCode(), "缺少必填参数: " + e.getParameterName(), Constants.MSG_TYPE_ERROR);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+    }
+
+    /**
+     * 404路径不存在拦截
+     */
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<JSONObject> noHandlerFoundHandler(NoHandlerFoundException e) {
+        logger.warn("路径不存在: {} {}", e.getHttpMethod(), e.getRequestURL());
+        JSONObject result = buildErrorResponse(ErrorEnum.E_400.getErrorCode(), "请求路径不存在", Constants.MSG_TYPE_ERROR);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
     }
 
     /**
      * 未登录报错拦截
-     * 在请求需要权限的接口,而连登录都还没登录的时候,会报此错
-     *
-     * @return
-     * @throws Exception
      */
     @ExceptionHandler(UnauthenticatedException.class)
-    public JSONObject unauthenticatedException() throws Exception {
-        return ResultUtil.errorJson(ErrorEnum.E_20011);
+    public ResponseEntity<JSONObject> unauthenticatedException() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ResultUtil.errorJson(ErrorEnum.E_20011));
     }
-    
-//    /**
-//     * 流程引擎异常拦截
-//     * @param processEngineException
-//     * @return
-//     * @throws Exception
-//     */
-//    @ExceptionHandler(ProcessEngineException.class)
-//    public JSONObject processEngineExceptionHandler(ProcessEngineException processEngineException) throws Exception {
-//    	return ResultUtil.errorJson(ErrorEnum.E_30001, processEngineException.getMessage());
-//    }
-//
-//    /**
-//     * 流程引擎警告拦截
-//     * @param processEngineWarning
-//     * @return
-//     * @throws Exception
-//     */
-//    @ExceptionHandler(ProcessEngineWarning.class)
-//    public JSONObject processEngineWarningHandler(ProcessEngineWarning processEngineWarning) throws Exception {
-//    	return ResultUtil.warningJson(ErrorEnum.E_30002, processEngineWarning.getMessage());
-//    }
 }

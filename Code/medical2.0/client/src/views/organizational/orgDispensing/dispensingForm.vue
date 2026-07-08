@@ -3,16 +3,16 @@
     @open='onDialogOpen()' v-loading='loading'>
     <div slot='title' class='dialog-header'>
       {{ dialogProps.title }}
-      <OperationIcon v-show='dialogProps.action == "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
+      <OperationIcon v-show='dialogProps.action === "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
     </div>
 
     <el-form :model='bizFormModel' :rules='formRules' 
       ref='dispensingForm' label-width='120px' label-position='right' class='edit-form'>  
-      <div class="tab-item" v-show='tabIndex=="1"'>  
+      <div class="tab-item" v-show='tabIndex==="1"'>  
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='诊所id' prop='company.id' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.company.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.company.name'></el-input>
             <el-select v-else v-model='bizFormModel.company' value-key='id' filterable clearable placeholder='请选择诊所id' 
               @clear='bizFormModel.company={
                 "id": null,
@@ -24,7 +24,7 @@
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='挂号id' prop='registration.id' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.registration.id'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.registration.id'></el-input>
             <el-select v-else v-model='bizFormModel.registration' value-key='id' filterable clearable placeholder='请选择挂号id' 
               @clear='bizFormModel.registration={
                 "id": null,
@@ -37,7 +37,7 @@
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='库存id' prop='supplierStock.id' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.supplierStock.id'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.supplierStock.id'></el-input>
             <el-select v-else v-model='bizFormModel.supplierStock' value-key='id' filterable clearable placeholder='请选择库存id' 
               @clear='bizFormModel.supplierStock={
                 "id": null,
@@ -48,7 +48,7 @@
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='处方信息id' prop='recipelInfo.id' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.recipelInfo.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.recipelInfo.name'></el-input>
             <el-select v-else v-model='bizFormModel.recipelInfo' value-key='id' filterable clearable placeholder='请选择处方信息id' 
               @clear='bizFormModel.recipelInfo={
                 "id": null,
@@ -62,7 +62,7 @@
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='数量' prop='number' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.number'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.number'></el-input>
             <number-input v-else v-model="bizFormModel.number"  :precision="0"></number-input>
           </el-form-item>
         </el-col>
@@ -70,17 +70,17 @@
       <el-row>
         <el-col>
           <el-form-item label='备注信息' prop='remarks' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.remarks' type='textarea'
-                                  :maxlength='255' :placeholder='dialogProps.action == "view"? "" : "请输入备注信息"'  clearable></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.remarks' type='textarea'
+                                  :maxlength='255' :placeholder='dialogProps.action === "view"? "" : "请输入备注信息"'  clearable></el-input>
           </el-form-item>
         </el-col>
       </el-row>
       </div>
     </el-form>
     <span slot='footer' class='dialog-footer'>
-      <el-button v-if='dialogProps.action != "view"' type='primary' :plain='true' @click='onSubmit("dispensingForm")'>保 存</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+      <el-button v-if='dialogProps.action !== "view"' type='primary' :plain='true' @click='onSubmit("dispensingForm")'>保 存</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span>    
   </el-dialog>
 </template>
@@ -141,7 +141,7 @@ export default {
     doSave() {
       this.setLoad()
       saveDispensing(this.bizFormModel).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           this.dialogProps.visible = false
           this.$emit('save-finished')
         } else {
@@ -199,7 +199,7 @@ export default {
         this.company_List = responseData.data
         // 获取初始项的值
         this.company_List.forEach( item => {
-          if(item.id == this.bizFormModel.company.id) {
+          if(item.id === this.bizFormModel.company.id) {
             this.bizFormModel.company = item
             return
           }
@@ -238,46 +238,42 @@ export default {
       listRecipelInfoAll(recipelInfo_search).then(responseData => {
         this.recipelInfo_List = responseData.data
       })
+    },
+    openViewDispensingDialog(dispensing) {
+      this.dialogProps.action = 'view'
+      this.dialogProps.title = '查看发药明细'
+      this.bizFormModel = {...this.initFormModel(), ...dispensing}
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openEditDispensingDialog(dispensing) {
+      this.dialogProps.action = 'edit'
+      this.dialogProps.title = '修改发药明细'
+      this.bizFormModel = {...this.initFormModel(), ...dispensing}
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openAddDispensingDialog() {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加发药明细'
+      this.bizFormModel = this.initFormModel()
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openCopyDispensingDialog(dispensing) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加发药明细'
+      this.bizFormModel = {...this.initFormModel(), ...dispensing}
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.bizFormModel.id = null   //把id设置为空，添加一个新的
+      this.dialogProps.visible = true
     }
   },
   watch: {
-  },
-  mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openViewDispensingDialog', function(dispensing) {
-        this.dialogProps.action = 'view'
-        this.dialogProps.title = '查看发药明细'
-        this.bizFormModel = {...this.initFormModel(), ...dispensing}
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openEditDispensingDialog', function(dispensing) {
-        this.dialogProps.action = 'edit'
-        this.dialogProps.title = '修改发药明细'
-        this.bizFormModel = {...this.initFormModel(), ...dispensing}
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openAddDispensingDialog', function() {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加发药明细'
-        this.bizFormModel = this.initFormModel()
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openCopyDispensingDialog', function(dispensing) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加发药明细'
-        this.bizFormModel = {...this.initFormModel(), ...dispensing}
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.bizFormModel.id = null   //把id设置为空，添加一个新的
-        this.dialogProps.visible = true
-      })
-    })
-  }  
+  }
 }
 </script>

@@ -11,7 +11,7 @@
         </div>
 
         <!-- 有效期预警 -->
-        <div v-if="tabPosition=='0'">
+        <div v-if="tabPosition==='0'">
 
            <div class='query-form-container'>
           <el-row class='search-row'>
@@ -153,7 +153,7 @@
                 <el-table-column prop="endDate" label="有效期" > </el-table-column>
                 <el-table-column prop="cancellation" label="状态" >
                     <template slot-scope="scope">
-                      <span v-if="scope.row.cancellation=='0'" style="color:orange">
+                      <span v-if="scope.row.cancellation==='0'" style="color:orange">
                           即将过期
                       </span>
                       <span v-else style="color:red">
@@ -301,6 +301,7 @@ import { validatenull } from "@/utils/validate";
 import MainUI from "@/views/components/mainUI";
 import {listSupplierAll} from "@/api/stock/supplier"
 import { listDictItemAll } from "@/api/sys/dictItem";
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 import { BigNumber } from "bignumber.js";
 import {getDrugIndateWarning,getDrugInventoryWarning,exportTable} from "@/api/stock/warning";
 export default {
@@ -394,11 +395,10 @@ export default {
 
     exportTable(){
 
-      if(this.tabPosition=='0'){
+      if(this.tabPosition==='0'){
         this.indateSearch.columnName = '0'
         //按有效期导出
         exportTable(this.indateSearch).then((res)=>{
-               console.log(res,'这是个啥');
                const filename = decodeURI(res.headers.split(';')[1].split('=')[1]) || '.xls'
                 //const filename = "药品有效期预警.xls"
                 const blob = new Blob([res.data], {
@@ -455,7 +455,7 @@ export default {
     },
 
     resetCondition(){
-      if(this.tabPosition=='0'){
+      if(this.tabPosition==='0'){
         this.queryModel={
          name:'',
         type:'',
@@ -506,9 +506,9 @@ export default {
             }
           ]
       }
-      if(this.inventoryQueryModel.name!=undefined && this.inventoryQueryModel.name!=''){
+      if(this.inventoryQueryModel.name!==undefined && this.inventoryQueryModel.name!==''){
 
-             var pattern2 = new RegExp("[A-Za-z]+");
+             const pattern2 = new RegExp("[A-Za-z]+");
                 if (pattern2.test(this.inventoryQueryModel.name)) {
                   this.inventorySearch.params.push(
                     {
@@ -529,8 +529,8 @@ export default {
                   )
                 }
           }
-          if(this.inventoryQueryModel.inventory && this.inventoryQueryModel.inventory!=''){
-              if(this.inventoryQueryModel.inventory=='0'){
+          if(this.inventoryQueryModel.inventory && this.inventoryQueryModel.inventory!==''){
+              if(this.inventoryQueryModel.inventory==='0'){
                    this.inventorySearch.params.push(
                     {
                       columnName: "inventory",
@@ -548,9 +548,8 @@ export default {
           }
           this.setLoad()
           getDrugInventoryWarning(this.inventorySearch).then((res)=>{
-            if(res.code==100){
-              console.log(res.data,'获取库存');
-              if(this.currentPage==1){
+            if(res.code===100){
+              if(this.currentPage===1){
                 this.$emit("changeCurrentPage",1)
             }
               this.$emit("changeTotal",res.data.total)
@@ -603,9 +602,9 @@ export default {
           ]
         }
 
-        if(this.queryModel.name!=undefined && this.queryModel.name!=''){
+        if(this.queryModel.name!==undefined && this.queryModel.name!==''){
 
-             var pattern2 = new RegExp("[A-Za-z]+");
+             const pattern2 = new RegExp("[A-Za-z]+");
                 if (pattern2.test(this.queryModel.name)) {
                   this.indateSearch.params.push(
                     {
@@ -626,8 +625,8 @@ export default {
                   )
                 }
           }
-          if(this.queryModel.inventory && this.queryModel.inventory!=''){
-              if(this.queryModel.inventory=='0'){
+          if(this.queryModel.inventory && this.queryModel.inventory!==''){
+              if(this.queryModel.inventory==='0'){
                    this.indateSearch.params.push(
                     {
                       columnName: "number",
@@ -643,7 +642,7 @@ export default {
                     })
               }
             }
-        if(this.queryModel.supplier && this.queryModel.supplier!=''){
+        if(this.queryModel.supplier && this.queryModel.supplier!==''){
             this.indateSearch.params.push(
                 {
                     columnName: "supplier_id",
@@ -656,9 +655,8 @@ export default {
 
         this.setLoad();
         getDrugIndateWarning(this.indateSearch).then(res=>{
-        if(res.code==100){
-          console.log(res.data,'获取有效期');
-         if(this.currentPage==1){
+        if(res.code===100){
+         if(this.currentPage===1){
             this.$emit("changeCurrentPage",1)
          }
           this.$emit("changeTotal",res.data.total)
@@ -696,7 +694,6 @@ export default {
     //   //进价合计
     //   arr[7] = new BigNumber(Number(this.allTotal.totalPrice)).toFormat(2)
     //  }
-      console.log(arr)
       return arr
     },
 
@@ -704,9 +701,8 @@ export default {
     inventoryInit(){
       this.setLoad()
       getDrugInventoryWarning(this.inventorySearch).then((res)=>{
-        if(res.code==100){
-          console.log(res.data,'获取库存');
-          if(this.currentPage==1){
+        if(res.code===100){
+          if(this.currentPage===1){
             this.$emit("changeCurrentPage",1)
          }
           this.$emit("changeTotal",res.data.total)
@@ -724,9 +720,8 @@ export default {
       this.setLoad();
       //初始化页码
       getDrugIndateWarning(this.indateSearch).then(res=>{
-        if(res.code==100){
-          console.log(res.data,'获取有效期');
-         if(this.currentPage==1){
+        if(res.code===100){
+         if(this.currentPage===1){
             this.$emit("changeCurrentPage",1)
          }
           this.$emit("changeTotal",res.data.total)
@@ -741,32 +736,8 @@ export default {
     //初始化数据
     initOptions(){
        this.tabPosition = '0'
-      let type_search = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "1004078055755374603",
-          },
-        ],
-      };
-      // 响应字段的条件操作符，替换成触发字段的操作符
-      type_search.params.forEach((item) => {
-        if (this.queryTypes[item.columnName]) {
-          item.queryType = this.queryTypes[item.columnName];
-        }
-      });
-      // 字段对应表上filter条件
-      type_search.params.push.apply(type_search.params, []);
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(
-        type_search.params,
-        this.$route.meta.routerId,
-        "4005"
-      );
-      this.type_List.splice(0, this.type_List.length);
-      listDictItemAll(type_search).then((responseData) => {
-        this.type_List = responseData.data;
+      getDictItemsByCode(DICT_CODE.MEDICAL_TYPE).then((data) => {
+        this.type_List = data;
       });
 
       //获取供应商
@@ -786,7 +757,7 @@ export default {
         ],
       }
         listSupplierAll(supplierSearch).then((res)=>{
-            if(res.code==100){
+            if(res.code===100){
                 this.supplierList = res.data
             }
         }).catch((error)=>{
@@ -798,7 +769,7 @@ export default {
         this.type = tab.name
     },
     changStatus(){
-      if(this.tabPosition=='0'){
+      if(this.tabPosition==='0'){
 
       }else{
 
@@ -813,7 +784,7 @@ export default {
       this.sizeChange = newVal
       this.currentPage = 1
 
-      if(this.tabPosition=='0'){
+      if(this.tabPosition==='0'){
         this.indateSearch.limit = newVal;
         this.indateSearch.offset = (this.currentPage - 1) * newVal;
         this.init()
@@ -827,7 +798,7 @@ export default {
 
       this.currentPage = newVal
 
-      if(this.tabPosition=='0'){
+      if(this.tabPosition==='0'){
         this.indateSearch.offset = (newVal - 1) * this.indateSearch.limit;
         this.init()
       }else{
@@ -837,9 +808,8 @@ export default {
     },
     tabPosition:{
       handler(newVal,oldVal){
-        console.log(newVal,'获取变换值');
         this.tabPosition = newVal
-        if(this.tabPosition=='0'){
+        if(this.tabPosition==='0'){
           this.currentPage = 1
           this.queryModel={
             name:'',
@@ -930,7 +900,7 @@ export default {
   padding: 0px 0px 10px 0px;
 }
 .typeClass{
-  /deep/ .el-input{
+  ::v-deep .el-input{
     width: 90% !important;
     input{
       width: 90% !important;
@@ -939,7 +909,7 @@ export default {
   }
 }
 .el-col{
-  /deep/ .el-range-separator{
+  ::v-deep .el-range-separator{
     width: 10%;
   }
 }
@@ -950,7 +920,7 @@ export default {
     text-align: right;
   }
 }
-/deep/ .el-table__footer-wrapper{
+::v-deep .el-table__footer-wrapper{
   td:not(:nth-of-type(1)){
     .cell{
       display: inline-block;
@@ -963,14 +933,14 @@ export default {
 .el-table::before{
   height: 0;
 }
-/deep/ .el-table colgroup col[name='gutter']{
+::v-deep .el-table colgroup col[name='gutter']{
   width:5px !important
 }
-/deep/ .el-table__body{
+::v-deep .el-table__body{
   width:100% !important
 }
 // 设置表格body的高度
- /deep/.el-table__body-wrapper {
+ ::v-deep.el-table__body-wrapper {
   //解决数据展示超出body高度不滚动bug
   overflow-y: auto;
    // 减去的是表格header的高度

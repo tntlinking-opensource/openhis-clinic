@@ -5,7 +5,7 @@ import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
 import com.geeke.common.service.CrudService;
 import com.geeke.outpatient.dao.SchedulingDao;
-import com.geeke.outpatient.entity.scheduling;
+import com.geeke.outpatient.entity.Scheduling;
 import com.geeke.taskmanagement.dao.ArticleDao;
 import com.geeke.taskmanagement.entity.article;
 import com.geeke.taskmanagement.entity.taskmanagement;
@@ -18,7 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service("ArticleService")
-@Transactional(readOnly = false)
+@Transactional(readOnly = true)
 public class ArticleService extends CrudService<ArticleDao, article>{
 
     @Autowired
@@ -34,6 +34,7 @@ public class ArticleService extends CrudService<ArticleDao, article>{
     }
 
     public Page<article> listPages(List<Parameter> params, int offset, int limit, String orderby) {
+        ensureCompanyFilter(params);
         PageRequest pageRequest = new PageRequest(offset, limit, params, orderby);
         int total = this.dao.counts(pageRequest);
         List<article> list = null;
@@ -41,6 +42,6 @@ public class ArticleService extends CrudService<ArticleDao, article>{
             list = this.dao.listPages(pageRequest);
         }
 
-        return new Page((long)total, list);
+        return new Page<>((long)total, list);
     }
 }

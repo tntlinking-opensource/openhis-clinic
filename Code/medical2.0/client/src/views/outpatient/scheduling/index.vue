@@ -32,7 +32,7 @@
                   autocomplete="“off”"
                 />
               </el-col>
-              <el-col :span="12" v-if="tabPosition == '0'">
+              <el-col :span="12" v-if="tabPosition === '0'">
                 <div style="float: right">
                   <el-button
                     @click="schedulingzlDayList(-(7 * 24 * 60 * 60 * 1000))"
@@ -45,7 +45,7 @@
                   >
                 </div>
               </el-col>
-               <el-col :span="12" v-if="tabPosition == '1'">
+               <el-col :span="12" v-if="tabPosition === '1'">
                 <div style="float: right">
                   <el-button
                     @click="schedulingzlrdaysList(-(86400000))"
@@ -61,7 +61,7 @@
             </el-row>
             <el-row>
               <el-table
-                v-if="tabPosition == '0'"
+                v-if="tabPosition === '0'"
                 :data="schedulingzlday"
                 border
                 height="100%"
@@ -117,7 +117,7 @@
                     <span
                       v-if="
                         item.datelist[get(scope.row.day)] != null &&
-                        scope.row.newfalg == 1 &&
+                        scope.row.newfalg === 1 &&
                         ((scope.row.timestreaint <= scope.row.newdatetime &&
                           scope.row.timeendint >= scope.row.newdatetime) ||
                           (scope.row.timestreaint > scope.row.newdatetime &&
@@ -187,7 +187,7 @@
             </el-row>
             <el-row>
               <el-table
-                v-if="tabPosition == '1'"
+                v-if="tabPosition === '1'"
                 :data="schedulingzlrdayList"
                 style="width: 100%"
               >
@@ -199,7 +199,7 @@
                   :label="item.username + '(' + item.ksname + ')'"
                   width="130">
                   <template slot-scope="scope">
-                    <el-button v-if="getlist(item.datehouse,scope.row.strattime,scope.row.endtime)!=0" @click="rdaybutton(scope.row)" >明细</el-button>
+                    <el-button v-if="getlist(item.datehouse,scope.row.strattime,scope.row.endtime)!==0" @click="rdaybutton(scope.row)" >明细</el-button>
                   </template>
 
                 </el-table-column>
@@ -465,6 +465,7 @@ import {
   listzlrday,
 } from "@/api/outpatient/scheduling";
 import { listDictItemAll } from "@/api/sys/dictItem";
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 import MainUI from "@/views/components/mainUI";
 import History from "@/views/components/history";
 import TestForm from "./schedulingForm";
@@ -637,54 +638,33 @@ export default {
     },
     handleClick(tab, event) {
        //this.$message.success(this.tabPosition);
-      if (tab.name == "scheduling") {
+      if (tab.name === "scheduling") {
         this.schedulingDayList();
         this.schedulingmxdaylistcreate();
-      } else if (tab.name == "schedulingmx") {
-        let paramsc = {
-          params: [
-            {
-              columnName: "dict_type_id",
-              queryType: "=",
-              value: "1008898177293385773",
-            },
-          ],
-          offset: 0,
-          limit: 100,
-          columnName: "", // 排序字段名
-          order: "", // 排序
-        };
-        listDictItemAll(paramsc).then((responseData) => {
-          this.statusList = responseData.data;
-          console.log(this.statusList, + "sss");
+      } else if (tab.name === "schedulingmx") {
+        getDictItemsByCode(DICT_CODE.REGISTRATION_STATUS).then((data) => {
+          this.statusList = data;
         });
         this.schedulingmxdayList();
-      } else if (tab.name == "schedulingzl") {
+      } else if (tab.name === "schedulingzl") {
         this.tabPosition='0';
         this.schedulingzlDayList();
         this.schedulingmxdaylistcreate();
       }
-      //console.log(tab, event);
     },
     //排班新增功能 选中下拉框
     rowdata(data, index, rows) {
       if (data) {
-        // console.log(data);
-        // console.log(index);
         let count = this.weekproplist.findIndex((role) => role === index);
-        // console.log(this.dateweeklist[count]);
-        // console.log(rows.userid);
         let savemodel = this.schedulingsave;
         savemodel.companyid = currentUser.company.id;
         savemodel.schedulingtime = Date.parse(this.dateweeklist[count]);
         savemodel.timeid = data;
         savemodel.userid = rows.userid;
-        console.log(savemodel)
         editSave(savemodel)
           .then((responseData) => {
-            //this.flage = false;
-            if (responseData.code == 100) {
-              //console.log(responseData.data);
+            //this.flag = false;
+            if (responseData.code === 100) {
               if (responseData.data) {
                 this.$message.success("排班操作成功");
               }
@@ -694,18 +674,14 @@ export default {
             //this.resetLoad()
           })
           .catch((error) => {
-            //this.flage = false;
+            //this.flag = false;
             //this.outputError(error)
           });
       }
     },
     //排班撤销功能 删除下拉框选中内容
     delrowdata(data, index, rows) {
-      // console.log("crela:" + data);
-      // console.log(index);
       let count = this.weekproplist.findIndex((role) => role === index);
-      // console.log(this.dateweeklist[count]);
-      // console.log(rows.userid);
 
       let deletemodel = this.schedulingsave;
       deletemodel.companyid = currentUser.company.id;
@@ -713,9 +689,8 @@ export default {
       deletemodel.userid = rows.userid;
       editDelete(deletemodel)
         .then((responseData) => {
-          //this.flage = false;
-          if (responseData.code == 100) {
-            console.log(responseData.data);
+          //this.flag = false;
+          if (responseData.code === 100) {
             if (responseData.data && responseData.data > 0) {
               this.$message.success("撤销排班成功");
             }
@@ -725,20 +700,17 @@ export default {
           //this.resetLoad()
         })
         .catch((error) => {
-          //this.flage = false;
+          //this.flag = false;
           //this.outputError(error)
         });
     },
     //周表格中新增按钮事件
     rowbutinsert(val, itemdata, rowdata) {
-      console.log("click:" + val);
-
       let listarray = {
         ...itemdata,
         ...rowdata,
       };
-      console.log(itemdata,'新增');
-      this.$refs.testForm.$emit("openAddRegistrationDialog", listarray);
+      this.$refs.testForm.openAddRegistrationDialog(listarray);
     },
     //周表格中明细弹框显示
     rowbutseach(val, itemdata, rowdata) {
@@ -750,15 +722,11 @@ export default {
       seachmode.dateend = rowdata.fn + " " + rowdata.timeend;
       seachmode.userid = itemdata.userid;
       seachmode.ksid = itemdata.ksid;
-      // console.log("mx",val);
-      // console.log("mx",itemdata);
-      // console.log("mx",rowdata);
       this.removeseachmodel();
       listschedumxling(seachmode)
         .then((responseData) => {
-          //this.flage = false;
-          if (responseData.code == 100) {
-            console.log(responseData.data);
+          //this.flag = false;
+          if (responseData.code === 100) {
             this.schedulingmxList = responseData.data;
             // if (responseData.data && responseData.data > 0) {
             //   this.$message.success("撤销排班成功");
@@ -771,7 +739,7 @@ export default {
         })
         .catch((error) => {
           this.$message.success(error);
-          //this.flage = false;
+          //this.flag = false;
           //this.outputError(error)
         });
     },
@@ -788,9 +756,8 @@ export default {
       this.removeseachmodel();
       listschedumxling(seachmode)
         .then((responseData) => {
-          //this.flage = false;
-          if (responseData.code == 100) {
-            console.log(responseData.data);
+          //this.flag = false;
+          if (responseData.code === 100) {
             this.schedulingmxList = responseData.data;
             // if (responseData.data && responseData.data > 0) {
             //   this.$message.success("撤销排班成功");
@@ -803,7 +770,7 @@ export default {
         })
         .catch((error) => {
           this.$message.success(error);
-          //this.flage = false;
+          //this.flag = false;
           //this.outputError(error)
         });
 
@@ -811,14 +778,13 @@ export default {
     //周和日表格切换点击事件
     changeTheme(val) {
       //周和日表格切换
-      if (val == "0") {
+      if (val === "0") {
         this.schedulingzlDayList();
       } else {
         this.schedulingzlrdaysList();
       }
     },
     handleSizeChange(val) {
-      // console.log( this.tableData );
     },
     //预约总览表格周初始化数据
     schedulingzlDayList(val) {
@@ -899,9 +865,8 @@ export default {
       this.removeseachmodel();
       listscheduzlling(seachmode)
         .then((responseData) => {
-          //this.flage = false;
-          if (responseData.code == 100) {
-            console.log(responseData.data,'11111111111111111111111111');
+          //this.flag = false;
+          if (responseData.code === 100) {
             this.schedulingzlList = responseData.data;
           } else {
             //this.showMessage(responseData)
@@ -909,7 +874,7 @@ export default {
           //this.resetLoad()
         })
         .catch((error) => {
-          //this.flage = false;
+          //this.flag = false;
           //this.outputError(error)
         });
 
@@ -960,7 +925,6 @@ export default {
             ? "0" + newdates.getDate()
             : newdates.getDate());
 
-        //console.log("循环星期:"+vardates);
         this.dateweeklist.push(vardates);
         for (let k = 0; k < 3; k++) {
           let dayNum = {
@@ -974,7 +938,7 @@ export default {
             timeendint: daytime[k].timeendint,
             newdatetime: hh,
             newfalg:
-              Date.parse(vardates) == Date.parse(thecurrent)
+              Date.parse(vardates) === Date.parse(thecurrent)
                 ? 1
                 : Date.parse(vardates) < Date.parse(thecurrent)
                 ? 0
@@ -985,8 +949,6 @@ export default {
           this.schedulingzlday.push(dayNum);
         }
       }
-      console.log("schedulingzldaylist加载");
-      console.log(this.schedulingzlday);
       let contactDot = 0;
       let contactDot_1 = 0;
       this.spanArr = [];
@@ -998,7 +960,7 @@ export default {
           this.contentSpanArr.push(1);
         } else {
           // 判断第二列
-          if ((item.index + 1) % 3 != 1) {
+          if ((item.index + 1) % 3 !== 1) {
             this.spanArr[contactDot] += 1;
             this.spanArr.push(0);
           } else {
@@ -1079,12 +1041,10 @@ export default {
       seachmodes.companyid = currentUser.company.id;
       seachmodes.datestra = yeare + "-" + nowmonth + "-" + nowDay+" 00:00";
       seachmodes.dateend = yeare + "-" + nowmonth + "-" + nowDay+" 23:59";
-      console.log("rl",seachmodes,this.seachmodel)
       this.removeseachmodel();
       listzlrday(seachmodes)
         .then((responseData) => {
-          if (responseData.code == 100) {
-            console.log(responseData.data);
+          if (responseData.code === 100) {
             this.schedulingzlrday = responseData.data;
           } else {
             this.$message.success(responseData);
@@ -1109,12 +1069,10 @@ export default {
       if (this.schedulingmxseachmodel.patientname) {
         seachmode.patientname = this.schedulingmxseachmodel.patientname;
       }
-      console.log("ccc", seachmode);
       this.removeseachmodel();
       listschedumxling(seachmode)
         .then((responseData) => {
-          if (responseData.code == 100) {
-            console.log(responseData.data);
+          if (responseData.code === 100) {
             this.schedulingmxList = responseData.data;
           } else {
             this.$message.success(responseData);
@@ -1189,7 +1147,6 @@ export default {
           : newdates2.getDate());
 
       //获取当前日期的星期 开始和结束  end
-      //console.log(vardates+"||"+vardates2);
       let stratime = vardates1;
       let enddate = vardates2;
       let seachmode = this.seachmodel;
@@ -1198,9 +1155,8 @@ export default {
       seachmode.companyid = currentUser.company.id;
       listscheduling(seachmode)
         .then((responseData) => {
-          //this.flage = false;
-          if (responseData.code == 100) {
-            console.log("cc", responseData.data);
+          //this.flag = false;
+          if (responseData.code === 100) {
             this.schedulingList = responseData.data;
           } else {
             //this.showMessage(responseData)
@@ -1208,7 +1164,7 @@ export default {
           //this.resetLoad()
         })
         .catch((error) => {
-          //this.flage = false;
+          //this.flag = false;
           //this.outputError(error)
         });
 
@@ -1240,7 +1196,6 @@ export default {
         };
         this.formThead.push(dayNum);
       }
-      //console.log(this.formThead);
       let endtime =
         newdates2.getMonth() +
         1 +

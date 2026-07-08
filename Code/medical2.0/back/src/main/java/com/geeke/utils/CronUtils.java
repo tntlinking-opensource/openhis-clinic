@@ -54,8 +54,4 @@ public class CronUtils {
         }
     }
 
-    public static void main(String[] args) {
-        boolean valid = isValid("0 0 6/9 3,5,6 * ? 2021-2023");
-        System.out.println(valid);
-    }
 }

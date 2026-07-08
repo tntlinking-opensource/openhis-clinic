@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.geeke.common.dao.ColumnViewDao;
 import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
+import com.geeke.common.data.SearchParamsBuilder;
 import com.geeke.common.entity.ColumnView;
 import com.geeke.gen.dao.GenTableColumnDao;
 import com.geeke.gen.entity.GenScheme;
@@ -33,7 +34,7 @@ import com.google.common.collect.Lists;
 @Transactional(readOnly = true)
 public class ColumnViewService {
 
-	protected Logger logger = LoggerFactory.getLogger(getClass());
+	private static final Logger logger = LoggerFactory.getLogger(ColumnViewService.class);
 	
 	final private static String OPERATE_COLUMN_NAME = "operate_column";	// 固定的列，用于存放操作列的用户自定义列宽
 	
@@ -69,16 +70,15 @@ public class ColumnViewService {
 		String userId = SessionUtils.getUserJson().getString("id");
 		List<ColumnView> list = Lists.newArrayList();
 
-		List<Parameter> Params = Lists.newArrayList();
-			
-		Params.add(new Parameter("gen_table_id", "=", tableId));
-		
 		// 排除不在列表中显示的字段
 		String[] strings = {"del_flag", "ids"};
-		Params.add(new Parameter("name", "not in", Arrays.asList(strings)));
-		Params.add(new Parameter("show_type", "<>", "'PassWordInput'"));
-		Params.add(new Parameter("show_type", "<>", "'MultiFileUpload'"));
-		
+		List<Parameter> Params = SearchParamsBuilder.create()
+				.eq("gen_table_id", tableId)
+				.notIn("name", Arrays.asList(strings))
+				.ne("show_type", "'PassWordInput'")
+				.ne("show_type", "'MultiFileUpload'")
+				.build();
+
 		PageRequest pageRequest = new PageRequest(Params);
 		List<GenTableColumn> columns = genTableColumnDao.listAll(pageRequest);
 
@@ -295,9 +295,10 @@ public class ColumnViewService {
 	}
 
 	private GenTableColumnEx getCustomerColumn(String tableId, String name) {
-		List<Parameter> params = Lists.newArrayList();
-		params.add(new Parameter("gen_table_id", "=", tableId));
-		params.add(new Parameter("name", "=", name));
+		List<Parameter> params = SearchParamsBuilder.create()
+				.eq("gen_table_id", tableId)
+				.eq("name", name)
+				.build();
 
 		PageRequest pageRequest = new PageRequest(params);
 		List<GenTableColumn> cs = genTableColumnDao.listAll(pageRequest);

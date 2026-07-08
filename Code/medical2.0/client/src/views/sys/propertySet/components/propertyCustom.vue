@@ -5,7 +5,7 @@
         <div style="font-weight: 600;">属性定义</div>
       </el-col>
       <el-col :span="2">
-        <el-button type='primary' :disabled="action == 'view'" @click="pushCustomTeam">新增分组</el-button>
+        <el-button type='primary' :disabled="action === 'view'" @click="pushCustomTeam">新增分组</el-button>
       </el-col>
     </el-row>
     <el-collapse ref="collapseTrigger">
@@ -44,7 +44,7 @@
           </el-table-column>
           <el-table-column prop="bo" label="业务对象" width="100" header-align='center'>
             <template slot-scope='{row,$index}'>
-              <el-form-item :data-num='dataNum' label-width=0  v-if='action !== "view" ' :ref="`PRO_${dataNum}_propertys_${$index}_bo`" :prop='`PRO_${dataNum}_propertys_${$index}_bo`' :rules="{required: (row.dictId == '8606' || row.dictId == '8406' || row.dictId == '8405') ? true : false, validator: inputValidator, val: row.bo, message:'请选择业务对象',trigger: ['blur', 'change']}">
+              <el-form-item :data-num='dataNum' label-width=0  v-if='action !== "view" ' :ref="`PRO_${dataNum}_propertys_${$index}_bo`" :prop='`PRO_${dataNum}_propertys_${$index}_bo`' :rules="{required: (row.dictId === '8606' || row.dictId === '8406' || row.dictId === '8405') ? true : false, validator: inputValidator, val: row.bo, message:'请选择业务对象',trigger: ['blur', 'change']}">
                 <el-select v-model="row.bo" value-key='id' v-if="row.dictId === '8406'" filterable @change="(val) => getDictChildren(val,row)" clearable placeholder='请选择业务对象' >
                   <el-option v-for="item in businessOptions" :key="item.id" :label="item.name" :value="item.id" :disabled="item.disabled"/>
                 </el-select>
@@ -64,12 +64,12 @@
               <el-form-item :data-num='dataNum' v-if='action !== "view" ' label-width=0>
                 <el-switch v-model='row.isRequired' active-color='#13ce66' inactive-color='#dbdfe6' active-value='1' inactive-value='0'></el-switch>
               </el-form-item>
-              <li v-else-if='row.isRequired == "1"' class='el-icon-check' style='color:#F56C6C;'></li>
+              <li v-else-if='row.isRequired === "1"' class='el-icon-check' style='color:#F56C6C;'></li>
             </template>
           </el-table-column>
           <el-table-column prop="defaultValue" label="默认值"  header-align='center' >
             <template slot-scope='{row,$index}'>
-              <template v-if="row.dictId == '8406'"> <!-- 字典 -->
+              <template v-if="row.dictId === '8406'"> <!-- 字典 -->
                 <el-form-item :data-num='dataNum' v-if='action !== "view" ' label-width=0>
                   <el-select :loading="defLoading" v-model="row.defaultValue" value-key='id' filterable clearable placeholder='请选择属性类型' @focus="checkChange(row)" >
                     <el-option v-for="item in defValOptions" :key="item.id" :label="item.name" :value="item.id" :disabled="item.disabled"/>
@@ -78,14 +78,14 @@
                 <span v-else>{{getCheckedName(row.defaultValue,defValOptions)}}</span>
               </template>
 
-              <template v-else-if=" row.dictId == '8402' || row.dictId == '8403'">     <!--  8402整数  "8403" 数值 -->
+              <template v-else-if=" row.dictId === '8402' || row.dictId === '8403'">     <!--  8402整数  "8403" 数值 -->
                 <el-form-item :data-num='dataNum'  v-if='action !== "view" ' label-width=0>
-                  <number-input  v-model='row.defaultValue' :precision="row.dictId == '8402'? 0 : 4"></number-input>
+                  <number-input  v-model='row.defaultValue' :precision="row.dictId === '8402'? 0 : 4"></number-input>
                 </el-form-item>
                 <span v-else>{{row.defaultValue}}</span>
               </template>
 
-              <template v-else-if="row.dictId == '8404'">     <!--  8404 金额 -->
+              <template v-else-if="row.dictId === '8404'">     <!--  8404 金额 -->
                 <el-form-item :data-num='dataNum'  v-if='action !== "view" ' label-width=0>
                   <number-input  v-model='row.defaultValue' :precision="2"></number-input>
                 </el-form-item>
@@ -151,7 +151,7 @@
     watch:{
       // 关闭窗口后，在此打开时触发
       value(val, oldVal) {
-        if(val != oldVal) {
+        if(val !== oldVal) {
           if(this.value) {
             this.propertyPanels = JSON.parse(this.value)
           } else {
@@ -167,7 +167,7 @@
       },
       'action':{
         handler(newVal){
-          if(newVal != 'view') {
+          if(newVal !== 'view') {
             this.getSortable()
           }
         },
@@ -205,7 +205,7 @@
           this.propertyPanels = JSON.parse(this.value)
         }
         this.getOptions();
-        if (this.action != 'view') {
+        if (this.action !== 'view') {
           this.getSortable()
         }
       },
@@ -234,7 +234,6 @@
           chosenClass: "chosenClass", //设置选中样式类名
           // 开始拖动事件
           onStart: () => {
-            //console.log("开始拖动");
           },
           // 结束拖动事件
           onEnd: ({newIndex, oldIndex}) => {
@@ -297,17 +296,17 @@
           params: [{'columnName':'dict_type_id', 'queryType': '=', 'value': '5100'}]
         };
         listDictItemAll(dictItem).then(res => {
-          if(res.code === "100"){
+          if(res.code === 100){
             this.options = res.data;
           }
         });
         listDictTypeAll({params: []}).then(result =>{  //所有字典项
-          if(result.code === "100"){
+          if(result.code === 100){
             this.businessOptions = result.data
           }
         });
         listPropertySetAll({params: []}).then(result =>{  //所有属性集
-          if(result.code === "100"){
+          if(result.code === 100){
             this.propertySetS = result.data
           }
         });
@@ -358,7 +357,7 @@
       },
       tableRowClassName({row, rowIndex}) {
         row.index = rowIndex
-        if (row == this.checkRowData) {
+        if (row === this.checkRowData) {
           return 'current-row'
         }
       },
@@ -385,7 +384,7 @@
   .chosenClass:hover > td {
     background: rgba($color: #f56c6c, $alpha: 0.5) !important;
   }
-/deep/ .el-form-item__content {
+::v-deep .el-form-item__content {
   margin-top: 0px;
 }
 .dialog-footer {
@@ -394,7 +393,7 @@
     left: 45%;
   }
 }
-/deep/ .el-badge {
+::v-deep .el-badge {
   display: block;
 }
 .el-icon-remove-outline {

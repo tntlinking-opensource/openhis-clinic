@@ -3,7 +3,7 @@
     <!-- 历史记录  -->
     <History :bussObject='curentRow' ></History>
     <!-- 编辑窗口  -->
-    <company-form ref='companyForm' :permission='permission' v-on:save-finished='getCompanyList()'></company-form>
+    <company-form ref='companyForm' :permission='permission' @save-finished='loadData'></company-form>
     <div class="page-container">
         <!--  搜索栏  开始 -->
         <div class='query-form-container'>
@@ -60,8 +60,8 @@
             <el-table class='drag_table' :data='companyList' row-key='id' :tree-props="{children: 'children', hasChildren: 'hasChildren'}"border @sort-change='onSortChange' @header-dragend='onChangeWidth' :cell-class-name='cellClassName' :header-cell-class-name='headerCellClassName' highlight-current-row>                
               <el-table-column v-for="(cv, index) in columnViews" v-if='cv.display' :prop='cv.prop' :key="`columnViews_${index}`" :label='cv.label' sortable='custom' :align='cv.align' :min-width='cv.miniWidth+"px"' :width='cv.width+"px"' header-align='center' :column-key='index.toString()' :render-header="renderHeader">
                 <template slot-scope='{row,$index}'>
-                  <span v-if='columnViews[index].showType == "Switch" || columnViews[index].showType == "Checkbox" || columnViews[index].showType == "Radio"'>
-                    <li v-if='getAttrValue(row, columnViews[index].prop) == "1"' class='el-icon-check' style='color:#F56C6C;'></li>
+                  <span v-if='columnViews[index].showType === "Switch" || columnViews[index].showType === "Checkbox" || columnViews[index].showType === "Radio"'>
+                    <li v-if='getAttrValue(row, columnViews[index].prop) === "1"' class='el-icon-check' style='color:#F56C6C;'></li>
                   </span>
                   <span v-else>{{ getAttrValue(row, columnViews[index].prop, columnViews[index].javaType )}}</span>
                 </template>
@@ -82,8 +82,8 @@
                     @click='onEditCompany(scope.$index, scope.row)'></OperationIcon>
                   <OperationIcon v-show='permission.add' type='primary' content='复制' placement='top-start' icon-name='el-icon-document' 
                     @click='onCopyCompany(scope.$index, scope.row)'></OperationIcon>
-                  <OperationIcon v-show='permission.remove && (!(scope.row.children) || scope.row.children.length <=0)' type='danger' content='删除' placement='top-start' icon-name='el-icon-delete' 
-                    @click='onDeleteCompany(scope.$index, scope.row)'></OperationIcon>
+                  <OperationIcon v-show='permission.remove && (!(scope.row.children) || scope.row.children.length <=0)' type='danger' content='删除' placement='top-start' icon-name='el-icon-delete'
+                    @click='onDeleteEntity(scope.$index, scope.row, deleteCompany)'></OperationIcon>
                   <OperationIcon v-show='permission.view' type='info' content='历史记录' placement='top-start' icon-name='el-icon-info' 
                     @click='onShowHistory(scope.$index, scope.row)'></OperationIcon>
                 </template>
@@ -100,7 +100,9 @@
 <script>
 import { validatenull } from '@/utils/validate'
 import { treeCompany, getCompanyById, deleteCompany } from '@/api/org/company'
-import { listResourcePermission } from '@/api/admin/common/permission'
+import listViewMixin from '@/mixins/listViewMixin'
+import { listResourcePermission } from '@/api/resourcePermission'
+import { mapPermissions } from '@/utils/searchParamsBuilder'
 import CompanyForm from './companyForm'
 import { listClinicVersionAll } from '@/api/clinic/clinicVersion'
 import ExportExcelButton from '@/components/ExportExcelButton'
@@ -109,9 +111,11 @@ import QueryForm from '@/views/components/queryForm'
 import MainUI from '@/views/components/mainUI'
 import OperationIcon from '@/components/OperationIcon'
 import History from '@/views/components/history'
+import { getCurrentCompanyId } from "@/utils/userCache";
 export default {
   extends: MainUI,
-  components: { 
+  mixins: [listViewMixin],
+  components: {
     CompanyForm,
     ExportExcelButton,
     ViewColumnsSelect,
@@ -121,13 +125,11 @@ export default {
   },
   data() {
     return {
-      permission: {
-        view: false,
-        add: false,
-        edit: false,
-        remove: false,
-        export: false
-      },
+      listApi: treeCompany,
+      getApi: getCompanyById,
+      deleteApi: deleteCompany,
+      entityName: 'Company',
+      permissionPrefix: 'company',
       queryTypes: {
         'name': 'like',
         'phone_number': '=',
@@ -142,119 +144,77 @@ export default {
         },
       },
       search: {
-        params: [],    
+        params: [],
         offset: 0,
         limit: 10,
-		columnName: '',      // 排序字段名
-        order: ''            // 排序
+        columnName: '',
+        order: ''
       },
       companyList: [],
-        
-        version_List: [],    // 诊所版本
-      
+
+      version_List: [],    // 诊所版本
+
       oprColumnWidth: 160,  // 操作列宽
       tableId: '41040096140492800',
       schemeId: '41040096140492817'
     }
   },
   methods: {
-    getCompanyList() {
-      this.setLoad()
-      /* 查询参数 和数据权限 */
-      this.search.params = []
+    appendSearchParams() {
       if(this.moreCodition) {
         this.search.params = this.search.params.concat(this.compositeCondition())
-      }else{
-        // 查询参数: 名称
+      } else {
         this.search.params.push({
-      	  columnName: 'name',
-      	  queryType: 'like',
+          columnName: 'name',
+          queryType: 'like',
           value: this.queryModel.name
         })
-        // 查询参数: 电话
         this.search.params.push({
-      	  columnName: 'phone_number',
-      	  queryType: '=',
+          columnName: 'phone_number',
+          queryType: '=',
           value: this.queryModel.phoneNumber
         })
-        // 查询参数: 诊所版本
         this.search.params.push({
-      	  columnName: 'version_id',
-      	  queryType: '=',
+          columnName: 'version_id',
+          queryType: '=',
           value: validatenull(this.queryModel.version.id) ? '' : this.queryModel.version.id
         })
       }
-      // 数据权限: 公司org_company
       this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-      treeCompany(this.search).then(responseData => {
-        if(responseData.code == 100) {
-          this.companyList = responseData.data
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
     },
-    onSearch() {
-      if(this.moreCodition) {
-        this.getCompanyList()
-      } else {
-        this.$refs['queryForm'].validate(valid => {
-          if (valid) {
-            this.getCompanyList()
-          } else {
-            return false
-          }
-        })
-      }
+    handleListResponse(responseData) {
+      this.companyList = responseData.data
     },
     async pageInit() {
       this.setLoad()
       try {
         this.initOptions(this.queryModel)
         this.search.params = []
-        // 数据权限: 公司org_company
         this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
         let [listCompanyRespData, listPermissionRespData] = await Promise.all([
           treeCompany(this.search),
           listResourcePermission(this.$route.meta.routerId)
         ])
-        if(listCompanyRespData.code == 100 && listPermissionRespData.code == 100) {
-          this.companyList = listCompanyRespData.data
-          this.permission.view = listPermissionRespData.data.find(item => {
-            return item.permission === 'company:read'
-          })
-          this.permission.export = listPermissionRespData.data.find(item => {
-            return item.permission === 'company:export'
-          })
-          this.permission.add = listPermissionRespData.data.find(item => {
-            return item.permission === 'company:create'
-          })
-          this.permission.edit = listPermissionRespData.data.find(item => {
-            return item.permission === 'company:update'
-          })
-          this.permission.remove = listPermissionRespData.data.find(item => {
-            return item.permission === 'company:delete'
-          })
+        if(listCompanyRespData.code === 100 && listPermissionRespData.code === 100) {
+          this.handleListResponse(listCompanyRespData)
+          this.permission = mapPermissions(listPermissionRespData.data, 'company')
         } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listCompanyRespData)
+          this.showMessage(listPermissionRespData.code !== 100 ? listPermissionRespData : listCompanyRespData)
         }
         this.resetLoad()
       } catch(error) {
-        this.outputError(error) 
+        this.outputError(error)
       }
     },
     onViewCompany(index, row) {
       this.setLoad()
       getCompanyById(row.id).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           let company = responseData.data
           if(validatenull(company.parent)) {
             company.parent = {id: null}
-          }        
-          this.$refs.companyForm.$emit('openViewCompanyDialog', company)
+          }
+          this.$refs.companyForm.openViewCompanyDialog(company)
         } else {
           this.showMessage(responseData)
         }
@@ -264,17 +224,17 @@ export default {
       })
     },
     onCreateCompany(index, row) {
-      this.$refs.companyForm.$emit('openAddCompanyDialog', row)
+      this.$refs.companyForm.openAddCompanyDialog(row)
     },
     onEditCompany(index, row) {
       this.setLoad()
       getCompanyById(row.id).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           let company = responseData.data
           if(validatenull(company.parent)) {
             company.parent = {id: null}
           }
-          this.$refs.companyForm.$emit('openEditCompanyDialog', company)
+          this.$refs.companyForm.openEditCompanyDialog(company)
         }else{
           this.showMessage(responseData)
         }
@@ -286,12 +246,12 @@ export default {
     onCopyCompany(index, row) {
       this.setLoad()
       getCompanyById(row.id).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           let company = responseData.data
           if(validatenull(company.parent)) {
             company.parent = {id: null}
-          }        
-          this.$refs.companyForm.$emit('openCopyCompanyDialog', company)
+          }
+          this.$refs.companyForm.openCopyCompanyDialog(company)
         } else {
           this.showMessage(responseData)
         }
@@ -300,56 +260,22 @@ export default {
         this.outputError(error)
       })
     },
-    onDeleteCompany(index, row) {
-      this.$confirm('确定删除吗？', '确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.setLoad()
-        deleteCompany(row).then(responseData => {
-          if(responseData.code == 100) {
-            this.getCompanyList()
-            this.showMessage({type: 'success', msg: '删除成功'})
-          } else {
-            this.showMessage(responseData)
-          }
-          this.resetLoad()
-        }).catch(error => {
-          this.outputError(error)  
-        })
-      }).catch(() => {})
-    },
-    onSortChange( orderby ) {
-      if(validatenull(orderby.prop)) {
-        this.search.columnName = ''
-        this.search.order = ''
-      } else  {
-        this.search.columnName = orderby.prop
-        this.search.order = orderby.order === 'descending' ? 'desc' : 'asc'
-      }
-
-      this.getCompanyList()
-    },
     initOptions(This) {
       let version_search = {
         params: []
       }
-      // 响应字段的条件操作符，替换成触发字段的操作符
       version_search.params.forEach(item => {
         if(this.queryTypes[item.columnName]) {
           item.queryType = this.queryTypes[item.columnName]
         }
       })
-      // 字段对应表上filter条件
-        version_search.params.push.apply(version_search.params, [{columnName: 'company_id', queryType: '=', value: function() {var user = JSON.parse(sessionStorage.getItem('currentUser')); return user.company.id;}()}])
-      // 数据权限: 诊所版本clinic_version
+      version_search.params.push.apply(version_search.params, [{columnName: 'company_id', queryType: '=', value: getCurrentCompanyId()}])
       this.pushDataPermissions(version_search.params, this.$route.meta.routerId, '987744398207139863')
       this.version_List.splice(0, this.version_List.length)
       listClinicVersionAll(version_search).then(responseData => {
         this.version_List = responseData.data
       })
-    } 
+    }
   },
   watch: {
   },

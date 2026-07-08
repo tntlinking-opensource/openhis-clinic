@@ -82,11 +82,8 @@ import { validatenull } from '@/utils/validate'
 import { listInstitutionDispensingPage, syncInstitutionDispensing } from '@/api/stock/stuff'
 import { listResourcePermission } from '@/api/admin/common/permission'
 import { listDictItemAll } from '@/api/sys/dictItem'
-import ExportExcelButton from '@/components/ExportExcelButton'
-import ViewColumnsSelect from '@/views/components/ViewColumnsSelect'
 import QueryForm from '@/views/components/queryForm'
 import MainUI from '@/views/components/mainUI'
-import OperationIcon from '@/components/OperationIcon'
 import { getLocalCurrentCompany } from "@/utils/auth";
 import fileurl from "@/assets/file/stuff.xlsx";
 
@@ -94,10 +91,7 @@ import fileurl from "@/assets/file/stuff.xlsx";
 export default {
   extends: MainUI,
   components: {
-    ExportExcelButton,
-    ViewColumnsSelect,
     QueryForm,
-    OperationIcon,
   },
   data() {
     return {
@@ -201,7 +195,7 @@ export default {
       this.currentData = val;
     },
     selectable(row, index) {
-      if (row.zstbzt == '诊所已同步') {
+      if (row.zstbzt === '诊所已同步') {
         return false
       } else {
         return true
@@ -223,7 +217,7 @@ export default {
         { columnName: 'ypdm', queryType: '=', value: ""},
         { columnName: 'kscode', queryType: '=', value: ""},
       ]
-      if (val == "1") {
+      if (val === "1") {
         this.search.params = this.search.params.concat(this.compositeCondition())
       } else {
         // 查询参数: 药品名称
@@ -254,7 +248,7 @@ export default {
       // 数据权限: 材料stuff
       this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
       listInstitutionDispensingPage(this.search).then(responseData => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.stuffTotal = responseData.data.total
           this.stuffList = responseData.data.rows
         } else {
@@ -308,7 +302,7 @@ export default {
           listInstitutionDispensingPage(this.search),
           listResourcePermission(this.$route.meta.routerId)
         ])
-        if (listStuffRespData.code == 100 && listPermissionRespData.code == 100) {
+        if (listStuffRespData.code === 100 && listPermissionRespData.code === 100) {
           this.stuffTotal = listStuffRespData.data.total
           this.stuffList = listStuffRespData.data.rows
           this.permission.view = listPermissionRespData.data.find(item => {
@@ -327,7 +321,7 @@ export default {
             return item.permission === 'hospitalDispensing:delete'
           })
         } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listStuffRespData)
+          this.showMessage(listPermissionRespData.code !== 100 ? listPermissionRespData : listStuffRespData)
         }
         this.resetLoad()
       } catch (error) {
@@ -341,7 +335,7 @@ export default {
         type: 'warning'
       }).then(() => {
         syncInstitutionDispensing(this.currentData).then(responseData => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.getStuffList()
             this.showMessage({ type: 'success', msg: '同步成功' })
           } else {
@@ -421,16 +415,16 @@ export default {
 .drag_table {
 
   // 设置表格header的高度
-  /deep/ th {
+  ::v-deep th {
     height: 44px;
   }
 
-  /deep/ th.gutter:last-of-type {
+  ::v-deep th.gutter:last-of-type {
     height: 0 !important;
   }
 
   // 设置表格body的高度
-  /deep/ .el-table__body-wrapper {
+  ::v-deep .el-table__body-wrapper {
     //解决数据展示超出body高度不滚动bug
     overflow-y: auto;
     // 减去的是表格header的高度
@@ -448,7 +442,7 @@ export default {
 }
 </style>
 <style scoped>
-/deep/ .el-table__body-wrapper {
+::v-deep .el-table__body-wrapper {
   height: calc(100% - 44px) !important;
 }
 </style>

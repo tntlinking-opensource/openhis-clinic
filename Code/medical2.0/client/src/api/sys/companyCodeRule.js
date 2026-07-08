@@ -1,37 +1,9 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getCompanyCodeRuleById = (id) =>
-    request({
-        url: '/sys/companyCodeRule/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/sys/companyCodeRule')
 
-export const listCompanyCodeRulePage = (search) =>
-    request({
-        url: '/sys/companyCodeRule/list',
-        method: 'post',
-        data: search
-    })
-
-export const listCompanyCodeRuleAll = (search) =>
-    request({
-        url: '/sys/companyCodeRule/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveCompanyCodeRule = (companyCodeRule) => 
-    request({
-        url: '/sys/companyCodeRule/save',
-        method: 'post',
-        data: companyCodeRule
-    })
-
-export const deleteCompanyCodeRule = (companyCodeRule) =>
-    request({
-        url: '/sys/companyCodeRule/delete',
-        method: 'post',
-        data: companyCodeRule
-    })
-    
+export const getCompanyCodeRuleById = baseApi.getById
+export const listCompanyCodeRulePage = baseApi.listPage
+export const listCompanyCodeRuleAll = baseApi.listAll
+export const saveCompanyCodeRule = baseApi.save
+export const deleteCompanyCodeRule = baseApi.delete

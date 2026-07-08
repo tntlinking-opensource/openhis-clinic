@@ -1,17 +1,24 @@
-import request from "@/utils/request";
+import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getCostItemById = id =>
-  request({
-    url: "/treatment/costItem/" + id,
-    method: "get"
-  });
+const baseApi = createCrudApi('/treatment/costItem')
 
-export const listCostItemPage = search =>
-  request({
-    url: "/treatment/costItem/list",
-    method: "post",
-    data: search
-  });
+// 标准CRUD接口
+export const getCostItemById = baseApi.getById
+export const listCostItemPage = baseApi.listPage
+export const listCostItemAll = baseApi.listAll
+export const saveCostItem = (data) =>
+    request({
+        url: '/treatment/costItem/saveDto',
+        method: 'post',
+        data
+    })
+export const deleteCostItem = baseApi.delete
+export const bulkInsertCostItem = baseApi.bulkInsert
+export const bulkUpdateCostItem = baseApi.bulkUpdate
+export const bulkDeleteCostItem = baseApi.bulkDelete
+
+// 自定义接口
 // 上级租户的诊疗项目列表信息
 export const listCostItemPageByParent = search =>
   request({
@@ -19,7 +26,8 @@ export const listCostItemPageByParent = search =>
     method: "post",
     data: search
   });
-  // 获取院版所有诊疗项目
+
+// 获取院版所有诊疗项目
 export const listCostItemPageByInstitutionAll = search =>
   request({
     url: "/hosdata/HosCollectData/getHosInstitutions",
@@ -35,52 +43,10 @@ export const listCostItemPageByInstitution = search =>
     data: search
   });
 
-  // 选择院版诊疗项目同步
+// 选择院版诊疗项目同步
 export const listCostItemPageByInstitutionSync = search =>
   request({
     url: "/hosdata/HosCollectData/HisInstitutionsToClinic",
     method: "post",
     data: search
-  });
-
-export const listCostItemAll = search =>
-  request({
-    url: "/treatment/costItem/listAll",
-    method: "post",
-    data: search
-  });
-
-export const saveCostItem = costItem =>
-  request({
-    url: "/treatment/costItem/save",
-    method: "post",
-    data: costItem
-  });
-
-export const deleteCostItem = costItem =>
-  request({
-    url: "/treatment/costItem/delete",
-    method: "post",
-    data: costItem
-  });
-
-export const bulkInsertCostItem = costItems =>
-  request({
-    url: "/treatment/costItem/bulkInsert",
-    method: "post",
-    data: costItems
-  });
-
-export const bulkUpdateCostItem = costItems =>
-  request({
-    url: "/treatment/costItem/bulkUpdate",
-    method: "post",
-    data: costItems
-  });
-
-export const bulkDeleteCostItem = costItems =>
-  request({
-    url: "/treatment/costItem/bulkDelete",
-    method: "post",
-    data: costItems
   });

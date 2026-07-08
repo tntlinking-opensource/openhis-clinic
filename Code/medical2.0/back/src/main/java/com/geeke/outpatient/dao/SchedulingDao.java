@@ -1,10 +1,10 @@
 package com.geeke.outpatient.dao;
 
 import com.geeke.common.data.PageRequest;
-import com.geeke.outpatient.controller.schedulingController;
-import com.geeke.outpatient.entity.schedulingmxDTO;
-import com.geeke.outpatient.entity.scheduling;
-import com.geeke.outpatient.entity.schedulingDTO;
+import com.geeke.outpatient.controller.SchedulingController;
+import com.geeke.outpatient.entity.SchedulingmxDTO;
+import com.geeke.outpatient.entity.Scheduling;
+import com.geeke.outpatient.entity.SchedulingDTO;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.geeke.common.persistence.CrudDao;
@@ -18,16 +18,16 @@ import java.util.List;
  * @version 2022-06-20
  */
 @Mapper
-public interface SchedulingDao extends CrudDao<scheduling> {
+public interface SchedulingDao extends CrudDao<Scheduling> {
 
 
-    List<schedulingDTO> getpbuserlist(schedulingDTO pageRequest);
+    List<SchedulingDTO> getpbuserlist(SchedulingDTO pageRequest);
 
-    List<scheduling> listscheduling(schedulingDTO sche);
+    List<Scheduling> listscheduling(SchedulingDTO sche);
 
-    List<scheduling> listcount(scheduling scheduling);
+    List<Scheduling> listcount(Scheduling scheduling);
 
-    List<schedulingmxDTO> listschedulingmx(schedulingDTO sche);
+    List<SchedulingmxDTO> listschedulingmx(SchedulingDTO sche);
 
-    List<scheduling> getList(Date schedulingtime);
+    List<Scheduling> getList(Date schedulingtime);
 }

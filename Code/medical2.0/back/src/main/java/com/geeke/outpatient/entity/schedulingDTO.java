@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public class schedulingDTO {
+public class SchedulingDTO {
 
     private String userid;
     private String username;
@@ -17,7 +17,7 @@ public class schedulingDTO {
     private Date schedulingtime;
     private String pbid;
     private Integer pbsl;
-    private  List<weekdayDTO> dates;
+    private  List<WeekdayDTO> dates;
     private String stratime;
     private String endtime;
     private String companyid;

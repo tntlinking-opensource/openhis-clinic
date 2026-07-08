@@ -72,7 +72,7 @@
                         v-for="(o,index) in prescriptionMainList"
                         :key="index"
                         @click="AlreadyPatientDescriptionsQuery(o,index)"
-                        :class="{clickTest:index==overColor}"
+                        :class="{clickTest:index===overColor}"
                       >
                        <div  style="
 
@@ -160,7 +160,7 @@
                         v-for="(o,index) in prescriptionMainList"
                         :key="index"
                         @click="AlreadyPatientDescriptionsQuery(o,index)"
-                        :class="{clickTest:index==overColor}"
+                        :class="{clickTest:index===overColor}"
                       >
                        <div  style="
 
@@ -248,7 +248,7 @@
                         v-for="(o,index) in prescriptionMainList"
                         :key="index"
                         @click="AlreadyPatientDescriptionsQuery(o,index)"
-                        :class="{clickTest:index==overColor}"
+                        :class="{clickTest:index===overColor}"
                       >
                        <div  style="
 
@@ -306,26 +306,26 @@
     <el-main>
       <el-card class="box-card sub-card" style="height: 50px; display: flex">
         <div class="flex-space-between">
-          <div class="goods-back" v-if="ActiveName == 'IsAll'">
+          <div class="goods-back" v-if="ActiveName === 'IsAll'">
             已发药
           </div>
           <el-popconfirm
           style="margin-right:10px"
             title="确定发药吗？"
             @confirm="DispensingMedicineClick(0)"
-            v-if="ActiveName == 'IsWaitingDrug' && buttonState">
+            v-if="ActiveName === 'IsWaitingDrug' && buttonState">
             <el-button slot="reference" type="primary">发药</el-button>
           </el-popconfirm>
           <el-popconfirm
           style="margin-right:10px"
             title="确定退药吗？"
             @confirm="DispensingMedicineClick(1)"
-            v-if="ActiveName == 'IsAll' && buttonState">
+            v-if="ActiveName === 'IsAll' && buttonState">
             <el-button slot="reference" type="primary" plain>退药</el-button>
           </el-popconfirm>
           <el-button
             type="primary"
-            v-if="ActiveName == 'IsAll'"
+            v-if="ActiveName === 'IsAll'"
             @click="print"
             >打印</el-button
           >
@@ -465,7 +465,7 @@
                   <span slot="label">
                     {{ item.title }}
                   </span>
-                  <el-row type="flex" justify="space-between" align="center" style="padding-top:10px" v-if="ActiveName == 'IsWaitingDrug' && buttonState">
+                  <el-row type="flex" justify="space-between" align="center" style="padding-top:10px" v-if="ActiveName === 'IsWaitingDrug' && buttonState">
                     <div class="single">
                       本处方费用：{{ item.content.recipelInfo.amountReceivedTotal }}元
                     </div>
@@ -477,7 +477,7 @@
                       <el-button slot="reference" type="primary" plain>本处方发药</el-button>
                     </el-popconfirm>
                   </el-row>
-                  <el-row type="flex" justify="space-between" align="center" style="padding-top:10px" v-if="ActiveName == 'IsAll'">
+                  <el-row type="flex" justify="space-between" align="center" style="padding-top:10px" v-if="ActiveName === 'IsAll'">
                     <div class="single">
                       本处方费用：{{ item.content.recipelInfo.amountReceivedTotal }}元
                     </div>
@@ -489,23 +489,23 @@
                       <el-button slot="reference" type="primary" plain>本处方退药</el-button>
                     </el-popconfirm>
                   </el-row>
-                  <el-row style="padding-top:8px" v-if="ActiveName == 'return'">
+                  <el-row style="padding-top:8px" v-if="ActiveName === 'return'">
                     <div class="single">
                       本处方费用：{{ item.content.recipelInfo.amountReceivedTotal }}元
                     </div>
                   </el-row>
-                 <div v-if="item.type!='recipelType_2'">
+                 <div v-if="item.type!=='recipelType_2'">
                     <el-row>
                     <el-divider content-position="left">处方信息</el-divider>
 
                     <el-input
                       disabled
-                      v-if="item.type!='recipelType_3'"
+                      v-if="item.type!=='recipelType_3'"
                       :value="item.content.recipelInfo.smallType.name"
                       style="width:100px"
                     >
                     </el-input>
-                      <el-checkbox v-if="item.type == 'recipelType_0'" style="margin-left: 20px;" v-model="item.content.recipelInfo.chronicDisease" disabled >是否慢病</el-checkbox>
+                      <el-checkbox v-if="item.type === 'recipelType_0'" style="margin-left: 20px;" v-model="item.content.recipelInfo.chronicDisease" disabled >是否慢病</el-checkbox>
                   </el-row>
                  </div>
                   <div v-else style="">
@@ -514,7 +514,7 @@
 
                     <el-input
                       disabled
-                      v-if="item.type!='recipelType_3'"
+                      v-if="item.type!=='recipelType_3'"
                       :value="item.content.recipelInfo.smallType.name"
                       style="width:100px"
                     >
@@ -522,7 +522,7 @@
                   </el-row>
                   </div>
 
-                  <div v-if="item.type!='recipelType_2'">
+                  <div v-if="item.type!=='recipelType_2'">
                     <el-table :data="item.content.notExtra" style="width: 100%">
                     <el-table-column label="序号" type="index" align="center" width="width">
                     </el-table-column>
@@ -533,7 +533,7 @@
                     >
                     <template slot-scope="scope">
                       {{ scope.row.drugStuffId.name }}
-                      <div v-if="item.type=='recipelType_0'">
+                      <div v-if="item.type==='recipelType_0'">
                         <span class="nameStyle"
                           >{{ scope.row.drugStuffId.drug.dosis
                           }}{{ scope.row.drugStuffId.drug.dosisUnit.name }} *
@@ -548,7 +548,7 @@
                     <!-- <el-table-column
                       prop="drugStuffId.name"
                       label="名称"
-                      v-else-if="item.type.value == 'recipelType_1'"
+                      v-else-if="item.type.value === 'recipelType_1'"
                     >
 
                     </el-table-column> -->
@@ -562,14 +562,14 @@
                       prop="westernMedicineUse.name"
                       label="用法"
                       width="width"
-                      v-if="item.type == 'recipelType_0'"
+                      v-if="item.type === 'recipelType_0'"
                     >
                     </el-table-column>
                     <el-table-column
                       prop="singleDosage"
                       label="单次用量"
                       align="center"
-                      v-if="item.type == 'recipelType_0'"
+                      v-if="item.type === 'recipelType_0'"
                       width="width"
                     >
                       <template slot-scope="scope"
@@ -582,7 +582,7 @@
                       label="频次"
                       align="center"
                       width="width"
-                      v-if="item.type == 'recipelType_0'"
+                      v-if="item.type === 'recipelType_0'"
                     >
                       <template slot-scope="scope"
                         >{{ scope.row.infuseUse.name
@@ -594,10 +594,10 @@
                       label="煎法"
                       align="center"
                       width="width"
-                      v-if="item.chineseMedicineUse != undefined&&item.chineseMedicineUse != ''"
+                      v-if="item.chineseMedicineUse !== undefined&&item.chineseMedicineUse !== ''"
                     >
                     </el-table-column>
-                    <el-table-column prop="days.name" label="天数" align="center" v-if="item.type == 'recipelType_0'">
+                    <el-table-column prop="days.name" label="天数" align="center" v-if="item.type === 'recipelType_0'">
                     </el-table-column>
                     <el-table-column
                       prop="unitPrice"
@@ -607,7 +607,7 @@
                     <template slot-scope="scope">
                       <span
                         >{{ (scope.row.unitPrice).toFixed(4) }}元/{{
-                          scope.row.isUnpackSell == 1
+                          scope.row.isUnpackSell === 1
                             ? scope.row.drugStuffId.preparationUnit.name
                             : scope.row.drugStuffId.pack.name
                         }}</span
@@ -668,11 +668,11 @@
                       <el-table-column prop="drug_trac_codg" label="药品追溯码" width="width">
                         <template slot-scope="scope">
 <!--                          <el-input-->
-<!--                            :disabled="!(ActiveName == 'IsAll' || ActiveName == 'IsWaitingDrug')"-->
+<!--                            :disabled="!(ActiveName === 'IsAll' || ActiveName === 'IsWaitingDrug')"-->
 <!--                            v-model="scope.row.drugTracCodg"-->
 <!--                            style="width:100px"-->
 <!--                          />-->
-                          <el-button  :type="scope.row.completed ? 'success' : 'warning'"  :disabled="!(ActiveName == 'IsAll' || ActiveName == 'IsWaitingDrug')" @click="openDialog(scope)">输入追溯码</el-button>
+                          <el-button  :type="scope.row.completed ? 'success' : 'warning'"  :disabled="!(ActiveName === 'IsAll' || ActiveName === 'IsWaitingDrug')" @click="openDialog(scope)">输入追溯码</el-button>
                         </template>
                       </el-table-column>
                       <el-table-column prop="allFee" width="width" label="应付金额">
@@ -687,7 +687,7 @@
                         </template>
                       </el-table-column>
                   </el-table>
-                  <!--<div v-if="item.type=='recipelType_1'" style="margin:10px 0">
+                  <!--<div v-if="item.type==='recipelType_1'" style="margin:10px 0">
                     <el-input style="width:50px" disabled v-model="item.content.recipelInfo.dosage">
                     </el-input>
                     剂
@@ -698,7 +698,7 @@
                     <el-input style="width:80px" disabled v-model="item.content.recipelInfo.dosage">
                     </el-input>{{isSpecial?'格':'ml'}}
                   </div>-->
-                  <el-row v-if="item.type=='recipelType_1'">
+                  <el-row v-if="item.type==='recipelType_1'">
                     <el-input disabled v-model="item.content.recipelInfo.dosage" oninput="value=value.replace(/[^\d.]/g,'')" style="width: 60px"></el-input>
                     &nbsp;剂 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;用法：
                     <el-select disabled v-model="item.content.recipelInfo.recipelUse" placeholder="请选择" style="width: 110px">
@@ -842,7 +842,7 @@
                       width="width"
                     >
                     <template slot-scope="scope">
-                       <!-- v-if="item.type.value == 'recipelType_2'" -->
+                       <!-- v-if="item.type.value === 'recipelType_2'" -->
                       {{ scope.row.drugStuffId.name }}
                       <div v-if="scope.row.drugStuffId.drug != null">
                         <span class="nameStyle"
@@ -875,7 +875,7 @@
                       label="单次用量"
                       align="center"
                       width="width"
-                      v-if="item.type == 'recipelType_2'"
+                      v-if="item.type === 'recipelType_2'"
                     >
                       <template slot-scope="scope"
                         >{{ scope.row.singleDosage
@@ -890,7 +890,7 @@
                     <template slot-scope="scope">
                       <span
                         >{{ (scope.row.unitPrice).toFixed(4) }}元/{{
-                          scope.row.isUnpackSell == 1
+                          scope.row.isUnpackSell === 1
                             ? scope.row.drugStuffId.preparationUnit.name
                             : scope.row.drugStuffId.pack.name
                         }}</span
@@ -990,7 +990,7 @@
                     <template slot-scope="scope">
                       <span
                         >{{ (scope.row.unitPrice).toFixed(4) }}元/{{
-                          scope.row.isUnpackSell == 1
+                          scope.row.isUnpackSell === 1
                             ? scope.row.drugStuffId.preparationUnit.name
                             : scope.row.drugStuffId.pack.name
                         }}</span
@@ -1075,7 +1075,7 @@
           </el-card>
         </el-scrollbar>
       </el-card>
-      <el-card v-if="allType != 0">
+      <el-card v-if="allType !== 0">
         <span>共{{ allType }}种，{{ totalMoney.toFixed(2) }}元</span>
       </el-card>
     </el-main>
@@ -1104,21 +1104,15 @@ import { getPatientById, listPatientAll } from "@/api/outpatient/patient";
 import {listDictItemAll} from "@/api/sys/dictItem";
 import { updateStockStockList } from "@/api/stock/supplierStock";
 import SupplierStockForm from "./supplierStockForm";
-import ExportExcelButton from "@/components/ExportExcelButton";
-import ViewColumnsSelect from "@/views/components/ViewColumnsSelect";
-import QueryForm from "@/views/components/queryForm";
 import MainUI from "@/views/components/mainUI";
-import OperationIcon from "@/components/OperationIcon";
 import History from "@/views/components/history";
 import {getMember,getByPatientId} from "@/api/member/memberManagement"
+import { getCurrentUser, getCurrentUserId, getCurrentCompanyId } from "@/utils/userCache";
 export default {
   extends: MainUI,
   components: {
     SupplierStockForm,
-    ExportExcelButton,
-    ViewColumnsSelect,
     QueryForm,
-    OperationIcon,
     History,
   },
   data() {
@@ -1246,7 +1240,7 @@ export default {
   },
   computed: {
     Company() {
-      let company = JSON.parse(sessionStorage.getItem("currentUser")).company;
+      let company = getCurrentUser().company;
       return {
         id: company.id,
         label: company.label,
@@ -1254,7 +1248,7 @@ export default {
       };
     },
     UserId() {
-      return JSON.parse(sessionStorage.getItem("currentUser")).id;
+      return getCurrentUserId();
     },
     AllFee() {
       let WesternFee = this.WesternCheck ? this.WesternFee : 0;
@@ -1302,8 +1296,8 @@ export default {
   },
   mounted() {
     this.Init();
-    let specialCompany = JSON.parse(sessionStorage.getItem("currentCompany"));
-    if (specialCompany && specialCompany.id == "1088657523871555640") {
+    let specialCompany = getCurrentCompany();
+    if (specialCompany && specialCompany.id === "1088657523871555640") {
       this.isSpecial = true;
     }
 
@@ -1363,14 +1357,14 @@ export default {
       this.$nextTick(() => {
         this.$refs["patientInfoForm"].clearValidate();
       });
-      if (this.ActiveName == "1") this.buttonState = true;
+      if (this.ActiveName === "1") this.buttonState = true;
       this.prescriptionMainList = [];
       this.getSaveInfo(this.patientInfoRow.id);
       this.overColor=0
 
       //根据患者id获取会员信息
         getByPatientId(this.patientInfoRow.patientId.id).then(res=>{
-          if(res.code=='100'){
+          if(res.code==='100'){
             this.allMember=res.data
           }else{
             this.$message.error("后台数据异常请联系管理！")
@@ -1380,14 +1374,14 @@ export default {
     //根据就诊人id查询处方病例
     getSaveInfo(visitId) {
       allQueryMedicalRecord(visitId).then((responseData) => {
-        if (responseData.code == 100) {
-            this.prescriptionMainList = responseData.data.recipelInfoEvtList.filter(item=>item.recipelInfo.recipelType.value!='recipelType_3')
-            if(this.ActiveName=='IsWaitingDrug'){
-              this.prescriptionMainList =  this.prescriptionMainList.filter(item=>item.recipelInfo.dispensionStatus==0&&item.recipelInfo.chargeStatus==1)
-            }else if(this.ActiveName=='IsAll'){
-              this.prescriptionMainList =  this.prescriptionMainList.filter(item=>item.recipelInfo.dispensionStatus==1)
+        if (responseData.code === 100) {
+            this.prescriptionMainList = responseData.data.recipelInfoEvtList.filter(item=>item.recipelInfo.recipelType.value!=='recipelType_3')
+            if(this.ActiveName==='IsWaitingDrug'){
+              this.prescriptionMainList =  this.prescriptionMainList.filter(item=>item.recipelInfo.dispensionStatus===0&&item.recipelInfo.chargeStatus===1)
+            }else if(this.ActiveName==='IsAll'){
+              this.prescriptionMainList =  this.prescriptionMainList.filter(item=>item.recipelInfo.dispensionStatus===1)
             }else{
-              this.prescriptionMainList =  this.prescriptionMainList.filter(item=>item.recipelInfo.dispensionStatus==-1)
+              this.prescriptionMainList =  this.prescriptionMainList.filter(item=>item.recipelInfo.dispensionStatus===-1)
             }
 
             this.prescriptionMainList.forEach((item) => {
@@ -1395,7 +1389,7 @@ export default {
             item.notExtra = [];
             item.recipelDetailEvtList.forEach((items) => {
               this.$set(items, 'drugTracCodg', ''); // 药品追溯码字段
-              if (items.isExtra == 1) {
+              if (items.isExtra === 1) {
                 item.isExtra.push(items);
               } else {
                 item.notExtra.push(items);
@@ -1418,7 +1412,6 @@ export default {
           this.totalMoney = 0;
           let money = 0;
           this.prescriptionMainList.forEach((item) => {
-            console.log(item.recipelInfo.fee, "qian");
             money += item.recipelInfo.fee;
           });
           this.totalMoney = money.toFixed(2);
@@ -1427,16 +1420,14 @@ export default {
       });
     },
     createMedicalEditTab(recipelInfoEvtList) {
-      console.log("---------recipelInfoEvtList------------");
-      console.log(recipelInfoEvtList);
       this.medicalEditTabs = [];
-      if (recipelInfoEvtList == undefined || recipelInfoEvtList == null) {
+      if (recipelInfoEvtList === undefined || recipelInfoEvtList == null) {
         return;
       }
 
       recipelInfoEvtList.forEach((element) => {
         element.uuid = element.recipelInfo.id;
-        if(element.recipelInfo.recipelType.value=="recipelType_2"){
+        if(element.recipelInfo.recipelType.value==="recipelType_2"){
            let infusion={
             defaultNumber:1,//默认组号
             infusionProject:[[]],
@@ -1467,7 +1458,7 @@ export default {
        for (let i = 0; i < element.recipelDetailEvtList.length; i++) {
 
 
-             if(element.recipelDetailEvtList[i].isExtra!=1){
+             if(element.recipelDetailEvtList[i].isExtra!==1){
 
              infusion.infusionProject[element.recipelDetailEvtList[i].infuseGroup-1].push(element.recipelDetailEvtList[i])
              infusion.drippingSpeed[element.recipelDetailEvtList[i].infuseGroup-1]=element.recipelDetailEvtList[i].drippingSpeed
@@ -1505,9 +1496,8 @@ export default {
       this.medicalClickTabsValue = this.medicalEditTabsValue;
     },
     AlreadyPatientDescriptionsQuery(item,index) {
-      console.log(item, "点击处方");
       this.medicalEditTabs.forEach((element) => {
-        if (element.content.uuid == item.uuid) {
+        if (element.content.uuid === item.uuid) {
           this.medicalEditTabsValue = element;
           this.medicalClickTabsValue = this.medicalEditTabsValue;
         }
@@ -1516,7 +1506,6 @@ export default {
       this.overColor=index
     },
     print() {
-      console.log(this.medicalEditTabsValue.content)
       if (!this.medicalEditTabsValue.content) {
         this.$message.error("未选择数据");
         return;
@@ -1527,12 +1516,12 @@ export default {
         };
         let str = "";
         let type =
-          params.type == "recipelType_0"
+          params.type === "recipelType_0"
             // ? "westMedicine"
             ? "chronicDisease"
-            : params.type == "recipelType_1"
+            : params.type === "recipelType_1"
             ? "chineseMedicine"
-            : params.type == "recipelType_2"
+            : params.type === "recipelType_2"
             ? "infuse"
             : "costItem";
         if (params.recipelInfoId) {
@@ -1587,7 +1576,7 @@ export default {
       this.PageRegistration.patientName = '';
       this.PageRegistration.patientCode = '';
       listRegistrationPages(this.PageRegistration).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.OtherTotal = responseData.data.total;
         }
       });
@@ -1602,7 +1591,7 @@ export default {
       this.PageRegistration.patientName = '';
       this.PageRegistration.patientCode = '';
       listRegistrationPages(this.PageRegistration).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.returnTotal = responseData.data.total;
         }
       });
@@ -1622,18 +1611,18 @@ export default {
         },],
       };
       listDictItemAll(model).then((responseData) => {
-        if (optionId == "1014474470772899981") {
+        if (optionId === "1014474470772899981") {
           this.ChineseUseOption = responseData.data;
           if (this.isSpecial) {
             this.ChineseUseOption = this.ChineseUseOption.filter(
-              (item) => item.name == "水冲"
+              (item) => item.name === "水冲"
             );
           }
-        }else if (optionId == "1014474470772899985")
+        }else if (optionId === "1014474470772899985")
           this.ChineseTimeOption = responseData.data;
-        else if (optionId == "1014474470772899990")
+        else if (optionId === "1014474470772899990")
           this.FrequencyOption = responseData.data;
-        else if (optionId == "1014474470772900058")
+        else if (optionId === "1014474470772900058")
           this.ChineseUseTimeOption = responseData.data;
       });
     },
@@ -1652,7 +1641,7 @@ export default {
         ],
       };
       listPatientAll(searchModel).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.AllPatientOption = responseData.data;
         }
       });
@@ -1676,10 +1665,9 @@ export default {
       }
 
       this.medicalClickTabsValue = this.medicalEditTabsValue;
-      console.log(this.medicalEditTabsValue,'看看');
       let num=0
       for (let i = 0; i < this.medicalEditTabs.length; i++) {
-        if(this.medicalEditTabs[i].key==this.medicalEditTabsValue.key){
+        if(this.medicalEditTabs[i].key===this.medicalEditTabsValue.key){
           num=i
         }
       }
@@ -1688,7 +1676,7 @@ export default {
     GetDispensingTable() {
       this.PageRegistration.limit = this.dispensingPageSize;
       this.PageRegistration.companyId = this.Company.id;
-      if(this.ActiveName=='IsWaitingDrug'){
+      if(this.ActiveName==='IsWaitingDrug'){
         this.PageRegistration.offset =
         (this.dispensingCurrentPage - 1) * this.dispensingPageSize;
         this.PageRegistration.dispensionStatus = 0;
@@ -1702,7 +1690,7 @@ export default {
           this.PageRegistration.patientCode=''
         }
         this.allMember=[]
-      }else if(this.ActiveName=='IsAll'){
+      }else if(this.ActiveName==='IsAll'){
         this.PageRegistration.offset =
         (this.allCurrentPage - 1) * this.dispensingPageSize;
         this.PageRegistration.dispensionStatus = 1;
@@ -1732,11 +1720,11 @@ export default {
         this.allMember=[]
       }
       listRegistrationPages(this.PageRegistration).then((responseData) => {
-        if (responseData.code == 100) {
-          if (this.ActiveName=='IsWaitingDrug') {
+        if (responseData.code === 100) {
+          if (this.ActiveName==='IsWaitingDrug') {
             this.WaitingTable = responseData.data.rows
             this.WaitingTotal = responseData.data.total;
-          } else if(this.ActiveName=='IsAll'){
+          } else if(this.ActiveName==='IsAll'){
             this.dispensingTable = responseData.data.rows;
             this.OtherTotal = responseData.data.total;
           }else{
@@ -1762,7 +1750,7 @@ export default {
           this.CheckMedicineList.push({
             recipelInfoId: items.recipelInfo.id,
             id: items.drugStuffId.drugStuffId,
-            type: items.stuffType=='4'?1:0,
+            type: items.stuffType==='4'?1:0,
             number: items.total,
             drugTracCodg:items.drugTracCodg
 
@@ -1777,7 +1765,7 @@ export default {
       };
       updateStockStockList(model)
         .then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.GetDispensingTable();
             this.buttonState = false;
             this.$message.success("操作成功！");
@@ -1793,14 +1781,13 @@ export default {
     DispensingMedicineClick(type) {
       let prescriptionIdList = [];
       this.CheckMedicineList = [];
-      console.log(this.medicalEditTabs,'发药情况')
       this.medicalEditTabs.forEach((item) => {
         prescriptionIdList.push(item.content.recipelInfo.id);
         item.content.recipelDetailEvtList.forEach((items) => {
           this.CheckMedicineList.push({
             recipelInfoId: items.recipelInfo.id,
             id: items.drugStuffId.drugStuffId,
-            type: items.stuffType=='4'?1:0,
+            type: items.stuffType==='4'?1:0,
             number: items.total,
             drugTracCodg:items.drugTracCodg
           });
@@ -1816,11 +1803,11 @@ export default {
      // return
       updateStockStockList(model)
         .then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.GetDispensingTable();
             this.buttonState = false;
             this.$message.success("操作成功！");
-          }else if(responseData.code=='50001'){
+          }else if(responseData.code==='50001'){
             this.$message.warning(responseData.msg)
           }
           else {
@@ -1841,7 +1828,7 @@ $borderColor: rgb(219, 219, 219); //灰色边框下划线
 }
 </style>
 <style scoped>
-/deep/ .el-aside {
+::v-deep .el-aside {
   /* background-color: #e6d6d3; */
   color: #333;
   /* text-align: center; */
@@ -1851,7 +1838,7 @@ $borderColor: rgb(219, 219, 219); //灰色边框下划线
   height: calc(100vh - 118px);
 }
 
-/deep/ .el-main {
+::v-deep .el-main {
   /* background-color: #E9EEF3; */
   color: #333;
   /* text-align: center; */
@@ -1860,26 +1847,26 @@ $borderColor: rgb(219, 219, 219); //灰色边框下划线
   height: calc(100vh - 118px);
 }
 
-/deep/ .el-card__header {
+::v-deep .el-card__header {
   padding: 12px 20px;
 }
-/deep/ .el-form-item--mini {
+::v-deep .el-form-item--mini {
   margin-bottom: 8px !important;
 }
 
-/deep/ .main-card {
+::v-deep .main-card {
   margin-bottom: 10px;
 }
 
-/deep/ .main-card > .el-card__header {
+::v-deep .main-card > .el-card__header {
   padding: 0px 20px;
 }
 
-/deep/ .main-card > .el-card__body {
+::v-deep .main-card > .el-card__body {
   font-size: 14px;
 }
 
-/deep/ .sub-card > .el-card__body {
+::v-deep .sub-card > .el-card__body {
   padding: 12px 20px;
   font-size: 18px;
   font-weight: bold;
@@ -1887,30 +1874,30 @@ $borderColor: rgb(219, 219, 219); //灰色边框下划线
   line-height: 28px;
 }
 
-/deep/ .chinese-medicine-card > .el-card__header {
+::v-deep .chinese-medicine-card > .el-card__header {
   padding: 0px 20px;
 }
 
-/deep/ .el-divider--horizontal {
+::v-deep .el-divider--horizontal {
   margin: 10px 0 10px 0px;
 }
 
-/deep/ .el-tabs__header {
+::v-deep .el-tabs__header {
   margin: 0 0 0;
 }
 
-/deep/ .el-collapse-item__content {
+::v-deep .el-collapse-item__content {
   padding-bottom: 0;
 }
 
-/deep/ .el-divider--vertical {
+::v-deep .el-divider--vertical {
   width: 5px;
   height: 2em;
   margin-left: 0;
   background-color: #409eff;
 }
 
-/deep/ .el-input-group__append {
+::v-deep .el-input-group__append {
   padding: 4px;
 }
 

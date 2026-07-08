@@ -26,31 +26,26 @@
         dashboardLoading: true
       }
     },
-    mounted() {
-      this.$nextTick(() => {
-        this.$on('addViewFilter', function({componentId, fieldId, value, operator}) {
-          const param = {
-            component: {
-              id: componentId,
-              options: {
-                attrs: {
-                  fieldId: fieldId,
-                  viewIds: []
-                }
-              }
-            },
-            value: Array.isArray(value) ? value : [value],
-            operator: operator
-          }
-          this.addFilter(param)
-        })
-
-        this.$on('removeViewFilter', function(componentId) {
-          this.removeFilter(componentId)
-        })
-      })
-    },
     methods: {
+      addViewFilter({componentId, fieldId, value, operator}) {
+        const param = {
+          component: {
+            id: componentId,
+            options: {
+              attrs: {
+                fieldId: fieldId,
+                viewIds: []
+              }
+            }
+          },
+          value: Array.isArray(value) ? value : [value],
+          operator: operator
+        }
+        this.addFilter(param)
+      },
+      removeViewFilter(componentId) {
+        this.removeFilter(componentId)
+      },
       onEmbendChartClick(param) {
         this.$emit('EmbendChartClick', param)
       },
@@ -59,14 +54,14 @@
       },
       addFilter(param) {
         if(window["vue-dataviewer"] && this.$refs.embedded) {
-          this.$refs.embedded.$emit("addEmbeddedViewFilter", param)
+          this.$refs.embedded.addViewFilterFun(param)
         } else {
           setTimeout(() => { this.addFilter(param) }, 50)
         }
       },
       removeFilter(id) {
         if(window["vue-dataviewer"] && this.$refs.embedded) {
-          this.$refs.embedded.$emit("removeEmbeddedViewFilter", id)
+          this.$refs.embedded.removeViewFilterFun(id)
         } else {
           setTimeout(() => { this.removeFilter(id) }, 50)
         }

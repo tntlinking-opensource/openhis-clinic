@@ -1,18 +1,19 @@
 import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getDrugById = (id) =>
-    request({
-        url: '/stock/drug/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/stock/drug')
 
-export const listDrugPage = (search) =>
-    request({
-        url: '/stock/drug/list',
-        method: 'post',
-        data: search
-    })
+// 标准CRUD接口
+export const getDrugById = baseApi.getById
+export const listDrugPage = baseApi.listPage
+export const listDrugAll = baseApi.listAll
+export const saveDrug = baseApi.save
+export const deleteDrug = baseApi.delete
+export const bulkInsertDrug = baseApi.bulkInsert
+export const bulkUpdateDrug = baseApi.bulkUpdate
+export const bulkDeleteDrug = baseApi.bulkDelete
 
+// 自定义接口
 export const listByCompanyDrugPage = (search) =>
     request({
         url: '/stock/drug/listByCompany',
@@ -48,13 +49,6 @@ export const saveHisDrugsToClinic = (drugs) =>
       data: drugs
   })
 
-export const listDrugAll = (search) =>
-    request({
-        url: '/stock/drug/listAll',
-        method: 'post',
-        data: search
-    })
-
 export const inventory = (search) =>
   request({
     url: '/stock/drug/inventory',
@@ -74,41 +68,6 @@ export const listAllStock2 = (search) =>
         url: '/stock/drug/listAllStock2',
         method: 'post',
         data: search
-    })
-
-export const saveDrug = (drug) =>
-    request({
-        url: '/stock/drug/save',
-        method: 'post',
-        data: drug
-    })
-
-export const deleteDrug = (drug) =>
-    request({
-        url: '/stock/drug/delete',
-        method: 'post',
-        data: drug
-    })
-
-export const bulkInsertDrug = (drugs) =>
-    request({
-        url: '/stock/drug/bulkInsert',
-        method: 'post',
-        data: drugs
-    })
-
-export const bulkUpdateDrug = (drugs) =>
-    request({
-        url: '/stock/drug/bulkUpdate',
-        method: 'post',
-        data: drugs
-    })
-
-export const bulkDeleteDrug = (drugs) =>
-    request({
-        url: '/stock/drug/bulkDelete',
-        method: 'post',
-        data: drugs
     })
 
 export const updateAllIndate = (drug) =>

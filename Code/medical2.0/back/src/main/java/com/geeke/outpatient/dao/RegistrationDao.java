@@ -50,6 +50,14 @@ public interface RegistrationDao extends CrudDao<Registration> {
 
     List<Registration> getByPatientId(String patientId);
 
+    List<Registration> listByOpenId(@Param("openId") String openId,
+                                    @Param("companyId") String companyId,
+                                    @Param("offset") int offset,
+                                    @Param("limit") int limit);
+
+    int countByOpenId(@Param("openId") String openId,
+                      @Param("companyId") String companyId);
+
     int wxReturnPay(Registration registrations);
 
     List<String> wxCount(PageRegistration pageRegistration);

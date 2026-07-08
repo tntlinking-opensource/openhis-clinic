@@ -14,6 +14,7 @@ import com.geeke.common.service.TreeService;
 import com.geeke.org.dao.CompanyDao;
 import com.geeke.org.entity.Company;
 import com.geeke.sys.service.SysFileService;
+import com.geeke.common.constants.BizConstants;
 import com.geeke.utils.IdGen;
 import com.geeke.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,14 +78,14 @@ public class CompanyService extends TreeService<CompanyDao, Company> {
         doUpdate(c);
         //保存角色
         Role role = new Role();
-        role.setName("admin");
-        role.setCode("admin");
+        role.setName(BizConstants.ROLE_ADMIN);
+        role.setCode(BizConstants.ROLE_ADMIN);
         role.setCompany(c);
         role.setIsLocked(0);
         String vid = company.getVersion().getId();
         String roleId = clinicVersionService.getRoleIdById(vid);
         role.setParentId(roleId);
-        roleService.deleteRoleByCode("admin",company.getId());
+        roleService.deleteRoleByCode(BizConstants.ROLE_ADMIN,company.getId());
         Role save = roleService.save(role);
         //保存权限关系
         savePermisson(company, save);
@@ -107,34 +108,28 @@ public class CompanyService extends TreeService<CompanyDao, Company> {
 
 
     public Page<Company> listTenantPage(List<Parameter> parameters, int offset, int limit, String orderby) {
-        PageRequest pageRequest = new PageRequest(offset, limit, parameters, orderby);
-        int total = this.dao.countTenant(pageRequest);
-        List<Company> list = null;
-        if (total > 0) {
-            list = this.dao.listTenantPage(pageRequest);
-        }
-
-        return new Page((long)total, list);
+        PageRequest pageRequest = buildTenantPageRequest(parameters, offset, limit, orderby);
+        return paginate(
+            () -> this.dao.countTenant(pageRequest),
+            () -> this.dao.listTenantPage(pageRequest)
+        );
     }
 
     public List<Company> listAllTenant(List<Parameter> parameters, String orderby) {
-        PageRequest pageRequest = new PageRequest(parameters, orderby);
+        PageRequest pageRequest = buildTenantPageRequest(parameters, orderby);
         return this.dao.listAllTenant(pageRequest);
     }
 
     public Page<Company> listClinicPage(List<Parameter> parameters, int offset, int limit, String orderby) {
-        PageRequest pageRequest = new PageRequest(offset, limit, parameters, orderby);
-        int total = this.dao.countClinic(pageRequest);
-        List<Company> list = null;
-        if (total > 0) {
-            list = this.dao.listClinicPage(pageRequest);
-        }
-
-        return new Page((long)total, list);
+        PageRequest pageRequest = buildTenantPageRequest(parameters, offset, limit, orderby);
+        return paginate(
+            () -> this.dao.countClinic(pageRequest),
+            () -> this.dao.listClinicPage(pageRequest)
+        );
     }
 
     public List<Company> listAllClinic(List<Parameter> parameters, String orderby) {
-        PageRequest pageRequest = new PageRequest(parameters, orderby);
+        PageRequest pageRequest = buildTenantPageRequest(parameters, orderby);
         return this.dao.listAllClinic(pageRequest);
     }
 
@@ -145,12 +140,12 @@ public class CompanyService extends TreeService<CompanyDao, Company> {
     }
 
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<Company> getCompanys(String id) {
         return this.dao.getCompanys(id);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public String getInstitution(String id) {
         return this.dao.getInstitution(id);
     }

@@ -4,6 +4,7 @@ package com.geeke.hosdata.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.geeke.common.constants.BizConstants;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Parameter;
 import com.geeke.hosdata.constant.ApiUrl;
@@ -155,7 +156,7 @@ public class HosDepartmentStorageController {
             supplierStock.setEndDate(hisDrugsStorages.get(i).getYxq());
             Supplier supplier = new Supplier();
             //TODO 默认设置暂且写死为院版供应商，后续根据需求优化
-            supplier.setId("2098053487889309725");
+            supplier.setId(BizConstants.DEFAULT_SUPPLIER_ID);
             supplierStock.setSupplierId(supplier);
             supplierStorage.setSupplier(supplier);
             //进价
@@ -171,9 +172,8 @@ public class HosDepartmentStorageController {
         supplierStorage.setBreed(2);
         supplierStorage.setExamineDate(new Date());
         DictItem dictItem = new DictItem();
-        //TODO 字典值默认写死 入库通过
-        dictItem.setId("1005787933775863930");
-        dictItem.setValue("supplierStorageExamineStatus_0");
+        dictItem.setId(BizConstants.DICT_ITEM_STORAGE_EXAMINE_PASS);
+        dictItem.setValue(BizConstants.SUPPLIER_STORAGE_EXAMINE_PASS);
         supplierStorage.setExamine(dictItem);
         supplierStorage.setType("1");
         supplierStorage.setCode("");

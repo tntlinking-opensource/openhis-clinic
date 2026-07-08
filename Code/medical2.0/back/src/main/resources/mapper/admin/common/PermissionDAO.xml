@@ -89,7 +89,7 @@
         INSERT INTO sys_router_permission(id, role_id, router_id)
         VALUES
         <foreach collection="map" index="routerId" item="id" separator=",">
-            (${id}, #{roleId}, #{routerId})
+            (#{id}, #{roleId}, #{routerId})
         </foreach>
     </insert>   
         
@@ -101,7 +101,7 @@
         INSERT INTO sys_resource_permission(id, role_id, resource_id)
         VALUES
         <foreach collection="map" index="resourceId" item="id" separator=",">
-            (${id},  #{roleId}, #{resourceId})
+            (#{id},  #{roleId}, #{resourceId})
         </foreach>
     </insert>  
     
@@ -123,7 +123,7 @@
         INSERT INTO sys_data_permission(id, router_id, role_id, meta_id, conditions)
         VALUES
         <foreach collection="dataPermissions" item="item"  index="idx" separator=",">
-            (${ids[idx]}, #{item.routerId}, #{item.roleId}, #{item.metaId}, #{item.conditions})
+            (#{ids[${idx}]}, #{item.routerId}, #{item.roleId}, #{item.metaId}, #{item.conditions})
         </foreach>
     </insert>
     

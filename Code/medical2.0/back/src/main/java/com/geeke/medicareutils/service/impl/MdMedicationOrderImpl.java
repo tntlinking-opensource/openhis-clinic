@@ -1,4 +1,5 @@
 package com.geeke.medicareutils.service.impl;
+import com.geeke.common.constants.BizConstants;
 
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson.JSONArray;
@@ -102,12 +103,12 @@ public class MdMedicationOrderImpl implements MdMedicationOrderService {
         // 续方的原处方编号
         data.put("initRxno", "");  // 非必填，续方的原处方编号，最大40字符
         // 处方类别代码 TODO 预留具体诊所具体更改
-        if("recipelType_0".equals(recipelInfo.getRecipelType().getValue())){
+        if(BizConstants.RECIPEL_TYPE_WESTERN.equals(recipelInfo.getRecipelType().getValue())){
             //西药
             data.put("rxTypeCode", "1");
             // 药品类目数（剂数）
             data.put("rxDrugCnt",recipelDetail.size() );  // 必填，非中药时为处方药品类目数量，中药时为药品总剂数
-        } else if ("recipelType_1".equals(recipelInfo.getRecipelType().getValue())) {
+        } else if (BizConstants.RECIPEL_TYPE_CHINESE.equals(recipelInfo.getRecipelType().getValue())) {
             //中药
             data.put("rxTypeCode", "2");
             // 药品类目数（剂数）
@@ -161,12 +162,12 @@ public class MdMedicationOrderImpl implements MdMedicationOrderService {
             rxdrug.put("fixmedinsHilistId", "1");  // 必填，院内药品编码
             // 医疗机构制剂标志
             rxdrug.put("hospPrepFlag", "");  // 必填，0-否、1-是，默认否
-            if("recipelType_0".equals(recipelInfo.getRecipelType().getValue())){
+            if(BizConstants.RECIPEL_TYPE_WESTERN.equals(recipelInfo.getRecipelType().getValue())){
                 //西药
                 rxdrug.put("rxItemTypeCode", "11");
                 rxdrug.put("medcWayCodg",item.getWesternMedicineUse() );  // 必填，参考药物使用途径代码
                 //中成药
-            } else if ("recipelType_1".equals(recipelInfo.getRecipelType().getValue())) {
+            } else if (BizConstants.RECIPEL_TYPE_CHINESE.equals(recipelInfo.getRecipelType().getValue())) {
                 //中药
                 rxdrug.put("rxItemTypeCode", "13");  // 必填，参考处方项目分类代码
                 rxdrug.put("tcmdrugTypeCode", "9");  //TODO 对接使用 必填，参考处方项目分类代码，中药处方必填
@@ -300,7 +301,7 @@ public class MdMedicationOrderImpl implements MdMedicationOrderService {
         mdtrtinfo.put("diseName", "");             // 病种名称 (字符型 500)
         mdtrtinfo.put("spDiseFlag", "");           // 特殊病种标志 (字符型 3)
         XtZd xtZd = xtZdService.getById(medicalRecord.getDiseaseId());
-        if("recipelType_0".equals(recipelInfo.getRecipelType().getValue())){
+        if(BizConstants.RECIPEL_TYPE_WESTERN.equals(recipelInfo.getRecipelType().getValue())){
             //西药
             diseinfo.put("diagType", "1");        // 诊断类别 (诊断类型，字符型，最大长度3)
             diseinfo.put("tcmDiseCode", "");     // 中医病名代码 (字符型，最大长度9)
@@ -308,7 +309,7 @@ public class MdMedicationOrderImpl implements MdMedicationOrderService {
             diseinfo.put("tcmsympCode", "");     // 中医症候代码 (字符型，最大长度9)
             diseinfo.put("tcmsymp", "");         // 中医症候 (字符型，最大长度100)
 
-        } else if ("recipelType_1".equals(recipelInfo.getRecipelType().getValue())) {
+        } else if (BizConstants.RECIPEL_TYPE_CHINESE.equals(recipelInfo.getRecipelType().getValue())) {
             //中药
             XtZyzh xtZyzh = xtZyzhService.getById(medicalRecord.getSyndromeId());
             diseinfo.put("diagType", "2");        // 诊断类别 (诊断类型，字符型，最大长度3)

@@ -58,7 +58,7 @@
     </select>
     
     <select id="count" resultType="int">
-        SELECT COUNT(*) FROM inventory_verification_detail a
+        SELECT COUNT(DISTINCT a.id) FROM inventory_verification_detail a
         <include refid="inventoryVerificationDetailJoins"/>
         <where>
             1=1

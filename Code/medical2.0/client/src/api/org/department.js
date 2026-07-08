@@ -1,43 +1,19 @@
 import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getDepartmentById = (id) =>
-    request({
-        url: '/org/department/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/org/department')
 
-export const listDepartmentPage = (search) =>
-    request({
-        url: '/org/department/list',
-        method: 'post',
-        data: search
-    })
+// 导出标准CRUD接口（保持向后兼容）
+export const getDepartmentById = baseApi.getById
+export const listDepartmentPage = baseApi.listPage
+export const listDepartmentAll = baseApi.listAll
+export const saveDepartment = baseApi.save
+export const deleteDepartment = baseApi.delete
 
-export const listDepartmentAll = (search) =>
-    request({
-        url: '/org/department/listAll',
-        method: 'post',
-        data: search
-    })
-
+// 自定义接口
 export const treeDepartment = (search) =>
     request({
         url: '/org/department/tree',
         method: 'post',
         data: search
     })
-
-export const saveDepartment = (department) => 
-    request({
-        url: '/org/department/save',
-        method: 'post',
-        data: department
-    })
-
-export const deleteDepartment = (department) =>
-    request({
-        url: '/org/department/delete',
-        method: 'post',
-        data: department
-    })
-    

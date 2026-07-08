@@ -2,7 +2,7 @@ import request from '@/utils/requestReport'
 
 export function saveEnshrine(panelGroupId) {
   return request({
-    url: '/api/store/' + panelGroupId,
+    url: '/store/' + panelGroupId,
     method: 'post',
     loading: true
   })
@@ -10,7 +10,7 @@ export function saveEnshrine(panelGroupId) {
 
 export function deleteEnshrine(id) {
   return request({
-    url: '/api/store/remove/' + id,
+    url: '/store/remove/' + id,
     method: 'post',
     loading: true
   })
@@ -18,7 +18,7 @@ export function deleteEnshrine(id) {
 
 export function enshrineList(data) {
   return request({
-    url: '/api/store/list',
+    url: '/store/list',
     method: 'post',
     loading: true,
     data

@@ -1,58 +1,13 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getClinicById = (id) =>
-    request({
-        url: '/org/clinic/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/org/clinic')
 
-export const listClinicPage = (search) =>
-    request({
-        url: '/org/clinic/list',
-        method: 'post',
-        data: search
-    })
-
-export const listClinicAll = (search) =>
-    request({
-        url: '/org/clinic/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveClinic = (formData) =>
-    request({
-        url: '/org/clinic/save',
-        method: 'post',
-        data: formData
-    })
-  
-export const deleteClinic = (clinic) =>
-    request({
-        url: '/org/clinic/delete',
-        method: 'post',
-        data: clinic
-    })
-    
-export const bulkInsertClinic = (clinics) =>
-    request({
-        url: '/org/clinic/bulkInsert',
-        method: 'post',
-        data: clinics
-    })
-    
-export const bulkUpdateClinic = (clinics) =>
-    request({
-        url: '/org/clinic/bulkUpdate',
-        method: 'post',
-        data: clinics
-    })
-
-export const bulkDeleteClinic = (clinics) =>
-    request({
-        url: '/org/clinic/bulkDelete',
-        method: 'post',
-        data: clinics
-    })
-    
+// 导出标准CRUD接口（保持向后兼容）
+export const getClinicById = baseApi.getById
+export const listClinicPage = baseApi.listPage
+export const listClinicAll = baseApi.listAll
+export const saveClinic = baseApi.save
+export const deleteClinic = baseApi.delete
+export const bulkInsertClinic = baseApi.bulkInsert
+export const bulkUpdateClinic = baseApi.bulkUpdate
+export const bulkDeleteClinic = baseApi.bulkDelete

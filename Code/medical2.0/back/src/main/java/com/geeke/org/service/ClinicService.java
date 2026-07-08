@@ -105,7 +105,7 @@ public class ClinicService extends CrudService<ClinicDao, Clinic> {
                     String uid = admin.getId();
                     String phoneNumber = clinic.getPhoneNumber();
                     String newPassword = phoneNumber.substring(phoneNumber.length() - 6);
-                    Md5Hash md5 = new Md5Hash(newPassword, uid, 6);
+                    Md5Hash md5 = new Md5Hash(newPassword, uid, 10000);
                     String md5Password = md5.toHex();
                     userService.updateAdminPhoneAndPass(phoneNumber, md5Password, uid);
                 }
@@ -151,7 +151,7 @@ public class ClinicService extends CrudService<ClinicDao, Clinic> {
         user.setUserRoleList(userRoleList);
         String id1 = userService.save(user).getId();
         if (user.getLoginPasswordUpdate()) {
-            Md5Hash md5 = new Md5Hash(user.getLoginPassword(), user.getId(), 6);
+            Md5Hash md5 = new Md5Hash(user.getLoginPassword(), user.getId(), 10000);
             String md5Password = md5.toHex();
             userDao.updateLoginPassword(user.getId(), md5Password);
         }

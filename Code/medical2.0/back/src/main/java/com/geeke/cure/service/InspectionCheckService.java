@@ -10,12 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.geeke.common.service.CrudService;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.geeke.config.exception.CommonJsonException;
 import com.geeke.cure.dao.InspectionCheckDao;
 import com.geeke.cure.entity.InspectionCheck;
-import com.geeke.utils.ResultUtil;
 import com.geeke.utils.StringUtils;
-import com.geeke.utils.constants.ErrorEnum;
 import com.google.common.collect.Maps;
 import org.springframework.util.CollectionUtils;
 
@@ -26,7 +23,7 @@ import org.springframework.util.CollectionUtils;
  */
  
 @Service("inspectionCheckService")
-@Transactional(readOnly = false)
+@Transactional(readOnly = true)
 public class InspectionCheckService extends CrudService<InspectionCheckDao, InspectionCheck>{
 
     @Autowired

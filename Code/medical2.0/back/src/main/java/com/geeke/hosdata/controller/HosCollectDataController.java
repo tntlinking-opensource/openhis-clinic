@@ -21,7 +21,7 @@ import com.geeke.stock.service.DrugService;
 import com.geeke.sys.utils.SessionUtils;
 import com.geeke.utils.ResultUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,12 +35,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static com.geeke.hosdata.config.FieldMappingConfig.readFieldMappingFromXML;
 
 @RestController
 @RequestMapping("/hosdata/HosCollectData")
 @RequiredArgsConstructor
 public class HosCollectDataController {
+
+    private static final Logger logger = LoggerFactory.getLogger(HosCollectDataController.class);
 
     private final CompanyService companyService;
 
@@ -200,22 +205,14 @@ public class HosCollectDataController {
         try {
             executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("数据采集线程中断", e);
+            Thread.currentThread().interrupt();
         }
         JSONObject result = new JSONObject();
         result.put("rows",processedDataArray);
         result.put("total",hosData.getJSONObject("BusData").getJSONObject("data").getInteger("total"));
         return result;
     }
-
-
-//    @PostMapping(value = "test")
-//    public ResponseEntity<JSONObject> getHosDrugs1(@RequestBody SearchParams searchParams) {
-//      JSONObject hosData = httpUtil.getHosData(httpUtil.getHosToken(),searchParams);
-//      return ResponseEntity.ok(ResultUtil.successJson(hosData.getJSONObject("BusData").getJSONObject("data")));
-//
-//    }
-
 
 
 }

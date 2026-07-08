@@ -110,7 +110,7 @@ public class SysSetingService extends CrudService<SysSetingDao, SysSeting> {
                 logger.info("系统设置保存失败");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("系统设置保存异常", e);
         }
         return entity;
     }

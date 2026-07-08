@@ -6,12 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Data
 @Component
-@ConfigurationProperties(prefix = "spring.redis")
+@ConfigurationProperties(prefix = "app.redis")
 public class RedisProperties {
     private String cacheType;
-    private String host;
-    private String port;
-    private String password;
-    private int database;
-    private int timeout;
 }

@@ -89,7 +89,7 @@
     </select>
 
     <select id="count" resultType="int">
-        SELECT COUNT(*) FROM recipel_info recipelInfo
+        SELECT COUNT(DISTINCT recipelInfo.id) FROM recipel_info recipelInfo
          left join recipel_info_review a on recipelInfo.id = a.recipel_info_id
         <include refid="recipellnfoReviewJoins"/>
         <where>

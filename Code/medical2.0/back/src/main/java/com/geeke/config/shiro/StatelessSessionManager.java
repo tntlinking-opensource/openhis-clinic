@@ -66,8 +66,7 @@ public class StatelessSessionManager extends DefaultWebSessionManager {
                 return sessionId;
 
             } catch (Exception e) {
-                logger.error("Get session id by parse token  error.  url: {}", httpRequest.getRequestURI());
-                e.printStackTrace();
+                logger.error("Get session id by parse token  error.  url: {}", httpRequest.getRequestURI(), e);
             }
             logger.info("Request {} get tokenId from request header {}", httpRequest.getRequestURI(), token);
             return token;

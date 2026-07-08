@@ -2,7 +2,7 @@ import request from '@/utils/requestReport'
 
 /* export function saveShare(data) {
   return request({
-    url: '/api/share/',
+    url: '/share/',
     method: 'post',
     loading: true,
     data
@@ -11,7 +11,7 @@ import request from '@/utils/requestReport'
 
 export function shareTargets(panelId) {
   return request({
-    url: '/api/share/queryTargets/' + panelId,
+    url: '/share/queryTargets/' + panelId,
     method: 'post',
     loading: true
   })
@@ -19,7 +19,7 @@ export function shareTargets(panelId) {
 
 export function removeShares(data) {
   return request({
-    url: '/api/share/removeShares/',
+    url: '/share/removeShares/',
     method: 'post',
     loading: true,
     data
@@ -28,7 +28,7 @@ export function removeShares(data) {
 
 export function loadShares(data) {
   return request({
-    url: '/api/share/queryWithResourceId',
+    url: '/share/queryWithResourceId',
     method: 'post',
     loading: true,
     data
@@ -37,7 +37,7 @@ export function loadShares(data) {
 
 export function loadTree(data) {
   return request({
-    url: '/api/share/treeList',
+    url: '/share/treeList',
     method: 'post',
     loading: true,
     data
@@ -46,7 +46,7 @@ export function loadTree(data) {
 
 export function loadShareOutTree() {
   return request({
-    url: '/api/share/shareOut',
+    url: '/share/shareOut',
     method: 'post',
     loading: true
   })
@@ -54,7 +54,7 @@ export function loadShareOutTree() {
 
 export function fineSave(data) {
   return request({
-    url: '/api/share/fineSave',
+    url: '/share/fineSave',
     method: 'post',
     loading: true,
     data

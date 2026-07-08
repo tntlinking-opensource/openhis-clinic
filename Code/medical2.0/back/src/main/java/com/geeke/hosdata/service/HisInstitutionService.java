@@ -1,6 +1,7 @@
 package com.geeke.hosdata.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.geeke.common.constants.BizConstants;
 import com.geeke.common.service.CrudService;
 import com.geeke.hosdata.dao.HisDrugDao;
 import com.geeke.hosdata.dao.HisInstitutionDao;
@@ -26,8 +27,8 @@ public class HisInstitutionService  extends CrudService<HisInstitutionDao, HisIn
     @Override
     public List<String> bulkInsert(List<HisInstitutions> entitys) {
         //院版诊所对应关系/
-        Map<String, String> typeMap= getTypeMap("998465736089977631");
-        Map<String, String> unitMap = getTypeMap("999976636865404934");
+        Map<String, String> typeMap= getTypeMap(BizConstants.DICT_TYPE_INSTITUTION_TYPE);
+        Map<String, String> unitMap = getTypeMap(BizConstants.DICT_TYPE_INSTITUTION_UNIT);
         List<String> ids = Lists.newArrayList();
         JSONObject userObj = SessionUtils.getUserJson();
         for(HisInstitutions entity : entitys) {

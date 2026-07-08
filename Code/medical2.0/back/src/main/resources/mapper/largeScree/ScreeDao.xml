@@ -31,21 +31,20 @@
     </resultMap>
 
     <!-- 新增任务 -->
-    <select id="getQuest" resultType="String">taskmanagement
+    <select id="getQuest" resultType="String">
     select count(*)
     from taskmanagement t
-    where t.company_id in (SELECT id FROM org_company WHERE parent_id = #{parentId})
-      and t.del_flag = '0'
+    INNER JOIN org_company oc ON oc.parent_id = #{parentId} AND oc.id = t.company_id
+    where t.del_flag = '0'
       and to_days(t.UPDATED_BY) = to_days(now())
     </select>
-
 
     <!-- 今日挂号人数 -->
     <select id="getRegister" resultType="String">
         select count(*)
         from registration r
-        where r.company_id in (SELECT id FROM org_company WHERE parent_id = #{parentId})
-          and (r.status = 'registrationStatus_1' or r.status = 'registrationStatus_0')
+        INNER JOIN org_company oc ON oc.parent_id = #{parentId} AND oc.id = r.company_id
+        where (r.status = 'registrationStatus_1' or r.status = 'registrationStatus_0')
           and r.del_flag = '0'
           and to_days(r.create_date) = to_days(now())
     </select>
@@ -54,8 +53,8 @@
     <select id="getReceivePatients" resultType="String">
         select count(*)
         from registration r
-        where r.company_id in (SELECT id FROM org_company WHERE parent_id = #{parentId})
-          and r.status = 'registrationStatus_1'
+        INNER JOIN org_company oc ON oc.parent_id = #{parentId} AND oc.id = r.company_id
+        where r.status = 'registrationStatus_1'
           and r.del_flag = '0'
           and to_days(r.create_date) = to_days(now())
     </select>
@@ -64,11 +63,11 @@
     <select id="getIncome" resultType="String">
         select IFNULL(sum(ti.amount_received), 0)
         from toll_info ti
+        INNER JOIN org_company oc ON oc.parent_id = #{parentId} AND oc.id = ti.company_id
         where ti.amount_status = 'amountStatus_1'
           and ti.del_flag = '0'
           and ti.return_type = '0'
           and to_days(ti.create_date) = to_days(now())
-          and ti.company_id in (SELECT id FROM org_company WHERE parent_id = #{parentId})
     </select>
 
     <!-- 今日新增签约数 -->
@@ -80,17 +79,12 @@
         select (case t.tasktype when 0 THEN '常规任务' when 1 THEN '宣传任务' end) tasktype,
                t.taskname,
                t.taskdeadline,
-               (SELECT COUNT(f.executeschedule)
-                FROM feedbacktable f
-                WHERE f.executeschedule = 1
-                  and f.taskmanagement_id = t.ID) as                       ywc,
-               (SELECT COUNT(f.executeschedule)
-                FROM feedbacktable f
-                WHERE f.executeschedule = 0
-                  and f.taskmanagement_id = t.ID) as                       wwc
+               SUM(CASE WHEN f.executeschedule = 1 THEN 1 ELSE 0 END) as ywc,
+               SUM(CASE WHEN f.executeschedule = 0 THEN 1 ELSE 0 END) as wwc
         from taskmanagement t
                  inner join feedbacktable f on t.ID = f.taskmanagement_id
-        WHERE t.company_id = '1639720158872479714'
+        WHERE t.company_id = #{parentId}
+        GROUP BY t.ID, t.tasktype, t.taskname, t.taskdeadline
     </select>
 
     <!-- 今日们门诊记录 -->
@@ -113,7 +107,8 @@
             left join clinic_office co on co.id = r.department_id
             left join sys_user d on d.id = r.doctor_id
             left join sys_dict_item status on status.value = r.status
-        where r.company_id in (SELECT id FROM org_company WHERE parent_id='1639720158872479714')
+        INNER JOIN org_company oc2 ON oc2.parent_id = #{parentId} AND oc2.id = r.company_id
+        where 1=1
           and (r.status = 'registrationStatus_1'
            or r.status = 'registrationStatus_0')
           and r.del_flag = '0'

@@ -4,13 +4,13 @@
 		<el-table :data="newList" border highlight-current-row @row-click="RowClickSurchargeTable">
 			<el-table-column prop="drugStuffName" :label="nameTitle">
 			</el-table-column>
-			<el-table-column prop="drug.type.name" :label="药品类型" v-if="type==1">
+			<el-table-column prop="drug.type.name" :label="药品类型" v-if="type===1">
 			</el-table-column>
-			<el-table-column prop="stuff.type.name" :label="材料类型" v-if="type==2">
+			<el-table-column prop="stuff.type.name" :label="材料类型" v-if="type===2">
 			</el-table-column>
-			<el-table-column prop="drug.price" label="零售" width="100" v-if="addType == 1">
+			<el-table-column prop="drug.price" label="零售" width="100" v-if="addType === 1">
 			</el-table-column>
-			<el-table-column prop="drug.pack.name" label="单位" width="80" v-if="addType == 1">
+			<el-table-column prop="drug.pack.name" label="单位" width="80" v-if="addType === 1">
 			</el-table-column>
 			<el-table-column prop="supplierStock.batchNo" label="批号" width="80">
 			</el-table-column>
@@ -56,12 +56,11 @@
 		},
 		computed: {
 			nameTitle() {
-				return this.type == '1' ? '药品名称' : '材料名称';
+				return this.type === '1' ? '药品名称' : '材料名称';
 			}
 		},
 		watch: {
 			supplierId() {
-        console.log('supplier change:',this.supplierId);
         this.queryList=[];
         this.newList=[];
 				this.loadMedicinalStorageList();
@@ -98,16 +97,15 @@
 					value: this.supplierId,
 				});
 				listPage(searchParams).then(res => {
-					//console.log('storageListAll',res);
 					this.queryList = res.data;
 					this.filterList();
 				}).catch((e) => {
-					console.log('storageListAll error:', e);
+					console.error('storageListAll error:', e);
 				})
 			},
 			filterList() {
 				let newVal = this.searchName;
-				var pattern = new RegExp("[A-Za-z]+");
+				const pattern = new RegExp("[A-Za-z]+");
 				if (!newVal) {
 					this.newList = this.queryList;
 				} else if (pattern.test(newVal)) {
@@ -172,7 +170,6 @@
 				  this.stuffPackNum = 0
 				}
 
-				// console.log(this.selectGoodsTemp, "0000333");
 				this.selectGoodsTemp = newStorage; */
 				this.$emit('onMedicinalStorageSelect', row);
 			},

@@ -29,6 +29,8 @@ public interface TollInfoDao extends CrudDao<TollInfo> {
 
     TollVo tollTota(PageRequest var1);
 
+    TollVo tollTotalAllPayments(PageRequest var1);
+
     TollVo tollTotalAmountReceivableAndAbleTotal(PageRequest var1);
 
 //    TollVo tollTotalAmountReturnAndAbleTotal(PageRequest var1);
@@ -59,6 +61,14 @@ public interface TollInfoDao extends CrudDao<TollInfo> {
 
     List<WorkLoad> getTemporaryCost(PageRequest var1);
 
+    /**
+     * 批量查询多个医生的临时费用
+     * @param pageRequest 分页请求（包含通用过滤条件）
+     * @param doctorNames 医生名称列表
+     * @return 临时费用列表
+     */
+    List<WorkLoad> getTemporaryCostBatch(@Param("pageRequest") PageRequest pageRequest, @Param("doctorNames") List<String> doctorNames);
+
     WorkLoadStat getWorkLoadStat(PageRequest var1);
 
     List<WorkLoadStat> getWorkLoadStats(PageRequest var1);
@@ -75,18 +85,22 @@ public interface TollInfoDao extends CrudDao<TollInfo> {
     List<Ypjxc> getypjxcmanagementcounts(YpjxcRc ypjxcRc);
     List<Ypjxc> getypjxcmanagement(YpjxcRc ypjxcRc);
     List<Ypjxc> getypjxcmanagementsums(YpjxcRc ypjxcRc);
+    int countYpjxcManagement(YpjxcRc ypjxcRc);
 
     List<Stuffsalessummary> getStuffsalessummarytotals(StuffsalessummaryRc stuffsalessummaryRc);
     List<Stuffsalessummary> getStuffsalessummarylist(StuffsalessummaryRc stuffsalessummaryRc);
     List<Stuffsalessummary> getStuffsalessummarysums(StuffsalessummaryRc stuffsalessummaryRc);
+    int countStuffSalesSummary(StuffsalessummaryRc stuffsalessummaryRc);
 
     List<Ypjxc> getcljxcmanagementcounts(YpjxcRc ypjxcRc);
     List<Ypjxc> getcljxcmanagement(YpjxcRc ypjxcRc);
     List<Ypjxc> getcljxcmanagementsums(YpjxcRc ypjxcRc);
+    int countCljxcManagement(YpjxcRc ypjxcRc);
 
     List<Ypclrkcx> getypclrkcxtotal(YpjxcRc ypjxcRc);
     List<Ypclrkcx> getypclrkcxlist(YpjxcRc ypjxcRc);
     List<Ypclrkcx> getypclrkcxsums(YpjxcRc ypjxcRc);
+    int countYpclrkcx(YpjxcRc ypjxcRc);
 
     List<Ypjxc> getjglist(YpjxcRc ypjxcRc);
 

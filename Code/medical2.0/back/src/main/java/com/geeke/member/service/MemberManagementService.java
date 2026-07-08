@@ -11,12 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.geeke.common.service.CrudService;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.geeke.config.exception.CommonJsonException;
+import com.geeke.common.service.ServiceException;
 import com.geeke.member.dao.MemberManagementDao;
 import com.geeke.member.entity.MemberManagement;
-import com.geeke.utils.ResultUtil;
 import com.geeke.utils.StringUtils;
-import com.geeke.utils.constants.ErrorEnum;
 import com.google.common.collect.Maps;
 import org.springframework.util.CollectionUtils;
 
@@ -27,7 +25,7 @@ import org.springframework.util.CollectionUtils;
  */
  
 @Service("memberManagementService")
-@Transactional(readOnly = false)
+@Transactional(readOnly = true)
 public class MemberManagementService extends CrudService<MemberManagementDao, MemberManagement>{
         @Autowired
         private MemberManagementDetailService memberManagementDetailService;
@@ -48,7 +46,7 @@ public class MemberManagementService extends CrudService<MemberManagementDao, Me
             //绑卡时进行用户校验是否已经办卡了
             List<MemberManagement> memberManagements = this.dao.getByPatientAndMember(memberManagement.getPatient().getId(),memberManagement.getMemberSet().getId());
             if(!CollectionUtils.isEmpty(memberManagements)){
-                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "该用户已经绑定了该会员卡，不能重复绑定"));
+                throw new ServiceException("该用户已经绑定了该会员卡，不能重复绑定");
             }
             int insert = this.dao.insert(memberManagement);
             //保存好后将数据保存到详情表中
@@ -137,7 +135,7 @@ public class MemberManagementService extends CrudService<MemberManagementDao, Me
 
     @Transactional(readOnly = false)
     public void updaStatus(MemberManagement memberManagement) {
-            this.dao.updaStatus(memberManagement);
+            this.dao.updateStatus(memberManagement);
     }
 
     public List<MemberManagement> getByPatientId(String patientId) {

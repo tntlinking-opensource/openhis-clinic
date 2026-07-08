@@ -12,36 +12,26 @@
       </el-radio-group>
     </div>
     <div class="often-body" style="position: relative; min-height: 210px;">
-      <my-task @parentWf="handleWfLoad(arguments)" ref="myTask" @setCardLoad="handleSetCardLoad" v-if="currentType === 'MY_TASK'"></my-task>
-      <my-process @parentWf="handleWfLoad(arguments)" ref="myProcess" @setCardLoad="handleSetCardLoad" v-if="currentType === 'MY_PROCESS'"></my-process>
-      <my-applied @parentWf="handleWfLoad(arguments)" ref="myApplied" @setCardLoad="handleSetCardLoad" v-if="currentType === 'MY_APPLIED'"></my-applied>
-      <my-approved @parentWf="handleWfLoad(arguments)" ref="myApproved" @setCardLoad="handleSetCardLoad" v-if="currentType === 'MY_APPROVED'"></my-approved>
+      <div v-if="currentType === 'MY_TASK'" class="empty-placeholder">暂无待办</div>
+      <div v-if="currentType === 'MY_PROCESS'" class="empty-placeholder">暂无申请</div>
+      <div v-if="currentType === 'MY_APPLIED'" class="empty-placeholder">暂无记录</div>
+      <div v-if="currentType === 'MY_APPROVED'" class="empty-placeholder">暂无记录</div>
     </div>
   </el-card>
 </template>
 
 <script>
   import { isLightOrDark } from '@/utils/common'
-  import myTask from './myTask'
-  import myProcess from './myProcess'
-  import myApplied from './myApplied'
-  import myApproved from './myApproved'
 	export default {
 		name: "WorkBench",
     props: ['id', 'panelSetIcon'],
-    components: {
-      myTask,
-      myProcess,
-      myApplied,
-      myApproved
-    },
+    components: {},
     data () {
       return {
         isCardLoading: false,
         panelId: this.id,
         isPanelSetIcon: this.panelSetIcon,
         currentType: 'MY_TASK',
-        wfForm:  null,  // 工作流表单
       }
     },
     watch:{
@@ -55,7 +45,7 @@
     computed: {
       ...Vuex.mapGetters(['settings']),
       isLight() {
-        return function(colorType) {
+        return (colorType) => {
           return isLightOrDark(this.settings[colorType])
         }
       },
@@ -69,15 +59,6 @@
 
     },
     methods: {
-      getWfList() {
-
-      },
-      handleWfLoad(params) {
-        this.$emit('parentPageLoad', params)
-      },
-      handleSetCardLoad(isLoad) {
-        this.isCardLoading = isLoad
-      },
       handleTypeChange(type) {
         this.currentType = type
       },
@@ -92,13 +73,13 @@
   .el-card {
     height: 100%;
   }
-  .index-module-card.el-card /deep/ .el-card__header {
+  .index-module-card.el-card ::v-deep .el-card__header {
     padding: 10px 16px!important;
     .card-close, .card-setting {
       float: right;
       padding: 3px 0
     }
-    /deep/ .often-body {
+    ::v-deep .often-body {
       position: relative;
       min-height: 210px;
     }
@@ -108,7 +89,7 @@
   }
   .card-radio-group {
     float: right;
-    /deep/ .el-radio-button--mini .el-radio-button__inner {
+    ::v-deep .el-radio-button--mini .el-radio-button__inner {
       padding: 5px 15px;
     }
   }
@@ -129,6 +110,14 @@
       color: #fff!important;
       font-size: 12px!important;
     }
+  }
+  .empty-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 210px;
+    color: #909399;
+    font-size: 14px;
   }
   .card-pagination {
     position: absolute;

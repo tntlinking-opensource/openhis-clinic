@@ -1,24 +1,11 @@
 package com.geeke.stock.controller;
 
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.alibaba.fastjson.JSONObject;
+import com.geeke.common.controller.CrudController;
 import com.geeke.stock.entity.MedicinalStockRecord;
 import com.geeke.stock.service.MedicinalStockRecordService;
-import com.geeke.common.controller.SearchParams;
-import com.geeke.common.data.Page;
-import com.geeke.sys.controller.BaseController;
-import com.geeke.utils.ResultUtil;
-import com.geeke.utils.StringUtils;
 
 /**
  * 库存操作记录Controller
@@ -27,57 +14,13 @@ import com.geeke.utils.StringUtils;
  */
 @RestController
 @RequestMapping(value = "/stock/medicinalStockRecord")
-public class MedicinalStockRecordController extends BaseController {
+public class MedicinalStockRecordController extends CrudController<MedicinalStockRecordService, MedicinalStockRecord> {
 
-	@Autowired
-	private MedicinalStockRecordService medicinalStockRecordService;
-	
-    @GetMapping("/{id}")
-    public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
-        MedicinalStockRecord entity = medicinalStockRecordService.get(id);
-        return ResponseEntity.ok(ResultUtil.successJson(entity));
-    }
-    
-    @PostMapping(value = {"list", ""})
-    public ResponseEntity<JSONObject> listPage(@RequestBody SearchParams searchParams) {
-        Page<MedicinalStockRecord> result = medicinalStockRecordService.listPage(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
-    
-    @PostMapping(value = "listAll")
-    public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
-        List<MedicinalStockRecord> result = medicinalStockRecordService.listAll(searchParams.getParams(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
+    @Autowired
+    protected MedicinalStockRecordService medicinalStockRecordService;
 
-    @PostMapping(value = "save")
-    public ResponseEntity<JSONObject> save(@RequestBody MedicinalStockRecord entity) {
-        String id = medicinalStockRecordService.save(entity).getId();
-        return ResponseEntity.ok(ResultUtil.successJson(id));
+    @Override
+    protected MedicinalStockRecordService getService() {
+        return medicinalStockRecordService;
     }
-  
-    @PostMapping(value = "delete")
-    public ResponseEntity<JSONObject> delete(@RequestBody MedicinalStockRecord entity) {
-        int rows = medicinalStockRecordService.delete(entity);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
-
-    @PostMapping(value = "bulkInsert")
-    public ResponseEntity<JSONObject> bulkInsert(@RequestBody List<MedicinalStockRecord> entitys) {
-        List<String> ids = medicinalStockRecordService.bulkInsert(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkUpdate")
-    public ResponseEntity<JSONObject> bulkUpdate(@RequestBody List<MedicinalStockRecord> entitys) {
-        List<String> ids = medicinalStockRecordService.bulkUpdate(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkDelete")
-    public ResponseEntity<JSONObject> bulkDelete(@RequestBody List<MedicinalStockRecord> entitys) {
-        int rows = medicinalStockRecordService.bulkDelete(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
-
 }

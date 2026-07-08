@@ -3,7 +3,7 @@
     <!-- 历史记录  -->
     <History :bussObject='curentRow' ></History>
     <!-- 编辑窗口  -->
-    <memberManagement-form ref='memberManagementForm' :permission='permission' v-on:save-finished='getMemberManagementList()'></memberManagement-form>
+    <memberManagement-form ref='memberManagementForm' :permission='permission' @save-finished='loadData'></memberManagement-form>
     <div class="page-container">
         <!--  搜索栏  开始 -->
         <div class='query-form-container'>
@@ -133,23 +133,23 @@
             </el-table-column>
               <el-table-column v-for="(cv, index) in columnViews" v-if='cv.display' :prop='cv.prop' :key="`columnViews_${index}`" :label='cv.label' sortable='custom' :align='cv.align' :min-width='cv.miniWidth+"px"' :width='cv.width+"px"' header-align='center' :column-key='index.toString()' :render-header="renderHeader">
                 <template slot-scope='{row,$index}'>
-                  <span v-if='columnViews[index].showType == "Checkbox" || columnViews[index].showType == "Radio"'>
-                    <li v-if='getAttrValue(row, columnViews[index].prop) == "1"' class='el-icon-check' style='color:#F56C6C;'></li>
+                  <span v-if='columnViews[index].showType === "Checkbox" || columnViews[index].showType === "Radio"'>
+                    <li v-if='getAttrValue(row, columnViews[index].prop) === "1"' class='el-icon-check' style='color:#F56C6C;'></li>
                   </span>
-                  <span v-else-if="columnViews[index].prop=='gender'">
-                    <span v-if="memberManagementList[$index].gender=='gender_0'">男</span>
+                  <span v-else-if="columnViews[index].prop==='gender'">
+                    <span v-if="memberManagementList[$index].gender==='gender_0'">男</span>
                     <span v-else>女</span>
                   </span>
-                  <span v-else-if="columnViews[index].prop=='status'">
-                    <span v-if="memberManagementList[$index].status=='0'">未使用</span>
-                    <span v-else-if="memberManagementList[$index].status=='1'">已使用</span>
-                    <span v-else-if="memberManagementList[$index].status=='2'">已禁用</span>
+                  <span v-else-if="columnViews[index].prop==='status'">
+                    <span v-if="memberManagementList[$index].status==='0'">未使用</span>
+                    <span v-else-if="memberManagementList[$index].status==='1'">已使用</span>
+                    <span v-else-if="memberManagementList[$index].status==='2'">已禁用</span>
                     <span v-else>已失效</span>
                   </span>
-                  <span v-else-if="columnViews[index].prop=='age'">
+                  <span v-else-if="columnViews[index].prop==='age'">
                     {{memberManagementList[$index].age}}岁
                   </span>
-                   <span v-else-if="columnViews[index].prop=='type'">
+                   <span v-else-if="columnViews[index].prop==='type'">
                     <!-- <span v-if="memberManagementList[$index].type=='gender_0'">男</span> -->
                     {{memberManagementList[$index].type.name}}
                   </span>
@@ -165,8 +165,8 @@
                 </template>
                 <template slot-scope='scope'>
                     <center> 
-                      <el-button type="text" v-show='permission.view' @click='onViewMemberManagement(scope.$index, scope.row)'>详情</el-button>
-                      <el-button v-if="scope.row.status=='0'" type="text" v-show='permission.view' @click='disableMember(scope.$index, scope.row)' style="color:red;">禁用</el-button>
+                      <el-button type="text" v-show='permission.view' @click='onViewEntity(scope.$index, scope.row, "memberManagementForm")'>详情</el-button>
+                      <el-button v-if="scope.row.status==='0'" type="text" v-show='permission.view' @click='disableMember(scope.$index, scope.row)' style="color:red;">禁用</el-button>
                     </center>
                   <!-- <OperationIcon v-show='permission.view' type='info' content='查看' placement='top-start' icon-name='el-icon-view' 
                     @click='onViewMemberManagement(scope.$index, scope.row)'></OperationIcon>
@@ -207,7 +207,7 @@
 <script>
 import { validatenull } from '@/utils/validate'
 import { listMemberManagementPage, getMemberManagementById, deleteMemberManagement} from '@/api/member/memberManagement'
-import { listResourcePermission } from '@/api/admin/common/permission'
+import listViewMixin from '@/mixins/listViewMixin'
 import MemberManagementForm from './memberManagementForm'
 import ExportExcelButton from '@/components/ExportExcelButton'
 import ViewColumnsSelect from '@/views/components/ViewColumnsSelect'
@@ -215,11 +215,12 @@ import QueryForm from '@/views/components/queryForm'
 import MainUI from '@/views/components/mainUI'
 import OperationIcon from '@/components/OperationIcon'
 import History from '@/views/components/history'
-import { listDictItemAll } from '@/api/sys/dictItem'
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 import { listMemberSetAll } from '@/api/member/memberSet'
 export default {
   extends: MainUI,
-  components: { 
+  mixins: [listViewMixin],
+  components: {
     MemberManagementForm,
     ExportExcelButton,
     ViewColumnsSelect,
@@ -229,13 +230,11 @@ export default {
   },
   data() {
     return {
-      permission: {
-        view: false,
-        add: false,
-        edit: false,
-        remove: false,
-        export: false
-      },
+      listApi: listMemberManagementPage,
+      getApi: getMemberManagementById,
+      deleteApi: deleteMemberManagement,
+      entityName: 'MemberManagement',
+      permissionPrefix: 'memberManagement',
       queryTypes: {
         'name': 'like',
       },
@@ -247,14 +246,6 @@ export default {
          type:"",   //类型
          memberName:'', //名称
       },
-      search: {
-        params: [{columnName: 'company_id', queryType: '=', value: currentUser.company.id}],    
-        offset: 0,
-        limit: 20,
-		columnName: '',      // 排序字段名
-        order: ''            // 排序
-      },
-      currentPage: 1,
       memberManagementTotal: 0,
       memberManagementList: [],
         
@@ -285,9 +276,6 @@ export default {
     }
   },
   methods: {
-     indexMethod(index){
-       return (this.currentPage-1)*this.search.limit+index +1;
-    },
     //搜索重置
     reset(){
       this.queryModel={
@@ -299,7 +287,7 @@ export default {
          memberName:'', //名称
       }
       this.memberSet_List=[]
-      this.getMemberManagementList()
+      this.onSearch()
     },
     //获取对应会员卡类型的会员卡
     getMember(row){
@@ -319,8 +307,8 @@ export default {
     //禁用会员
     disableMember(index,row){
       deleteMemberManagement(row).then((res)=>{
-        if(res.code=='100'){
-            this.getMemberManagementList()
+        if(res.code==='100'){
+            this.loadData()
             this.showMessage({type: 'success', msg: '禁用成功'})
         }else{
            this.showMessage(res)
@@ -329,237 +317,75 @@ export default {
          this.outputError(error)  
       })
     },
-    getMemberManagementList() {
-      this.setLoad()
-      /* 查询参数 和数据权限 */
-      this.search.params = [{columnName: 'company_id', queryType: '=', value: currentUser.company.id}]
+    appendSearchParams() {
+      this.search.params.push({
+        columnName: 'company_id',
+        queryType: '=',
+        value: currentUser.company.id
+      })
       if(this.moreCodition) {
         this.search.params = this.search.params.concat(this.compositeCondition())
       }else{
-        // 查询参数: 姓名
         this.search.params.push({
-      	  columnName: 'name',
-      	  queryType: 'like',
+          columnName: 'name',
+          queryType: 'like',
           value: this.queryModel.name
         })
-         if(this.queryModel.card!=''){
-           this.search.params.push({
-      	  columnName: 'card',
-      	  queryType: '=',
-          value: this.queryModel.card
-        })
-         }
-         if(this.queryModel.status!=''){
-           this.search.params.push({
-      	  columnName: 'status',
-      	  queryType: '=',
-          value: this.queryModel.status
-        })
-         }
-         if(this.queryModel.type!=''){
-           this.search.params.push({
-      	  columnName: 'type',
-      	  queryType: '=',
-          value: this.queryModel.type
-        })
-         }
-         if(this.queryModel.memberName!=''){
-           this.search.params.push({
-      	  columnName: 'member_name',
-      	  queryType: 'like',
-          value: this.queryModel.memberName
-        })
-         }
-         if (this.queryModel.updateDate && this.queryModel.updateDate.length) {
-                  this.search.params.push({
-                      logic: "AND",
-                      queryType: "("
-                    },{
-                      columnName: "update_date",
-                      logic: "",
-                      queryType: 'between',
-                      value: this.queryModel.updateDate,
-                    },{
-                      logic: "",
-                      queryType: ")"
-                    })
-                }
+        if(this.queryModel.card!==''){
+          this.search.params.push({
+            columnName: 'card',
+            queryType: '=',
+            value: this.queryModel.card
+          })
+        }
+        if(this.queryModel.status!==''){
+          this.search.params.push({
+            columnName: 'status',
+            queryType: '=',
+            value: this.queryModel.status
+          })
+        }
+        if(this.queryModel.type!==''){
+          this.search.params.push({
+            columnName: 'type',
+            queryType: '=',
+            value: this.queryModel.type
+          })
+        }
+        if(this.queryModel.memberName!==''){
+          this.search.params.push({
+            columnName: 'member_name',
+            queryType: 'like',
+            value: this.queryModel.memberName
+          })
+        }
+        if (this.queryModel.updateDate && this.queryModel.updateDate.length) {
+          this.search.params.push({
+            logic: "AND",
+            queryType: "("
+          },{
+            columnName: "update_date",
+            logic: "",
+            queryType: 'between',
+            value: this.queryModel.updateDate,
+          },{
+            logic: "",
+            queryType: ")"
+          })
+        }
       }
-      // 数据权限: 会员卡管理member_management
       this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-      listMemberManagementPage(this.search).then(responseData => {
-        if(responseData.code == 100) {
-          this.memberManagementTotal = responseData.data.total
-          this.memberManagementList = responseData.data.rows
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
+    },
+    handleListResponse(responseData) {
+      this.memberManagementTotal = responseData.data.total
+      this.memberManagementList = responseData.data.rows
+    },
+    initOptions() {
+      getDictItemsByCode(DICT_CODE.MEMBER_TYPE).then((data) => {
+        this.typeList = data;
+        this.$forceUpdate()
       })
-    },
-    onSearch() {
-      if(this.moreCodition) {
-        this.search.offset = 0
-        this.currentPage = 1
-        this.getMemberManagementList()
-      } else {
-        this.$refs['queryForm'].validate(valid => {
-          if (valid) {
-            this.search.offset = 0
-            this.currentPage = 1
-            this.getMemberManagementList()
-          } else {
-            return false
-          }
-        })
-      }
-    },
-    onSizeChange(val) {
-      this.currentPage = 1
-      this.search.limit = val;
-      this.search.offset = (this.currentPage - 1) * val
-      this.getMemberManagementList()
-    },
-    onCurrentChange(val) {
-      this.search.offset = (val - 1) * this.search.limit
-      this.currentPage = val
-      this.getMemberManagementList()
-    },
-    async pageInit() {
-      this.setLoad()
-      try {
-        this.initOptions(this.queryModel)
-        this.search.params = [{columnName: 'company_id', queryType: '=', value: currentUser.company.id}]
-        // 数据权限: 会员卡管理member_management
-        this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-        let [listMemberManagementRespData, listPermissionRespData] = await Promise.all([
-          listMemberManagementPage(this.search),
-          listResourcePermission(this.$route.meta.routerId)
-        ])
-        if(listMemberManagementRespData.code == 100 && listPermissionRespData.code == 100) {
-          this.memberManagementTotal = listMemberManagementRespData.data.total
-          this.memberManagementList = listMemberManagementRespData.data.rows
-          console.log(this.memberManagementList,'看情况');
-          this.permission.view = listPermissionRespData.data.find(item => {
-            return item.permission === 'memberManagement:read'
-          })
-          this.permission.export = listPermissionRespData.data.find(item => {
-            return item.permission === 'memberManagement:export'
-          })
-          this.permission.add = listPermissionRespData.data.find(item => {
-            return item.permission === 'memberManagement:create'
-          })
-          this.permission.edit = listPermissionRespData.data.find(item => {
-            return item.permission === 'memberManagement:update'
-          })
-          this.permission.remove = listPermissionRespData.data.find(item => {
-            return item.permission === 'memberManagement:delete'
-          })
-        } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listMemberManagementRespData)
-        }
-        this.resetLoad()
-      } catch(error) {
-        this.outputError(error) 
-      }
-      //获取会员卡类型
-      let type_search={
-        params:[
-          {
-            
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: '1224037951067242497',
-          
-          }
-        ]
-      }
-     listDictItemAll(type_search).then((responseData) => {
-          if(responseData.code=='100'){
-            
-            this.typeList=responseData.data
-            this.$forceUpdate()
-          }
-      })
-    },
-    onViewMemberManagement(index, row) {
-      this.setLoad()
-      getMemberManagementById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-
-          this.$refs.memberManagementForm.$emit('openViewMemberManagementDialog', responseData.data)
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onCreateMemberManagement() {
-      this.$refs.memberManagementForm.$emit('openAddMemberManagementDialog')
-    },
-    onEditMemberManagement(index, row) {
-      this.setLoad()
-      getMemberManagementById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.memberManagementForm.$emit('openEditMemberManagementDialog', responseData.data)
-        }else{
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onCopyMemberManagement(index, row) {
-      this.setLoad()
-      getMemberManagementById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.memberManagementForm.$emit('openCopyMemberManagementDialog', responseData.data)
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onDeleteMemberManagement(index, row) {
-      this.$confirm('确定删除吗？', '确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.setLoad()
-        deleteMemberManagement(row).then(responseData => {
-          if(responseData.code == 100) {
-            this.getMemberManagementList()
-            this.showMessage({type: 'success', msg: '删除成功'})
-          } else {
-            this.showMessage(responseData)
-          }
-          this.resetLoad()
-        }).catch(error => {
-          this.outputError(error)  
-        })
-      }).catch(() => {})
-    },
-    onSortChange( orderby ) {
-      if(validatenull(orderby.prop)) {
-        this.search.columnName = ''
-        this.search.order = ''
-      } else  {
-        this.search.columnName = orderby.prop
-        this.search.order = orderby.order === 'descending' ? 'desc' : 'asc'
-      }
-
-      this.getMemberManagementList()
-    },
-    initOptions(This) {
-    } 
+    }
   },
   watch: {
   },
@@ -576,25 +402,3 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-.drag_table {
- // 设置表格header的高度
- /deep/ th {
-   height: 44px;
- }
-/deep/ th.gutter:last-of-type {
-  height: 0 !important;
-}
- // 设置表格body的高度
- /deep/.el-table__body-wrapper {
-  //解决数据展示超出body高度不滚动bug
-  overflow-y: auto;
-   // 减去的是表格header的高度
-   height: calc(100% - 44px) !important;
- }
-
- .el-table__fixed-right {
-      height: 100% !important;
-  }
-}
-</style>

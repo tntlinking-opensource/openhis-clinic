@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
+import com.geeke.common.data.SearchParamsBuilder;
 import com.geeke.gen.dao.GenTableColumnDao;
 import com.geeke.gen.dao.GenTableDao;
 import com.geeke.gen.entity.GenScheme;
@@ -47,14 +48,13 @@ public class QueryColumnViewService {
 	public List<GenTableColumn> listColumn(String tableId, String schemeId) {
 		List<DictItem> itemList = getItemList();
 		
-		List<Parameter> Params = Lists.newArrayList();
-		Params.add(new Parameter("gen_table_id", "=", tableId));
-		
 		// 排除不在列表中显示的字段
-		String[] strings = {"del_flag"};
-		Params.add(new Parameter("name", "not in", Arrays.asList(strings)));
-		Params.add(new Parameter("show_type", "<>", "'PassWordInput'"));
-		Params.add(new Parameter("show_type", "<>", "'MultiFileUpload'"));
+		List<Parameter> Params = SearchParamsBuilder.create()
+				.eq("gen_table_id", tableId)
+				.notIn("name", Arrays.asList("del_flag"))
+				.ne("show_type", "'PassWordInput'")
+				.ne("show_type", "'MultiFileUpload'")
+				.build();
 		
 		PageRequest pageRequest = new PageRequest(Params);
 		List<GenTableColumn> columns = genTableColumnDao.listAll(pageRequest);
@@ -96,9 +96,9 @@ public class QueryColumnViewService {
 	
 	
 	private List<DictItem> getItemList() {
-		List<Parameter> params = Lists.newArrayList();
-		String[] strings = {"5001", "5002", "5003"};
-		params.add(new Parameter("dict_type_id", "in", Arrays.asList(strings)));
+		List<Parameter> params = SearchParamsBuilder.create()
+				.in("dict_type_id", Arrays.asList("5001", "5002", "5003"))
+				.build();
 		PageRequest pageRequest = new PageRequest(params, null);
 		return dictItemDao.listAll(pageRequest);
 	}

@@ -15,7 +15,6 @@ import com.geeke.outpatient.entity.Registration;
 import com.geeke.outpatient.service.MedicalRecordService;
 import com.geeke.outpatient.service.PatientMdDataService;
 import com.geeke.toll.service.TollInfoService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +28,6 @@ import java.util.Map;
 import java.util.Objects;
 
 @Service
-@RequiredArgsConstructor
 public class MdRegistrationServiceImpl implements MdRegistrationService {
 
 //    private final MdRequestUtil mdRequestUtil;
@@ -37,12 +35,20 @@ public class MdRegistrationServiceImpl implements MdRegistrationService {
     private final YbWebApiUtil mdRequestUtil;
 
     private final PatientMdDataService patientMdDataService;
-    @Lazy
-    @Resource
-    private   TollInfoService tollInfoService;
-    @Lazy
-    @Resource
-    private   MedicalRecordService medicalRecordService;
+
+    private final TollInfoService tollInfoService;
+
+    private final MedicalRecordService medicalRecordService;
+
+    public MdRegistrationServiceImpl(YbWebApiUtil mdRequestUtil,
+                                     PatientMdDataService patientMdDataService,
+                                     @Lazy TollInfoService tollInfoService,
+                                     @Lazy MedicalRecordService medicalRecordService) {
+        this.mdRequestUtil = mdRequestUtil;
+        this.patientMdDataService = patientMdDataService;
+        this.tollInfoService = tollInfoService;
+        this.medicalRecordService = medicalRecordService;
+    }
 
 
 

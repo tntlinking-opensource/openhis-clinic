@@ -192,70 +192,63 @@ public class ExcelUtils {
 		if (list == null || list.size() == 0) {
 			return;
 		}
-		Workbook wb = null;
-		if (!file.exists()) {
-			wb = new XSSFWorkbook();
-		} else {
-			wb = new XSSFWorkbook(new FileInputStream(file));
-		}
-		T test = list.get(0);
-		Map<String, Field> fieldMap = new HashMap<>();
-		List<String> titles = new ArrayList<>();
-		Field[] fields = test.getClass().getDeclaredFields();
-		for (Field field : fields) {
-			if (field.isAnnotationPresent(ExcelCell.class)) {
-				checkFieldClass(field.getType());
-				ExcelCell excelCell = field.getAnnotation(ExcelCell.class);
-				fieldMap.put(excelCell.name(), field);
-				titles.add(excelCell.name());
-			}
-		}
-		if (fieldMap.size() != titles.size()) {
-			wb.close();
-			throw new IllegalArgumentException("@ExcelCell name cannot same");
-		}
-		//
-		Sheet sheet = wb.getSheet(sheetName);
-		if (sheet == null) {
-			sheet = wb.createSheet(sheetName);
-		}
-		// set header
-		Row titleRow = sheet.createRow(0 + startRow);
-		for (int i = 0; i < titles.size(); i++) {
-			Cell cell = titleRow.createCell(i + startCol);
-			cell.setCellValue(titles.get(i));
-		}
-		//
-		int totalRowCount = list.size();
-		for (int r = 0; r < totalRowCount; r++) {
-			T bean = list.get(r);
-			Row row = sheet.createRow(r + 1 + startRow);
-			for (int c = 0; c < titles.size(); c++) {
-				Cell cell = row.createCell(c + startCol);
-				String title = titles.get(c);
-				Field field = fieldMap.get(title);
-				field.setAccessible(true);
-				Object val = field.get(bean);
-				if (val == null) {
-					continue;
-				}
-				ExcelCell excelCell = field.getAnnotation(ExcelCell.class);
-				if (field.getType() == Date.class) {
-					cell.setCellValue(new SimpleDateFormat(excelCell.dateFormat()).format((Date) val));
-				} else {
-					cell.setCellValue(val.toString());
+		try (Workbook wb = file.exists()
+				? new XSSFWorkbook(new FileInputStream(file))
+				: new XSSFWorkbook()) {
+			T test = list.get(0);
+			Map<String, Field> fieldMap = new HashMap<>();
+			List<String> titles = new ArrayList<>();
+			Field[] fields = test.getClass().getDeclaredFields();
+			for (Field field : fields) {
+				if (field.isAnnotationPresent(ExcelCell.class)) {
+					checkFieldClass(field.getType());
+					ExcelCell excelCell = field.getAnnotation(ExcelCell.class);
+					fieldMap.put(excelCell.name(), field);
+					titles.add(excelCell.name());
 				}
 			}
-		}
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		wb.write(bos);
-		bos.close();
-		try (OutputStream outputStream = new FileOutputStream(file)) {
-			bos.writeTo(outputStream);
-			outputStream.close();
-		}
-		if (wb != null) {
-			wb.close();
+			if (fieldMap.size() != titles.size()) {
+				throw new IllegalArgumentException("@ExcelCell name cannot same");
+			}
+			//
+			Sheet sheet = wb.getSheet(sheetName);
+			if (sheet == null) {
+				sheet = wb.createSheet(sheetName);
+			}
+			// set header
+			Row titleRow = sheet.createRow(0 + startRow);
+			for (int i = 0; i < titles.size(); i++) {
+				Cell cell = titleRow.createCell(i + startCol);
+				cell.setCellValue(titles.get(i));
+			}
+			//
+			int totalRowCount = list.size();
+			for (int r = 0; r < totalRowCount; r++) {
+				T bean = list.get(r);
+				Row row = sheet.createRow(r + 1 + startRow);
+				for (int c = 0; c < titles.size(); c++) {
+					Cell cell = row.createCell(c + startCol);
+					String title = titles.get(c);
+					Field field = fieldMap.get(title);
+					field.setAccessible(true);
+					Object val = field.get(bean);
+					if (val == null) {
+						continue;
+					}
+					ExcelCell excelCell = field.getAnnotation(ExcelCell.class);
+					if (field.getType() == Date.class) {
+						cell.setCellValue(new SimpleDateFormat(excelCell.dateFormat()).format((Date) val));
+					} else {
+						cell.setCellValue(val.toString());
+					}
+				}
+			}
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			wb.write(bos);
+			bos.close();
+			try (OutputStream outputStream = new FileOutputStream(file)) {
+				bos.writeTo(outputStream);
+			}
 		}
 	}
 
@@ -336,9 +329,9 @@ public class ExcelUtils {
 			XSSFDrawing drawing = sheet.createDrawingPatriarch();
 			XSSFClientAnchor anchor = new XSSFClientAnchor(0, 0, 0, 0, col1, row1, col2, row2);
 			drawing.createPicture(anchor, wb.addPicture(imageData, XSSFWorkbook.PICTURE_TYPE_JPEG));
-			FileOutputStream fileOut = new FileOutputStream(xlsxFile);
-			wb.write(fileOut);
-			fileOut.close();
+			try (FileOutputStream fileOut = new FileOutputStream(xlsxFile)) {
+				wb.write(fileOut);
+			}
 		}
 	}
 

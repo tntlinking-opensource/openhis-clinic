@@ -13,7 +13,7 @@ import java.util.List;
 
 
 @Service("stmanagementService")
-@Transactional(readOnly = false)
+@Transactional(readOnly = true)
 public class StmanagementService {
 
     @Autowired
@@ -29,10 +29,12 @@ public class StmanagementService {
         return  new Page<>((long) total,list2);
     }
 
+    @Transactional(readOnly = false)
     public int updatestresult(Stparameter stparameter){
         stparameter.setZxsj(new Date());
         return managementdao.updatestresult(stparameter);
     }
+    @Transactional(readOnly = false)
     public int updatesttime(Stparameter stparameter){
         return managementdao.updatesttime(stparameter);
     }

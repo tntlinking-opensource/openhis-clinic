@@ -15,7 +15,7 @@
       label-position="right"
       class="edit-form"
     >
-      <div class="tab-item" v-show="tabIndex == '1'">
+      <div class="tab-item" v-show="tabIndex === '1'">
         <el-table
     :data="tableData"
     style="width: 100%">
@@ -61,15 +61,13 @@
               </el-pagination>
     </el-form>
     <span slot='footer' class='dialog-footer'>
-      <el-button :disabled="flage" type='primary' :plain='true' @click='onDialogClose()'>确 定</el-button>
+      <el-button :disabled="flag" type='primary' :plain='true' @click='onDialogClose()'>确 定</el-button>
       <el-button :plain='true' type="primary" @click='onDialogClose()'>取 消</el-button>
     </span>    
   </el-dialog>
 </template>
 <script>
 import BaseUI from "@/views/components/baseUI";
-import OperationIcon from "@/components/OperationIcon";
-import VDistpicker from 'v-distpicker';
 import {
   listSchedulesPage,
   listdispensingPages,
@@ -78,12 +76,11 @@ import {
 } from "@/api/workbench/Schedules";
 import moment from "moment";
 import { listInspectionCheckPage } from '@/api/cure/inspectionCheck'
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 export default {
   extends: BaseUI,
   name: "workbench-form",
   components: {
-    OperationIcon,
-    VDistpicker
   },  
    props:['closeValue'],
   data() {
@@ -283,16 +280,10 @@ fymodel: {
         ],
       }
 
-      let gender_search = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "1008489176147648522",
-          },
-        ],
-      };
-     
+      getDictItemsByCode(DICT_CODE.GENDER).then((data) => {
+        this.gender_List = data;
+      });
+
     },
 
 Getpatenlist(){
@@ -348,7 +339,7 @@ this.selectpatientdjyjclist();
       this.SearchPreModel.params = params;
       this.SearchPreModel.params[1].value = "registrationStatus_0";//待就诊
       listSchedulesPage(this.SearchPreModel).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           
           this.Totalsums = responseData.data.total;
           this.totallistcounts=responseData.data.total;
@@ -381,14 +372,13 @@ GetDispensingTable() {
  this.PageRegistration.offset=this.fymodel.offset,
       this.PageRegistration.companyId=currentUser.company.id,
       listdispensingPages(this.PageRegistration).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.dispensingsum=responseData.data.total;
           this.totallistcounts=responseData.data.total;
-          console.info("count:"+responseData.data.length);
           responseData.data.rows.forEach((item)=>{
             let datainfo=item.patient.name;
             item.recipelInfoEvtList.forEach((itemevt)=>{
-              if(itemevt.recipelInfo.recipelType.value=="recipelType_0" || itemevt.recipelInfo.recipelType.value=="recipelType_1")
+              if(itemevt.recipelInfo.recipelType.value==="recipelType_0" || itemevt.recipelInfo.recipelType.value==="recipelType_1")
               {
                 datainfo+=" / " + itemevt.recipelInfo.recipelType.name;
                 //  + " : "+ itemevt.recipelDetailEvtList.drugStuffId.name;
@@ -426,7 +416,7 @@ this.patientQueryCondition.limit = this.fymodel.limit;
       this.patientQueryCondition.status = "registrationStatus_1";
 
         listdispensingPages(this.patientQueryCondition).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.Patientchargesum=responseData.data.total;
           this.totallistcounts=responseData.data.total;
           responseData.data.rows.forEach((item)=>{
@@ -469,7 +459,7 @@ selectcurePatientList(){
       this.patientcure.cureType=0;
 
       listdispensingPages(this.patientcure).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.patientcuresum=responseData.data.total;
           this.totallistcounts=responseData.data.total;
           responseData.data.rows.forEach((item)=>{
@@ -493,7 +483,6 @@ selectcurePatientList(){
 
        })
         .catch((error) => {
-          console.log(error);
           this.$message.error(error);
         });
 },
@@ -517,7 +506,7 @@ this.patientdsylist.limit = this.fymodel.limit;
       this.patientdsylist.patientName='';
       this.patientdsylist.patientCode='';
       listdispensingPages(this.patientdsylist).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.patientdsylistsums=responseData.data.total;
           this.totallistcounts=responseData.data.total;
           responseData.data.rows.forEach((item)=>{
@@ -541,7 +530,6 @@ this.patientdsylist.limit = this.fymodel.limit;
 
        })
         .catch((error) => {
-          console.log(error);
           this.$message.error(error);
         });
 },
@@ -553,7 +541,7 @@ selectpatientdjyjclist(){
   this.searchjyjc.limit=this.fymodel.limit;
   listInspectionCheckPage(this.searchjyjc).then(responseData => {
     this.totallistcounts=responseData.data.total;
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           responseData.data.rows.forEach((item)=>{
             this.tableData.push({
               id:item.registration.id,
@@ -625,44 +613,32 @@ this.selectpatientdjyjclist();
     },
   },
   mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openAddworkbenchDialog', function(types) {
-        let titles="";
-        this.titletype=types;
-        switch(types){
-          case "djz":
-          titles="待就诊"
-          break;
-          case "dsf":
-            titles="待收费"
-          break;
-          case "dfy":
-          titles="待发药"
-          break;
-          case "dzl":
-            titles="待治疗"
-          break;
-          case "dsy":
-            titles="待输液"
-          break;
-          case "djyjc":
-            titles="待检验检查"
-          break;
-        }
-        this.types=types;
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = titles+'全部信息'
-        this.bizFormModel = this.initFormModel(this.user)
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-        this.province=''
-        this.city=''
-        this.area=''
-        this.Getpatenlist()
-      })
-    });
-  }  
+  },
+  methods: {
+    openAddworkbenchDialog(types) {
+      let titles = "";
+      this.titletype = types;
+      switch (types) {
+        case "djz": titles = "待就诊"; break;
+        case "dsf": titles = "待收费"; break;
+        case "dfy": titles = "待发药"; break;
+        case "dzl": titles = "待治疗"; break;
+        case "dsy": titles = "待输液"; break;
+        case "djyjc": titles = "待检验检查"; break;
+      }
+      this.types = types;
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = titles + '全部信息'
+      this.bizFormModel = this.initFormModel(this.user)
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+      this.province = ''
+      this.city = ''
+      this.area = ''
+      this.Getpatenlist()
+    },
+  },
 }
 </script>
 <style>

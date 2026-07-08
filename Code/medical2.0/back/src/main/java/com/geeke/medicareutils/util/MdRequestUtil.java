@@ -361,7 +361,6 @@ RequestData requestData = new RequestData();
         JSONObject jsonObject2 = new JSONObject();
         jsonObject2.put("mdtrtinfo", data);
         jsonObject2.put("diseinfo", jsonArray1);
-        System.out.println("jsonObject2 = " + jsonObject2);
 
         JSONArray array2 = new  JSONArray();
         JSONObject invinfo = new JSONObject();
@@ -385,7 +384,6 @@ RequestData requestData = new RequestData();
         JSONObject jsonOb = new JSONObject();
         jsonOb.put("invinfo",array2);
         jsonOb.put("drugtracinfo",array1);
-        System.out.println("js = " + jsonOb);
 
 
     }

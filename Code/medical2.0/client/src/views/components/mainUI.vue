@@ -46,11 +46,10 @@ export default {
   methods: {
     async mainUIInit() {
       this.oprColumnDefaultWidth = this.oprColumnWidth  // 保存操作列默认列宽
-      if (this.tableId && this.tableId != '0') {
+      if (this.tableId && this.tableId !== '0') {
         this.setLoad()
         listColumnView(this.$route.meta.routerId, this.tableId).then(responseData => {
-          if(responseData.code == 100) {
-              console.log(responseData.data,'3');
+          if(responseData.code === 100) {
             this.initViewColumn(responseData.data)
           } else {
             this.showMessage(responseData)
@@ -71,7 +70,7 @@ export default {
       column['routerId'] = this.$route.meta.routerId
       this.setLoad()
       saveColumnView(column).then(responseData => {
-        if(responseData.code != 100) {
+        if(responseData.code !== 100) {
           this.showMessage(responseData)
         }
         this.resetLoad()
@@ -83,8 +82,7 @@ export default {
     showAllColumn() {
       this.setLoad()
       showAllColumnView(this.$route.meta.routerId, this.tableId).then(responseData => {
-        if(responseData.code == 100) {
-            console.log(responseData.data,'2');
+        if(responseData.code === 100) {
           this.initViewColumn(responseData.data)
         } else {
           this.showMessage(responseData)
@@ -98,9 +96,8 @@ export default {
     showDefaultColumn() {
       this.setLoad()
       showDefaultColumnView(this.$route.meta.routerId, this.tableId).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           this.oprColumnWidth = this.oprColumnDefaultWidth  // 还原操作列默认列宽
-          console.log(responseData.data,'1');
           this.initViewColumn(responseData.data)
         } else {
           this.showMessage(responseData)
@@ -138,14 +135,13 @@ export default {
       // 判断是鼠标左键
       if (e.button === 0) {
         // 拖动改变列宽
-        if(document.body.style.cursor == "col-resize") {
+        if(document.body.style.cursor === "col-resize") {
           return
         }
 
         this.dragState.dragging = true
         this.dragState.startIndex = parseInt(column.columnKey)
         this.dragState.startShowIndex = this.getShowIndex(this.dragState.startIndex)
-        // console.log(`开始移动的位置 ${this.dragState.startIndex} 实际显示列 ${this.dragState.startShowIndex}`)
         // 给当前要拖动列的th设置class 和 cursor
         let thElement = document.querySelectorAll('.drag_table table thead tr th')[this.dragState.startShowIndex]
         this.dragState.startClassName = thElement.className
@@ -194,7 +190,6 @@ export default {
           return false
         } else {
           this.dragState.endIndex = parseInt(column.columnKey) // 记录结束列index
-          // console.log(`结束移动的位置 ${this.dragState.endIndex}`)
           if (this.dragState.startIndex !== this.dragState.endIndex) {
             this.dragColumn(this.dragState)
           }
@@ -207,7 +202,6 @@ export default {
     moveTableOutside () {
       if (this.dragState.dragging) {
         this.dragState.endIndex = this.dragState.startIndex
-        // console.log(`已移动到table外，结束移动的位置 ${this.dragState.endIndex}`)
         if (this.dragState.startIndex !== this.dragState.endIndex) {
           this.dragColumn(this.dragState)
         }
@@ -221,7 +215,7 @@ export default {
       // 判断是向左移动还是向右移动
       let column = this.columnViews[startIndex]
       if (direction === 'left') {
-        if(endIndex == 0) {
+        if(endIndex === 0) {
           column.sort = this.columnViews[endIndex].sort/2
         }else{
           column.sort = (this.columnViews[endIndex - 1].sort + this.columnViews[endIndex].sort)/2
@@ -229,7 +223,7 @@ export default {
         this.columnViews.splice(endIndex, 0, this.columnViews[startIndex])
         this.columnViews.splice(startIndex + 1, 1)
       } else {
-        if(endIndex == this.columnViews.length - 1) {
+        if(endIndex === this.columnViews.length - 1) {
           column.sort = (this.columnViews[endIndex].sort + (this.columnViews.length + 1)*10000)/2
         }else{
           column.sort = (this.columnViews[endIndex].sort + this.columnViews[endIndex + 1].sort)/2
@@ -272,14 +266,13 @@ export default {
 
     initViewColumn(columns) {
       this.columnViews.splice(0, this.columnViews.length)
-      for (var i = 0; i <= columns.length - 1; i++) {
-        if(columns[i].prop == 'operate_column') {   // 操作列
+      for (let i = 0; i <= columns.length - 1; i++) {
+        if(columns[i].prop === 'operate_column') {   // 操作列
 	        this.oprColumnWidth = columns[i].width
         } else {
           this.columnViews.push(columns[i])
         }
       }
-      console.log(this.columnViews,'000');
     },
 
     /* 拖动列边距响应事件 */
@@ -301,7 +294,7 @@ export default {
     /* 获取实际显示的列数 */
     getShowIndex(index) {
       let showIndex = -1
-      for (var i = 0; i <= index; i++) {
+      for (let i = 0; i <= index; i++) {
         if(this.columnViews[i].display) {
           showIndex = showIndex + 1
         }
@@ -311,8 +304,8 @@ export default {
 
     /* 导出excel的列表显示列头数组 */
     getHeads(){
-      var heads = []
-      for (var i = 0; i <= this.columnViews.length - 1; i++) {
+      const heads = []
+      for (let i = 0; i <= this.columnViews.length - 1; i++) {
         if(this.columnViews[i].display) {
           heads.push(this.columnViews[i].label)
         }
@@ -321,8 +314,8 @@ export default {
     },
     /* 导出excel的列表显示列数据字段数组 */
     getFilterVal(){
-      var filterVal = []
-      for (var i = 0; i <= this.columnViews.length - 1; i++) {
+      const filterVal = []
+      for (let i = 0; i <= this.columnViews.length - 1; i++) {
         if(this.columnViews[i].display) {
           filterVal.push(this.columnViews[i].prop)
         }
@@ -342,7 +335,19 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="scss">
-.drag_table th {}
+.drag_table th {
+  height: 44px;
+}
+.drag_table th.gutter:last-of-type {
+  height: 0 !important;
+}
+.drag_table .el-table__body-wrapper {
+  overflow-y: auto;
+  height: calc(100% - 44px) !important;
+}
+.drag_table .el-table__fixed-right {
+  height: 100% !important;
+}
 .virtual {
   position: fixed;
   display: block;

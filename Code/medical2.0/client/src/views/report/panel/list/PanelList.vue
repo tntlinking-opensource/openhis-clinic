@@ -7,7 +7,7 @@
                 :row-class-name="tableRowClassName"
                 :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
                 :highlight-current-row="isHighLight === 'store'"
-                :cell-style="function() {return {borderBottom: 'none'} }"
+                :cell-style="() => ({borderBottom: 'none'})"
                 @row-click='onStoreClick'>
         <el-table-column show-overflow-tooltip label='我的收藏' prop='name'>
           <template slot-scope="scope">
@@ -32,7 +32,7 @@
                 show-overflow-tooltip="true"
                 :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
                 :highlight-current-row="isHighLight === 'share'"
-                :cell-style="function() {return {borderBottom: 'none'} }"
+                :cell-style="() => ({borderBottom: 'none'})"
                 @row-click='onShareClick'>
         <el-table-column show-overflow-tooltip label='我的报表' prop='name'>
           <template slot-scope="scope">
@@ -166,7 +166,7 @@
           })
         } else {
           let _this = this
-          setTimeout(function() { _this.openStore(row, response) }, 50)
+          setTimeout(() => { this.openStore(row, response) }, 50)
         }
       },
       openShare(row, response) {
@@ -187,7 +187,7 @@
           })
         } else {
           let _this = this
-          setTimeout(function() { _this.openShare(row, response) }, 50)
+          setTimeout(() => { this.openShare(row, response) }, 50)
         }
       },
       remove(row) {

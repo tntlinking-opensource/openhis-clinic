@@ -8,40 +8,40 @@
             <property-panel  v-model='propertiesData[property.id]' :propertiesId='property.bo' :cols='cols' :action='action'></property-panel>
           </el-col>
           <el-col :span='24/cols' v-if="property.dictId === '8400'"> <!-- 字符串 -->
-            <el-form-item :label="property.name" prop='x' :rules="[{ required: property.isRequired=='1' ?true :false, validator: inputValidator, dataId: property.id, message: '请输入' +property.name, trigger: 'blur'}]">
-              <el-input :disabled='action == "view"' :key="property.id" v-model='propertiesData[property.id]'
-                        :placeholder='action == "view"? "" : "请填写" +property.name'></el-input>
+            <el-form-item :label="property.name" prop='x' :rules="[{ required: property.isRequired==='1' ?true :false, validator: inputValidator, dataId: property.id, message: '请输入' +property.name, trigger: 'blur'}]">
+              <el-input :disabled='action === "view"' :key="property.id" v-model='propertiesData[property.id]'
+                        :placeholder='action === "view"? "" : "请填写" +property.name'></el-input>
             </el-form-item>
           </el-col>
           <el-col v-if="property.dictId === '8401'">  <!-- 8401文本 -->
-            <el-form-item :label="property.name" prop='x' :rules="[{ required: property.isRequired=='1' ?true :false, validator: inputValidator, dataId: property.id, message: '请输入' +property.name, trigger: 'blur'}]">
-              <el-input :disabled='action == "view"' v-model='propertiesData[property.id]'  type='textarea'
+            <el-form-item :label="property.name" prop='x' :rules="[{ required: property.isRequired==='1' ?true :false, validator: inputValidator, dataId: property.id, message: '请输入' +property.name, trigger: 'blur'}]">
+              <el-input :disabled='action === "view"' v-model='propertiesData[property.id]'  type='textarea'
                         :maxlength='255'
-                        :placeholder='action == "view"? "" : "请填写" +property.name'></el-input>
+                        :placeholder='action === "view"? "" : "请填写" +property.name'></el-input>
             </el-form-item>
           </el-col>
 
           <!--  8402整数   "8403" 数值  -->
           <el-col :span='24/cols' v-if="property.dictId === '8402' ||property.dictId === '8403' ">
-            <el-form-item :label="property.name" prop='x' :rules="[{ required: property.isRequired=='1' ?true :false, validator: inputValidator, dataId: property.id, message: '请输入' +property.name, trigger: 'blur'}]">
-              <number-input :disabled='action == "view"' v-model='propertiesData[property.id]' :precision="property.dictId === '8402'? 0: 4"
-                            :placeholder='action == "view"? "" : "请填写" +property.name'></number-input>
+            <el-form-item :label="property.name" prop='x' :rules="[{ required: property.isRequired==='1' ?true :false, validator: inputValidator, dataId: property.id, message: '请输入' +property.name, trigger: 'blur'}]">
+              <number-input :disabled='action === "view"' v-model='propertiesData[property.id]' :precision="property.dictId === '8402'? 0: 4"
+                            :placeholder='action === "view"? "" : "请填写" +property.name'></number-input>
             </el-form-item>
           </el-col>
 
           <!-- "8404" 金额 -->
           <el-col :span='24/cols' v-if="property.dictId === '8404' ">
-            <el-form-item :label="property.name" prop='x' :rules="[{ required: property.isRequired=='1' ?true :false, validator: inputValidator, dataId: property.id, message: '请输入' +property.name, trigger: 'blur'}]">
-              <number-input :disabled='action == "view"' v-model='propertiesData[property.id]' :precision="2"
-                            :placeholder='action == "view"? "" : "请填写" +property.name'></number-input>
+            <el-form-item :label="property.name" prop='x' :rules="[{ required: property.isRequired==='1' ?true :false, validator: inputValidator, dataId: property.id, message: '请输入' +property.name, trigger: 'blur'}]">
+              <number-input :disabled='action === "view"' v-model='propertiesData[property.id]' :precision="2"
+                            :placeholder='action === "view"? "" : "请填写" +property.name'></number-input>
             </el-form-item>
           </el-col>
 
           <!-- "8405" 枚举 -->
           <el-col :span='24/cols' v-if="property.dictId === '8405' ">
-            <el-form-item :label="property.name" prop='x' :rules="[{ required: property.isRequired=='1' ?true :false, validator: inputValidator, dataId: property.id, message: '请选择' +property.name, trigger: 'change'}]">
-              <el-select v-model="propertiesData[property.id]" :placeholder='action == "view"? "" : "请选择" +property.name'
-                         :disabled='action == "view"'>
+            <el-form-item :label="property.name" prop='x' :rules="[{ required: property.isRequired==='1' ?true :false, validator: inputValidator, dataId: property.id, message: '请选择' +property.name, trigger: 'change'}]">
+              <el-select v-model="propertiesData[property.id]" :placeholder='action === "view"? "" : "请选择" +property.name'
+                         :disabled='action === "view"'>
                 <el-option
                   v-for="i in property.bo.split(',')"
                   :key="i"
@@ -54,9 +54,9 @@
 
           <!-- 字典 -->
           <el-col :span='24/cols' v-if="property.dictId  === '8406' ">
-            <el-form-item :label="property.name" prop='x' :rules="[{ required: property.isRequired=='1' ?true :false, validator: inputValidator, dataId: property.id, message: '请选择' +property.name, trigger: 'change'}]">
-              <el-select v-model="propertiesData[property.id]" :placeholder='action == "view"? "" : "请选择" +property.name'
-                         @change="dictChange" :disabled='action == "view"'>
+            <el-form-item :label="property.name" prop='x' :rules="[{ required: property.isRequired==='1' ?true :false, validator: inputValidator, dataId: property.id, message: '请选择' +property.name, trigger: 'change'}]">
+              <el-select v-model="propertiesData[property.id]" :placeholder='action === "view"? "" : "请选择" +property.name'
+                         @change="dictChange" :disabled='action === "view"'>
                 <el-option
                   v-for="i in getDictItems(property.bo)"
                   :key="i.id"
@@ -123,7 +123,7 @@ export default {
   },
   watch:{
     value(val, oldVal) {
-      if(val != oldVal) {
+      if(val !== oldVal) {
         if(this.value) {
           this.propertiesData = JSON.parse(this.value)
         } else {
@@ -132,12 +132,12 @@ export default {
       }
     },
     propertiesId(val, oldVal) {
-      if(val != oldVal) {
+      if(val !== oldVal) {
         this.getDef()
       }
     },
     propertyDef(val, oldVal) {
-      if(val != oldVal) {
+      if(val !== oldVal) {
         this.getDef()
       }
     },
@@ -175,7 +175,7 @@ export default {
         this.init(this.propertyDef)
       } else if(this.propertiesId) {
         getPropertySetById(this.propertiesId).then(responseData => {
-          if(responseData.code === "100") {
+          if(responseData.code === 100) {
             this.init(responseData.data.propertiesDef)
           } else {
             this.showMessage(responseData)
@@ -187,12 +187,12 @@ export default {
     },
     getDictItems(typeId) {
       let key = 'dict_' + typeId   // 异步数据保存key
-      if(this.asyncOptions.hasOwnProperty(key) == false) {
+      if(this.asyncOptions.hasOwnProperty(key) === false) {
         this.asyncOptions[key] = []       // 初始化异步数据
         listDictItemAll({
           params: [{'columnName':'dict_type_id', 'queryType': '=', 'value': typeId}]
          }).then(responseData => {
-          if(responseData.code == 100) {
+          if(responseData.code === 100) {
             this.asyncOptions[key].push.apply(this.asyncOptions[key], responseData.data)
             this.$forceUpdate()
           } else {

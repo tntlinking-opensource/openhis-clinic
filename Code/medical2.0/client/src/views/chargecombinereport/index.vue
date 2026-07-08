@@ -5,7 +5,7 @@
       <el-radio-button label="detail">明细报表</el-radio-button>
     </el-radio-group>
     <div style="margin-top:8px;">
-      <div v-if="tabPosition == 'main'">
+      <div v-if="tabPosition === 'main'">
         <div>
           <el-row>
             <el-col :span="7" class="flex-start">

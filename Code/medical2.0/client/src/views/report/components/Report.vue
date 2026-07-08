@@ -1,7 +1,7 @@
 <template>
   <div style="height: 100%; background-color: rgb(247, 248, 250)">
     <Preview
-      v-if="reportType == 1"
+      v-if="reportType === 1"
       :key="embeddedKey"
       :is-click-component="isClickComponent"
       :component-data="componentData"
@@ -11,7 +11,7 @@
       @EmbendChartClick='onEmbendChartClick'></Preview>
 
     <PanelViewShow
-      v-if="reportType == 2"
+      v-if="reportType === 2"
       :is-click-component="isClickComponent"
       :component-data="componentData"
       :canvas-style-data="canvasStyleData"
@@ -21,7 +21,7 @@
       :user="user"></PanelViewShow>
 
     <PreviewEject
-      v-if="reportType == 3"
+      v-if="reportType === 3"
       :is-click-component="isClickComponent"
       :component-data="componentData"
       :canvas-style-data="canvasStyleData"

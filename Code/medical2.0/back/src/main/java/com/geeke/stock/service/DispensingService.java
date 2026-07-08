@@ -12,12 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.geeke.common.service.CrudService;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.geeke.config.exception.CommonJsonException;
 import com.geeke.stock.dao.DispensingDao;
 import com.geeke.stock.entity.Dispensing;
-import com.geeke.utils.ResultUtil;
 import com.geeke.utils.StringUtils;
-import com.geeke.utils.constants.ErrorEnum;
 import com.google.common.collect.Maps;
 
 /**
@@ -32,12 +29,10 @@ public class DispensingService extends CrudService<DispensingDao, Dispensing>{
 
     public Page<DispensingReportEvt> reportList(SearchParams searchParams) {
         PageRequest pageRequest = new PageRequest(searchParams.getOffset(),  searchParams.getLimit(),searchParams.getParams(), searchParams.getOrderby());
-        int total = this.dao.reportListCount(pageRequest);
-        List<DispensingReportEvt> list = null;
-        if (total > 0) {
-            list = this.dao.reportList(pageRequest);
-        }
-        return new Page((long)total, list);
+        return paginate(
+            () -> this.dao.reportListCount(pageRequest),
+            () -> this.dao.reportList(pageRequest)
+        );
     }
 
     public DispensingReportTotalEvt reportAmount(SearchParams searchParams) {
@@ -52,11 +47,9 @@ public class DispensingService extends CrudService<DispensingDao, Dispensing>{
     @Transactional(readOnly = true)
     public Page<DispensingReportEvt> getOrganizationList(SearchParams searchParams) {
         PageRequest pageRequest = new PageRequest(searchParams.getOffset(),  searchParams.getLimit(),searchParams.getParams(), searchParams.getOrderby());
-        int total = this.dao.getOrganizationListCount(pageRequest);
-        List<DispensingReportEvt> list = null;
-        if (total > 0) {
-            list = this.dao.getOrganizationList(pageRequest);
-        }
-        return new Page((long)total, list);
+        return paginate(
+            () -> this.dao.getOrganizationListCount(pageRequest),
+            () -> this.dao.getOrganizationList(pageRequest)
+        );
     }
 }

@@ -16,12 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.geeke.common.service.CrudService;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.geeke.config.exception.CommonJsonException;
 import com.geeke.cure.dao.InspectionCheckInfoDao;
 import com.geeke.cure.entity.InspectionCheckInfo;
-import com.geeke.utils.ResultUtil;
 import com.geeke.utils.StringUtils;
-import com.geeke.utils.constants.ErrorEnum;
 import com.google.common.collect.Maps;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,7 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
  
 @Service("inspectionCheckInfoService")
-@Transactional(readOnly = false)
+@Transactional(readOnly = true)
 public class InspectionCheckInfoService extends CrudService<InspectionCheckInfoDao, InspectionCheckInfo>{
 
     @Autowired
@@ -41,6 +38,7 @@ public class InspectionCheckInfoService extends CrudService<InspectionCheckInfoD
     @Autowired
     private InspectionCheckDetailService inspectionCheckDetailService;
 
+    @Transactional(readOnly = false)
     public void save(InspectionCheckInfo inspectionCheckInfo, MultipartFile[] fileIdUploads, String[] deleteIds) throws IOException {
 
         //保存上传文件
@@ -89,6 +87,7 @@ public class InspectionCheckInfoService extends CrudService<InspectionCheckInfoD
     }
 
 
+    @Transactional(readOnly = false)
     public void deleteBy(InspectionCheckInfo byInspecId) {
         this.dao.deleteBy(byInspecId.getId());
     }

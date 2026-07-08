@@ -27,5 +27,10 @@ module.exports = {
   // FILE_PREVIEW_URL: '"http://61.172.179.73:5017/lease-backend-test/"',
   // KK_FILE_URL: '"http://61.172.179.73:5017/onlinePreview?url="',
 
+  // 随访服务地址
+  FOLLOW_UP_URL: '"http://61.172.179.73:5019"',
+  // 大屏看板地址
+  GRAFANA_URL: '"http://61.172.179.48:19017"',
+
 }
 

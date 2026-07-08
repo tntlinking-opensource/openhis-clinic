@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-public class schedulingmxDTO {
+public class SchedulingmxDTO {
     private String id;
     private String patientid;
     private String name;

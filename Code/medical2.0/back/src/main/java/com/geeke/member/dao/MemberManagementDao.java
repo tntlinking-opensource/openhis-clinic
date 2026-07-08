@@ -21,6 +21,6 @@ public interface MemberManagementDao extends CrudDao<MemberManagement> {
 
     List<MemberManagement> getByPatientId(String patientId);
 
-    void updaStatus(MemberManagement memberManagement);
+    void updateStatus(MemberManagement memberManagement);
 
 }

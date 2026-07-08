@@ -7,7 +7,7 @@ import com.geeke.sys.entity.SysFile;
 import com.geeke.sys.entity.SysFileContent;
 import com.geeke.sys.service.SysFileContentService;
 import com.geeke.sys.service.SysFileService;
-import com.geeke.utils.ResultUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,10 +42,11 @@ public class SysFileContentController extends BaseController {
 
             os.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("文件输出失败", e);
         }
     }
-    
+
+
 
 
 }

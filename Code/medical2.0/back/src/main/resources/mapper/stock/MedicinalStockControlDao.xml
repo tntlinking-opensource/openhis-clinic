@@ -103,7 +103,7 @@
     </select>
 
     <select id="count" resultType="int">
-        SELECT COUNT(*) FROM medicinal_stock_control a
+        SELECT COUNT(DISTINCT a.id) FROM medicinal_stock_control a
         <include refid="medicinalStockControlJoins"/>
         <where>
             1=1

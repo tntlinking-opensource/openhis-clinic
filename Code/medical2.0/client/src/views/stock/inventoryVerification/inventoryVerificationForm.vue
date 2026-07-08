@@ -6,12 +6,12 @@
       <!-- <OperationIcon v-show='dialogProps.action == "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon> -->
       <div style="float:right;margin-right:200px;margin-top:-3px">
           <el-button type="primary" @click="exportExcel" icon='el-icon-upload2'>导 出</el-button>
-          <el-button type="primary" v-if="this.inventoryVerifications.status=='0'" @click="save">保 存</el-button>
-          <el-button type="primary" v-if="this.inventoryVerifications.status=='0'" @click="accomplish">完成盘点</el-button>
+          <el-button type="primary" v-if="this.inventoryVerifications.status==='0'" @click="save">保 存</el-button>
+          <el-button type="primary" v-if="this.inventoryVerifications.status==='0'" @click="accomplish">完成盘点</el-button>
             <el-button @click="goBack">返 回</el-button>
       </div>
     </div>
-    <div v-if="inventoryVerifications.type=='0'">
+    <div v-if="inventoryVerifications.type==='0'">
     <div>
        <div style="margin-top:-30px">
          <el-form
@@ -206,8 +206,8 @@
             >
            <template slot-scope="scope">
              <div style="display:flex;">
-                <el-input-number :disabled="inventoryVerifications.status!='0'" v-model="pack[scope.$index]" style="width:40% !important"  @input="changeprofitAndLoss(scope.row,scope.$index)" placeholder="" :min="0" :controls="false"></el-input-number>{{scope.row.drug.pack.name}}
-                <el-input-number :disabled="inventoryVerifications.status!='0'" v-model="preparation[scope.$index]" style="width:40% !important" @input="changeprofitAndLoss(scope.row,scope.$index)" placeholder="" :min="0" :controls="false"></el-input-number>{{scope.row.drug.preparationUnit.name}}
+                <el-input-number :disabled="inventoryVerifications.status!=='0'" v-model="pack[scope.$index]" style="width:40% !important"  @input="changeprofitAndLoss(scope.row,scope.$index)" placeholder="" :min="0" :controls="false"></el-input-number>{{scope.row.drug.pack.name}}
+                <el-input-number :disabled="inventoryVerifications.status!=='0'" v-model="preparation[scope.$index]" style="width:40% !important" @input="changeprofitAndLoss(scope.row,scope.$index)" placeholder="" :min="0" :controls="false"></el-input-number>{{scope.row.drug.preparationUnit.name}}
 <!--              <el-input :disabled="inventoryVerifications.status!='0'" v-model="preparation[scope.$index]" style="width:80px" @input="changeprofitAndLoss(scope.row,scope.$index)" placeholder="" ></el-input>{{scope.row.drug.preparationUnit.name}}-->
              </div>
            </template>
@@ -216,7 +216,7 @@
             prop="profitAndLoss"
             label="盘盈盘亏">
               <template slot-scope="scope">
-            <span v-if="scope.row.profitAndLoss!=undefined">
+            <span v-if="scope.row.profitAndLoss!==undefined">
                <span v-if="scope.row.profitAndLoss<0" style="color:	#FF0000">
                   {{
                 Math.floor(
@@ -268,7 +268,7 @@
             prop="remarks"
             label="备注">
               <template slot-scope="scope">
-              <el-input :disabled="inventoryVerifications.status!='0'" v-model="scope.row.remarks" placeholder=""></el-input>
+              <el-input :disabled="inventoryVerifications.status!=='0'" v-model="scope.row.remarks" placeholder=""></el-input>
            </template>
           </el-table-column>
           <el-table-column
@@ -288,7 +288,7 @@
     </div>
 
     <!-- 盘点材料 -->
-    <div v-if="inventoryVerifications.type=='1'">
+    <div v-if="inventoryVerifications.type==='1'">
     <div>
        <div >
          <el-form
@@ -469,15 +469,15 @@
             width="220px"
             >
            <template slot-scope="scope">
-              <el-input :disabled="inventoryVerifications.status!='0'" v-model="pack[scope.$index]" style="width:80px" @input="changeprofitAndLoss(scope.row,scope.$index)" placeholder=""></el-input>{{scope.row.stuff.packUnit.name}}
-              <el-input :disabled="inventoryVerifications.status!='0'" v-model="preparation[scope.$index]" style="width:80px" @input="changeprofitAndLoss(scope.row,scope.$index)" placeholder=""></el-input>{{scope.row.stuff.minUnit.name}}
+              <el-input :disabled="inventoryVerifications.status!=='0'" v-model="pack[scope.$index]" style="width:80px" @input="changeprofitAndLoss(scope.row,scope.$index)" placeholder=""></el-input>{{scope.row.stuff.packUnit.name}}
+              <el-input :disabled="inventoryVerifications.status!=='0'" v-model="preparation[scope.$index]" style="width:80px" @input="changeprofitAndLoss(scope.row,scope.$index)" placeholder=""></el-input>{{scope.row.stuff.minUnit.name}}
            </template>
           </el-table-column>
           <el-table-column
             prop="profitAndLoss"
             label="盘盈盘亏">
               <template slot-scope="scope">
-            <span v-if="scope.row.profitAndLoss!=undefined">
+            <span v-if="scope.row.profitAndLoss!==undefined">
                <span v-if="scope.row.profitAndLoss<0"  style="color:	#FF0000">
               {{
               Math.floor(
@@ -529,7 +529,7 @@
             prop="remarks"
             label="备注">
               <template slot-scope="scope">
-              <el-input :disabled="inventoryVerifications.status!='0'" v-model="scope.row.remarks" placeholder=""></el-input>
+              <el-input :disabled="inventoryVerifications.status!=='0'" v-model="scope.row.remarks" placeholder=""></el-input>
            </template>
           </el-table-column>
            <el-table-column
@@ -548,9 +548,9 @@
         </div>
     </div>
     <!-- <span slot='footer' class='dialog-footer'>
-      <el-button v-if='dialogProps.action != "view"' type='primary' :plain='true' @click='onSubmit("inventoryVerificationForm")'>保 存</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+      <el-button v-if='dialogProps.action !== "view"' type='primary' :plain='true' @click='onSubmit("inventoryVerificationForm")'>保 存</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span> -->
       <!-- 分页栏     开始 -->
       <el-row>
@@ -576,6 +576,7 @@ import { saveInventoryVerification,accomplishInventoryVerification } from '@/api
 import BaseUI from '@/views/components/baseUI'
 import OperationIcon from '@/components/OperationIcon'
 import { listDictItemAll } from "@/api/sys/dictItem";
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 export default {
   extends: BaseUI,
   name: 'inventoryVerification-form',
@@ -640,7 +641,7 @@ export default {
         }else {
           nameOne = row.medicinalStorageControl.surplusStock;
         }
-        if (position == 1) {
+        if (position === 1) {
           return nameOne
         } else {
           return nameTwo
@@ -658,7 +659,6 @@ export default {
     //导出
     exportExcel(){
       exportExcel(this.inventoryVerifications).then((res)=>{
-        console.log(res,'这是个啥');
        //const filename = decodeURI(res.headers['content-disposition'].split(';')[1].split('=')[1]) || '.xls'
         const filename = "库存盘点.xls"
         const blob = new Blob([res.data], {
@@ -702,7 +702,7 @@ export default {
         this.save()
       ]).then(()=>{
         accomplishInventoryVerification(this.inventoryVerifications).then((res)=>{
-        if(res.code=='100'){
+        if(res.code==='100'){
           this.$message.success("完成盘点")
           this.$emit('save-finished')
             this.dialogProps.visible=false
@@ -717,18 +717,13 @@ export default {
       //盘点库存不能小于当前库存数量-可用库存
       checkStock(){
         let arr = [];
-        console.log(this.inventoryVerificationDetail,"wotian")
         for(let i=0;i<this.inventoryVerificationDetail.length;i++){
-          console.log(this.inventoryVerificationDetail[i].currentInventory,
-            this.inventoryVerificationDetail[i].medicinalStorageControl.surplusStock,
-            this.inventoryVerificationDetail[i].checkInventory,
-            this.inventoryVerificationDetail[i].currentInventory - this.inventoryVerificationDetail[i].medicinalStorageControl.surplusStock)
           let preoccupiedInventory = this.inventoryVerificationDetail[i].currentInventory - this.inventoryVerificationDetail[i].medicinalStorageControl.surplusStock
           if (preoccupiedInventory > this.inventoryVerificationDetail[i].checkInventory) {
             arr.push(this.inventoryVerificationDetail[i].drug.goodsName)
           }
         }
-        if(arr.length==0){
+        if(arr.length===0){
           return true
         }
         let str = JSON.stringify(arr).replace(/,/g, ', ')
@@ -738,9 +733,8 @@ export default {
     //保存
     save(){
       this.saveInformation[this.currentPage-1]=this.inventoryVerificationDetail
-      console.log(this.saveInformation,'保存的数据');
       return saveAll(this.saveInformation).then((res)=>{
-        if(res.code=='100'&&res.data=='执行成功'){
+        if(res.code==='100'&&res.data==='执行成功'){
           this.$message.success("保存成功！")
             this.$emit('save-finished')
             this.dialogProps.visible=false
@@ -775,7 +769,7 @@ export default {
 
     //盘盈盘亏计算
     changeprofitAndLoss(row,index){
-     if(this.inventoryVerifications.type=='0'){
+     if(this.inventoryVerifications.type==='0'){
         let figure1=this.pack[index]*row.drug.preparation
         let figure2=this.preparation[index]-0
         let figure3=figure1+figure2
@@ -789,7 +783,7 @@ export default {
         let residueNum=num-(drugNum*row.drug.preparation)   //计算拆零数量
 
         price=(drugNum*row.drug.price).toFixed(2)-0
-        if(row.drug.isUnpackSell=='1'){
+        if(row.drug.isUnpackSell==='1'){
           retailPrice=(residueNum*row.drug.retailPrice).toFixed(2)-0
         }
 
@@ -808,7 +802,6 @@ export default {
         this.inventoryVerifications.allPrice=allPrice.toFixed(2)
 
      }else{
-       console.log("flsakalskflafk");
        let figure1=(this.pack[index]-0)*row.stuff.packNumber
        let figure2=this.preparation[index]-0
        let num=0
@@ -816,11 +809,11 @@ export default {
        this.inventoryVerificationDetail[index].profitAndLoss=num
 
         //计算价格
-        if(row.stuff.isOutSell=='1'){
+        if(row.stuff.isOutSell==='1'){
         let price=0
         let retailPrice=0
         let drugNum=0
-        if(num==0){
+        if(num===0){
           drugNum=0
         } else{
           drugNum=num/row.stuff.packNumber>0?Math.floor(num/row.stuff.packNumber):Math.ceil(num/row.stuff.packNumber)
@@ -828,14 +821,13 @@ export default {
         let residueNum=num-(drugNum*row.stuff.packNumber)   //计算拆零数量
 
         price=(drugNum*row.stuff.packNumber).toFixed(2)-0
-        if(row.stuff.isUnpackSell=='1'){
+        if(row.stuff.isUnpackSell==='1'){
           retailPrice=(residueNum*row.stuff.retailPrice).toFixed(2)-0
         }
 
 
         this.inventoryVerificationDetail[index].profitAndLossPrice=price+retailPrice
        this.inventoryVerificationDetail[index].checkInventory=figure1+figure2
-       console.log(this.inventoryVerificationDetail[index].profitAndLoss,'第一个值');
 
         //计算获得值后需要赋值
         this.saveInformation[this.currentPage-1]=this.inventoryVerificationDetail
@@ -871,10 +863,10 @@ export default {
 
     getInventoryVerificationDetail(){
       this.searchParms.params = [{columnName: 'company_id', queryType: '=', value: this.inventoryVerifications.company.id},{columnName: 'inventory_verification_id', queryType: '=', value: this.inventoryVerifications.id}]
-     if(this.inventoryVerifications.type=='0'){
-        if(this.queryModel.goodsName!=''&&this.queryModel!=undefined){
+     if(this.inventoryVerifications.type==='0'){
+        if(this.queryModel.goodsName!==''&&this.queryModel!==undefined){
          //判断是否输入的是英文
-      var pattern = new RegExp("[A-Za-z]+");
+      const pattern = new RegExp("[A-Za-z]+");
       if (pattern.test(this.queryModel.goodsName)) {
         let pinyinCode =
           this.queryModel.goodsName.toUpperCase();
@@ -884,13 +876,13 @@ export default {
       }
 
       }
-      if(this.queryModel.type!=undefined&&this.queryModel.type.value!=''){
+      if(this.queryModel.type!==undefined&&this.queryModel.type.value!==''){
         this.searchParms.params.push({columnName: 'drug.type', queryType: '=', value: this.queryModel.type.value})
       }
      }else{
-        if(this.queryModel.goodsName!=''&&this.queryModel!=undefined){
+        if(this.queryModel.goodsName!==''&&this.queryModel!==undefined){
          //判断是否输入的是英文
-      var pattern = new RegExp("[A-Za-z]+");
+      const pattern = new RegExp("[A-Za-z]+");
       if (pattern.test(this.queryModel.goodsName)) {
         let pinyinCode =
           this.queryModel.goodsName.toUpperCase();
@@ -900,7 +892,7 @@ export default {
       }
 
       }
-      if(this.queryModel.type!=undefined&&this.queryModel.type.value!=''){
+      if(this.queryModel.type!==undefined&&this.queryModel.type.value!==''){
         this.searchParms.params.push({columnName: 'stuff.type', queryType: '=', value: this.queryModel.type.value})
       }
      }
@@ -911,10 +903,10 @@ export default {
         this.preparation=[]
         this.inventoryVerificationDetail=this.saveInformation[this.currentPage-1]
         this.inventoryVerificationDetail.forEach(item=>{
-            if(item.checkInventory==0){
+            if(item.checkInventory===0){
                 this.preparation.push(0)
                 this.pack.push(0)
-            }else if(item.checkInventory!=0&&this.inventoryVerifications.type=='0'){
+            }else if(item.checkInventory!==0&&this.inventoryVerifications.type==='0'){
               let packNum=Math.floor(item.checkInventory/item.drug.preparation)
               this.pack.push(packNum)
               let preparationNum=item.checkInventory-(packNum*item.drug.preparation)
@@ -932,17 +924,16 @@ export default {
       return
       }
      }
-       if(this.inventoryVerifications.type=='1'){
+       if(this.inventoryVerifications.type==='1'){
 
         this.searchParms.columnName='stuff.location_number ASC,stuff.id DESC'
       }
       listInventoryVerificationDetailPage(this.searchParms,this.inventoryVerifications.type).then(responseData => {
-        if(responseData.code == '100') {
+        if(responseData.code === 100) {
           this.pack=[]
           this.preparation=[]
           this.inventoryVerificationDetail=responseData.data.rows
           this.inventoryVerificationDetailTotal=responseData.data.total
-          console.log(this.saveInformation.length,'看看结果');
           if (this.inventoryVerificationDetail !== null){
             if(!this.saveInformation.length>0){
               let number = Math.ceil(responseData.data.total/this.searchParms.limit)
@@ -952,12 +943,11 @@ export default {
               this.saveInformation[0].push(responseData.data.rows)
             }
 
-            console.log(this.inventoryVerificationDetail,'看看结果');
             this.inventoryVerificationDetail.forEach(item=>{
-              if(item.checkInventory==0){
+              if(item.checkInventory===0){
                 this.preparation.push(0)
                 this.pack.push(0)
-              }else if(item.checkInventory!=0&&this.inventoryVerifications.type=='0'){
+              }else if(item.checkInventory!==0&&this.inventoryVerifications.type==='0'){
                 let packNum=Math.floor(item.checkInventory/item.drug.preparation)
                 this.pack.push(packNum)
                 let preparationNum=item.checkInventory-(packNum*item.drug.preparation)
@@ -991,17 +981,16 @@ export default {
       this.currentPage=1
       this.saveInformation=[]
       search.params = [{columnName: 'company_id', queryType: '=', value: row.company.id},{columnName: 'inventory_verification_id', queryType: '=', value: row.id}]
-      if(this.inventoryVerifications.type=='1'){
+      if(this.inventoryVerifications.type==='1'){
 
         search.columnName='stuff.location_number ASC,stuff.id DESC'
       }
       listInventoryVerificationDetailPage(search,this.inventoryVerifications.type).then(responseData => {
-        if(responseData.code == '100') {
+        if(responseData.code === 100) {
           this.pack=[]
           this.preparation=[]
           this.inventoryVerificationDetail=responseData.data.rows
           this.inventoryVerificationDetailTotal=responseData.data.total
-          console.log(this.inventoryVerificationDetail,'看看结果');
           //获取数据页数
           let currentNum = Math.ceil(responseData.data.total/search.limit)
           for (let i = 0; i < currentNum; i++) {
@@ -1010,10 +999,10 @@ export default {
           this.saveInformation[0].push(responseData.data.rows)
 
           this.inventoryVerificationDetail.forEach(item=>{
-            if(item.checkInventory==0){
+            if(item.checkInventory===0){
                 this.preparation.push(0)
                 this.pack.push(0)
-            }else if(item.checkInventory!=0&&this.inventoryVerifications.type=='0'){
+            }else if(item.checkInventory!==0&&this.inventoryVerifications.type==='0'){
               let packNum=Math.floor(item.checkInventory/item.drug.preparation)
               this.pack.push(packNum)
               let preparationNum=item.checkInventory-(packNum*item.drug.preparation)
@@ -1047,7 +1036,7 @@ export default {
     doSave() {
       this.setLoad()
       saveInventoryVerification(this.bizFormModel).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           this.dialogProps.visible = false
           this.$emit('save-finished')
         } else {
@@ -1085,107 +1074,70 @@ export default {
     initOptions(This) {
     },
     getDrugType(){
-       let type_search = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "1004078055755374603",
-          },
-        ],
-      };
-       listDictItemAll(type_search).then((responseData) => {
-        this.drugType=responseData.data;
+      getDictItemsByCode(DICT_CODE.MEDICAL_TYPE).then((data) => {
+        this.drugType = data;
       });
     },
     getStuff(){
-       let type_search = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "1004462867645374476",
-          },
-        ],
-      };
-       listDictItemAll(type_search).then((responseData) => {
-        this.stuffType=responseData.data;
+      getDictItemsByCode(DICT_CODE.STUFF_TYPE).then((data) => {
+        this.stuffType = data;
       });
-
     }
   },
   watch: {
   },
   mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openViewInventoryVerificationDialog', function(inventoryVerification) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '新增盘点'
-        this.saveInformation=[]
-        this.inventoryVerificationDetail=[]
-        this.inventoryVerificationDetailTotal=0
-        this.currentPage=1
-        this.searchParms={
+  },
+  methods: {
+    openViewInventoryVerificationDialog(inventoryVerification) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '新增盘点'
+      this.saveInformation = []
+      this.inventoryVerificationDetail = []
+      this.inventoryVerificationDetailTotal = 0
+      this.currentPage = 1
+      this.searchParms = {
         params: [{columnName: 'company_id', queryType: '=', value: ""}],
-        offset: 0,
-        limit: 20,
-		    columnName: '',      // 排序字段名
-        order: ''            // 排序
-      },
-
-        this.queryModel={
-        goodsName: "", // 药品名称
-         type: {
-          // 药品类型
-          value: "",
-          name: "",
-        },
-      },  //搜索框
-       this.inventoryVerifications={}
-        this.inventoryVerifications=inventoryVerification
-
-        this.getInventoryVerificationDetailInit(inventoryVerification)
-        //获取药品类型
-        if(inventoryVerification.type=='0'){
-          this.getDrugType()
-        }else{
-          this.getStuff()
-        }
-
-
-        this.inventoryVerifications.allPrice=inventoryVerification.allPrice
-        // this.bizFormModel = {...this.initFormModel(), ...inventoryVerification}
-        // this.initOptions(this.bizFormModel)
-        // this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openEditInventoryVerificationDialog', function(inventoryVerification) {
-        this.dialogProps.action = 'edit'
-        this.dialogProps.title = '修改库存盘点'
-        this.bizFormModel = {...this.initFormModel(), ...inventoryVerification}
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openAddInventoryVerificationDialog', function() {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加库存盘点'
-        this.bizFormModel = this.initFormModel()
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openCopyInventoryVerificationDialog', function(inventoryVerification) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加库存盘点'
-        this.bizFormModel = {...this.initFormModel(), ...inventoryVerification}
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.bizFormModel.id = null   //把id设置为空，添加一个新的
-        this.dialogProps.visible = true
-      })
-    })
-  }
+        offset: 0, limit: 20, columnName: '', order: ''
+      }
+      this.queryModel = { goodsName: "", type: { value: "", name: "" } }
+      this.inventoryVerifications = {}
+      this.inventoryVerifications = inventoryVerification
+      this.getInventoryVerificationDetailInit(inventoryVerification)
+      if (inventoryVerification.type === '0') {
+        this.getDrugType()
+      } else {
+        this.getStuff()
+      }
+      this.inventoryVerifications.allPrice = inventoryVerification.allPrice
+      this.dialogProps.visible = true
+    },
+    openEditInventoryVerificationDialog(inventoryVerification) {
+      this.dialogProps.action = 'edit'
+      this.dialogProps.title = '修改库存盘点'
+      this.bizFormModel = {...this.initFormModel(), ...inventoryVerification}
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openAddInventoryVerificationDialog() {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加库存盘点'
+      this.bizFormModel = this.initFormModel()
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openCopyInventoryVerificationDialog(inventoryVerification) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加库存盘点'
+      this.bizFormModel = {...this.initFormModel(), ...inventoryVerification}
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.bizFormModel.id = null
+      this.dialogProps.visible = true
+    },
+  },
 }
 </script>
 <style>

@@ -148,11 +148,12 @@
 <script>
   import { getCompanyById } from '@/api/org/company'
   import { listPageStatement,getPrescriptionStatistics } from '@/api/outpatient/recipelInfoReview'
-  import { listResourcePermission } from '@/api/admin/common/permission'
+  import listViewMixin from '@/mixins/listViewMixin'
   import DataRangePicker from '@/components/DataRangePicker'
   import MainUI from '@/views/components/mainUI'
 export default {
   extends: MainUI,
+  mixins: [listViewMixin],
   components: {
     DataRangePicker,
   },
@@ -167,21 +168,9 @@ export default {
   },
   data() {
     return {
-      permission: {
-        view: false,
-        add: false,
-        edit: false,
-        remove: false,
-        export: false
-      },
-      search: {
-        params: [],
-        offset: 0,
-        limit: 100,
-        columnName: '',       // 排序字段名
-        order: ''             // 排序
-      },
-      currentPage: 1,
+      listApi: listPageStatement,
+      entityName: 'Statement',
+      permissionPrefix: 'review',
       statementTotal: 0,
       statementList: [],
 
@@ -202,10 +191,24 @@ export default {
     }
   },
   methods: {
-    getStatementList(){
-      this.setLoad()
-      /* 查询参数 和数据权限 */
-      this.search.params = []
+    async initOptions(){
+      let [companyRespData] = await Promise.all([getCompanyById(this.currentUser.company.id)])
+      this.loginCompany = companyRespData.data
+    },
+    getGroupBy(statistical){
+      let groupBy = "recipelInfo.company_id,company.name,registration.department_id,clinicOffice.name,registration.doctor_id,doctor.name";
+      if (statistical.value === "doctor") {
+        groupBy = "recipelInfo.company_id,company.name,registration.department_id,clinicOffice.name,registration.doctor_id,doctor.name";
+      }
+      if (statistical.value === "company") {
+        groupBy = "recipelInfo.company_id,company.name";
+      }
+      if (statistical.value === "clinicOffice") {
+        groupBy = "recipelInfo.company_id,company.name,registration.department_id,clinicOffice.name";
+      }
+      return groupBy
+    },
+    appendSearchParams() {
       this.search.params.push({
         columnName: 'recipelInfo.create_date',
         queryType: (this.queryModel.createDate && this.queryModel.createDate.length === 2) ? 'between' : ">=",
@@ -221,103 +224,12 @@ export default {
         queryType: '=',
         value: this.getGroupBy(this.queryModel.statistical)
       })
-
-      // 数据权限
       this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-      listPageStatement(this.search).then(responseData => {
-        if(responseData.code == 100) {
-          this.statementTotal = responseData.data.total
-          this.statementList = responseData.data.rows
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
       this.initPrescriptionStatistics()
     },
-    getGroupBy(statistical){
-      let groupBy = "recipelInfo.company_id,company.name,registration.department_id,clinicOffice.name,registration.doctor_id,doctor.name";
-      if (statistical.value === "doctor") {
-        groupBy = "recipelInfo.company_id,company.name,registration.department_id,clinicOffice.name,registration.doctor_id,doctor.name";
-      }
-      if (statistical.value === "company") {
-        groupBy = "recipelInfo.company_id,company.name";
-      }
-      if (statistical.value === "clinicOffice") {
-        groupBy = "recipelInfo.company_id,company.name,registration.department_id,clinicOffice.name";
-      }
-      return groupBy
-    },
-    onSearch() {
-      this.$refs['queryForm'].validate(valid => {
-        if (valid) {
-          this.search.offset = 0
-          this.currentPage = 1
-          this.getStatementList()
-        } else {
-          return false
-        }
-      })
-    },
-    async initOptions(This){
-      //获取机构公司
-      let [companyRespData] = await Promise.all([getCompanyById(this.currentUser.company.id)])
-      this.loginCompany = companyRespData.data
-    },
-    async pageInit() {
-      this.setLoad()
-      try {
-        await this.initOptions(this.queryModel)
-        this.initPrescriptionStatistics()
-        this.search.params = []
-        this.search.params.push({
-          columnName: 'recipelInfo.create_date',
-          queryType: (this.queryModel.createDate && this.queryModel.createDate.length === 2) ? 'between' : ">=",
-          value: (this.queryModel.createDate && this.queryModel.createDate.length === 2) ? this.queryModel.createDate : '2023-01-01 00:00:00'
-        })
-        this.search.params.push({
-          columnName: 'company.parent_id',
-          queryType: '=',
-          value: this.loginCompany.parent.id
-        })
-        this.search.params.push({
-          columnName: 'groupBy',
-          queryType: '=',
-          value: this.getGroupBy(this.queryModel.statistical)
-        })
-        // 数据权限: 处方审查
-        this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-        let [listStatementRespData, listPermissionRespData] = await Promise.all([
-          listPageStatement(this.search),
-          listResourcePermission(this.$route.meta.routerId)
-        ])
-        if(listStatementRespData.code == 100 && listPermissionRespData.code == 100) {
-          this.statementTotal = listStatementRespData.data.total
-          this.statementList = listStatementRespData.data.rows
-          this.permission.view = listPermissionRespData.data.find(item => {
-            return item.permission === 'review:read'
-          })
-          this.permission.export = listPermissionRespData.data.find(item => {
-            return item.permission === 'review:export'
-          })
-          this.permission.add = listPermissionRespData.data.find(item => {
-            return item.permission === 'review:create'
-          })
-          this.permission.edit = listPermissionRespData.data.find(item => {
-            return item.permission === 'review:update'
-          })
-          this.permission.remove = listPermissionRespData.data.find(item => {
-            return item.permission === 'review:delete'
-          })
-        } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listStatementRespData)
-        }
-        this.resetLoad()
-      } catch(error) {
-        this.outputError(error)
-      }
+    handleListResponse(responseData) {
+      this.statementTotal = responseData.data.total
+      this.statementList = responseData.data.rows
     },
     initPrescriptionStatistics(){
       let param = {
@@ -326,7 +238,7 @@ export default {
         endTime: this.queryModel.createDate ? this.queryModel.createDate[1] : '',
       }
       getPrescriptionStatistics(param).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           this.prescriptionStatistics = responseData.data
         } else {
           this.showMessage(responseData)
@@ -345,7 +257,6 @@ export default {
       return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     },
     onExport(){
-      console.log("导出")
     },
     latestMarch(){
       let end = new Date();

@@ -1,6 +1,6 @@
 <template>
   <el-date-picker
-    v-if='type == "datetimerange"'
+    v-if='type === "datetimerange"'
     v-model='vModel'
     type='datetimerange'
     range-separator='至'
@@ -73,13 +73,12 @@ export default {
   watch:{
     //判断下拉框的值是否有改变
     vModel(val, oldVal) {
-      //console.log('new: %s, old: %s', val, oldVal)
-      if(val!=oldVal){
+      if(val!==oldVal){
           this.$emit('input', this.vModel);
       }
     },
     value(val, oldVal){   //添加监听value值
-      if(val!=oldVal){
+      if(val!==oldVal){
         this.vModel=this.value;
       }
     },

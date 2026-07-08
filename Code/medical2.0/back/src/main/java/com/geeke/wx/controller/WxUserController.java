@@ -26,7 +26,6 @@ public class WxUserController {
     @PostMapping ("getPhone")
     public ResponseEntity<JSONObject> getPhone(@RequestBody WxUser wxUser){
         WxUser wxUser1 = wxUserService.getPhone(wxUser);
-        System.out.println(wxUser1);
         return ResponseEntity.ok(ResultUtil.successJson(wxUser1));
     }
 

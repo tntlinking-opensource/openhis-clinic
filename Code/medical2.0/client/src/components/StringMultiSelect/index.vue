@@ -42,14 +42,13 @@ export default {
   },
   watch: {
     value(val, oldVal) {
-      if(val != oldVal) {
+      if(val !== oldVal) {
         this.init()
       }
     },
     // 判断下拉框的值是否有改变
     arrSelected(val, oldVal) {
-      // console.log('new: %s, old: %s', val, oldVal)
-      if(val!=oldVal){
+      if(val!==oldVal){
         if(this.arrSelected.length > 0) {
           this.$emit('input', this.arrSelected.join(',')); 
         } else {

@@ -13,7 +13,7 @@ import java.util.Date;
  * @version 2022-07-20
  */
 
-public class scheduling extends DataEntity<scheduling> {
+public class Scheduling extends DataEntity<Scheduling> {
 
     private static final long serialVersionUID = 1014474470772900019L;
     /** 诊所标识 */
@@ -30,11 +30,11 @@ public class scheduling extends DataEntity<scheduling> {
 
 
 
-    public scheduling() {
+    public Scheduling() {
         super();
     }
 
-    public scheduling(String id){
+    public Scheduling(String id){
         super(id);
     }
     /** 诊所标识 */

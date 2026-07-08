@@ -12,7 +12,7 @@
       </el-col>
     </el-row>
     <div style="margin-top:8px;">
-      <div v-if="tabPosition == 'main'">
+      <div v-if="tabPosition === 'main'">
         <div>
           <el-row>
             <el-col :span="7" class="flex-start">
@@ -37,7 +37,7 @@
               >
                 <el-option
                   v-for="detailCostType in detailCostTypes"
-                  v-show="detailCostType.value != 'recipelType_2' || detailCostType.value != 'recipelType_3'"
+                  v-show="detailCostType.value !== 'recipelType_2' || detailCostType.value !== 'recipelType_3'"
                   :key="detailCostType.value"
                   :label="detailCostType.name"
                   :value="detailCostType.value"
@@ -216,71 +216,71 @@
             </el-table-column>
             <el-table-column prop="amountReceivable" label="应收(退)金额" width="100px">
               <template slot-scope="scope">
-                <span v-if="scope.row.amountStatus.value=='amountStatus_1'">
+                <span v-if="scope.row.amountStatus.value==='amountStatus_1'">
                   {{ scope.row.amountReceivable ? bigNum(scope.row.amountReceivable) : 0 }}元
                 </span>
-                <span style="color:red" v-else-if="scope.row.amountStatus.value=='amountStatus_2'">
+                <span style="color:red" v-else-if="scope.row.amountStatus.value==='amountStatus_2'">
                   {{ scope.row.amountReceivable ? '-' + bigNum(scope.row.amountReceivable) : 0 }}元
                 </span>
               </template>
             </el-table-column>
             <el-table-column prop="amountReceived" label="实收金额" width="width">
               <template slot-scope="scope">
-                <span v-if="scope.row.amountStatus.value=='amountStatus_1'">
+                <span v-if="scope.row.amountStatus.value==='amountStatus_1'">
                   {{ scope.row.amountReceived ? bigNum(scope.row.amountReceived) : 0 }}元
                 </span>
-                <span style="color:red" v-else-if="scope.row.amountStatus.value=='amountStatus_2'">
+                <span style="color:red" v-else-if="scope.row.amountStatus.value==='amountStatus_2'">
                   {{ scope.row.amountReceived ? '-' + bigNum(scope.row.amountReceived) : 0 }}元
                 </span>
               </template>
             </el-table-column>
             <el-table-column prop="amountDiscounted" label="优惠金额" width="width">
               <template slot-scope="scope">
-                <span v-if="scope.row.amountStatus.value=='amountStatus_1'">
+                <span v-if="scope.row.amountStatus.value==='amountStatus_1'">
                   {{ scope.row.amountDiscounted ? bigNum(scope.row.amountDiscounted) : 0 }}元
                 </span>
-                <span style="color:red" v-else-if="scope.row.amountStatus.value=='amountStatus_2'">
+                <span style="color:red" v-else-if="scope.row.amountStatus.value==='amountStatus_2'">
                   {{ scope.row.amountDiscounted ? '-' + bigNum(scope.row.amountDiscounted) : 0 }}元
                 </span>
               </template>
             </el-table-column>
             <el-table-column prop="paymentType.name" label="现金支付" width="width">
               <template slot-scope="scope">
-                <span v-if="scope.row.amountStatus.value=='amountStatus_1'">
-                  {{ scope.row.paymentType ? (scope.row.paymentType.value == 'payType_0' ? bigNum(scope.row.amountReceived) : 0) : 0 }}元
+                <span v-if="scope.row.amountStatus.value==='amountStatus_1'">
+                  {{ scope.row.paymentType ? (scope.row.paymentType.value === 'payType_0' ? bigNum(scope.row.amountReceived) : 0) : 0 }}元
                 </span>
-                <span style="color:red" v-else-if="scope.row.amountStatus.value=='amountStatus_2'">
-                  {{ scope.row.paymentType ? (scope.row.paymentType.value == 'payType_0' ? '-' + bigNum(scope.row.amountReceived) : 0) : 0 }}元
+                <span style="color:red" v-else-if="scope.row.amountStatus.value==='amountStatus_2'">
+                  {{ scope.row.paymentType ? (scope.row.paymentType.value === 'payType_0' ? '-' + bigNum(scope.row.amountReceived) : 0) : 0 }}元
                 </span>
               </template>
             </el-table-column>
             <el-table-column prop="paymentType.name" label="微信支付" width="width">
               <template slot-scope="scope">
-                <span v-if="scope.row.amountStatus.value=='amountStatus_1'">
-                  {{ scope.row.paymentType ? (scope.row.paymentType.value == 'payType_2' ? bigNum(scope.row.amountReceived) : 0) : 0 }}元
+                <span v-if="scope.row.amountStatus.value==='amountStatus_1'">
+                  {{ scope.row.paymentType ? (scope.row.paymentType.value === 'payType_2' ? bigNum(scope.row.amountReceived) : 0) : 0 }}元
                 </span>
-                <span style="color:red" v-else-if="scope.row.amountStatus.value=='amountStatus_2'">
-                  {{ scope.row.paymentType ? (scope.row.paymentType.value == 'payType_2' ? '-' + bigNum(scope.row.amountReceived) : 0) : 0 }}元
+                <span style="color:red" v-else-if="scope.row.amountStatus.value==='amountStatus_2'">
+                  {{ scope.row.paymentType ? (scope.row.paymentType.value === 'payType_2' ? '-' + bigNum(scope.row.amountReceived) : 0) : 0 }}元
                 </span>
               </template>
             </el-table-column>
             <el-table-column prop="paymentType.name" label="支付宝支付" width="width">
               <template slot-scope="scope">
-                <span v-if="scope.row.amountStatus.value=='amountStatus_1'">
-                  {{ scope.row.paymentType ? (scope.row.paymentType.value == 'payType_1' ? bigNum(scope.row.amountReceived) : 0) : 0 }}元
+                <span v-if="scope.row.amountStatus.value==='amountStatus_1'">
+                  {{ scope.row.paymentType ? (scope.row.paymentType.value === 'payType_1' ? bigNum(scope.row.amountReceived) : 0) : 0 }}元
                 </span>
-                <span style="color:red" v-else-if="scope.row.amountStatus.value=='amountStatus_2'">
-                  {{ scope.row.paymentType ? (scope.row.paymentType.value == 'payType_1' ? '-' + bigNum(scope.row.amountReceived) : 0) : 0 }}元
+                <span style="color:red" v-else-if="scope.row.amountStatus.value==='amountStatus_2'">
+                  {{ scope.row.paymentType ? (scope.row.paymentType.value === 'payType_1' ? '-' + bigNum(scope.row.amountReceived) : 0) : 0 }}元
                 </span>
               </template>
             </el-table-column>
             <el-table-column prop="paymentType.name" label="银行卡支付" width="width">
               <template slot-scope="scope">
-                <span v-if="scope.row.amountStatus.value=='amountStatus_1'">
-                  {{ scope.row.paymentType ? (scope.row.paymentType.value == 'payType_3' ? bigNum(scope.row.amountReceived) : 0) : 0 }}元
+                <span v-if="scope.row.amountStatus.value==='amountStatus_1'">
+                  {{ scope.row.paymentType ? (scope.row.paymentType.value === 'payType_3' ? bigNum(scope.row.amountReceived) : 0) : 0 }}元
                 </span>
-                <span style="color:red" v-else-if="scope.row.amountStatus.value=='amountStatus_2'">
-                  {{ scope.row.paymentType ? (scope.row.paymentType.value == 'payType_3' ? '-' + bigNum(scope.row.amountReceived) : 0) : 0 }}元
+                <span style="color:red" v-else-if="scope.row.amountStatus.value==='amountStatus_2'">
+                  {{ scope.row.paymentType ? (scope.row.paymentType.value === 'payType_3' ? '-' + bigNum(scope.row.amountReceived) : 0) : 0 }}元
                 </span>
               </template>
             </el-table-column>
@@ -332,7 +332,7 @@
               >
                 <el-option
                   v-for="detailCostType in detailCostTypes"
-                  v-show="detailCostType.value != 'recipelType_2' || detailCostType.value != 'recipelType_3'"
+                  v-show="detailCostType.value !== 'recipelType_2' || detailCostType.value !== 'recipelType_3'"
                   :key="detailCostType.value"
                   :label="detailCostType.name"
                   :value="detailCostType.value"
@@ -541,10 +541,10 @@
             </el-table-column>
             <el-table-column prop="amountReceivable" label="应收/退(元)" width="width">
               <template slot-scope="scope">
-                <span v-if="scope.row.amountStatus.value=='amountStatus_1'">
+                <span v-if="scope.row.amountStatus.value==='amountStatus_1'">
                   {{ scope.row.amountReceivable ? bigNum(scope.row.amountReceivable) : 0 }}元
                 </span>
-                <span style="color:red" v-else-if="scope.row.amountStatus.value=='amountStatus_2'">
+                <span style="color:red" v-else-if="scope.row.amountStatus.value==='amountStatus_2'">
                   {{ scope.row.amountReceivable ? "-" + bigNum(scope.row.amountReceivable) : 0 }}元
                 </span>
               </template>
@@ -581,12 +581,14 @@
 <script>
 import MainUI from "@/views/components/mainUI";
 import {listDictItemAll} from "@/api/sys/dictItem";
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 import {getjglist, listTollInfoAll, orgtollDetailForm} from "@/api/toll/tollInfo";
 import {listUserAll} from "@/api/admin/user";
 import {getCreateBy, orgtolldetail} from "@/api/toll/tollDetail";
 import {listClinicOfficeAll} from "@/api/org/clinicOffice";
 import {listPatientAll} from "@/api/outpatient/patient";
 import {BigNumber} from "bignumber.js";
+import { getCurrentUser } from "@/utils/userCache";
 import * as XLSX from 'xlsx'
 import XLSXD from 'xlsx-style'
 
@@ -705,7 +707,7 @@ export default {
   },
   computed: {
     Company() {
-      let company = JSON.parse(sessionStorage.getItem("currentUser")).company;
+      let company = getCurrentUser().company;
       return {
         id: company.id,
         label: company.label,
@@ -713,7 +715,7 @@ export default {
       };
     },
     Department() {
-      let department = JSON.parse(sessionStorage.getItem("currentUser")).department;
+      let department = getCurrentUser().department;
       return {
         id: department.id,
         label: department.label,
@@ -731,7 +733,7 @@ export default {
   },
   updated() {
     this.$nextTick(() => {
-      if (this.tabPosition == 'main') {
+      if (this.tabPosition === 'main') {
         this.$refs.mutipleTable1.doLayout();
       } else {
         this.$refs.mutipleTable2.doLayout();
@@ -744,7 +746,6 @@ export default {
     getName(row) {
       let num = row.indexOf("(");
       let name = row.substring(0, num)
-      console.log(num, "算法框架");
       return name;
     },
 
@@ -758,7 +759,6 @@ export default {
     addCreateDate() {
       let myDate = new Date();
       let lw = new Date(myDate.getTime() - 1000 * 60 * 60 * 24 * 30); //最后一个数字30可改，30天的意思
-      console.log(lw.getDate());
       let lastY = lw.getFullYear();
       let lastM = lw.getMonth() + 1;
       let lastD = lw.getDate();
@@ -828,7 +828,7 @@ export default {
       let SearchModel = {
         params: []
       }
-      if (this.jgidlists != null && this.jgidlists != []) {
+      if (this.jgidlists != null && this.jgidlists !== []) {
         SearchModel.params.push({
           columnName: "company_id",
           queryType: "in",
@@ -841,51 +841,27 @@ export default {
             value: this.Company.id,
           })
       }
-      listDictItemAll({
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: '1024846610635146243',
-          },
-        ],
-      }).then(responseData => {
-        this.detailCostTypes = [...this.detailCostTypes, ...responseData.data]
+      getDictItemsByCode(DICT_CODE.TOLL_TYPE).then((data) => {
+        this.detailCostTypes = [...this.detailCostTypes, ...data]
       })
       listTollInfoAll(SearchModel).then(responseData => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.listTollInfoAllOption = responseData.data
         }
       })
-      listDictItemAll({
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: '1004078055755374603',
-          },
-        ],
-      }).then(responseData => {
-        this.payTypes = [...this.payTypes, ...responseData.data]
-        listDictItemAll({
-          params: [
-            {
-              columnName: "dict_type_id",
-              queryType: "=",
-              value: '998465736089977631',
-            },
-          ],
-        }).then(responseData => {
-          this.payTypes = [...this.payTypes, ...responseData.data]
+      getDictItemsByCode(DICT_CODE.MEDICAL_TYPE).then((data) => {
+        this.payTypes = [...this.payTypes, ...data]
+        getDictItemsByCode(DICT_CODE.TREATMENT_ITEM_TYPE).then((data) => {
+          this.payTypes = [...this.payTypes, ...data]
         })
       })
       listClinicOfficeAll(SearchModel).then(responseData => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.prescriptionDepts = responseData.data
         }
       })
       listPatientAll(SearchModel).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.AllPatientOption = responseData.data;
         }
       });
@@ -907,7 +883,7 @@ export default {
       let createBySearch = {
         params: []
       }
-      if (this.jgidlists != null && this.jgidlists != []) {
+      if (this.jgidlists != null && this.jgidlists !== []) {
         createBySearch.params.push({
           columnName: "company_id",
           queryType: "in",
@@ -992,18 +968,18 @@ export default {
             value: this.mainCondition.prescriptionOper,
           }],
       };
-      if (this.mainCondition.jgid != null && this.mainCondition.jgid != 'qb') {
+      if (this.mainCondition.jgid != null && this.mainCondition.jgid !== 'qb') {
         SearchModel.params.push({
           columnName: " company_id",
           queryType: "=",
           value: this.mainCondition.jgid,
         })
-      } else if (this.mainCondition.jgid == null || this.mainCondition.jgid == 'qb') {
+      } else if (this.mainCondition.jgid == null || this.mainCondition.jgid === 'qb') {
         //this.search[0].value='1'
         // {
         //     logic: " parent_id in (select parent_id  from org_company oc2 where id='"+currentUser.company.id+"')"
         // }
-        if (this.jgidlists != null && this.jgidlists != []) {
+        if (this.jgidlists != null && this.jgidlists !== []) {
           SearchModel.params.push({
             columnName: " oc.id",
             queryType: "in",
@@ -1072,7 +1048,7 @@ export default {
       }
       this.setLoad();
       orgtolldetail(SearchModel).then(responseData => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.chargeMainTableTotal = responseData.data.page.total
           this.tollTotalTable = responseData.data
           this.tollList = this.tollTotalTable.page.rows
@@ -1085,7 +1061,7 @@ export default {
       this.jgidlists = [];
       this.zsids = [];
       getjglist(this.YpjxcRc).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           if (responseData.data.length > 0) {
             // responseData.data.forEach((item)=>{
             //     if(item.jgid!=currentUser.company.id){
@@ -1097,7 +1073,7 @@ export default {
             //      this.zsids.push({jgid:item.jgid})
             //    }
             // })
-            this.jglist = responseData.data.filter((item) => item.jgid != currentUser.company.id)
+            this.jglist = responseData.data.filter((item) => item.jgid !== currentUser.company.id)
             this.jglist.forEach((item) => {
               this.jgidlists.push(item.jgid)
             })
@@ -1193,18 +1169,18 @@ export default {
             value: this.detailCondition.prescriptionOper,
           }],
       };
-      if (this.detailCondition.jgid != null && this.detailCondition.jgid != 'qb') {
+      if (this.detailCondition.jgid != null && this.detailCondition.jgid !== 'qb') {
         SearchModel.params.push({
           columnName: " company_id",
           queryType: "=",
           value: this.detailCondition.jgid,
         })
-      } else if (this.detailCondition.jgid == null || this.detailCondition.jgid == 'qb') {
+      } else if (this.detailCondition.jgid == null || this.detailCondition.jgid === 'qb') {
         //this.search[0].value='1'
         // {
         //     logic: " parent_id in (select parent_id  from org_company oc2 where id='"+currentUser.company.id+"')"
         // }
-        if (this.jgidlists != null && this.jgidlists != []) {
+        if (this.jgidlists != null && this.jgidlists !== []) {
           SearchModel.params.push({
             columnName: " oc.id",
             queryType: "in",
@@ -1271,7 +1247,6 @@ export default {
           queryType: ")"
         })
       }
-      console.log(this.detailCondition.payType, isStuff);
       if (this.detailCondition.payType) {
         if (isStuff) {
           SearchModel.params.push({
@@ -1288,7 +1263,7 @@ export default {
         }
       }
       orgtollDetailForm(SearchModel).then(responseData => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.chargeDetailTableTotal = responseData.data.page.total
           this.tollDetailTable = responseData.data
           this.detailList = this.tollDetailTable.page.rows
@@ -1308,12 +1283,11 @@ export default {
       //   FileSaver.saveAs(new Blob([wbout], { type: 'application/octet-stream' }), '汇总报表.xlsx')
       // } catch (e) {
       //   if (typeof console !== 'undefined') {
-      //     console.log(e, wbout)
       //   }
       // }
       // return wbout
       let biaoge = []
-      if (this.tabPosition == 'main') {
+      if (this.tabPosition === 'main') {
         biaoge[0] = {
           company: "诊所名称",
           code: "处方编号",
@@ -1371,22 +1345,22 @@ export default {
           arr.department = this.tollList[i].doctor.department.name
           arr.doctor = this.tollList[i].doctor.name ? this.tollList[i].doctor.name : ''
           arr.amountStatus = this.tollList[i].amountStatus.name
-          if (this.tollList[i].amountStatus.value == 'amountStatus_1') {
+          if (this.tollList[i].amountStatus.value === 'amountStatus_1') {
             arr.amountReceivable = this.tollList[i].amountReceivable + ''
             arr.amountReceived = this.tollList[i].amountReceived + ''
-            arr.amountDiscounted = this.tollList[i].amountDiscounted != 0 && this.tollList[i].amountDiscounted != undefined ? this.tollList[i].amountDiscounted + '' : '0'
-            arr.cash = this.tollList[i].paymentType.value == 'payType_0' ? this.tollList[i].amountReceived + '' : ''
-            arr.wx = this.tollList[i].paymentType.value == 'payType_2' ? this.tollList[i].amountReceived + '' : ''
-            arr.zfb = this.tollList[i].paymentType.value == 'payType_1' ? this.tollList[i].amountReceived + '' : ''
-            arr.card = this.tollList[i].paymentType.value == 'payType_3' ? this.tollList[i].amountReceived + '' : ''
-          } else if (this.tollList[i].amountStatus.value == 'amountStatus_2') {
-            arr.amountReceivable = this.tollList[i].amountReceivable != 0 ? '-' + this.tollList[i].amountReceivable + '' : '0'
-            arr.amountReceived = this.tollList[i].amountReceived != 0 ? '-' + this.tollList[i].amountReceived + '' : '0'
-            arr.amountDiscounted = this.tollList[i].amountDiscounted != 0 && this.tollList[i].amountDiscounted != undefined ? '-' + this.tollList[i].amountDiscounted + '' : '0'
-            arr.cash = this.tollList[i].paymentType.value == 'payType_0' ? '-' + this.tollList[i].amountReceived + '' : ''
-            arr.wx = this.tollList[i].paymentType.value == 'payType_2' ? '-' + this.tollList[i].amountReceived + '' : ''
-            arr.zfb = this.tollList[i].paymentType.value == 'payType_1' ? '-' + this.tollList[i].amountReceived + '' : ''
-            arr.card = this.tollList[i].paymentType.value == 'payType_3' ? '-' + this.tollList[i].amountReceived + '' : ''
+            arr.amountDiscounted = this.tollList[i].amountDiscounted !== 0 && this.tollList[i].amountDiscounted !== undefined ? this.tollList[i].amountDiscounted + '' : '0'
+            arr.cash = this.tollList[i].paymentType.value === 'payType_0' ? this.tollList[i].amountReceived + '' : ''
+            arr.wx = this.tollList[i].paymentType.value === 'payType_2' ? this.tollList[i].amountReceived + '' : ''
+            arr.zfb = this.tollList[i].paymentType.value === 'payType_1' ? this.tollList[i].amountReceived + '' : ''
+            arr.card = this.tollList[i].paymentType.value === 'payType_3' ? this.tollList[i].amountReceived + '' : ''
+          } else if (this.tollList[i].amountStatus.value === 'amountStatus_2') {
+            arr.amountReceivable = this.tollList[i].amountReceivable !== 0 ? '-' + this.tollList[i].amountReceivable + '' : '0'
+            arr.amountReceived = this.tollList[i].amountReceived !== 0 ? '-' + this.tollList[i].amountReceived + '' : '0'
+            arr.amountDiscounted = this.tollList[i].amountDiscounted !== 0 && this.tollList[i].amountDiscounted !== undefined ? '-' + this.tollList[i].amountDiscounted + '' : '0'
+            arr.cash = this.tollList[i].paymentType.value === 'payType_0' ? '-' + this.tollList[i].amountReceived + '' : ''
+            arr.wx = this.tollList[i].paymentType.value === 'payType_2' ? '-' + this.tollList[i].amountReceived + '' : ''
+            arr.zfb = this.tollList[i].paymentType.value === 'payType_1' ? '-' + this.tollList[i].amountReceived + '' : ''
+            arr.card = this.tollList[i].paymentType.value === 'payType_3' ? '-' + this.tollList[i].amountReceived + '' : ''
           }
           arr.createBy = this.tollList[i].createBy
           arr.createDate = this.tollList[i].createDate
@@ -1888,10 +1862,10 @@ export default {
           arr.isUnpackSell = this.detailList[i].recipelDetail.drugStuffId.isUnpackSell
           arr.doctor = this.detailList[i].doctor.name ? this.detailList[i].doctor.name : ''
           arr.amountStatus = this.detailList[i].amountStatus.name
-          if (this.detailList[i].amountStatus.value == 'amountStatus_1') {
+          if (this.detailList[i].amountStatus.value === 'amountStatus_1') {
             arr.amountReceivable = this.detailList[i].amountReceivable + ''
-          } else if (this.detailList[i].amountStatus.value == 'amountStatus_2') {
-            arr.amountReceivable = this.detailList[i].amountReceivable != 0 ? '-' + this.detailList[i].amountReceivable + '' : '0'
+          } else if (this.detailList[i].amountStatus.value === 'amountStatus_2') {
+            arr.amountReceivable = this.detailList[i].amountReceivable !== 0 ? '-' + this.detailList[i].amountReceivable + '' : '0'
           }
           arr.createBy = this.detailList[i].createBy
           arr.createDate = this.detailList[i].createDate
@@ -2239,13 +2213,13 @@ export default {
       if (typeof ArrayBuffer !== "undefined") {
         const buf = new ArrayBuffer(s.length);
         const view = new Uint8Array(buf);
-        for (let i = 0; i != s.length; ++i) {
+        for (let i = 0; i !== s.length; ++i) {
           view[i] = s.charCodeAt(i) & 0xff
         }
         return buf;
       } else {
         const buf = new Array(s.length);
-        for (let i = 0; i != s.length; ++i) {
+        for (let i = 0; i !== s.length; ++i) {
           buf[i] = s.charCodeAt(i) & 0xff;
         }
         return buf;
@@ -2277,7 +2251,7 @@ export default {
 }
 
 .el-col {
-  /deep/ .el-range-separator {
+  ::v-deep .el-range-separator {
     width: 10%;
   }
 }
@@ -2290,7 +2264,7 @@ export default {
   }
 }
 
-/deep/ .el-table__footer-wrapper {
+::v-deep .el-table__footer-wrapper {
   td:not(:nth-of-type(1)) {
     .cell {
       display: inline-block;
@@ -2347,11 +2321,11 @@ export default {
   height: 0;
 }
 
-/deep/ .el-table colgroup col[name='gutter'] {
+::v-deep .el-table colgroup col[name='gutter'] {
   width: 5px !important
 }
 
-/deep/ .el-table__body {
+::v-deep .el-table__body {
   width: 100% !important
 }
 </style>

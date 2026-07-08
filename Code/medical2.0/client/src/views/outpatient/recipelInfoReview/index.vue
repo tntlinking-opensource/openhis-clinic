@@ -17,9 +17,11 @@
 <script>
 import Review from "./components/review"
 import RandomReview from "./components/randomReview"
+import listViewMixin from '@/mixins/listViewMixin'
 import MainUI from '@/views/components/mainUI'
 export default {
   extends: MainUI,
+  mixins: [listViewMixin],
   components: {
     Review,
     RandomReview
@@ -28,11 +30,6 @@ export default {
     return {
       activeName: 'first'
     }
-  },
-  methods: {},
-  watch: {
-  },
-  mounted() {
   }
 }
 </script>

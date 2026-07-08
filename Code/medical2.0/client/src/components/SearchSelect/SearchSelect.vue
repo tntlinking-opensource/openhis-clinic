@@ -39,18 +39,18 @@
     },
     props: {
       value: {
-        type: Number | String | Boolean
+        type: [Number, String, Boolean]
       },
       valueKey: {
         type: String,
         default: null
       },
       optionLabel: {
-        type: String | Number,
+        type: [String, Number],
         default: 'label'
       },
       optionValue: {
-        type: Number | String | Object,
+        type: [Number, String, Object],
         default: 'optionValue'
       },
       optionSize: {
@@ -88,7 +88,7 @@
     },
     watch: {
       value(newVal, oldVal) {
-        if(newVal != oldVal) {
+        if(newVal !== oldVal) {
           this.$nextTick(() => {
             this.currentValue = this.value
           })
@@ -96,7 +96,7 @@
       },
       options: {
         handler(newVal, oldVal) {
-          if(newVal != oldVal) {
+          if(newVal !== oldVal) {
             this.$nextTick(() => {
               this.tempStash = this.options
               this.searchOptions = this.tempStash

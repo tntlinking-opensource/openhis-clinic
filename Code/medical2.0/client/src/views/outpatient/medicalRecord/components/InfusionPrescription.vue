@@ -140,6 +140,7 @@
 
 <script>
 import { listAllStock } from "@/api/stock/drug";
+import { getCurrentUser } from "@/utils/userCache";
 export default {
   props: {
     GroupNumber: {
@@ -173,7 +174,7 @@ export default {
   },
   computed: {
     Company() {
-      let company = JSON.parse(sessionStorage.getItem("currentUser")).company;
+      let company = getCurrentUser().company;
       return {
         id: company.id,
         label: company.label,
@@ -190,7 +191,7 @@ export default {
       if (row) {
         row.singleDosage = row.singleDosage ? row.singleDosage : 0
         if (this.InfoModel.frequency && this.InfoModel.days && this.InfoModel.frequency.value && this.InfoModel.days.name) {
-          if (row.isUnpackSell == '1') {
+          if (row.isUnpackSell === '1') {
             row.total = Math.ceil(row.singleDosage * this.InfoModel.frequency.value.split('_')[1] * this.InfoModel.days.name)
             row.allFee = row.total * (row.retailPrice ? row.retailPrice : row.drugStuffId.drug.retailPrice)
           } else {
@@ -203,7 +204,7 @@ export default {
         this.InfoModel.infusionList.map(row => {
           row.singleDosage = row.singleDosage ? row.singleDosage : 0
           if (this.InfoModel.frequency && this.InfoModel.days) {
-            if (row.isUnpackSell == '1') {
+            if (row.isUnpackSell === '1') {
               row.total = Math.ceil(row.singleDosage * this.InfoModel.frequency.value.split('_')[1] * this.InfoModel.days.name)
               row.allFee = row.total * (row.retailPrice ? row.retailPrice : row.drugStuffId.drug.retailPrice)
             } else {
@@ -219,13 +220,13 @@ export default {
     //根据是否零售与新增还是查看获取单位
     GetInfusionUnit(index, row) {
       if(row.preparationUnit) {
-        if (row.isUnpackSell == '1') {
+        if (row.isUnpackSell === '1') {
           return row.preparationUnit.name
         } else {
           return row.pack.name
         }
       } else {
-        if (row.drugStuffId.drug.isUnpackSell == '1') {
+        if (row.drugStuffId.drug.isUnpackSell === '1') {
           return row.drugStuffId.drug.preparationUnit.name
         } else {
           return row.drugStuffId.drug.pack.name
@@ -235,13 +236,13 @@ export default {
      //根据是否零售与新增还是查看获取价格
     GetInfusionPrice (index, row) {
       if(row.preparationUnit) {
-        if (row.isUnpackSell == '1') {
+        if (row.isUnpackSell === '1') {
           return row.retailPrice
         } else {
           return row.price
         }
       } else {
-        if (row.drugStuffId.drug.isUnpackSell == '1') {
+        if (row.drugStuffId.drug.isUnpackSell === '1') {
           return row.drugStuffId.drug.retailPrice
         } else {
           return row.drugStuffId.drug.price
@@ -273,7 +274,7 @@ export default {
         ],
       };
       listAllStock(SearchModel).then((responseData) => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           responseData.data.forEach(element => {
             let isUnpackSell = element.isUnpackSell;    //允许拆零销售
             let stockNumber = element.stockNumber;      //库存数量

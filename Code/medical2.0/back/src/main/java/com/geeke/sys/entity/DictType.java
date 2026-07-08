@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import com.geeke.common.persistence.DataEntity;
+import com.geeke.org.entity.Company;
 /**
  * 字典类型Entity
  * @author lys
@@ -15,6 +16,7 @@ import com.geeke.common.persistence.DataEntity;
 public class DictType extends DataEntity<DictType> {
 
 	private static final long serialVersionUID = 4002L;
+	private Company company;      // 所属租户
 	private String code;		// 字典类型编码
 	private String isSystem;		// 系统级
 
@@ -27,7 +29,14 @@ public class DictType extends DataEntity<DictType> {
 	public DictType(String id){
 		super(id);
 	}
-	
+
+	public Company getCompany() {
+		return company;
+	}
+
+	public void setCompany(Company company) {
+		this.company = company;
+	}
 
 	@Length(min=1, max=64, message="字典类型编码长度必须介于 1 和 64 之间")
 	public String getCode() {

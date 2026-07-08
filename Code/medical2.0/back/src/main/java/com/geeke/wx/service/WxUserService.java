@@ -7,8 +7,6 @@ import com.geeke.admin.service.UserService;
 import com.geeke.sys.service.LoginService;
 import com.geeke.utils.IdGen;
 import com.geeke.utils.JwtUtils;
-import com.geeke.utils.ResultUtil;
-import com.geeke.utils.constants.ErrorEnum;
 import com.geeke.wx.dao.WxUserDao;
 import com.geeke.wx.entity.WxUser;
 import com.geeke.common.service.CrudService;
@@ -24,7 +22,7 @@ import org.springframework.util.ObjectUtils;
 import java.util.Objects;
 
 @Service
-@Transactional(readOnly = false)
+@Transactional(readOnly = true)
 public class WxUserService extends CrudService<WxUserDao, WxUser> {
 
     @Autowired
@@ -39,11 +37,14 @@ public class WxUserService extends CrudService<WxUserDao, WxUser> {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private WechatUtil wechatUtil;
+
     @Transactional(readOnly = false)
     public WxUser getCode(WxUser wxUser) {
        // WxUser wxUser = new WxUser();
         // 获取code数据
-        JSONObject object = WechatUtil.getOpenId(wxUser.getCode());
+        JSONObject object = wechatUtil.getOpenId(wxUser.getCode());
         // json数据转换成字符串
         String openid = object.get("openid").toString();
         String sessionkey = object.get("session_key").toString();
@@ -74,9 +75,9 @@ public class WxUserService extends CrudService<WxUserDao, WxUser> {
     @Transactional(readOnly = false)
     public WxUser getPhone(WxUser wxUser) {
         WxUser dto = new WxUser();
-        JSONObject token = WechatUtil.getToken();
+        JSONObject token = wechatUtil.getToken();
         if(!ObjectUtils.isEmpty(token.get("access_token"))){
-            JSONObject phone = WechatUtil.getPhoneNumber(wxUser.getCode(), token.get("access_token").toString());
+            JSONObject phone = wechatUtil.getPhoneNumber(wxUser.getCode(), token.get("access_token").toString());
             if(Objects.equals(phone.get("errcode").toString(),"0")){
                 String phone_info = phone.get("phone_info").toString();
                 JSONObject jsonObject = JSONObject.parseObject(phone_info);
@@ -85,49 +86,33 @@ public class WxUserService extends CrudService<WxUserDao, WxUser> {
                 WxUser byOpenId = wxUserDao.getByOpenId(wxUser.getOpenId());
                 String tokens="";
                 if(!ObjectUtils.isEmpty(byOpenId)){
-                    System.out.println(byOpenId);
+                    logger.debug("WxUser found: {}", byOpenId);
                     wxUserDao.update(phoneNumber,wxUser.getOpenId());
 
                     //保存完后进行后端保存微信患者
 
                     //根据诊所id和openid获取是否有该用户
                     User user1 = userService.getCompanyIdAndOpenId(byOpenId.getCompany().getId(),wxUser.getOpenId());
+                    User user = new User();
                     if(!ObjectUtils.isEmpty(user1)){
-                        User user = new User();
+                        // 用户已存在，更新
+                        user.setId(user1.getId());
+                        userService.updateWxUser(user);
+                    }else {
+                        // 用户不存在，新建
                         user.setId(IdGen.uuid());
                         user.setCompany(byOpenId.getCompany());
                         user.setIsWxuser("1");
                         user.setIsLocked(0);
                         user.setLoginName(wxUser.getOpenId());
                         int length = wxUser.getOpenId().length();
-
                         String substring = wxUser.getOpenId().substring(length-6);
-                        System.out.println(substring);
-                        //进行密码加密
-                        Md5Hash md5 = new Md5Hash(substring, user.getId(), 6);
-                        String md5Password = md5.toHex();
-                        user.setLoginPassword(md5Password);
+                        logger.debug("WxUser password suffix: {}", substring);
+                        Md5Hash md5 = new Md5Hash(substring, user.getId(), 10000);
+                        user.setLoginPassword(md5.toHex());
                         user.setName(byOpenId.getOpenId());
                         user.setPhone(phoneNumber);
                         userService.saveWxUser(user);
-                    }else {
-                        User user = new User();
-                        user.setId(user1.getId());
-                        user.setCompany(byOpenId.getCompany());
-                        user.setIsWxuser("1");
-                        user.setIsLocked(0);
-                        user.setLoginName(wxUser.getOpenId());
-                        int length = wxUser.getOpenId().length();
-
-                        String substring = wxUser.getOpenId().substring(length-6);
-                        System.out.println(substring);
-                        //进行密码加密
-                        Md5Hash md5 = new Md5Hash(substring, user.getId(), 6);
-                        String md5Password = md5.toHex();
-                        user.setLoginPassword(md5Password);
-                        user.setName(byOpenId.getOpenId());
-                        user.setPhone(phoneNumber);
-                        userService.updateWxUser(user);
                     }
 
                 }
@@ -142,7 +127,7 @@ public class WxUserService extends CrudService<WxUserDao, WxUser> {
 
     @Transactional(readOnly = false)
     public WxUser initLogin(WxUser wxUser) {
-        JSONObject object = WechatUtil.getOpenId(wxUser.getCode());
+        JSONObject object = wechatUtil.getOpenId(wxUser.getCode());
         // json数据转换成字符串
         String openid = object.get("openid").toString();
         WxUser user = wxUserDao.getByOpenId(openid);

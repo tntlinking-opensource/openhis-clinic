@@ -56,7 +56,7 @@ export function handleValidateForm(_this, object) {
 export function validateField(_this, form, index) {
   let result = true
   for (let item of _this.$refs[form].fields) {
-    if(item.prop.split(".")[1] == index) {
+    if(item.prop.split(".")[1] === index) {
       _this.$refs[form].validateField(item.prop, (error)=>{
         if(error){
           result = false

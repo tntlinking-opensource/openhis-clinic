@@ -6,11 +6,11 @@
           <span class="collapse-title">{{title}}<span style="color: #ccc">（展开查看更多）</span></span>
           <div class="collapse-btn">
 <!--            <el-button style="width: 90px;" type="primary" @click.stop="onUploadFile" v-if='!action'>上传</el-button>-->
-            <el-button style="width: 90px;" type="primary" @click.stop="onUploadFile" v-if='authority == "add" || authority == "edit"'>上传</el-button>
+            <el-button style="width: 90px;" type="primary" @click.stop="onUploadFile" v-if='authority === "add" || authority === "edit"'>上传</el-button>
           </div>
         </template>
         <el-upload
-          :disabled='authority == "view"'
+          :disabled='authority === "view"'
           class="upload-demo"
           multiple
           action=""
@@ -64,7 +64,7 @@
     props: {
       value: {
         type: Array,
-         default:function(){
+         default(){
             return {uploads:[]}
          }
       },
@@ -103,10 +103,9 @@
         if (this.activeNames.indexOf('3') === -1) {
           this.activeNames.push("3")
         }
-        console.log("anlksanlasl");
         document.getElementById(this.uploadBtnId).click()
       },
-      onRemoveFileList: function (file, fileList) { // 移除文件
+      onRemoveFileList(file, fileList) { // 移除文件
         this.value.uploads = fileList
       },
       onUploadViewFile(index, row) { // 下载
@@ -117,7 +116,6 @@
         //   this.outputError(error)
         // });
          getFiled(row.id).then((res) => {
-          console.log(res,'就是看');
          const src = `data:text/plain;base64,${res.base64Str}`;
         let name = res.name
       //  this.fileName=name
@@ -138,7 +136,7 @@
         // document.body.appendChild(dom);
         // dom.click();
 
-        var blob = this.dataURLtoBlob(uploadFiles)
+        const blob = this.dataURLtoBlob(uploadFiles)
         const elink = document.createElement('a')
         // 设置下载文件名
         const timedate = Date.parse(new Date())
@@ -150,19 +148,18 @@
         document.body.removeChild(elink)
       },
       // 将base64转换为blob
-    dataURLtoBlob: function (dataurl) {
-      var arr = dataurl.split(',')
-      var mime = arr[0].match(/:(.*?);/)[1]
-      var bstr = atob(arr[1])
-      var n = bstr.length
-      var u8arr = new Uint8Array(n)
+    dataURLtoBlob(dataurl) {
+      const arr = dataurl.split(',')
+      const mime = arr[0].match(/:(.*?);/)[1]
+      const bstr = atob(arr[1])
+      let n = bstr.length
+      const u8arr = new Uint8Array(n)
       while (n--) {
         u8arr[n] = bstr.charCodeAt(n)
       }
       return new Blob([u8arr], { type: mime })
     },
       onPreviewFile(file) {
-        console.log(file);
       },
       onExceedFile(file, fileList) {
         this.$message.warning(`当前限制上传 7 个文件`);
@@ -175,7 +172,6 @@
         }
       },
       fileSuccess(res, file){                 //上传文件成功
-        console.log(file);
       },
       onChangeFileList(file, fileList) {
         this.fileList = fileList
@@ -213,7 +209,7 @@
           params: [{'columnName':'object_id', 'queryType': '=', 'value': this.objectId}]
         }
         listSysFileAll(file_search).then(responseData => {
-          if(responseData.code == 100) {
+          if(responseData.code === 100) {
             this.viewFileList = responseData.data
             if (!validatenull(this.viewFileList)) {
               this.activeNames.push("3")
@@ -256,8 +252,7 @@
       }
     },
     watch: {
-      'objectId': function(newVal, oldVal) {
-        console.log(newVal, oldVal,"objectId变化了");
+      'objectId'(newVal, oldVal) {
         if (!validatenull(this.objectId)) {
           this.getSysFileAll()
         }else{
@@ -266,15 +261,14 @@
           this.viewFileList = []
         }
       },
-      'action':function(newVal,oldVal){
-        console.log('监听看');
+      'action'(newVal,oldVal){
         this.action=newVal
         if (newVal !== oldVal) {
           this.getSysFileAll()
         }
       }
     },
-    mounted: function() {
+    mounted() {
       this.initOption()
 
     }
@@ -282,7 +276,7 @@
 </script>
 
 <style lang="scss" scoped>
-  /deep/ .upload-demo .el-upload {
+  ::v-deep .upload-demo .el-upload {
     display: none!important;
   }
   .collapse-title {

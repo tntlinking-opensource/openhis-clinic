@@ -1,58 +1,13 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getRoleById = (id) =>
-    request({
-        url: '/admin/role/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/admin/role')
 
-export const listRolePage = (search) =>
-    request({
-        url: '/admin/role/list',
-        method: 'post',
-        data: search
-    })
-
-export const listRoleAll = (search) =>
-    request({
-        url: '/admin/role/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveRole = (role) => 
-    request({
-        url: '/admin/role/save',
-        method: 'post',
-        data: role
-    })
-
-export const deleteRole = (role) =>
-    request({
-        url: '/admin/role/delete',
-        method: 'post',
-        data: role
-    })
-    
-export const bulkInsertRole = (roles) =>
-    request({
-        url: '/admin/role/bulkInsert',
-        method: 'post',
-        data: roles
-    })
-    
-export const bulkUpdateRole = (roles) =>
-    request({
-        url: '/admin/role/bulkUpdate',
-        method: 'post',
-        data: roles
-    })
-
-export const bulkDeleteRole = (roles) =>
-    request({
-        url: '/admin/role/bulkDelete',
-        method: 'post',
-        data: roles
-    })
-    
+// 导出标准CRUD接口（保持向后兼容）
+export const getRoleById = baseApi.getById
+export const listRolePage = baseApi.listPage
+export const listRoleAll = baseApi.listAll
+export const saveRole = baseApi.save
+export const deleteRole = baseApi.delete
+export const bulkInsertRole = baseApi.bulkInsert
+export const bulkUpdateRole = baseApi.bulkUpdate
+export const bulkDeleteRole = baseApi.bulkDelete

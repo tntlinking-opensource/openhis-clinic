@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSONObject;
+import com.geeke.common.controller.CrudController;
 import com.geeke.sys.entity.Action;
 import com.geeke.sys.service.RecycleService;
 import com.geeke.utils.ResultUtil;
@@ -19,11 +20,16 @@ import com.geeke.utils.ResultUtil;
  */
 @RestController
 @RequestMapping(value = "/sys/recycle")
-public class RecycleController extends BaseController {
+public class RecycleController extends CrudController<RecycleService, Action> {
 
 	@Autowired
-	private RecycleService recycleService;
-	
+	protected RecycleService recycleService;
+
+	@Override
+	protected RecycleService getService() {
+		return recycleService;
+	}
+
     @PostMapping(value = "restor")
     public ResponseEntity<JSONObject> restor(@RequestBody Action entity) {
         int rows = recycleService.restore(entity);

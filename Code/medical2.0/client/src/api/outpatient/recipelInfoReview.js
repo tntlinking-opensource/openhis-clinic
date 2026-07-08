@@ -1,11 +1,16 @@
+import { createCrudApi } from '@/utils/apiFactory'
 import request from '@/utils/request'
 
-export const getRecipelInfoReviewById = (id) =>
-    request({
-        url: '/outpatient/review/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/outpatient/review')
 
+// Re-export standard CRUD with original names for backward compatibility
+export const getRecipelInfoReviewById = baseApi.getById
+export const listRecipelInfoReviewPage = baseApi.listPage
+export const listRecipelInfoReviewAll = baseApi.listAll
+export const saveRecipelInfoReview = baseApi.save
+export const deleteRecipelInfoReview = baseApi.delete
+
+// Keep custom endpoints as-is
 export const getRecipelInfoReviewByRecipelInfoId = (id) =>
     request({
         url: '/outpatient/review/recipelInfo/' + id,
@@ -15,35 +20,6 @@ export const getReviewFormByRecipelInfoId = (id) =>
     request({
         url: '/outpatient/review/form/' + id,
         method: 'get'
-    })
-
-export const listRecipelInfoReviewPage = (search) =>
-    request({
-        url: '/outpatient/review/list',
-        method: 'post',
-        data: search
-    })
-
-export const listRecipelInfoReviewAll = (search) =>
-    request({
-        url: '/outpatient/review/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveRecipelInfoReview = (RecipelInfoReview) =>
-    request({
-        url: '/outpatient/review/save',
-        method: 'post',
-        data: RecipelInfoReview
-    })
-
-export const deleteRecipelInfoReview = (RecipelInfoReview) =>
-    request({
-        url: '/outpatient/review/delete',
-        method: 'post',
-        data: RecipelInfoReview
     })
 
 export const listPageStatement = (search) =>
@@ -107,4 +83,3 @@ export const bulkDeleteRecipelInfoReview = (RecipelInfoReviews) =>
         method: 'post',
         data: RecipelInfoReviews
     })*/
-

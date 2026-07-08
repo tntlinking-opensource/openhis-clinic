@@ -1,4 +1,4 @@
-import request from '@/utils/request'
+import request, { serviceLong } from '@/utils/request'
 
 export const getDrug = (search) =>
     request({
@@ -51,7 +51,7 @@ export const getStuffSalesStatNumber = (search) =>
         data:search  
     })
 export const exportTable = (search) =>
-    request({
+    serviceLong({
         url: '/stock/currentInventory/exportTable',
         method: 'post',
         data:search,

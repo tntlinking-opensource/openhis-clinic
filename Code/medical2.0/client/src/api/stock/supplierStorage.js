@@ -1,63 +1,22 @@
 import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getSupplierStorageById = (id) =>
-    request({
-        url: '/stock/supplierStorage/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/stock/supplierStorage')
 
-export const listSupplierStoragePage = (search) =>
-    request({
-        url: '/stock/supplierStorage/list',
-        method: 'post',
-        data: search
-    })
+// 导出标准CRUD接口（保持向后兼容）
+export const getSupplierStorageById = baseApi.getById
+export const listSupplierStoragePage = baseApi.listPage
+export const listSupplierStorageAll = baseApi.listAll
+export const saveSupplierStorage = baseApi.save
+export const deleteSupplierStorage = baseApi.delete
+export const bulkInsertSupplierStorage = baseApi.bulkInsert
+export const bulkUpdateSupplierStorage = baseApi.bulkUpdate
+export const bulkDeleteSupplierStorage = baseApi.bulkDelete
 
-export const listSupplierStorageAll = (search) =>
-    request({
-        url: '/stock/supplierStorage/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveSupplierStorage = (supplierStorage) =>
-    request({
-        url: '/stock/supplierStorage/save',
-        method: 'post',
-        data: supplierStorage
-    })
-
-export const deleteSupplierStorage = (supplierStorage) =>
-    request({
-        url: '/stock/supplierStorage/delete',
-        method: 'post',
-        data: supplierStorage
-    })
-
-export const bulkInsertSupplierStorage = (supplierStorages) =>
-    request({
-        url: '/stock/supplierStorage/bulkInsert',
-        method: 'post',
-        data: supplierStorages
-    })
-
-export const bulkUpdateSupplierStorage = (supplierStorages) =>
-    request({
-        url: '/stock/supplierStorage/bulkUpdate',
-        method: 'post',
-        data: supplierStorages
-    })
+// 自定义接口
 export const bulkUpdateSupplierStorage1 = (supplierStorages) =>
     request({
         url: '/stock/supplierStorage/cancel',
-        method: 'post',
-        data: supplierStorages
-    })
-
-export const bulkDeleteSupplierStorage = (supplierStorages) =>
-    request({
-        url: '/stock/supplierStorage/bulkDelete',
         method: 'post',
         data: supplierStorages
     })

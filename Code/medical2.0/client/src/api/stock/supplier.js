@@ -1,58 +1,14 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getSupplierById = (id) =>
-    request({
-        url: '/stock/supplier/' + id,
-        method: 'get'
-    })
+// 使用工厂函数生成标准CRUD接口
+const baseApi = createCrudApi('/stock/supplier')
 
-export const listSupplierPage = (search) =>
-    request({
-        url: '/stock/supplier/list',
-        method: 'post',
-        data: search
-    })
-
-export const listSupplierAll = (search) =>
-    request({
-        url: '/stock/supplier/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveSupplier = (supplier) => 
-    request({
-        url: '/stock/supplier/save',
-        method: 'post',
-        data: supplier
-    })
-  
-export const deleteSupplier = (supplier) =>
-    request({
-        url: '/stock/supplier/delete',
-        method: 'post',
-        data: supplier
-    })
-    
-export const bulkInsertSupplier = (suppliers) =>
-    request({
-        url: '/stock/supplier/bulkInsert',
-        method: 'post',
-        data: suppliers
-    })
-    
-export const bulkUpdateSupplier = (suppliers) =>
-    request({
-        url: '/stock/supplier/bulkUpdate',
-        method: 'post',
-        data: suppliers
-    })
-
-export const bulkDeleteSupplier = (suppliers) =>
-    request({
-        url: '/stock/supplier/bulkDelete',
-        method: 'post',
-        data: suppliers
-    })
-    
+// 导出所有接口（保持向后兼容）
+export const getSupplierById = baseApi.getById
+export const listSupplierPage = baseApi.listPage
+export const listSupplierAll = baseApi.listAll
+export const saveSupplier = baseApi.save
+export const deleteSupplier = baseApi.delete
+export const bulkInsertSupplier = baseApi.bulkInsert
+export const bulkUpdateSupplier = baseApi.bulkUpdate
+export const bulkDeleteSupplier = baseApi.bulkDelete

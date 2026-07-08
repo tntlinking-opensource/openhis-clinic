@@ -25,6 +25,6 @@ public interface MedicinalStorageControlDao extends CrudDao<MedicinalStorageCont
     List<MedicinalStorageControl> getAll(@Param("companyId") String compayId,@Param("type") String type,@Param("variety") String variety);
 
     BigDecimal getByDrugOrStuffId(String drugOrStuffId,String companyId);
-    BigDecimal getByDrugOrStuffIds(@Param("list") List drugOrStuffIds);
+    BigDecimal getByDrugOrStuffIds(@Param("list") List<String> drugOrStuffIds);
 
 }

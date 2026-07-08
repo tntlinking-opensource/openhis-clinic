@@ -1,17 +1,16 @@
 package com.geeke.org.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.geeke.common.controller.CrudController;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
 import com.geeke.medicareutils.config.MedicareConfigProperties;
 import com.geeke.medicareutils.service.MdCompanyService;
 import com.geeke.org.entity.ClinicOffice;
 import com.geeke.org.service.ClinicOfficeService;
-import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.ResultUtil;
 import com.geeke.utils.SessionUtils;
 import com.geeke.utils.StringUtils;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,34 +24,23 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/org/clinicOffice")
-@RequiredArgsConstructor
-public class ClinicOfficeController extends BaseController {
+public class ClinicOfficeController extends CrudController<ClinicOfficeService, ClinicOffice> {
 
     @Autowired
-    private ClinicOfficeService clinicOfficeService;
+    protected ClinicOfficeService clinicOfficeService;
 
-    private final MedicareConfigProperties properties;
+    @Autowired
+    private MedicareConfigProperties properties;
 
-    private final MdCompanyService mdcompanyService;
+    @Autowired
+    private MdCompanyService mdcompanyService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
-        ClinicOffice entity = clinicOfficeService.get(id);
-        return ResponseEntity.ok(ResultUtil.successJson(entity));
+    @Override
+    protected ClinicOfficeService getService() {
+        return clinicOfficeService;
     }
 
-    @PostMapping(value = {"list", ""})
-    public ResponseEntity<JSONObject> listPage(@RequestBody SearchParams searchParams) {
-        Page<ClinicOffice> result = clinicOfficeService.listPage(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
-
-    @PostMapping(value = "listAll")
-    public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
-        List<ClinicOffice> result = clinicOfficeService.listAll(searchParams.getParams(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
-
+    @Override
     @PostMapping(value = "save")
     public ResponseEntity<JSONObject> save(@RequestBody ClinicOffice entity) {
         entity.setCompany(SessionUtils.getLoginTenant());
@@ -71,30 +59,6 @@ public class ClinicOfficeController extends BaseController {
         }
         String id = clinicOfficeService.save(entity).getId();
         return ResponseEntity.ok(ResultUtil.successJson(id));
-    }
-
-    @PostMapping(value = "delete")
-    public ResponseEntity<JSONObject> delete(@RequestBody ClinicOffice entity) {
-        int rows = clinicOfficeService.delete(entity);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
-
-    @PostMapping(value = "bulkInsert")
-    public ResponseEntity<JSONObject> bulkInsert(@RequestBody List<ClinicOffice> entitys) {
-        List<String> ids = clinicOfficeService.bulkInsert(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-
-    @PostMapping(value = "bulkUpdate")
-    public ResponseEntity<JSONObject> bulkUpdate(@RequestBody List<ClinicOffice> entitys) {
-        List<String> ids = clinicOfficeService.bulkUpdate(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-
-    @PostMapping(value = "bulkDelete")
-    public ResponseEntity<JSONObject> bulkDelete(@RequestBody List<ClinicOffice> entitys) {
-        int rows = clinicOfficeService.bulkDelete(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
     }
 
 }

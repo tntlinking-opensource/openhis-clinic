@@ -5,13 +5,15 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.geeke.admin.entity.User;
 import com.geeke.common.controller.SearchParams;
+import com.geeke.common.constants.BizConstants;
 import com.geeke.common.data.Page;
 import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
+import com.geeke.common.data.SearchParamsBuilder;
 import com.geeke.common.sequence.service.SequenceService;
 import com.geeke.common.service.CrudService;
 import com.geeke.common.service.ServiceException;
-import com.geeke.config.exception.CommonJsonException;
+
 import com.geeke.cure.entity.InspectionCheck;
 import com.geeke.cure.entity.InspectionCheckDetail;
 import com.geeke.cure.entity.InspectionCheckInfo;
@@ -38,21 +40,18 @@ import com.geeke.stock.service.*;
 import com.geeke.sys.entity.DictItem;
 import com.geeke.toll.dao.TollInfoDao;
 import com.geeke.toll.entity.*;
-import com.geeke.toll.untils.BigdecimalConvert;
+import com.geeke.toll.utils.BigdecimalConvert;
 import com.geeke.treatment.entity.CostItem;
 import com.geeke.treatment.entity.CostItemPackage;
 import com.geeke.treatment.service.CostItemService;
 import com.geeke.treatment.service.impl.CostItemPackageService;
 import com.geeke.utils.*;
-import com.geeke.utils.constants.ErrorEnum;
+
 import lombok.RequiredArgsConstructor;
-import org.apache.poi.hssf.usermodel.*;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.VerticalAlignment;
+import com.geeke.utils.excel.ExcelExportBuilder;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,9 +60,7 @@ import org.springframework.util.ObjectUtils;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.math.BigDecimal;
-import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -77,68 +74,56 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
-    @Autowired
-    private PatientService patientService;
-    @Autowired
-    private RecipelInfoService recipelInfoService;
-    @Autowired
-    private SequenceService sequenceService;
-    @Autowired
-    private RegistrationService registrationService;
-    @Autowired
-    private TollDetailService tollDetailService;
-    @Autowired
-    private MedicalRecordService medicalRecordService;
-    @Autowired
-    private RecipelDetailService recipelDetailService;
-    @Autowired
-    private StuffService stuffService;
-    @Autowired
-    private DrugService drugService;
-    @Autowired
-    private TollInfoDao tollInfoDao;
+    private final PatientService patientService;
 
-    @Autowired
-    private CostItemService costItemService;
+    @Lazy
+    private final RecipelInfoService recipelInfoService;
 
-    @Autowired
-    private InspectionCheckInfoService inspectionCheckInfoService;
+    private final SequenceService sequenceService;
 
-    @Autowired
-    private InspectionCheckDetailService inspectionCheckDetailService;
+    @Lazy
+    private final RegistrationService registrationService;
 
-    @Autowired
-    private InspectionCheckService inspectionCheckService;
+    private final TollDetailService tollDetailService;
 
-    @Autowired
-    private CostItemPackageService costItemPackageService;
+    @Lazy
+    private final MedicalRecordService medicalRecordService;
 
-    @Autowired
-    private MemberManagementDetailService memberManagementDetailService;
+    private final RecipelDetailService recipelDetailService;
 
-    @Autowired
-    private InventoryVerificationService inventoryVerificationService;
+    private final StuffService stuffService;
 
-    @Autowired
-    private SupplierStockService supplierStockService;
+    private final DrugService drugService;
 
-    @Autowired
-    private DispensingService dispensingService;
+    private final TollInfoDao tollInfoDao;
 
-    @Autowired
-    private MedicinalStorageControlService medicinalStorageControlService;
+    private final CostItemService costItemService;
 
-    @Autowired
-    private SerialNoUtils serialNoUtils;
+    private final InspectionCheckInfoService inspectionCheckInfoService;
 
-    @Autowired
-    private CompanyService companyService;
+    private final InspectionCheckDetailService inspectionCheckDetailService;
 
-    @Autowired
-    private RecipelDetailDao recipelDetailDao;
+    private final InspectionCheckService inspectionCheckService;
 
+    private final CostItemPackageService costItemPackageService;
 
-    private  final MedicareConfigProperties medicareConfigProperties;
+    private final MemberManagementDetailService memberManagementDetailService;
+
+    private final InventoryVerificationService inventoryVerificationService;
+
+    private final SupplierStockService supplierStockService;
+
+    private final DispensingService dispensingService;
+
+    private final MedicinalStorageControlService medicinalStorageControlService;
+
+    private final SerialNoUtils serialNoUtils;
+
+    private final CompanyService companyService;
+
+    private final RecipelDetailDao recipelDetailDao;
+
+    private final MedicareConfigProperties medicareConfigProperties;
 
     private final PatientMdDataService patientMdDataService;
 
@@ -146,7 +131,16 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
 
     private final MdInventoryService mdInventoryService;
 
-    private  final MdPsnDataService mdPsnDataService;
+    private final MdPsnDataService mdPsnDataService;
+
+    /**
+     * 将 SearchParams 转换为 PageRequest
+     * 简化报表查询方法中的重复代码
+     */
+    private PageRequest toPageRequest(SearchParams searchParams) {
+        return new PageRequest(searchParams.getOffset(), searchParams.getLimit(),
+                searchParams.getParams(), searchParams.getOrderby());
+    }
 
     @Override
     @Transactional(readOnly = false)
@@ -167,19 +161,8 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
     public void saveToll(TollEvt tollEvt,String type) {
         Company company = SessionUtils.getUser().getCompany();
         String seltId="";//医保结算id付费后存入挂号表
-        //正在进行盘点时不能进行收费
-        List<InventoryVerification> inventoryVerifications = inventoryVerificationService.getByCompanyId(company.getId());
-       if("amountStatus_1".equals(tollEvt.getTollInfo().getAmountStatus().getValue())) {
-           if (!CollectionUtils.isEmpty(inventoryVerifications)) {
-               throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "正在进行盘点，无法进行收费操作!"));
-
-           }
-       }else {
-           if (!CollectionUtils.isEmpty(inventoryVerifications)) {
-               throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "正在进行盘点，无法进行退费操作!"));
-
-           }
-       }
+        //正在进行盘点时不能进行收费/退费
+        validateInventoryNotInProgress(company.getId(), tollEvt.getTollInfo().getAmountStatus().getValue());
         TollInfo tollInfo = tollEvt.getTollInfo();
         List<RecipelInfoEvt> recipelInfoEvts = tollEvt.getRecipelInfos();
         TollInfo tollSave = null;
@@ -198,167 +181,12 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
                 patient = patientService.get(patient.getId());
             }
             //收费
-            if ("amountStatus_1".equals(tollInfo.getAmountStatus().getValue())) {
-                if ("tollType_5".equals(tollInfo.getTollType().getValue())){
+            if (BizConstants.AMOUNT_STATUS_PAID.equals(tollInfo.getAmountStatus().getValue())) {
+                if (BizConstants.TOLL_TYPE_REGISTRATION.equals(tollInfo.getTollType().getValue())){
                     //零售收费
-                    //患者如果不存在添加默认的
-                    Patient patient1 = patientService.get(patient.getId());
-                    if (ObjectUtils.isEmpty(patient1)) {
-                        patient = patientService.save(patient);
-                    }else {
-                        patient = patient1;
-                    }
-                    //添加零售挂号
-                    registration = this.addRetailRegistration(patient.getCompany(),patient);
-                    //添加零售病例
-                    MedicalRecord medicalRecord = this.addMedicalRecord(registration);
-                    //添加零售处方
-                    for (RecipelInfoEvt recipelInfoEvt : recipelInfoEvts) {
-                        RecipelInfo recipelInfo = recipelInfoEvt.getRecipelInfo();
-                        recipelInfo.setIsDispension("0");
-                        recipelInfo.setIsPay("1");
-                        recipelInfo.setPayDate(new Date());
-                        recipelInfo.setChargeStatus(1);
-                    }
-                    RecipelInfo retail =this.addRetailRecipelInfo(recipelInfoEvts,medicalRecord);
-                    tollInfo.setPatient(patient);
-                    tollInfo.setRecipel(retail);
-                    tollInfo.setMedical(medicalRecord);
-                    tollSave = this.save(tollInfo);
-
-                    //预占用库存
-                    medicinalStorageControlService.preOccupyStock(retail);
-                    //开启医保时对零售库存进行处理
-                    if("true".equals(medicareConfigProperties.getCheck())){
-                        //获取药品扣减信息
-                        mdInventoryService.updateInventoryList_3502A(tollEvt.getRecipelInfos().get(0));
-                    }
+                    registration = processRetailCharge(tollEvt, tollInfo, patient, recipelInfoEvts);
                 }else {
-                    tollInfo.setPatient(patient);
-                    //保存收费
-                    List<RecipelInfoEvt> recipelInfos = recipelInfoEvts;
-                    JSONArray array = new JSONArray();
-                    for (RecipelInfoEvt recipelInfoEvt : recipelInfos) {
-                        RecipelInfo recipelInfo = recipelInfoEvt.getRecipelInfo();
-                        recipelInfo = recipelInfoService.get(recipelInfo.getId());
-                        String value = tollInfo.getAmountStatus().getValue();
-                        recipelInfo.setIsPay(value.substring(value.length() - 1));
-                        recipelInfo.setPayDate(new Date());
-                        recipelInfo.setIsDispension("0");
-                        recipelInfo.setChargeStatus(1);
-                        recipelInfo.setAmountReceivedTotal(tollEvt.getTollInfo().getAmountReceived());
-                        recipelInfoService.save(recipelInfo);
-                        TollInfo newTollInfo = new TollInfo();
-                        BeanUtils.copyProperties(tollInfo,newTollInfo);
-                        newTollInfo.setMedical(medicalRecordService.get(tollInfo.getMedical().getId()));
-                        newTollInfo.setRecipel(recipelInfo);
-                        newTollInfo.setAmountReceivable(recipelInfo.getFee());
-                        //newTollInfo.setAmountReceived(this.getAmountReceived(recipelInfo,tollInfo));
-                         newTollInfo.setAmountReceived(tollInfo.getAmountReceived());
-                        newTollInfo.setAmountDiscounted(newTollInfo.getAmountReceivable().subtract(newTollInfo.getAmountReceived()));
-                        DictItem tollType = newTollInfo.getTollType();
-
-                        String tollTyepName=recipelInfo.getName().substring(0,2);
-                        if("西药".equals(tollTyepName)){
-                            tollType.setName("西药处方");
-                            tollType.setValue("tollType_0");
-                        }else if("中药".equals(tollTyepName)){
-                            tollType.setName("中药处方");
-                            tollType.setValue("tollType_1");
-                        }else if("输液".equals(tollTyepName)){
-                            tollType.setName("输液处方");
-                            tollType.setValue("tollType_2");
-                        }else if("诊疗".equals(tollTyepName)){
-                            tollType.setName("诊疗项目");
-                            tollType.setValue("tollType_3");
-                        }
-                        if("诊疗".equals(tollTyepName) && newTollInfo.getAmountReceivable()!=newTollInfo.getAmountReceived()){
-                            newTollInfo.setRemarks("体验卡扣减");
-                        }
-                        newTollInfo.setTollType(tollType);
-                        tollSave = this.save(newTollInfo);
-                        //开启医保接口时并上传收费信息
-                        if(medicareConfigProperties.getCheck().equals("true")){
-                            JSONObject data = new JSONObject();
-                            //挂号、患者医保信息
-                            registration = registrationService.get(tollInfo.getMedical().getRegistration().getId());
-                            PatientMdData patientMdData = patientMdDataService.getOne(new LambdaQueryWrapper<PatientMdData>().eq(PatientMdData::getPatientId, registration.getPatientId().getId()));
-                            //挂号科室信息
-                            ClinicOffice clinicOffice = registration.getClinicOffice();
-                            //开单医生信息
-                            User doctor = registration.getDoctor();// 医生
-                            //费用明细流水号
-                            data.put("feedetl_sn",tollSave.getId());
-                            data.put("mdtrt_id",registration.getMdtrtId());
-                            data.put("psn_no",patientMdData.getPsnNo());
-                            data.put("chrg_bchno",tollSave.getTollNumber());
-                            if(Objects.nonNull(tollSave.getRecipel())){
-                                //处方号
-                                data.put("rxno",tollSave.getRecipel().getCode());
-                                //TODO 外购处方标志
-                                data.put("rxd_circ_flag","0");
-                            }
-                            data.put("fee_ocur_time",tollSave.getRecipel().getCreateDate());
-                            data.put("med_list_codg",""); //Todo 医疗机构目录编码
-                            data.put("medins_list_codg",""); //Todo 医药机构目录编码
-                            data.put("det_item_fee_sumamt", recipelInfoEvt.getRecipelInfo().getFee()); // 明细项目费用总额，数值型，必填
-                            data.put("cnt",recipelInfoEvt.getRecipelDetailEvtList().get(0).getTotal()); // 数量，数值型，必填 T
-                            data.put("pric", recipelInfoEvt.getRecipelDetailEvtList().get(0).getUnitPrice()); // 单价，数值型，必填 /
-                            data.put("sin_dos_dscr",""); // 单次剂量描述，字符型
-                            data.put("used_frqu_dscr", ""); // 使用频次描述，字符型
-                            data.put("prd_days", recipelInfoEvt.getRecipelDetailEvtList().get(0).getDays().getValue()); // 周期天数，数值型
-                            data.put("medc_way_dscr", ""); // 用药途径描述，字符型
-                            data.put("bilg_dept_codg", clinicOffice.getCode()); // 开单科室编码，字符型，必填
-                            data.put("bilg_dept_name", clinicOffice.getName()); // 开单科室名称，字符型，必填
-                            data.put("bilg_dr_codg", doctor.getUserExt().getPracPsnCode()); // 开单医生编码，字符型，必填
-                            data.put("bilg_dr_name", doctor.getName()); // 开单医生姓名，字符型，必填
-                            data.put("acord_dept_codg", clinicOffice.getCode()); // 受单科室编码，字符型，必填
-                            data.put("acord_dept_name", clinicOffice.getName()); // 受单科室名称，字符型，必填
-                            data.put("orders_dr_code", doctor.getUserExt().getPracPsnCode()); // 受单医生编码，字符型，必填
-                            data.put("orders_dr_name", doctor.getName()); // 受单医生姓名，字符型，必填
-                            data.put("hosp_appr_flag", "1"); // 医院审批标志，字符型，必填
-                            //
-                            data.put("tcmdrug_used_way", ""); // 中药使用方式，字符型，必填
-                            data.put("etip_flag", ""); // 外检标志，字符型，必填
-                            data.put("etip_hosp_code", ""); // 外检医院编码，字符型
-                            data.put("dscg_tkdrug_flag", ""); // 出院带药标志，字符型，必填
-                            data.put("matn_fee_flag", ""); // 生育费用标志，字符型
-                            data.put("comb_no", ""); // 组套编号，字符型
-                            data.put("expContent", ""); // 字段扩展，字符型
-                            array.add(data);
-                        }
-                        //收完费后如果是诊疗项目并且体验卡不为空时进行修改
-                        MemberManagement memberManagement = tollEvt.getMemberManagement();
-                        if(!ObjectUtils.isEmpty(memberManagement)){
-                            if("诊疗".equals(tollTyepName) && !CollectionUtils.isEmpty(memberManagement.getMemberManagementDetails())){
-                                memberManagementDetailService.updateUseNumber(memberManagement);
-                            }
-                        }
-
-                        //收完费，如果存在诊疗检验检查的项目，将数据存入到数据库中
-                        if("诊疗".equals(tollTyepName)){
-                            addInspectionCheck(recipelInfo);
-                        }
-
-                        //收费后，如果存在诊疗项目中的附加费有材料，需要进行扣减
-                        if("诊疗".equals(tollTyepName)){
-                            deduction(recipelInfo);
-
-                        }
-                    }
-                    if(medicareConfigProperties.getCheck().equals("true")){
-                        //门诊信息上传 2203A
-                        mdRegistrationService.upRegistrationInfo_2203(registration);
-                        //门诊费用明细上传 2204
-//                        MdFeeDetail mdFeeDetail = mdRegistrationService.upRegistrationMoneyInfo_2204(array);
-//                        //门诊预结算 2206
-//                        mdRegistrationService.processOutpatientPreSettlement_2206(registration,mdFeeDetail,tollSave.getTollNumber(),"1");
-//                        //门诊结算 2207
-//                        JSONObject jsonObject = mdRegistrationService.executeOutpatientPreSettlement_2207(registration, mdFeeDetail, tollSave.getTollNumber(), "1");
-//                        //结算id
-//                        seltId = jsonObject.getJSONObject("setlinfo").getString("setl_id");
-
-                    }
+                    registration = processNormalCharge(tollEvt, tollInfo, patient, recipelInfoEvts);
                 }
             }
             for (RecipelInfoEvt recipelInfo:tollEvt.getRecipelInfos()){
@@ -370,76 +198,8 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
                 }
             }
             //退费
-            if ("amountStatus_2".equals(tollInfo.getAmountStatus().getValue())) {
-                for (RecipelInfoEvt recipelInfoEvt : recipelInfoEvts) {
-
-                    RecipelInfo recipelInfo = recipelInfoEvt.getRecipelInfo();
-                    recipelInfo = recipelInfoService.get(recipelInfo.getId());
-                    String value = tollInfo.getAmountStatus().getValue();
-                    System.out.println(recipelInfo.getIsDispension());
-                    if("1".equals(recipelInfo.getIsDispension())){
-                        throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "该用户已发药，无法退费！"));
-                    }
-                    if("recipelType_3".equals(recipelInfo.getRecipelType().getValue())){
-                        List<RecipelDetail> recipelDetails = recipelDetailService.getByRecipelInfoId(recipelInfo.getId());
-                        for (RecipelDetail recipelDetail:
-                                recipelDetails) {
-                            if(recipelDetail.getExecutions().compareTo(BigDecimal.valueOf(0))!=0){
-                                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "诊疗项目已执行划扣，无法退费！"));
-                            }
-                        }
-                        //根据登记信息获取检验检查信息
-                        boolean flages=false;
-                        List<InspectionCheck> inspectionChecks = inspectionCheckService.getByRecipelInfoId(recipelInfo.getId());
-                        for (InspectionCheck inspectionCheck : inspectionChecks) {
-                            if("1".equals(inspectionCheck.getStatus())){
-                                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "检验检查报告已填写，无法退费！"));
-                            }
-                        }
-                        //没有填写则删除
-                        inspectionCheckService.deleteByRecipelInfoId(recipelInfo.getId());
-                    }
-                    recipelInfo.setIsPay(value.substring(value.length() - 1));
-                    recipelInfo.setChargeStatus(-1);
-                    recipelInfo.setRetreatDate(new Date());
-                    recipelInfoService.save(recipelInfo);
-                    List<TollInfo> tollInfos = this.getByRecipeId(recipelInfo.getId());
-                    for (TollInfo info : tollInfos) {
-                        TollInfo refund = new TollInfo();
-                        TollInfo tollInfo1 = new TollInfo();
-                        BeanUtils.copyProperties(info,refund);
-                        BeanUtils.copyProperties(info,tollInfo1);
-                        refund.setId("");
-                        tollInfo1.setReturnType(1);
-                        refund.setAmountStatus(tollInfo.getAmountStatus());
-                        refund.setReturnType(1);
-                        tollSave = this.save(refund);
-                        this.save(tollInfo1);
-                    }
-//                    //退完费用如果是诊疗项目需要退还其材料
-                    if("recipelType_3".equals(recipelInfo.getRecipelType().getValue())) {
-                        returnPremium(recipelInfo);
-                    }
-
-                    //退费后需要进行退药退材料操作
-                    if(recipelInfo.getDispensionStatus()==0&&!"recipelType_3".equals(recipelInfo.getRecipelType().getValue())){
-                        //收费未发药退费情况
-                        medicinalStorageControlService.cancelOccupy(recipelInfo);
-                    }else if(recipelInfo.getDispensionStatus()==-1&&!"recipelType_3".equals(recipelInfo.getRecipelType().getValue())){
-                        //退药后退费情况
-                        medicinalStorageControlService.goBackFee(recipelInfo);
-                    }
-                }
-                //医保退费
-                if(medicareConfigProperties.getCheck().equals("true")){
-                    //退费的挂号信息
-                    registration = registrationService.get(tollInfo.getMedical().getRegistration().getId());
-                    //获取即时医保人员信息
-                    mdPsnDataService.getAndSetPsnData(registration);
-                    PatientMdData psnData = patientMdDataService.getOne(new LambdaQueryWrapper<PatientMdData>().eq(PatientMdData::getPatientId, registration.getPatientId().getId()));
-                    //门诊结算撤销 2208
-                    mdRegistrationService.revokeOutpatientSettlement_2208(registration.getSetlId(),psnData.getPsnNo(),registration.getMdtrtId());
-                }
+            if (BizConstants.AMOUNT_STATUS_REFUNDED.equals(tollInfo.getAmountStatus().getValue())) {
+                processRefund(tollEvt, tollInfo, recipelInfoEvts);
             }
             //挂号支付方式，收费状态
             if (null == registration) {
@@ -450,21 +210,15 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
             if (StringUtils.isNullOrEmpty(registration.getPayType())) {
                 registration.setPayType(tollInfo.getPaymentType());
             }
-//            //支付状态为：部分收费，已收费时改收费时间
-//            if ("1".equals(tollEvt.getChargeStatus()) || "2".equals(tollEvt.getChargeStatus()) ) {
-//                //修改付费状态
-//
-//                registration.setChargeDate(new Date());
-//            }
             //没有申明方式 或零售 就默认是整个挂号单
-            if(StringUtils.isNullOrEmpty(type) || "tollType_2".equals(tollInfo.getTollType().getValue()))
+            if(StringUtils.isNullOrEmpty(type) || BizConstants.TOLL_TYPE_INFUSION.equals(tollInfo.getTollType().getValue()))
             {
                 registration.setChargeStatus(tollEvt.getChargeStatus());
             }
             //否则只是单个处方
-            if ("amountStatus_1".equals(tollInfo.getAmountStatus().getValue())) {
+            if (BizConstants.AMOUNT_STATUS_PAID.equals(tollInfo.getAmountStatus().getValue())) {
                 registration.setChargeDate(new Date());
-            }else if ("amountStatus_2".equals(tollInfo.getAmountStatus().getValue())) {
+            }else if (BizConstants.AMOUNT_STATUS_REFUNDED.equals(tollInfo.getAmountStatus().getValue())) {
                 registration.setretreatsDate(new Date());
             }
             registration.setSetlId(seltId);
@@ -474,75 +228,243 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
 
     //诊疗项目退费，如果存在材料收费则需退还
     private void returnPremium(RecipelInfo recipelInfo) {
-//        ArrayList<Parameter> parameters = new ArrayList<>();
-//        parameters.add(new Parameter("recipel_info_id","=",recipelInfo.getId()));
-//        List<Dispensing> dispensings = dispensingService.listAll(parameters, "");
-//        if(!CollectionUtils.isEmpty(dispensings)){
-//            for (Dispensing dispensing : dispensings) {
-//                SupplierStock supplierStock = supplierStockService.get(dispensing.getSupplierStock().getId());
-//                Integer number = dispensing.getNumber();
-//                supplierStock.setNumber(supplierStock.getNumber()+number);
-//                supplierStockService.save(supplierStock);
-//                stuffService.updateInventory_3502(number,supplierStock.getStuff().getId());
-//            }
-             medicinalStorageControlService.materialRefund(recipelInfo);
-            //修改发药信息表
-            dispensingService.updateDelFlag(recipelInfo.getId());
-       // }
+        medicinalStorageControlService.materialRefund(recipelInfo);
+        //修改发药信息表
+        dispensingService.updateDelFlag(recipelInfo.getId());
     }
 
     //诊疗项目进行附加费材料扣减
     private void deduction(RecipelInfo recipelInfo) {
         medicinalStorageControlService.okOccupyStock(recipelInfo.getRegistration().getId(),recipelInfo.getId());
-//        List<RecipelDetail> byRecipelInfoId = recipelDetailService.getByRecipelInfoId(recipelInfo.getId());
-//        for (RecipelDetail recipelDetail : byRecipelInfoId) {
-//            if(Objects.equals(recipelDetail.getStuffType(),"4")&&recipelDetail.getIsExtra()==1){
-//                Dispensing dispensing = new Dispensing();
-//                Registration registration = new Registration();
-//                registration.setId(recipelInfo.getRegistration().getId());
-//                dispensing.setRecipelInfo(recipelInfo);
-//                dispensing.setRegistration(registration);
-                //进行材料扣减
-                //进行实际暂用
+    }
 
-//                Integer total = recipelDetail.getTotal();
-//                List<SupplierStock> byStuffIdDetail = supplierStockService.getByStuffIdDetail(recipelDetail.getDrugStuffId().getDrugStuffId());
-//                if(!CollectionUtils.isEmpty(byStuffIdDetail)){
-//                    for (SupplierStock supplierStock : byStuffIdDetail) {
-//                        Integer number = supplierStock.getNumber();
-//                        if(number>=total && total>0){
-//                            int initalNumber = total;
-//                            supplierStock.setNumber(number-total);
-//                            supplierStockService.save(supplierStock);
-//                            stuffService.updateInventory_3502(0-initalNumber,supplierStock.getStuff().getId());
-//                            total = 0;
-//                            //保存发药明细表
-//                            dispensing.setId("");
-//                            dispensing.setSupplierStock(supplierStock);
-//                            dispensing.setNumber(initalNumber);
-//                            dispensing.setCompany(supplierStock.getCompany());
-//                            String id = dispensingService.save(dispensing).getId();
-//                            break;
-//                        }else if(total>number&&total>0){
-//                            total = total-number;
-//                            supplierStock.setNumber(0);
-//                            supplierStockService.save(supplierStock);
-//                            stuffService.updateInventory_3502(0-number,supplierStock.getStuff().getId());
-//                            //保存发药明细表
-//                            dispensing.setId("");
-//                            dispensing.setSupplierStock(supplierStock);
-//                            dispensing.setNumber(number);
-//                            dispensing.setCompany(supplierStock.getCompany());
-//                            String id = dispensingService.save(dispensing).getId();
-//                        }
-//                    }
-//
-//                    if(total>0){
-//                        throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "库存不足，请补充库存!或者进行退费和作废处方。"));
-//                    }
-               // }
-         //   }
-       // }
+    /**
+     * 校验盘点状态：盘点中禁止收费/退费操作
+     */
+    private void validateInventoryNotInProgress(String companyId, String amountStatus) {
+        List<InventoryVerification> inventoryVerifications = inventoryVerificationService.getByCompanyId(companyId);
+        if (!CollectionUtils.isEmpty(inventoryVerifications)) {
+            String msg = BizConstants.AMOUNT_STATUS_PAID.equals(amountStatus)
+                    ? "正在进行盘点，无法进行收费操作!" : "正在进行盘点，无法进行退费操作!";
+            throw new ServiceException(msg);
+        }
+    }
+
+    /**
+     * 处理零售收费：创建患者、挂号、病例、处方，预占库存
+     */
+    private Registration processRetailCharge(TollEvt tollEvt, TollInfo tollInfo, Patient patient, List<RecipelInfoEvt> recipelInfoEvts) {
+        Patient patient1 = patientService.get(patient.getId());
+        if (ObjectUtils.isEmpty(patient1)) {
+            patient = patientService.save(patient);
+        } else {
+            patient = patient1;
+        }
+        Registration registration = this.addRetailRegistration(patient.getCompany(), patient);
+        MedicalRecord medicalRecord = this.addMedicalRecord(registration);
+        for (RecipelInfoEvt recipelInfoEvt : recipelInfoEvts) {
+            RecipelInfo recipelInfo = recipelInfoEvt.getRecipelInfo();
+            recipelInfo.setIsDispension("0");
+            recipelInfo.setIsPay("1");
+            recipelInfo.setPayDate(new Date());
+            recipelInfo.setChargeStatus(1);
+        }
+        RecipelInfo retail = this.addRetailRecipelInfo(recipelInfoEvts, medicalRecord);
+        tollInfo.setPatient(patient);
+        tollInfo.setRecipel(retail);
+        tollInfo.setMedical(medicalRecord);
+        this.save(tollInfo);
+        medicinalStorageControlService.preOccupyStock(retail);
+        if ("true".equals(medicareConfigProperties.getCheck())) {
+            mdInventoryService.updateInventoryList_3502A(tollEvt.getRecipelInfos().get(0));
+        }
+        return registration;
+    }
+
+    /**
+     * 处理正常收费（非零售）：保存处方、生成收费记录、医保上传、体验卡扣减、检验检查
+     */
+    private Registration processNormalCharge(TollEvt tollEvt, TollInfo tollInfo, Patient patient, List<RecipelInfoEvt> recipelInfoEvts) {
+        Registration registration = null;
+        tollInfo.setPatient(patient);
+        JSONArray array = new JSONArray();
+        for (RecipelInfoEvt recipelInfoEvt : recipelInfoEvts) {
+            RecipelInfo recipelInfo = recipelInfoService.get(recipelInfoEvt.getRecipelInfo().getId());
+            String value = tollInfo.getAmountStatus().getValue();
+            recipelInfo.setIsPay(value.substring(value.length() - 1));
+            recipelInfo.setPayDate(new Date());
+            recipelInfo.setIsDispension("0");
+            recipelInfo.setChargeStatus(1);
+            recipelInfo.setAmountReceivedTotal(tollEvt.getTollInfo().getAmountReceived());
+            recipelInfoService.save(recipelInfo);
+            TollInfo newTollInfo = new TollInfo();
+            BeanUtils.copyProperties(tollInfo, newTollInfo);
+            newTollInfo.setMedical(medicalRecordService.get(tollInfo.getMedical().getId()));
+            newTollInfo.setRecipel(recipelInfo);
+            newTollInfo.setAmountReceivable(recipelInfo.getFee());
+            newTollInfo.setAmountReceived(tollInfo.getAmountReceived());
+            newTollInfo.setAmountDiscounted(newTollInfo.getAmountReceivable().subtract(newTollInfo.getAmountReceived()));
+            // 根据处方名称映射收费类型
+            String tollTypeName = recipelInfo.getName().substring(0, 2);
+            DictItem tollType = newTollInfo.getTollType();
+            tollType.setValue(getTollTypeByTypeName(tollTypeName));
+            if ("诊疗".equals(tollTypeName) && newTollInfo.getAmountReceivable() != null && newTollInfo.getAmountReceived() != null && newTollInfo.getAmountReceivable().compareTo(newTollInfo.getAmountReceived()) != 0) {
+                newTollInfo.setRemarks("体验卡扣减");
+            }
+            newTollInfo.setTollType(tollType);
+            this.save(newTollInfo);
+            // 医保收费信息上传
+            if (medicareConfigProperties.getCheck().equals("true")) {
+                registration = buildAndUploadMedicareData(tollInfo, newTollInfo, recipelInfoEvt, array);
+            }
+            // 体验卡扣减
+            MemberManagement memberManagement = tollEvt.getMemberManagement();
+            if (!ObjectUtils.isEmpty(memberManagement) && "诊疗".equals(tollTypeName) && !CollectionUtils.isEmpty(memberManagement.getMemberManagementDetails())) {
+                memberManagementDetailService.updateUseNumber(memberManagement);
+            }
+            // 检验检查项目入库
+            if ("诊疗".equals(tollTypeName)) {
+                addInspectionCheck(recipelInfo);
+                deduction(recipelInfo);
+            }
+        }
+        if (medicareConfigProperties.getCheck().equals("true") && registration != null) {
+            mdRegistrationService.upRegistrationInfo_2203(registration);
+        }
+        return registration;
+    }
+
+    /**
+     * 根据处方名称前两个字映射收费类型值
+     */
+    private String getTollTypeByTypeName(String typeName) {
+        switch (typeName) {
+            case "西药": return BizConstants.TOLL_TYPE_WESTERN;
+            case "中药": return BizConstants.TOLL_TYPE_CHINESE;
+            case "输液": return BizConstants.TOLL_TYPE_INFUSION;
+            case "诊疗": return BizConstants.TOLL_TYPE_TREATMENT;
+            default: return "";
+        }
+    }
+
+    /**
+     * 构建医保收费数据并上传
+     */
+    private Registration buildAndUploadMedicareData(TollInfo tollInfo, TollInfo tollSave, RecipelInfoEvt recipelInfoEvt, JSONArray array) {
+        Registration registration = registrationService.get(tollInfo.getMedical().getRegistration().getId());
+        PatientMdData patientMdData = patientMdDataService.getOne(new LambdaQueryWrapper<PatientMdData>().eq(PatientMdData::getPatientId, registration.getPatientId().getId()));
+        ClinicOffice clinicOffice = registration.getClinicOffice();
+        User doctor = registration.getDoctor();
+        JSONObject data = new JSONObject();
+        data.put("feedetl_sn", tollSave.getId());
+        data.put("mdtrt_id", registration.getMdtrtId());
+        data.put("psn_no", patientMdData.getPsnNo());
+        data.put("chrg_bchno", tollSave.getTollNumber());
+        if (Objects.nonNull(tollSave.getRecipel())) {
+            data.put("rxno", tollSave.getRecipel().getCode());
+            data.put("rxd_circ_flag", "0");
+        }
+        data.put("fee_ocur_time", tollSave.getRecipel().getCreateDate());
+        data.put("med_list_codg", "");
+        data.put("medins_list_codg", "");
+        data.put("det_item_fee_sumamt", recipelInfoEvt.getRecipelInfo().getFee());
+        data.put("cnt", recipelInfoEvt.getRecipelDetailEvtList().get(0).getTotal());
+        data.put("pric", recipelInfoEvt.getRecipelDetailEvtList().get(0).getUnitPrice());
+        data.put("sin_dos_dscr", "");
+        data.put("used_frqu_dscr", "");
+        data.put("prd_days", recipelInfoEvt.getRecipelDetailEvtList().get(0).getDays().getValue());
+        data.put("medc_way_dscr", "");
+        data.put("bilg_dept_codg", clinicOffice.getCode());
+        data.put("bilg_dept_name", clinicOffice.getName());
+        data.put("bilg_dr_codg", doctor.getUserExt().getPracPsnCode());
+        data.put("bilg_dr_name", doctor.getName());
+        data.put("acord_dept_codg", clinicOffice.getCode());
+        data.put("acord_dept_name", clinicOffice.getName());
+        data.put("orders_dr_code", doctor.getUserExt().getPracPsnCode());
+        data.put("orders_dr_name", doctor.getName());
+        data.put("hosp_appr_flag", "1");
+        data.put("tcmdrug_used_way", "");
+        data.put("etip_flag", "");
+        data.put("etip_hosp_code", "");
+        data.put("dscg_tkdrug_flag", "");
+        data.put("matn_fee_flag", "");
+        data.put("comb_no", "");
+        data.put("expContent", "");
+        array.add(data);
+        return registration;
+    }
+
+    /**
+     * 处理退费逻辑：校验、更新处方状态、生成退费记录、退还库存、医保退费
+     */
+    private void processRefund(TollEvt tollEvt, TollInfo tollInfo, List<RecipelInfoEvt> recipelInfoEvts) {
+        for (RecipelInfoEvt recipelInfoEvt : recipelInfoEvts) {
+            RecipelInfo recipelInfo = recipelInfoService.get(recipelInfoEvt.getRecipelInfo().getId());
+            String value = tollInfo.getAmountStatus().getValue();
+            // 校验是否已发药
+            if ("1".equals(recipelInfo.getIsDispension())) {
+                throw new ServiceException("该用户已发药，无法退费！");
+            }
+            // 诊疗处方退费校验
+            if (BizConstants.RECIPEL_TYPE_OTHER.equals(recipelInfo.getRecipelType().getValue())) {
+                validateRefundForTreatmentRecipel(recipelInfo);
+            }
+            // 更新处方状态
+            recipelInfo.setIsPay(value.substring(value.length() - 1));
+            recipelInfo.setChargeStatus(-1);
+            recipelInfo.setRetreatDate(new Date());
+            recipelInfoService.save(recipelInfo);
+            // 生成退费记录
+            List<TollInfo> tollInfos = this.getByRecipeId(recipelInfo.getId());
+            for (TollInfo info : tollInfos) {
+                TollInfo refund = new TollInfo();
+                TollInfo tollInfo1 = new TollInfo();
+                BeanUtils.copyProperties(info, refund);
+                BeanUtils.copyProperties(info, tollInfo1);
+                refund.setId("");
+                tollInfo1.setReturnType(1);
+                refund.setAmountStatus(tollInfo.getAmountStatus());
+                refund.setReturnType(1);
+                this.save(refund);
+                this.save(tollInfo1);
+            }
+            // 退还材料
+            if (BizConstants.RECIPEL_TYPE_OTHER.equals(recipelInfo.getRecipelType().getValue())) {
+                returnPremium(recipelInfo);
+            }
+            // 退药退材料操作
+            if (recipelInfo.getDispensionStatus() == 0 && !BizConstants.RECIPEL_TYPE_OTHER.equals(recipelInfo.getRecipelType().getValue())) {
+                medicinalStorageControlService.cancelOccupy(recipelInfo);
+            } else if (recipelInfo.getDispensionStatus() == -1 && !BizConstants.RECIPEL_TYPE_OTHER.equals(recipelInfo.getRecipelType().getValue())) {
+                medicinalStorageControlService.goBackFee(recipelInfo);
+            }
+        }
+        // 医保退费
+        if (medicareConfigProperties.getCheck().equals("true")) {
+            Registration registration = registrationService.get(tollInfo.getMedical().getRegistration().getId());
+            mdPsnDataService.getAndSetPsnData(registration);
+            PatientMdData psnData = patientMdDataService.getOne(new LambdaQueryWrapper<PatientMdData>().eq(PatientMdData::getPatientId, registration.getPatientId().getId()));
+            mdRegistrationService.revokeOutpatientSettlement_2208(registration.getSetlId(), psnData.getPsnNo(), registration.getMdtrtId());
+        }
+    }
+
+    /**
+     * 诊疗处方退费校验：检查执行状态和检验检查报告
+     */
+    private void validateRefundForTreatmentRecipel(RecipelInfo recipelInfo) {
+        List<RecipelDetail> recipelDetails = recipelDetailService.getByRecipelInfoId(recipelInfo.getId());
+        for (RecipelDetail recipelDetail : recipelDetails) {
+            if (recipelDetail.getExecutions().compareTo(BigDecimal.valueOf(0)) != 0) {
+                throw new ServiceException("诊疗项目已执行划扣，无法退费！");
+            }
+        }
+        List<InspectionCheck> inspectionChecks = inspectionCheckService.getByRecipelInfoId(recipelInfo.getId());
+        for (InspectionCheck inspectionCheck : inspectionChecks) {
+            if ("1".equals(inspectionCheck.getStatus())) {
+                throw new ServiceException("检验检查报告已填写，无法退费！");
+            }
+        }
+        inspectionCheckService.deleteByRecipelInfoId(recipelInfo.getId());
     }
 
     //保存检验检测
@@ -552,127 +474,85 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
         List<CostItem> costItems = costItemService.getByRecipelInfo(recipelInfo);
         //判断诊疗项目是否为检验检查
         for (CostItem costItem : costItems) {
-            InspectionCheck inspectionCheck = new InspectionCheck();
-            if("treatmentItemType_0".equals(costItem.getItemType().getValue())){
-                inspectionCheck.setRecipelInfo(recipelInfo);
-                inspectionCheck.setRecipelDetail(costItem.getRecipelDetail());
-                inspectionCheck.setCompany(recipelInfo.getCompany());
-                inspectionCheck.setCostItem(costItem);
-                inspectionCheck.setName(costItem.getItemName());
-                inspectionCheck.setStatus("0");
-                inspectionCheck.setType("0");
-                inspectionCheck.setRegistration(recipelInfo.getRegistration());
-                //根据登记信息获取患者信息
-                Registration registration = registrationService.get(recipelInfo.getRegistration().getId());
-                Patient patient = patientService.get(registration.getPatientId().getId());
-                inspectionCheck.setPatient(patient);
-                inspectionCheck.setPatientName(patient.getName());
-                inspectionCheck.setSex(patient.getGender().getValue());
-                inspectionCheck.setPhone(patient.getPhone());
-                inspectionCheck.setCompleteBy(registration.getDoctor().getName());
-                inspectionCheck.setCompleteDate(registration.getReceptionEndDate());
-                String uuid = IdGen.uuid();
-                inspectionCheck.setId(uuid);
-
-                inspectionCheckService.allSave(inspectionCheck);
-                //插入主表后，需要插入到明细和详情表中
-                InspectionCheckInfo inspectionCheckInfo = new InspectionCheckInfo();
-                String uuid1 = IdGen.uuid();
-                inspectionCheckInfo.setId(uuid1);
-                inspectionCheckInfo.setCompany(recipelInfo.getCompany());
-                inspectionCheckInfo.setPatient(patient);
-                inspectionCheckInfo.setInspectionCheck(inspectionCheck);
-                JSONObject userObj = com.geeke.sys.utils.SessionUtils.getUserJson();
-                inspectionCheckInfo.setCreateBy(userObj.getString("name"));
-                inspectionCheckInfo.setUpdateBy(userObj.getString("name"));
-                inspectionCheckInfo.setCreateDate(new Date());
-                inspectionCheckInfo.setUpdateDate(new Date());
-                inspectionCheckInfoService.allSave(inspectionCheckInfo);
-                //插入详情表
-                List<CostItemPackage> all = costItemPackageService.getAll(costItem.getId());
-                int seq=0;
-                if(!CollectionUtils.isEmpty(all)){
-                    for (CostItemPackage costItemPackage : all) {
-                        seq++;
-                        InspectionCheckDetail inspectionCheckDetail = new InspectionCheckDetail();
-                        inspectionCheckDetail.setId(IdGen.uuid());
-                        inspectionCheckDetail.setCompany(recipelInfo.getCompany());
-                        inspectionCheckDetail.setInspectionCheckInfo(inspectionCheckInfo);
-                        inspectionCheckDetail.setSeq(seq);
-                        CostItem costItem1 = new CostItem();
-                        String costIitemId=costItemPackage.getCostItemId();
-                        if(costIitemId!=null){
-                            costItem1.setId(costIitemId);
-                        }else {
-                            costItem1.setId(costItemPackage.getCostItemPkgId());
-                        }
-
-                        inspectionCheckDetail.setCostItem(costItem1);
-                        inspectionCheckDetail.setCreateBy(userObj.getString("name"));
-                        inspectionCheckDetail.setUpdateBy(userObj.getString("name"));
-                        inspectionCheckDetail.setCreateDate(new Date());
-                        inspectionCheckDetail.setUpdateDate(new Date());
-                        inspectionCheckDetailService.allSave(inspectionCheckDetail);
-                    }
-                }
-            }else if( "treatmentItemType_1".equals(costItem.getItemType().getValue())){
-                inspectionCheck.setRecipelInfo(recipelInfo);
-                inspectionCheck.setCompany(recipelInfo.getCompany());
-                inspectionCheck.setCostItem(costItem);
-                inspectionCheck.setName(costItem.getItemName());
-                inspectionCheck.setStatus("0");
-                inspectionCheck.setType("1");
-                inspectionCheck.setRegistration(recipelInfo.getRegistration());
-                //根据登记信息获取患者信息
-                Registration registration = registrationService.get(recipelInfo.getRegistration().getId());
-                Patient patient = patientService.get(registration.getPatientId().getId());
-                inspectionCheck.setPatient(patient);
-                inspectionCheck.setPatientName(patient.getName());
-                inspectionCheck.setSex(patient.getGender().getValue());
-                inspectionCheck.setPhone(patient.getPhone());
-                inspectionCheck.setCompleteBy(registration.getDoctor().getName());
-                inspectionCheck.setCompleteDate(registration.getReceptionEndDate());
-                String uuid = IdGen.uuid();
-                inspectionCheck.setId(uuid);
-                inspectionCheckService.allSave(inspectionCheck);
-
-                //插入主表后，需要插入到明细和详情表中
-                InspectionCheckInfo inspectionCheckInfo = new InspectionCheckInfo();
-                String uuid1 = IdGen.uuid();
-                inspectionCheckInfo.setId(uuid1);
-                inspectionCheckInfo.setCompany(recipelInfo.getCompany());
-                inspectionCheckInfo.setPatient(patient);
-                inspectionCheckInfo.setInspectionCheck(inspectionCheck);
-                JSONObject userObj = com.geeke.sys.utils.SessionUtils.getUserJson();
-                inspectionCheckInfo.setCreateBy(userObj.getString("name"));
-                inspectionCheckInfo.setUpdateBy(userObj.getString("name"));
-                inspectionCheckInfo.setCreateDate(new Date());
-                inspectionCheckInfo.setUpdateDate(new Date());
-                inspectionCheckInfoService.allSave(inspectionCheckInfo);
-                //插入详情表
-                List<CostItemPackage> all = costItemPackageService.getAll(costItem.getId());
-                int seq=0;
-                if(!CollectionUtils.isEmpty(all)){
-                    for (CostItemPackage costItemPackage : all) {
-                        seq++;
-                        InspectionCheckDetail inspectionCheckDetail = new InspectionCheckDetail();
-                        inspectionCheckDetail.setId(IdGen.uuid());
-                        inspectionCheckDetail.setCompany(recipelInfo.getCompany());
-                        inspectionCheckDetail.setInspectionCheckInfo(inspectionCheckInfo);
-                        inspectionCheckDetail.setSeq(seq);
-                        CostItem costItem1 = new CostItem();
-                        costItem1.setId(costItemPackage.getCostItemId());
-                        inspectionCheckDetail.setCostItem(costItem1);
-                        inspectionCheckDetail.setCreateBy(userObj.getString("name"));
-                        inspectionCheckDetail.setUpdateBy(userObj.getString("name"));
-                        inspectionCheckDetail.setCreateDate(new Date());
-                        inspectionCheckDetail.setUpdateDate(new Date());
-                        inspectionCheckDetailService.allSave(inspectionCheckDetail);
-                    }
-                }
+            String itemType = costItem.getItemType().getValue();
+            if (BizConstants.TREATMENT_ITEM_TYPE_LAB.equals(itemType) || BizConstants.TREATMENT_ITEM_TYPE_EXAM.equals(itemType)) {
+                // 0-检验 1-检查
+                String type = BizConstants.TREATMENT_ITEM_TYPE_LAB.equals(itemType) ? "0" : "1";
+                saveInspectionCheck(recipelInfo, costItem, type);
             }
         }
+    }
 
+    /**
+     * 保存检验检查记录（合并检验和检查的公共逻辑）
+     */
+    private void saveInspectionCheck(RecipelInfo recipelInfo, CostItem costItem, String type) {
+        //根据登记信息获取患者信息
+        Registration registration = registrationService.get(recipelInfo.getRegistration().getId());
+        Patient patient = patientService.get(registration.getPatientId().getId());
+
+        InspectionCheck inspectionCheck = new InspectionCheck();
+        inspectionCheck.setRecipelInfo(recipelInfo);
+        inspectionCheck.setCompany(recipelInfo.getCompany());
+        inspectionCheck.setCostItem(costItem);
+        inspectionCheck.setName(costItem.getItemName());
+        inspectionCheck.setStatus("0");
+        inspectionCheck.setType(type);
+        inspectionCheck.setRegistration(recipelInfo.getRegistration());
+        inspectionCheck.setPatient(patient);
+        inspectionCheck.setPatientName(patient.getName());
+        inspectionCheck.setSex(patient.getGender().getValue());
+        inspectionCheck.setPhone(patient.getPhone());
+        inspectionCheck.setCompleteBy(registration.getDoctor().getName());
+        inspectionCheck.setCompleteDate(registration.getReceptionEndDate());
+        inspectionCheck.setId(IdGen.uuid());
+
+        // 检验类型需要设置 recipelDetail
+        if ("0".equals(type)) {
+            inspectionCheck.setRecipelDetail(costItem.getRecipelDetail());
+        }
+
+        inspectionCheckService.allSave(inspectionCheck);
+
+        //插入主表后，需要插入到明细和详情表中
+        InspectionCheckInfo inspectionCheckInfo = new InspectionCheckInfo();
+        inspectionCheckInfo.setId(IdGen.uuid());
+        inspectionCheckInfo.setCompany(recipelInfo.getCompany());
+        inspectionCheckInfo.setPatient(patient);
+        inspectionCheckInfo.setInspectionCheck(inspectionCheck);
+        JSONObject userObj = com.geeke.sys.utils.SessionUtils.getUserJson();
+        inspectionCheckInfo.setCreateBy(userObj.getString("name"));
+        inspectionCheckInfo.setUpdateBy(userObj.getString("name"));
+        inspectionCheckInfo.setCreateDate(new Date());
+        inspectionCheckInfo.setUpdateDate(new Date());
+        inspectionCheckInfoService.allSave(inspectionCheckInfo);
+
+        //插入详情表
+        List<CostItemPackage> all = costItemPackageService.getAll(costItem.getId());
+        if (!CollectionUtils.isEmpty(all)) {
+            int seq = 0;
+            for (CostItemPackage costItemPackage : all) {
+                seq++;
+                InspectionCheckDetail inspectionCheckDetail = new InspectionCheckDetail();
+                inspectionCheckDetail.setId(IdGen.uuid());
+                inspectionCheckDetail.setCompany(recipelInfo.getCompany());
+                inspectionCheckDetail.setInspectionCheckInfo(inspectionCheckInfo);
+                inspectionCheckDetail.setSeq(seq);
+                CostItem costItem1 = new CostItem();
+                String costItemId = costItemPackage.getCostItemId();
+                if (costItemId != null) {
+                    costItem1.setId(costItemId);
+                } else {
+                    costItem1.setId(costItemPackage.getCostItemPkgId());
+                }
+                inspectionCheckDetail.setCostItem(costItem1);
+                inspectionCheckDetail.setCreateBy(userObj.getString("name"));
+                inspectionCheckDetail.setUpdateBy(userObj.getString("name"));
+                inspectionCheckDetail.setCreateDate(new Date());
+                inspectionCheckDetail.setUpdateDate(new Date());
+                inspectionCheckDetailService.allSave(inspectionCheckDetail);
+            }
+        }
     }
 
     private MedicalRecord addMedicalRecord(Registration registration) {
@@ -688,10 +568,11 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
 
     private List<Patient> getPatientByNameAndPhone(Patient patient) {
         Company company = SessionUtils.getUser().getCompany();
-        List parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("name", "=", patient.getName()));
-        parameters.add(new Parameter("company_id", "=", company.getId()));
-        parameters.add(new Parameter("phone", "=", patient.getPhone()));
+        List<Parameter> parameters = SearchParamsBuilder.create()
+                .eq("name", patient.getName())
+                .eq("company_id", company.getId())
+                .eq("phone", patient.getPhone())
+                .build();
         return patientService.listAll(parameters,"");
     }
 
@@ -711,7 +592,7 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
             registration.setDispensingStatus("0");
             DictItem dictItem = new DictItem();
             //已就诊
-            dictItem.setValue("registrationStatus_1");
+            dictItem.setValue(BizConstants.REG_STATUS_VISITED);
             registration.setStatus(dictItem);
             //已收费
             registration.setChargeStatus("2");
@@ -721,7 +602,7 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
     private RecipelInfo addRetailRecipelInfo(List<RecipelInfoEvt> recipelInfos,MedicalRecord medicalRecord) {
         RecipelInfo save = null;
         DictItem dictItem = new DictItem();
-        dictItem.setValue("recipelType_5");
+        dictItem.setValue(BizConstants.RECIPEL_TYPE_EXTERNAL);
         //零售处方默认只有一个处方
         for (RecipelInfoEvt recipelInfoEvt : recipelInfos) {
             RecipelInfo recipelInfo = recipelInfoEvt.getRecipelInfo();
@@ -736,7 +617,6 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
             for (RecipelDetail recipelDetail : recipelInfoEvt.getRecipelDetailEvtList()) {
                 recipelDetail.setRecipelInfo(recipelInfo);
                 recipelDetail.setCompany(recipelInfo.getCompany());
-//                Stuff stuff = stuffService.get(recipelDetail.getDrugStuffId().getDrugStuffId());
                 //目前只考虑药品
                 DrugStuffEvt drugStuffEvt = new DrugStuffEvt();
                 if(Objects.equals("4",recipelDetail.getStuffType())){
@@ -766,100 +646,87 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
     }
 
     public List<TollInfo> getInRecipeIds(List<String> recipelInfoIds,String amountStatus){
-        List parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("recipel_id", "in", recipelInfoIds));
-        parameters.add(new Parameter("amount_status", "=", amountStatus));
+        List<Parameter> parameters = SearchParamsBuilder.create()
+                .in("recipel_id", recipelInfoIds)
+                .eq("amount_status", amountStatus)
+                .build();
         return this.listAll(parameters,"");
     }
 
     public List<TollInfo> getByRecipeId(String recipelInfoId){
-        List parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("recipel_id", "=", recipelInfoId));
+        List<Parameter> parameters = SearchParamsBuilder.create()
+                .eq("recipel_id", recipelInfoId)
+                .build();
         return this.listAll(parameters,"");
     }
 
     public List<TollInfo> getByMedicalId(String medicalId) {
-        List parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("medical_id", "=", medicalId));
+        List<Parameter> parameters = SearchParamsBuilder.create()
+                .eq("medical_id", medicalId)
+                .build();
         return this.listAll(parameters, "");
     }
 
     public ResponseEntity<JSONObject> tollTotalForm(SearchParams searchParams) {
         // 入参columnName格式：recipelInfo.recipel_type|costItem.item_type
-        PageRequest pageRequest = new PageRequest(searchParams.getOffset(), searchParams.getLimit(), searchParams.getParams(), searchParams.getOrderby());
-        int total = this.dao.formTollCount(pageRequest);
-        List<TollInfo> list = null;
-        if (total > 0) {
-            list = this.dao.tollTotalForm(pageRequest);
-        }
+        PageRequest pageRequest = toPageRequest(searchParams);
+        Page<TollInfo> page = paginate(
+            () -> this.dao.formTollCount(pageRequest),
+            () -> this.dao.tollTotalForm(pageRequest)
+        );
         TollVo tollVo = this.getTotalTollForSearch(pageRequest);
-        tollVo.setPage(new Page((long)total, list));
+        tollVo.setPage(page);
         return ResponseEntity.ok(ResultUtil.successJson(tollVo));
     }
 
     public ResponseEntity<JSONObject> orgtolldetail(SearchParams searchParams) {
         // 入参columnName格式：recipelInfo.recipel_type|costItem.item_type
-        PageRequest pageRequest = new PageRequest(searchParams.getOffset(), searchParams.getLimit(), searchParams.getParams(), searchParams.getOrderby());
-        int total = this.dao.formTollCount(pageRequest);
-        List<TollInfo> list = null;
-        if (total > 0) {
-            list = this.dao.tollTotalForm(pageRequest);
-        }
+        PageRequest pageRequest = toPageRequest(searchParams);
+        Page<TollInfo> page = paginate(
+            () -> this.dao.formTollCount(pageRequest),
+            () -> this.dao.tollTotalForm(pageRequest)
+        );
         TollVo tollVo = this.getTotalTollForSearch(pageRequest);
-        tollVo.setPage(new Page((long)total, list));
+        tollVo.setPage(page);
         return ResponseEntity.ok(ResultUtil.successJson(tollVo));
     }
 
     public ResponseEntity<JSONObject> tollDetailForm(SearchParams searchParams) {
         // 入参columnName格式：toll_type|patient_id|department.id|user.id|recipelInfo.recipel_type in ["_0","_1"]
-        PageRequest pageRequest = new PageRequest(searchParams.getOffset(), searchParams.getLimit(), searchParams.getParams(), searchParams.getOrderby());
-        int total = this.dao.formDetailCount(pageRequest);
-        List<TollInfo> list = null;
-        if (total > 0) {
-            list = this.dao.tollDetailForm(pageRequest);
-            for (TollInfo i : list){
-                i.getDoctor().getDepartment().setName(i.getDepartment());
+        PageRequest pageRequest = toPageRequest(searchParams);
+        Page<TollInfo> page = paginate(
+            () -> this.dao.formDetailCount(pageRequest),
+            () -> {
+                List<TollInfo> list = this.dao.tollDetailForm(pageRequest);
+                for (TollInfo i : list) {
+                    if (i.getDoctor() != null && i.getDoctor().getDepartment() != null) {
+                        i.getDoctor().getDepartment().setName(i.getDepartment());
+                    }
+                }
+                return list;
             }
-        }
+        );
         TollVo tollVo = this.dao.tollDetailAmountReceivedAble(pageRequest);
-        tollVo.setPage(new Page((long)total, list));
+        tollVo.setPage(page);
         return ResponseEntity.ok(ResultUtil.successJson(tollVo));
     }
 
 
     public ResponseEntity<JSONObject> orgtollDetailForm(SearchParams searchParams) {
         // 入参columnName格式：toll_type|patient_id|department.id|user.id|recipelInfo.recipel_type in ["_0","_1"]
-        PageRequest pageRequest = new PageRequest(searchParams.getOffset(), searchParams.getLimit(), searchParams.getParams(), searchParams.getOrderby());
-        int total = this.dao.formDetailCount(pageRequest);
-        List<TollInfo> list = null;
-        if (total > 0) {
-            list = this.dao.tollDetailForm(pageRequest);
-        }
+        PageRequest pageRequest = toPageRequest(searchParams);
+        Page<TollInfo> page = paginate(
+            () -> this.dao.formDetailCount(pageRequest),
+            () -> this.dao.tollDetailForm(pageRequest)
+        );
         TollVo tollVo = this.dao.tollDetailAmountReceivedAble(pageRequest);
-        tollVo.setPage(new Page((long)total, list));
+        tollVo.setPage(page);
         return ResponseEntity.ok(ResultUtil.successJson(tollVo));
     }
 
-    //获取查询总金额
+    //获取查询总金额（优化：合并为一次查询）
     private TollVo getTotalTollForSearch(PageRequest pageRequest) {
-        TollVo tollVo = this.dao.tollTotalAmountReceivableAndAbleTotal(pageRequest);
-//        TollVo tollVoReturn = this.dao.tollTotalAmountReturnAndAbleTotal(pageRequest);
-//        BigDecimal amountReceivableTotal = tollVo.getAmountReceivableTotal().subtract(tollVoReturn.getAmountReceivableTotal());
-//        BigDecimal amountReceivedTotal = tollVo.getAmountReceivedTotal().subtract(tollVoReturn.getAmountReceivedTotal());
-        BigDecimal cashTotal = this.dao.tollTotalCashTotal(pageRequest);
-        BigDecimal alipayTotal = this.dao.tollTotalAlipayTotal(pageRequest);
-        BigDecimal weChatTotal = this.dao.tollTotalWeChatTotal(pageRequest);
-        BigDecimal bankCardPayTotal = this.dao.tollTotalBankCardPayTotal(pageRequest);
-        BigDecimal ybTotalTotal = this.dao.tollTotalYbTotalTotal(pageRequest);
-
-//        tollVo.setAmountReceivableTotal(amountReceivableTotal);
-//        tollVo.setAmountReceivedTotal(amountReceivedTotal);
-        tollVo.setCashTotal(cashTotal);
-        tollVo.setAlipayTotal(alipayTotal);
-        tollVo.setWeChatTotal(weChatTotal);
-        tollVo.setBankCardPayTotal(bankCardPayTotal);
-        tollVo.setYbTotal(ybTotalTotal);
-        return tollVo;
+        return this.dao.tollTotalAllPayments(pageRequest);
     }
 
     public TollInfo getTollInfoByRegistrationId(String registrationId) {
@@ -872,7 +739,7 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
     }
 
     public Page<WorkLoad> getWorkload(List<Parameter> params,int offset,int limit, String orderby) {
-        List parameters =new ArrayList<Parameter>();
+        List<Parameter> parameters = new ArrayList<>();
         PageRequest pageRequest = new PageRequest(offset, limit, params, orderby);
         List<WorkLoad> count = this.dao.countWorkload(pageRequest);
         int total=0;
@@ -882,55 +749,48 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
         List<WorkLoad> workloads=null;
         if(total>0){
             workloads = this.dao.getWorkload(pageRequest);
-            List<WorkLoad> workLoads = null;
-            workLoads = this.dao.getCount(pageRequest);
+            List<WorkLoad> workLoads = this.dao.getCount(pageRequest);
+
+            // 设置就诊次数
             for (WorkLoad workLoad: workloads) {
                 for (WorkLoad workload: workLoads){
                     if (workLoad.getName().equals(workload.getName())){
                         workLoad.setCount(workload.getCount());
                     }
                 }
-                parameters.clear();
-                parameters.addAll(params);
-                parameters.add(new Parameter("su.name", "=", workLoad.getName()));
-                PageRequest pageRequest1 = new PageRequest(parameters, orderby);
-                List<WorkLoad> temporaryCosts = this.dao.getTemporaryCost(pageRequest1);
-                //System.out.println(temporaryCost.get(1).toString());
-                for (WorkLoad temporaryCost:
-                        temporaryCosts) {
-                    if("中成药".equals(temporaryCost.getTypes())){
-                        workLoad.setChinesePatentCost(temporaryCost.getTemporaryCost());
-                    }else if("西药".equals(temporaryCost.getTypes())){
-                        workLoad.setWestCost(temporaryCost.getTemporaryCost());
-                    }else if("中草药".equals(temporaryCost.getTypes())){
-                        workLoad.setChineseCost(temporaryCost.getTemporaryCost());
-                    }else if("材料".equals(temporaryCost.getTypes())){
-                        workLoad.setStuffCost(temporaryCost.getTemporaryCost());
-                    }else if("检验".equals(temporaryCost.getTypes())){
-                        workLoad.setExaminesCost(temporaryCost.getTemporaryCost());
-                    }else if("检查".equals(temporaryCost.getTypes())){
-                        workLoad.setCheckoutCost(temporaryCost.getTemporaryCost());
-                    }else if("理疗".equals(temporaryCost.getTypes())){
-                        workLoad.setTherapyCost(temporaryCost.getTemporaryCost());
-                    }else if("治疗".equals(temporaryCost.getTypes())){
-                        workLoad.setCureCost(temporaryCost.getTemporaryCost());
-                    }else if("其他".equals(temporaryCost.getTypes())){
-                        workLoad.setOtherCost(temporaryCost.getTemporaryCost());
-                    }
+            }
+
+            // 批量查询所有医生的临时费用（优化 N+1 查询）
+            List<String> doctorNames = workloads.stream()
+                    .map(WorkLoad::getName)
+                    .distinct()
+                    .collect(Collectors.toList());
+            PageRequest batchPageRequest = new PageRequest(params, orderby);
+            List<WorkLoad> allTemporaryCosts = this.dao.getTemporaryCostBatch(batchPageRequest, doctorNames);
+
+            // 按医生名称分组
+            Map<String, List<WorkLoad>> costsByDoctor = allTemporaryCosts.stream()
+                    .collect(Collectors.groupingBy(WorkLoad::getName));
+
+            // 设置临时费用
+            for (WorkLoad workLoad: workloads) {
+                List<WorkLoad> temporaryCosts = costsByDoctor.getOrDefault(workLoad.getName(), Collections.emptyList());
+                for (WorkLoad temporaryCost : temporaryCosts) {
+                    setCostByTypeName(workLoad, temporaryCost.getTypes(), temporaryCost.getTemporaryCost());
                 }
             }
         }
 
-        return new Page((long)total, workloads);
+        return new Page<>((long)total, workloads);
     }
 
     public WorkLoadStat getWorkLoadStat(List<Parameter> params,int offset,int limit, String orderby){
-        List parameters = new ArrayList<Parameter>();
+        List<Parameter> parameters = new ArrayList<>();
         PageRequest pageRequest = new PageRequest(offset, limit, params, orderby);
         WorkLoadStat workLoadStat = this.dao.getWorkLoadStat(pageRequest);
         WorkLoadStat workLoads = null;
         workLoads = this.dao.getCounts(pageRequest);
-        if (!workLoads.getCount().equals("0")){
+        if (workLoads != null && workLoads.getCount() != null && !workLoads.getCount().equals("0")){
             workLoadStat.setCount(workLoads.getCount());
         }
         if(workLoadStat!=null){
@@ -938,28 +798,9 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
             parameters.addAll(params);
             PageRequest pageRequest1 = new PageRequest(parameters, orderby);
             List<WorkLoadStat> temporaryCostStat = this.dao.getTemporaryCostStat(pageRequest1);
-            if(temporaryCostStat!=null&&temporaryCostStat.size()>0){
-                for (WorkLoadStat workLoadStat1:
-                temporaryCostStat) {
-                    if("中成药".equals(workLoadStat1.getTypes())){
-                        workLoadStat.setChinesePatentCost(workLoadStat1.getTemporaryCost());
-                    }else if("西药".equals(workLoadStat1.getTypes())){
-                        workLoadStat.setWestCost(workLoadStat1.getTemporaryCost());
-                    }else if("中草药".equals(workLoadStat1.getTypes())){
-                        workLoadStat.setChineseCost(workLoadStat1.getTemporaryCost());
-                    }else if("材料".equals(workLoadStat1.getTypes())){
-                        workLoadStat.setStuffCost(workLoadStat1.getTemporaryCost());
-                    }else if("检验".equals(workLoadStat1.getTypes())){
-                        workLoadStat.setExaminesCost(workLoadStat1.getTemporaryCost());
-                    }else if("检查".equals(workLoadStat1.getTypes())){
-                        workLoadStat.setCheckoutCost(workLoadStat1.getTemporaryCost());
-                    }else if("理疗".equals(workLoadStat1.getTypes())){
-                        workLoadStat.setTherapyCost(workLoadStat1.getTemporaryCost());
-                    }else if("治疗".equals(workLoadStat1.getTypes())){
-                        workLoadStat.setCureCost(workLoadStat1.getTemporaryCost());
-                    }else if("其他".equals(workLoadStat1.getTypes())){
-                        workLoadStat.setOtherCost(workLoadStat1.getTemporaryCost());
-                    }
+            if (temporaryCostStat != null && temporaryCostStat.size() > 0) {
+                for (WorkLoadStat workLoadStat1 : temporaryCostStat) {
+                    setCostByTypeName(workLoadStat, workLoadStat1.getTypes(), workLoadStat1.getTemporaryCost());
                 }
             }
         }
@@ -994,13 +835,12 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
     public Page<Ypjxc> getypjxcmanagement(YpjxcRc ypjxcRc){
         String institution = companyService.getInstitution(ypjxcRc.getCompanyId());
         ypjxcRc.setJgid(institution);
-        List<Ypjxc> list=tollInfoDao.getypjxcmanagementcounts(ypjxcRc);
-        int total=list.size();
-        List<Ypjxc> list2=null;
-        if(total>0){
-            list2=tollInfoDao.getypjxcmanagement(ypjxcRc);
+        int total = tollInfoDao.countYpjxcManagement(ypjxcRc);
+        List<Ypjxc> list2 = null;
+        if(total > 0){
+            list2 = tollInfoDao.getypjxcmanagement(ypjxcRc);
         }
-        return new Page<>((long) total,list2);
+        return new Page<>((long) total, list2);
     }
 
     /**
@@ -1011,13 +851,12 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
     public Page<Ypjxc> getypjxcmanagementsums(YpjxcRc ypjxcRc){
         String institution = companyService.getInstitution(ypjxcRc.getCompanyId());
         ypjxcRc.setJgid(institution);
-        List<Ypjxc> list=tollInfoDao.getypjxcmanagementcounts(ypjxcRc);
-        int total=list.size();
-        List<Ypjxc> list2=null;
-        if(total>0){
-            list2=tollInfoDao.getypjxcmanagementsums(ypjxcRc);
+        int total = tollInfoDao.countYpjxcManagement(ypjxcRc);
+        List<Ypjxc> list2 = null;
+        if(total > 0){
+            list2 = tollInfoDao.getypjxcmanagementsums(ypjxcRc);
         }
-        return new Page<>((long) total,list2);
+        return new Page<>((long) total, list2);
     }
 
     /**
@@ -1028,25 +867,23 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
     public Page<Stuffsalessummary> getStuffsalessummarylists(StuffsalessummaryRc stuffsalessummaryRc){
         String institution = companyService.getInstitution(stuffsalessummaryRc.getCompanyId());
         stuffsalessummaryRc.setJgid(institution);
-        List<Stuffsalessummary> list=tollInfoDao.getStuffsalessummarytotals(stuffsalessummaryRc);
-        int total=list.size();
-        List<Stuffsalessummary> list2=null;
-        if(total>0){
-            list2=tollInfoDao.getStuffsalessummarylist(stuffsalessummaryRc);
+        int total = tollInfoDao.countStuffSalesSummary(stuffsalessummaryRc);
+        List<Stuffsalessummary> list2 = null;
+        if(total > 0){
+            list2 = tollInfoDao.getStuffsalessummarylist(stuffsalessummaryRc);
         }
-        return new Page<>((long) total,list2);
+        return new Page<>((long) total, list2);
     }
 
     public Page<Stuffsalessummary> getStuffsalessummarysumss(StuffsalessummaryRc stuffsalessummaryRc){
         String institution = companyService.getInstitution(stuffsalessummaryRc.getCompanyId());
         stuffsalessummaryRc.setJgid(institution);
-        List<Stuffsalessummary> list=tollInfoDao.getStuffsalessummarytotals(stuffsalessummaryRc);
-        int total=list.size();
-        List<Stuffsalessummary> list2=null;
-        if(total>0){
-            list2=tollInfoDao.getStuffsalessummarysums(stuffsalessummaryRc);
+        int total = tollInfoDao.countStuffSalesSummary(stuffsalessummaryRc);
+        List<Stuffsalessummary> list2 = null;
+        if(total > 0){
+            list2 = tollInfoDao.getStuffsalessummarysums(stuffsalessummaryRc);
         }
-        return new Page<>((long) total,list2);
+        return new Page<>((long) total, list2);
     }
 
     /**
@@ -1057,13 +894,12 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
     public Page<Ypjxc> getcljxcmanagement(YpjxcRc ypjxcRc){
         String institution = companyService.getInstitution(ypjxcRc.getCompanyId());
         ypjxcRc.setJgid(institution);
-        List<Ypjxc> list=tollInfoDao.getcljxcmanagementcounts(ypjxcRc);
-        int total=list.size();
-        List<Ypjxc> list2=null;
-        if(total>0){
-            list2=tollInfoDao.getcljxcmanagement(ypjxcRc);
+        int total = tollInfoDao.countCljxcManagement(ypjxcRc);
+        List<Ypjxc> list2 = null;
+        if(total > 0){
+            list2 = tollInfoDao.getcljxcmanagement(ypjxcRc);
         }
-        return new Page<>((long) total,list2);
+        return new Page<>((long) total, list2);
     }
 
     /**
@@ -1074,13 +910,12 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
     public Page<Ypjxc> getcljxcmanagementsums(YpjxcRc ypjxcRc){
         String institution = companyService.getInstitution(ypjxcRc.getCompanyId());
         ypjxcRc.setJgid(institution);
-        List<Ypjxc> list=tollInfoDao.getcljxcmanagementcounts(ypjxcRc);
-        int total=list.size();
-        List<Ypjxc> list2=null;
-        if(total>0){
-            list2=tollInfoDao.getcljxcmanagementsums(ypjxcRc);
+        int total = tollInfoDao.countCljxcManagement(ypjxcRc);
+        List<Ypjxc> list2 = null;
+        if(total > 0){
+            list2 = tollInfoDao.getcljxcmanagementsums(ypjxcRc);
         }
-        return new Page<>((long) total,list2);
+        return new Page<>((long) total, list2);
     }
 
     /**
@@ -1089,13 +924,12 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
      * @return
      */
     public Page<Ypclrkcx> getypclrkcxlist(YpjxcRc ypjxcRc){
-        List<Ypclrkcx> list=tollInfoDao.getypclrkcxtotal(ypjxcRc);
-        int total=list.size();
-        List<Ypclrkcx> list2=null;
-        if(total>0){
-            list2=tollInfoDao.getypclrkcxlist(ypjxcRc);
+        int total = tollInfoDao.countYpclrkcx(ypjxcRc);
+        List<Ypclrkcx> list2 = null;
+        if(total > 0){
+            list2 = tollInfoDao.getypclrkcxlist(ypjxcRc);
         }
-        return new Page<>((long) total,list2);
+        return new Page<>((long) total, list2);
     }
 
     /**
@@ -1104,44 +938,27 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
      * @return
      */
     public Page<Ypclrkcx> getypclrkcxsums(YpjxcRc ypjxcRc){
-        List<Ypclrkcx> list=tollInfoDao.getypclrkcxtotal(ypjxcRc);
-        int total=list.size();
-        List<Ypclrkcx> list2=null;
-        if(total>0){
-            list2=tollInfoDao.getypclrkcxsums(ypjxcRc);
+        int total = tollInfoDao.countYpclrkcx(ypjxcRc);
+        List<Ypclrkcx> list2 = null;
+        if(total > 0){
+            list2 = tollInfoDao.getypclrkcxsums(ypjxcRc);
         }
-        return new Page<>((long) total,list2);
+        return new Page<>((long) total, list2);
     }
 
     /**
-     * 药品进销存信息
-     * @param ypjxcRc
-     * @return
+     * 机构管理-药品进销存信息
      */
     public Page<Ypjxc> getpharmaceuticalInventoryManagement(YpjxcRc ypjxcRc){
         ypjxcRc.setJgzt("1");
-        List<Ypjxc> list=tollInfoDao.getypjxcmanagementcounts(ypjxcRc);
-        int total=list.size();
-        List<Ypjxc> list2=null;
-        if(total>0){
-            list2=tollInfoDao.getypjxcmanagement(ypjxcRc);
-        }
-        return new Page<>((long) total,list2);
+        return getypjxcmanagement(ypjxcRc);
     }
     /**
      * 机构管理-药品进销存汇总数量和价格
-     * @param ypjxcRc
-     * @return
      */
     public Page<Ypjxc> getpharmaceuticalInventoryManagementsums(YpjxcRc ypjxcRc){
         ypjxcRc.setJgzt("1");
-        List<Ypjxc> list=tollInfoDao.getypjxcmanagementcounts(ypjxcRc);
-        int total=list.size();
-        List<Ypjxc> list2=null;
-        if(total>0){
-            list2=tollInfoDao.getypjxcmanagementsums(ypjxcRc);
-        }
-        return new Page<>((long) total,list2);
+        return getypjxcmanagementsums(ypjxcRc);
     }
 
     public List<Ypjxc> getjglist(YpjxcRc ypjxcRc){
@@ -1150,121 +967,62 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
 
     /**
      * 机构管理-材料进销存信息
-     * @param ypjxcRc
-     * @return
      */
     public Page<Ypjxc> getmaterialmanagement(YpjxcRc ypjxcRc){
         ypjxcRc.setJgzt("1");
-        List<Ypjxc> list=tollInfoDao.getcljxcmanagementcounts(ypjxcRc);
-        int total=list.size();
-        List<Ypjxc> list2=null;
-        if(total>0){
-            list2=tollInfoDao.getcljxcmanagement(ypjxcRc);
-        }
-        return new Page<>((long) total,list2);
+        return getcljxcmanagement(ypjxcRc);
     }
 
     /**
      * 机构管理-材料进销存汇总数量和价格
-     * @param ypjxcRc
-     * @return
      */
     public Page<Ypjxc> getmaterialmanagementsums(YpjxcRc ypjxcRc){
         ypjxcRc.setJgzt("1");
-        List<Ypjxc> list=tollInfoDao.getcljxcmanagementcounts(ypjxcRc);
-        int total=list.size();
-        List<Ypjxc> list2=null;
-        if(total>0){
-            list2=tollInfoDao.getcljxcmanagementsums(ypjxcRc);
-        }
-        return new Page<>((long) total,list2);
+        return getcljxcmanagementsums(ypjxcRc);
     }
 
     /**
      * 机构管理-药品材料入库信息统计
-     * @param ypjxcRc
-     * @return
      */
     public Page<Ypclrkcx> drugmaterialsstockmanagement(YpjxcRc ypjxcRc){
         ypjxcRc.setJgzt("1");
-        List<Ypclrkcx> list=tollInfoDao.getypclrkcxtotal(ypjxcRc);
-        int total=list.size();
-        List<Ypclrkcx> list2=null;
-        if(total>0){
-            list2=tollInfoDao.getypclrkcxlist(ypjxcRc);
-        }
-        return new Page<>((long) total,list2);
+        return getypclrkcxlist(ypjxcRc);
     }
 
     /**
      * 机构管理-药品材料入库信息汇总
-     * @param ypjxcRc
-     * @return
      */
     public Page<Ypclrkcx> drugmaterialsstockmanagementsums(YpjxcRc ypjxcRc){
         ypjxcRc.setJgzt("1");
-        List<Ypclrkcx> list=tollInfoDao.getypclrkcxtotal(ypjxcRc);
-        int total=list.size();
-        List<Ypclrkcx> list2=null;
-        if(total>0){
-            list2=tollInfoDao.getypclrkcxsums(ypjxcRc);
-        }
-        return new Page<>((long) total,list2);
+        return getypclrkcxsums(ypjxcRc);
     }
 
     /**
      * 机构管理-获取耗材销售情况
-     * @param stuffsalessummaryRc
-     * @return
      */
     public Page<Stuffsalessummary> getconsumablemarketstatistics(StuffsalessummaryRc stuffsalessummaryRc){
         stuffsalessummaryRc.setJgzt("1");
-        List<Stuffsalessummary> list=tollInfoDao.getStuffsalessummarytotals(stuffsalessummaryRc);
-        int total=list.size();
-        List<Stuffsalessummary> list2=null;
-        if(total>0){
-            list2=tollInfoDao.getStuffsalessummarylist(stuffsalessummaryRc);
-        }
-        return new Page<>((long) total,list2);
+        return getStuffsalessummarylists(stuffsalessummaryRc);
     }
 
-    /*
-    机构管理-获取耗材销售信息汇总价格和数量
+    /**
+     * 机构管理-获取耗材销售信息汇总价格和数量
      */
     public Page<Stuffsalessummary> getconsumablemarketstatisticssum(StuffsalessummaryRc stuffsalessummaryRc){
         stuffsalessummaryRc.setJgzt("1");
-        List<Stuffsalessummary> list=tollInfoDao.getStuffsalessummarytotals(stuffsalessummaryRc);
-        int total=list.size();
-        List<Stuffsalessummary> list2=null;
-        if(total>0){
-            list2=tollInfoDao.getStuffsalessummarysums(stuffsalessummaryRc);
-        }
-        return new Page<>((long) total,list2);
+        return getStuffsalessummarysumss(stuffsalessummaryRc);
     }
 
     public Page<DrugSales> getdrugmarketstatistics(List<Parameter> params, int offset, int limit, String orderby) {
-        PageRequest pageRequest = new PageRequest(offset, limit, params, orderby);
-        List<DrugSales> count = this.dao.countDrugSales(pageRequest);
-        int total=0;
-        if(count!=null&&count.size()>0){
-            total=count.size();
-        }
-        List<DrugSales> drugSales=null;
-        if(total>0){
-            drugSales=this.dao.getDrugSales(pageRequest);
-        }
-        return new Page<>(total,drugSales);
+        return getDrugSales(params, offset, limit, orderby);
     }
 
     public DrugSales getdrugmarketstatisticsStat(List<Parameter> params, int offset, int limit, String orderby){
-        PageRequest pageRequest = new PageRequest(offset, limit, params, orderby);
-        DrugSales drugSalesStat = this.dao.getDrugSalesStat(pageRequest);
-        return drugSalesStat;
+        return getDrugSalesStat(params, offset, limit, orderby);
     }
 
 
     public Page<WorkLoad> getdoctorDetailstatistics(List<Parameter> params,int offset,int limit, String orderby) {
-        List parameters =new ArrayList<Parameter>();
         PageRequest pageRequest = new PageRequest(offset, limit, params, orderby);
         List<WorkLoad> count = this.dao.countWorkload(pageRequest);
         int total=0;
@@ -1277,42 +1035,23 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
 
             for (WorkLoad workLoad:
                     workloads) {
-                parameters.clear();
-                parameters.addAll(params);
-                parameters.add(new Parameter("su.name", "=", workLoad.getName()));
-                PageRequest pageRequest1 = new PageRequest(parameters, orderby);
+                List<Parameter> doctorParams = new ArrayList<>(params);
+                doctorParams.addAll(SearchParamsBuilder.create()
+                        .eq("su.name", workLoad.getName())
+                        .build());
+                PageRequest pageRequest1 = new PageRequest(doctorParams, orderby);
                 List<WorkLoad> temporaryCosts = this.dao.getTemporaryCost(pageRequest1);
-                //System.out.println(temporaryCost.get(1).toString());
-                for (WorkLoad temporaryCost:
-                        temporaryCosts) {
-                    if("中成药".equals(temporaryCost.getTypes())){
-                        workLoad.setChinesePatentCost(temporaryCost.getTemporaryCost());
-                    }else if("西药".equals(temporaryCost.getTypes())){
-                        workLoad.setWestCost(temporaryCost.getTemporaryCost());
-                    }else if("中草药".equals(temporaryCost.getTypes())){
-                        workLoad.setChineseCost(temporaryCost.getTemporaryCost());
-                    }else if("材料".equals(temporaryCost.getTypes())){
-                        workLoad.setStuffCost(temporaryCost.getTemporaryCost());
-                    }else if("检验".equals(temporaryCost.getTypes())){
-                        workLoad.setExaminesCost(temporaryCost.getTemporaryCost());
-                    }else if("检查".equals(temporaryCost.getTypes())){
-                        workLoad.setCheckoutCost(temporaryCost.getTemporaryCost());
-                    }else if("理疗".equals(temporaryCost.getTypes())){
-                        workLoad.setTherapyCost(temporaryCost.getTemporaryCost());
-                    }else if("治疗".equals(temporaryCost.getTypes())){
-                        workLoad.setCureCost(temporaryCost.getTemporaryCost());
-                    }else if("其他".equals(temporaryCost.getTypes())){
-                        workLoad.setOtherCost(temporaryCost.getTemporaryCost());
-                    }
+                for (WorkLoad temporaryCost : temporaryCosts) {
+                    setCostByTypeName(workLoad, temporaryCost.getTypes(), temporaryCost.getTemporaryCost());
                 }
             }
         }
 
-        return new Page((long)total, workloads);
+        return new Page<>((long)total, workloads);
     }
 
     public WorkLoadStat getdoctorDetailstatisticsStat(List<Parameter> params,int offset,int limit, String orderby){
-        List parameters = new ArrayList<Parameter>();
+        List<Parameter> parameters = new ArrayList<>();
         PageRequest pageRequest = new PageRequest(offset, limit, params, orderby);
         List<WorkLoadStat> workLoadStat = this.dao.getWorkLoadStats(pageRequest);
         WorkLoadStat workLoadStat2 = new WorkLoadStat();
@@ -1335,28 +1074,9 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
             parameters.addAll(params);
             PageRequest pageRequest1 = new PageRequest(parameters, orderby);
             List<WorkLoadStat> temporaryCostStat = this.dao.getTemporaryCostStat(pageRequest1);
-            if(temporaryCostStat!=null&&temporaryCostStat.size()>0){
-                for (WorkLoadStat workLoadStat1:
-                        temporaryCostStat) {
-                    if("中成药".equals(workLoadStat1.getTypes())){
-                        workLoadStat2.setChinesePatentCost(workLoadStat1.getTemporaryCost());
-                    }else if("西药".equals(workLoadStat1.getTypes())){
-                        workLoadStat2.setWestCost(workLoadStat1.getTemporaryCost());
-                    }else if("中草药".equals(workLoadStat1.getTypes())){
-                        workLoadStat2.setChineseCost(workLoadStat1.getTemporaryCost());
-                    }else if("材料".equals(workLoadStat1.getTypes())){
-                        workLoadStat2.setStuffCost(workLoadStat1.getTemporaryCost());
-                    }else if("检验".equals(workLoadStat1.getTypes())){
-                        workLoadStat2.setExaminesCost(workLoadStat1.getTemporaryCost());
-                    }else if("检查".equals(workLoadStat1.getTypes())){
-                        workLoadStat2.setCheckoutCost(workLoadStat1.getTemporaryCost());
-                    }else if("理疗".equals(workLoadStat1.getTypes())){
-                        workLoadStat2.setTherapyCost(workLoadStat1.getTemporaryCost());
-                    }else if("治疗".equals(workLoadStat1.getTypes())){
-                        workLoadStat2.setCureCost(workLoadStat1.getTemporaryCost());
-                    }else if("其他".equals(workLoadStat1.getTypes())){
-                        workLoadStat2.setOtherCost(workLoadStat1.getTemporaryCost());
-                    }
+            if (temporaryCostStat != null && temporaryCostStat.size() > 0) {
+                for (WorkLoadStat workLoadStat1 : temporaryCostStat) {
+                    setCostByTypeName(workLoadStat2, workLoadStat1.getTypes(), workLoadStat1.getTemporaryCost());
                 }
             }
         }
@@ -1377,449 +1097,213 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
 
     //药品销售汇总统计导出
     private void exportDrugDetail(SearchParams searchParams, HttpServletResponse response) throws IOException {
-        HSSFWorkbook workbook = new HSSFWorkbook();
-        HSSFSheet sheet = workbook.createSheet("药品销售汇总统计表");
-        String fileName = "药品销售汇总统计"+".xls";
-        //设置样式
-        CellStyle blackStyle = workbook.createCellStyle();
-        //自动换行*重要*
-        blackStyle.setWrapText(true);
-        blackStyle.setAlignment(HorizontalAlignment.CENTER);
-        blackStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-
-        //新增数据行，并且设置单元格数据
-        int rowNum=1;
-
-        // headers表示excel表中第一行的表头 在excel表中添加表头
-        String[] headers = {"药品分类","药品名称","规格","数量","总价(元)"};
-        HSSFRow row = sheet.createRow(0);
-
-
-        //设置字体样式
-        CellStyle cellStyle = workbook.createCellStyle();
-        cellStyle.setWrapText(true);
-        HSSFFont font1 = workbook.createFont();
-        font1.setColor(IndexedColors.BLACK.getIndex());
-        font1.setBold(false);
-        font1.setFontHeightInPoints((short) 11);
-        cellStyle.setFont(font1);
-
-
-        for (int i = 0; i < headers.length; i++) {
-            HSSFCell cell = row.createCell(i);
-            HSSFRichTextString hssfRichTextString = new HSSFRichTextString(headers[i]);
-            HSSFFont font = workbook.createFont();
-            font.setColor(IndexedColors.BLACK.getIndex());//设置excel数据字体颜色
-            font.setFontHeightInPoints((short) 14);//设置excel数据字体大小
-            font.setBold(true);
-
-            hssfRichTextString.applyFont(font);
-
-            cell.setCellValue(hssfRichTextString);
-            cell.setCellStyle(blackStyle);
-        }
-
-        row.setHeightInPoints(30);//目的是想把行高设置成30px
-        //获取数据库数据
-        Page<DrugSales> drugSalesList = getDrugSales(searchParams.getParams(), 0, 1000000, searchParams.getOrder());
-        Map<Integer,Integer> map=new HashMap<>();
-        // 初始化标题的列宽,字体
-        for (int i= 0; i<5;i++) {
-            map.put(i, row.getCell(i).getStringCellValue().getBytes().length * 256 + 200);
-            // row.getCell(i).setCellStyle(blackStyle);//设置自动换行
-        }
-
-        if(!CollectionUtils.isEmpty(drugSalesList.getRows())){
-            for (DrugSales drugSales : drugSalesList.getRows()) {
-                HSSFRow row1 = sheet.createRow(rowNum);
-                row1.setHeightInPoints(20);
-                //药品类型
-                row1.createCell(0).setCellValue(drugSales.getType());
-                map.put(0,Math.max(drugSales.getType().getBytes().length* 256 + 200,map.get(0)));
-
-                //药品名称
-                row1.createCell(1).setCellValue(drugSales.getName());
-                map.put(1,Math.max(drugSales.getName().getBytes().length*250+200,map.get(1)));
-
-                //规格
-                String norms = drugSales.getDosis()+drugSales.getDosisUnit()+"*"+drugSales.getPreparation()+drugSales.getPreparationUnit()+"/"+drugSales.getPack();
-                row1.createCell(2).setCellValue(norms);
-                map.put(2,Math.max((norms.getBytes().length)*250+200,map.get(2)));
-
-                //数量
-                String number = Math.floor(drugSales.getTotal()/Integer.parseInt(drugSales.getPreparation())) >= 0 ? (int)Math.floor(drugSales.getTotal()/Integer.parseInt(drugSales.getPreparation()))+drugSales.getPack()+(drugSales.getTotal()%Integer.parseInt(drugSales.getPreparation())>0?(drugSales.getTotal()%Integer.parseInt(drugSales.getPreparation()))+drugSales.getPreparationUnit():""):drugSales.getTotal()+drugSales.getPreparation();
-                row1.createCell(3).setCellValue(number);
-                map.put(3,Math.max(number.getBytes().length*250+200,map.get(3)));
-
-                //总价
-                BigDecimal convert = BigdecimalConvert.convert(drugSales.getAllFee());
-                row1.createCell(4).setCellValue(convert.doubleValue());
-                map.put(4,Math.max(convert.toString().getBytes().length*250+200,map.get(4)));
-
-
-                rowNum++;
-
-                for (int i = 1; i < 5; i++) {
-                    row1.getCell(i).setCellStyle(cellStyle);//设置文本的样式
-                }
-
-
+        Page<DrugSales> drugSalesPage = getDrugSales(searchParams.getParams(), 0, 1000000, searchParams.getOrder());
+        List<Map<String, Object>> rows = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(drugSalesPage.getRows())) {
+            for (DrugSales ds : drugSalesPage.getRows()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("type", ds.getType());
+                row.put("name", ds.getName());
+                // 规格 = 剂量+剂量单位*数量+数量单位/包装
+                String norms = ds.getDosis() + ds.getDosisUnit() + "*" + ds.getPreparation() + ds.getPreparationUnit() + "/" + ds.getPack();
+                row.put("norms", norms);
+                // 数量换算
+                int prep = Integer.parseInt(ds.getPreparation());
+                int wholePacks = ds.getTotal() / prep;
+                int remainder = ds.getTotal() % prep;
+                String number = wholePacks + ds.getPack() + (remainder > 0 ? remainder + ds.getPreparationUnit() : "");
+                row.put("number", number);
+                row.put("allFee", BigdecimalConvert.convert(ds.getAllFee()));
+                rows.add(row);
             }
         }
-
-        for (int i= 0; i<5;i++){
-            //设置列宽
-            sheet.setColumnWidth(i,map.get(i));
-        }
-
-        response.setContentType("application/octet-stream");
-        response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
-        response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileName,"UTF-8"));
-        response.flushBuffer();
-        OutputStream outputStream = response.getOutputStream();
-        workbook.write(response.getOutputStream());
-        outputStream.flush();
-        outputStream.close();
+        new ExcelExportBuilder("药品销售汇总统计表")
+                .addColumns(
+                        new ExcelExportBuilder.Column("药品分类", "type"),
+                        new ExcelExportBuilder.Column("药品名称", "name"),
+                        new ExcelExportBuilder.Column("规格", "norms"),
+                        new ExcelExportBuilder.Column("数量", "number"),
+                        new ExcelExportBuilder.Column("总价(元)", "allFee")
+                )
+                .data(rows)
+                .write(response, "药品销售汇总统计.xlsx");
     }
 
     //医生收入统计导出
     private void exportDoctorDetail(SearchParams searchParams, HttpServletResponse response) throws IOException {
-        HSSFWorkbook workbook = new HSSFWorkbook();
-        HSSFSheet sheet = workbook.createSheet("医生收入统计表");
-        String fileName = "医生收入统计"+".xls";
-        //设置样式
-        CellStyle blackStyle = workbook.createCellStyle();
-        //自动换行*重要*
-        blackStyle.setWrapText(true);
-        blackStyle.setAlignment(HorizontalAlignment.CENTER);
-        blackStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-
-        //新增数据行，并且设置单元格数据
-        int rowNum=1;
-
-        // headers表示excel表中第一行的表头 在excel表中添加表头
-        String[] headers = {"医生姓名","接诊次数","总金额(元)","挂号费(元)","西药费(元)","中草药费(元)","中成药费(元)","材料费(元)","检验费(元)","检查费(元)","理疗费(元)","治疗费(元)","其他"};
-        HSSFRow row = sheet.createRow(0);
-
-
-        //设置字体样式
-        CellStyle cellStyle = workbook.createCellStyle();
-        cellStyle.setWrapText(true);
-        HSSFFont font1 = workbook.createFont();
-        font1.setColor(IndexedColors.BLACK.getIndex());
-        font1.setBold(false);
-        font1.setFontHeightInPoints((short) 11);
-        cellStyle.setFont(font1);
-
-        //设置第十列的字体颜色
-        CellStyle cellStyle101 = workbook.createCellStyle();
-        cellStyle101.setWrapText(true);
-        HSSFFont font101 = workbook.createFont();
-        font101.setColor(IndexedColors.GREEN.getIndex());
-        font101.setBold(false);
-        font101.setFontHeightInPoints((short) 11);
-        cellStyle101.setFont(font101);
-
-        CellStyle cellStyle102 = workbook.createCellStyle();
-        cellStyle102.setWrapText(true);
-        HSSFFont font102 = workbook.createFont();
-        font102.setColor(IndexedColors.RED.getIndex());
-        font102.setBold(false);
-        font102.setFontHeightInPoints((short) 11);
-        cellStyle102.setFont(font102);
-
-
-
-        for (int i = 0; i < headers.length; i++) {
-            HSSFCell cell = row.createCell(i);
-            HSSFRichTextString hssfRichTextString = new HSSFRichTextString(headers[i]);
-            HSSFFont font = workbook.createFont();
-            font.setColor(IndexedColors.BLACK.getIndex());//设置excel数据字体颜色
-            font.setFontHeightInPoints((short) 14);//设置excel数据字体大小
-            font.setBold(true);
-
-            hssfRichTextString.applyFont(font);
-
-            cell.setCellValue(hssfRichTextString);
-            cell.setCellStyle(blackStyle);
+        Page<WorkLoad> workloadPage = getWorkload(searchParams.getParams(), 0, 1000000, searchParams.getOrder());
+        List<Map<String, Object>> rows = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(workloadPage.getRows())) {
+            for (WorkLoad wl : workloadPage.getRows()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("name", wl.getName());
+                row.put("count", wl.getCount());
+                row.put("grossAmount", BigdecimalConvert.convert(wl.getGrossAmount()));
+                row.put("registrationCost", BigdecimalConvert.convert(wl.getRegistrationCost()));
+                row.put("westCost", BigdecimalConvert.convert(wl.getWestCost()));
+                row.put("chineseCost", BigdecimalConvert.convert(wl.getChineseCost()));
+                row.put("chinesePatentCost", BigdecimalConvert.convert(wl.getChinesePatentCost()));
+                row.put("stuffCost", BigdecimalConvert.convert(wl.getStuffCost()));
+                row.put("examinesCost", BigdecimalConvert.convert(wl.getExaminesCost()));
+                row.put("checkoutCost", BigdecimalConvert.convert(wl.getCheckoutCost()));
+                row.put("therapyCost", BigdecimalConvert.convert(wl.getTherapyCost()));
+                row.put("cureCost", BigdecimalConvert.convert(wl.getCureCost()));
+                row.put("otherCost", BigdecimalConvert.convert(wl.getOtherCost()));
+                rows.add(row);
+            }
         }
-
-        row.setHeightInPoints(30);//目的是想把行高设置成30px
-        //获取数据库数据
-        Page<WorkLoad> workload = getWorkload(searchParams.getParams(), 0, 1000000, searchParams.getOrder());
-        Map<Integer,Integer> map=new HashMap<>();
-        // 初始化标题的列宽,字体
-        for (int i= 0; i<13;i++) {
-            map.put(i, row.getCell(i).getStringCellValue().getBytes().length * 256 + 200);
-            // row.getCell(i).setCellStyle(blackStyle);//设置自动换行
-        }
-
-        if(!CollectionUtils.isEmpty(workload.getRows())){
-            for (WorkLoad workLoad : workload.getRows()) {
-                HSSFRow row1 = sheet.createRow(rowNum);
-                row1.setHeightInPoints(20);
-                //医生姓名
-                row1.createCell(0).setCellValue(workLoad.getName());
-                map.put(0,Math.max(workLoad.getName().getBytes().length* 256 + 200,map.get(0)));
-
-                //接诊次数
-                row1.createCell(1).setCellValue(workLoad.getCount());
-                map.put(1,Math.max(workLoad.getCount().getBytes().length*250+200,map.get(1)));
-
-                //总金额
-                row1.createCell(2).setCellValue(workLoad.getGrossAmount()!=null?workLoad.getGrossAmount().doubleValue():new BigDecimal("0").doubleValue());
-                map.put(2,Math.max(((workLoad.getGrossAmount()!=null?workLoad.getGrossAmount():"0").toString().getBytes().length)*250+200,map.get(2)));
-
-                //挂号费
-                row1.createCell(3).setCellValue(workLoad.getRegistrationCost()!=null?workLoad.getRegistrationCost().doubleValue():new BigDecimal("0").doubleValue());
-                map.put(3,Math.max((workLoad.getRegistrationCost()!=null?workLoad.getRegistrationCost():"0").toString().getBytes().length*250+200,map.get(3)));
-
-                //西药费
-                row1.createCell(4).setCellValue(workLoad.getWestCost()!=null?workLoad.getWestCost().doubleValue():new BigDecimal("0").doubleValue());
-                map.put(4,Math.max((workLoad.getWestCost()!=null?workLoad.getWestCost():"0").toString().getBytes().length*250+200,map.get(4)));
-
-                //中药费
-                row1.createCell(5).setCellValue(workLoad.getChineseCost()!=null?workLoad.getChineseCost().doubleValue():new BigDecimal("0").doubleValue());
-                map.put(5,Math.max(((workLoad.getChineseCost()!=null?workLoad.getChineseCost():"0").toString().getBytes().length)*250+200,map.get(5)));
-
-                //中成药费
-                BigDecimal chinesePatentCost = workLoad.getChinesePatentCost() != null ? workLoad.getChinesePatentCost() : new BigDecimal("0");
-                row1.createCell(6).setCellValue(chinesePatentCost.doubleValue());
-                map.put(6,Math.max(chinesePatentCost.toString().getBytes().length*250+200,map.get(6)));
-
-                //材料费
-                BigDecimal stuffCost = workLoad.getStuffCost() != null ? workLoad.getStuffCost() : new BigDecimal("0");
-                row1.createCell(7).setCellValue(stuffCost.doubleValue());
-                map.put(7,Math.max(stuffCost.toString().getBytes().length*250+200,map.get(7)));
-
-                //检验费
-                BigDecimal examinesCost = workLoad.getExaminesCost() != null ? workLoad.getExaminesCost() : new BigDecimal("0");
-                row1.createCell(8).setCellValue(examinesCost.doubleValue());
-                map.put(8,Math.max(examinesCost.toString().getBytes().length*250+200,map.get(8)));
-
-                //检查费
-                BigDecimal checkoutCost = workLoad.getCheckoutCost() != null ? workLoad.getCheckoutCost() : new BigDecimal("0");
-                row1.createCell(9).setCellValue(checkoutCost.doubleValue());
-                map.put(9,Math.max((checkoutCost.toString().getBytes().length)*250+200,map.get(9)));
-
-                //理疗费
-                BigDecimal therapyCost = workLoad.getTherapyCost() != null ? workLoad.getTherapyCost() : new BigDecimal("0");
-                row1.createCell(10).setCellValue(therapyCost.doubleValue());
-                map.put(10,Math.max((therapyCost.toString().getBytes().length)*250+200,map.get(10)));
-
-                //治疗费
-                BigDecimal cureCost = workLoad.getCureCost() != null ? workLoad.getCureCost() : new BigDecimal("0");
-                row1.createCell(11).setCellValue(cureCost.doubleValue());
-                map.put(11,Math.max((cureCost.toString().getBytes().length)*250 + 200,map.get(11)));
-
-                //其他
-                BigDecimal otherCost = workLoad.getOtherCost() != null ? workLoad.getOtherCost() : new BigDecimal("0");
-                row1.createCell(12).setCellValue(otherCost.doubleValue());
-                map.put(12,Math.max((otherCost.toString().getBytes().length)*256 + 200,map.get(12)));
-
-                rowNum++;
-
-                for (int i = 1; i < 13; i++) {
-                    row1.getCell(i).setCellStyle(cellStyle);//设置文本的样式
-                }
-
-
-                }
-        }
-
-        for (int i= 0; i<13;i++){
-            //设置列宽
-            sheet.setColumnWidth(i,map.get(i));
-        }
-
-        response.setContentType("application/octet-stream");
-        response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
-        response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileName,"UTF-8"));
-        response.flushBuffer();
-        OutputStream outputStream = response.getOutputStream();
-        workbook.write(response.getOutputStream());
-        outputStream.flush();
-        outputStream.close();
+        new ExcelExportBuilder("医生收入统计表")
+                .addColumns(
+                        new ExcelExportBuilder.Column("医生姓名", "name"),
+                        new ExcelExportBuilder.Column("接诊次数", "count"),
+                        new ExcelExportBuilder.Column("总金额(元)", "grossAmount"),
+                        new ExcelExportBuilder.Column("挂号费(元)", "registrationCost"),
+                        new ExcelExportBuilder.Column("西药费(元)", "westCost"),
+                        new ExcelExportBuilder.Column("中草药费(元)", "chineseCost"),
+                        new ExcelExportBuilder.Column("中成药费(元)", "chinesePatentCost"),
+                        new ExcelExportBuilder.Column("材料费(元)", "stuffCost"),
+                        new ExcelExportBuilder.Column("检验费(元)", "examinesCost"),
+                        new ExcelExportBuilder.Column("检查费(元)", "checkoutCost"),
+                        new ExcelExportBuilder.Column("理疗费(元)", "therapyCost"),
+                        new ExcelExportBuilder.Column("治疗费(元)", "cureCost"),
+                        new ExcelExportBuilder.Column("其他", "otherCost")
+                )
+                .data(rows)
+                .write(response, "医生收入统计.xlsx");
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public void exportDrugOrStuffStock(YpjxcRc ypjxcRc, HttpServletResponse response) throws IOException {
             exportDrugStock(ypjxcRc,response);
     }
 
     private void exportDrugStock(YpjxcRc ypjxcRc, HttpServletResponse response) throws IOException {
-        HSSFWorkbook workbook = new HSSFWorkbook();
-        HSSFSheet sheet = null;
-        String fileName = null;
-        if(Objects.equals("1",ypjxcRc.getYpcltype())){
-            sheet = workbook.createSheet("药品入库统计表");
-            fileName = "药品入库统计"+".xls";
-        }else {
-            sheet = workbook.createSheet("材料入库统计表");
-            fileName = "材料入库统计"+".xls";
-        }
-        //设置样式
-        CellStyle blackStyle = workbook.createCellStyle();
-        //自动换行*重要*
-        blackStyle.setWrapText(true);
-        blackStyle.setAlignment(HorizontalAlignment.CENTER);
-        blackStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        boolean isDrug = Objects.equals("1", ypjxcRc.getYpcltype());
+        String sheetName = isDrug ? "药品入库统计表" : "材料入库统计表";
+        String fileName = isDrug ? "药品入库统计.xlsx" : "材料入库统计.xlsx";
 
-        //新增数据行，并且设置单元格数据
-        int rowNum=1;
-
-        // headers表示excel表中第一行的表头 在excel表中添加表头
-        String[] headers = {"入库日期","入库单号","入库人员","商品编码","商品名称","分类","批号","规格","生产厂家","供应商","数量","单位","零售价(元)","成本价(元)","成本合计(元)","有效期","审核状态","备注"};
-
-        HSSFRow row = sheet.createRow(0);
-
-
-        //设置字体样式
-        CellStyle cellStyle = workbook.createCellStyle();
-        cellStyle.setWrapText(true);
-        HSSFFont font1 = workbook.createFont();
-        font1.setColor(IndexedColors.BLACK.getIndex());
-        font1.setBold(false);
-        font1.setFontHeightInPoints((short) 11);
-        cellStyle.setFont(font1);
-
-
-        for (int i = 0; i < headers.length; i++) {
-            HSSFCell cell = row.createCell(i);
-            HSSFRichTextString hssfRichTextString = new HSSFRichTextString(headers[i]);
-            HSSFFont font = workbook.createFont();
-            font.setColor(IndexedColors.BLACK.getIndex());//设置excel数据字体颜色
-            font.setFontHeightInPoints((short) 14);//设置excel数据字体大小
-            font.setBold(true);
-
-            hssfRichTextString.applyFont(font);
-
-            cell.setCellValue(hssfRichTextString);
-            cell.setCellStyle(blackStyle);
-        }
-
-        row.setHeightInPoints(30);//目的是想把行高设置成30px
-        //获取数据库数据
-        //Page<DrugSales> drugSalesList = getDrugSales(searchParams.getParams(), 0, 1000000, searchParams.getOrder());
-        Page<Ypclrkcx> getypclrkcxlist = getypclrkcxlist(ypjxcRc);
-        Map<Integer,Integer> map=new HashMap<>();
-        // 初始化标题的列宽,字体
-        for (int i= 0; i<18;i++) {
-            map.put(i, row.getCell(i).getStringCellValue().getBytes().length * 256 + 200);
-            // row.getCell(i).setCellStyle(blackStyle);//设置自动换行
-        }
-
-        if(!CollectionUtils.isEmpty(getypclrkcxlist.getRows())){
-            for (Ypclrkcx ypclrkcx : getypclrkcxlist.getRows()) {
-                HSSFRow row1 = sheet.createRow(rowNum);
-                row1.setHeightInPoints(20);
-                //入库日期
-                row1.createCell(0).setCellValue(ypclrkcx.getRkrq());
-                map.put(0,Math.max(ypclrkcx.getRkrq().getBytes().length* 256 + 200,map.get(0)));
-
-                //入库单号
-                row1.createCell(1).setCellValue(ypclrkcx.getRkdh());
-                map.put(1,Math.max(ypclrkcx.getRkdh().getBytes().length*250+1200,map.get(1)));
-
-                //入库人员
-                row1.createCell(2).setCellValue(ypclrkcx.getRkry());
-                map.put(2,Math.max((ypclrkcx.getRkry().getBytes().length)*250+200,map.get(2)));
-
-                //商品编码
-                row1.createCell(3).setCellValue(ypclrkcx.getSpbh());
-                map.put(3,Math.max(ypclrkcx.getSpbh().getBytes().length*250+200,map.get(3)));
-
-                //商品名称
-                row1.createCell(4).setCellValue(ypclrkcx.getSpmc());
-                map.put(4,Math.max(ypclrkcx.getSpmc().getBytes().length*250+200,map.get(4)));
-
-                //分类
-               if(Objects.equals("1",ypclrkcx.getYpcltype())){
-                   String type = Objects.equals("medicalType_0",ypclrkcx.getLx())?"西药":Objects.equals("medicalType_1",ypclrkcx.getLx())?"中草药":"中成药";
-                   row1.createCell(5).setCellValue(type);
-                   map.put(5,Math.max(type.getBytes().length*256+200,map.get(5)));
-               }else {
-                   String type = Objects.equals("stuffType_1",ypclrkcx.getLx())?"非医用材料":"医用材料";
-                   row1.createCell(5).setCellValue(type);
-                   map.put(5,Math.max(type.getBytes().length*256+200,map.get(5)));
-               }
-
-                //批号
-                row1.createCell(6).setCellValue(ypclrkcx.getPh());
-                map.put(6,Math.max((ypclrkcx.getPh()!=null?ypclrkcx.getPh():"").getBytes().length*256+1000,map.get(6)));
-
-                //规格
-                row1.createCell(7).setCellValue(ypclrkcx.getGg());
-                map.put(7,Math.max(ypclrkcx.getGg().getBytes().length*256+200,map.get(7)));
-
-                //生产厂家
-                row1.createCell(8).setCellValue(ypclrkcx.getSccj());
-                map.put(8,Math.max((ypclrkcx.getSccj()!=null?ypclrkcx.getSccj():"").getBytes().length*256+200,map.get(8)));
-
-                //供应商
-                row1.createCell(9).setCellValue(ypclrkcx.getGys());
-                map.put(9,Math.max((ypclrkcx.getGys()!=null?ypclrkcx.getGys():"").getBytes().length*256+200,map.get(9)));
-
-                //数量
-                String number = Math.floor(Integer.parseInt(ypclrkcx.getSl())/Integer.parseInt(ypclrkcx.getZj()))>=0?(int)Math.floor(Integer.parseInt(ypclrkcx.getSl())/Integer.parseInt(ypclrkcx.getZj())) + ypclrkcx.getDw() +(Integer.parseInt(ypclrkcx.getSl())%Integer.parseInt(ypclrkcx.getZj())>0?Integer.parseInt(ypclrkcx.getSl())%Integer.parseInt(ypclrkcx.getZj())+ypclrkcx.getZxdw():""):ypclrkcx.getSl()+ypclrkcx.getZxdw();
-                row1.createCell(10).setCellValue(number);
-                map.put(10,Math.max(number.getBytes().length*256+200,map.get(10)));
-
-                //单位
-                row1.createCell(11).setCellValue(ypclrkcx.getDw());
-                map.put(11,Math.max((ypclrkcx.getDw()!=null?ypclrkcx.getDw():"").getBytes().length*256+200,map.get(11)));
-
-                //零售价
-                BigDecimal selling = new BigDecimal(ypclrkcx.getLsj() != null ? ypclrkcx.getLsj() : "0");
-                row1.createCell(12).setCellValue(selling.doubleValue());
-                map.put(12,Math.max(selling.toString().getBytes().length*256+200,map.get(12)));
-
-                //成本价
-                BigDecimal cost = new BigDecimal(ypclrkcx.getCbj() != null ? ypclrkcx.getCbj() : "0");
-                row1.createCell(13).setCellValue(cost.doubleValue());
-                map.put(13,Math.max(cost.toString().getBytes().length*256+200,map.get(13)));
-
-                //成本合计
-                BigDecimal costTotal = new BigDecimal(ypclrkcx.getCbhj() != null ? ypclrkcx.getCbhj() : "0");
-                row1.createCell(14).setCellValue(costTotal.doubleValue());
-                map.put(14,Math.max(costTotal.toString().getBytes().length*256+200,map.get(14)));
-
-                //有效期
-                row1.createCell(15).setCellValue(ypclrkcx.getYxq()!=null?ypclrkcx.getYxq():"");
-                map.put(15,Math.max((ypclrkcx.getYxq()!=null?ypclrkcx.getYxq():"").getBytes().length*256+200,map.get(15)));
-
-                //审核状态
-                String status = Objects.equals("supplierStorageExamineStatus_0",ypclrkcx.getShzt())?"通过":"已作废";
-
-                row1.createCell(16).setCellValue(status);
-                map.put(16,Math.max(status.getBytes().length*256+200,map.get(16)));
-
-                //备注
-                row1.createCell(17).setCellValue(ypclrkcx.getBz());
-                map.put(17,Math.max((ypclrkcx.getBz()!=null?ypclrkcx.getBz():"").getBytes().length*256+200,map.get(17)));
-
-                rowNum++;
-
-                for (int i = 1; i < 18; i++) {
-                    row1.getCell(i).setCellStyle(cellStyle);//设置文本的样式
+        Page<Ypclrkcx> page = getypclrkcxlist(ypjxcRc);
+        List<Map<String, Object>> rows = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(page.getRows())) {
+            for (Ypclrkcx item : page.getRows()) {
+                Map<String, Object> row = new HashMap<>();
+                row.put("rkrq", item.getRkrq());
+                row.put("rkdh", item.getRkdh());
+                row.put("rkry", item.getRkry());
+                row.put("spbh", item.getSpbh());
+                row.put("spmc", item.getSpmc());
+                // 分类
+                if (isDrug) {
+                    String type = Objects.equals(BizConstants.MEDICAL_TYPE_WESTERN, item.getLx()) ? "西药" : Objects.equals(BizConstants.MEDICAL_TYPE_HERBAL, item.getLx()) ? "中草药" : "中成药";
+                    row.put("type", type);
+                } else {
+                    String type = Objects.equals(BizConstants.STUFF_TYPE_MATERIAL, item.getLx()) ? "非医用材料" : "医用材料";
+                    row.put("type", type);
                 }
-
-
+                row.put("ph", item.getPh() != null ? item.getPh() : "");
+                row.put("gg", item.getGg());
+                row.put("sccj", item.getSccj() != null ? item.getSccj() : "");
+                row.put("gys", item.getGys() != null ? item.getGys() : "");
+                // 数量换算
+                int sl = Integer.parseInt(item.getSl());
+                int zj = Integer.parseInt(item.getZj());
+                int wholePacks = sl / zj;
+                int remainder = sl % zj;
+                String number = wholePacks + item.getDw() + (remainder > 0 ? remainder + item.getZxdw() : "");
+                row.put("number", number);
+                row.put("dw", item.getDw() != null ? item.getDw() : "");
+                row.put("lsj", new BigDecimal(item.getLsj() != null ? item.getLsj() : "0"));
+                row.put("cbj", new BigDecimal(item.getCbj() != null ? item.getCbj() : "0"));
+                row.put("cbhj", new BigDecimal(item.getCbhj() != null ? item.getCbhj() : "0"));
+                row.put("yxq", item.getYxq() != null ? item.getYxq() : "");
+                row.put("shzt", Objects.equals(BizConstants.SUPPLIER_STORAGE_EXAMINE_PASS, item.getShzt()) ? "通过" : "已作废");
+                row.put("bz", item.getBz() != null ? item.getBz() : "");
+                rows.add(row);
             }
         }
+        new ExcelExportBuilder(sheetName)
+                .addColumns(
+                        new ExcelExportBuilder.Column("入库日期", "rkrq"),
+                        new ExcelExportBuilder.Column("入库单号", "rkdh"),
+                        new ExcelExportBuilder.Column("入库人员", "rkry"),
+                        new ExcelExportBuilder.Column("商品编码", "spbh"),
+                        new ExcelExportBuilder.Column("商品名称", "spmc"),
+                        new ExcelExportBuilder.Column("分类", "type"),
+                        new ExcelExportBuilder.Column("批号", "ph"),
+                        new ExcelExportBuilder.Column("规格", "gg"),
+                        new ExcelExportBuilder.Column("生产厂家", "sccj"),
+                        new ExcelExportBuilder.Column("供应商", "gys"),
+                        new ExcelExportBuilder.Column("数量", "number"),
+                        new ExcelExportBuilder.Column("单位", "dw"),
+                        new ExcelExportBuilder.Column("零售价(元)", "lsj"),
+                        new ExcelExportBuilder.Column("成本价(元)", "cbj"),
+                        new ExcelExportBuilder.Column("成本合计(元)", "cbhj"),
+                        new ExcelExportBuilder.Column("有效期", "yxq"),
+                        new ExcelExportBuilder.Column("审核状态", "shzt"),
+                        new ExcelExportBuilder.Column("备注", "bz")
+                )
+                .data(rows)
+                .write(response, fileName);
+    }
 
-        for (int i= 0; i<18;i++){
-            //设置列宽
-            sheet.setColumnWidth(i,map.get(i));
+    /**
+     * 将费用明细按类型映射到统计对象的对应字段
+     * 消除 getWorkload/getWorkLoadStat/getdoctorDetailstatistics 中重复的 if-else 链
+     *
+     * @param items 费用明细列表（每项包含 types 和 temporaryCost）
+     * @param setter 类型→费用 的设置回调
+     */
+    private <T> void applyCostByType(List<T> items, java.util.function.BiConsumer<String, java.math.BigDecimal> setter) {
+        if (items == null || items.isEmpty()) return;
+        for (T item : items) {
+            String types;
+            java.math.BigDecimal cost;
+            if (item instanceof WorkLoad) {
+                types = ((WorkLoad) item).getTypes();
+                cost = ((WorkLoad) item).getTemporaryCost();
+            } else if (item instanceof WorkLoadStat) {
+                types = ((WorkLoadStat) item).getTypes();
+                cost = ((WorkLoadStat) item).getTemporaryCost();
+            } else {
+                continue;
+            }
+            setter.accept(types, cost);
         }
+    }
 
-        response.setContentType("application/octet-stream");
-        response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
-        response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileName,"UTF-8"));
-        response.flushBuffer();
-        OutputStream outputStream = response.getOutputStream();
-        workbook.write(response.getOutputStream());
-        outputStream.flush();
-        outputStream.close();
+    /**
+     * 根据类型名称设置 WorkLoad 对应的费用字段
+     */
+    private void setCostByTypeName(WorkLoad workLoad, String types, java.math.BigDecimal cost) {
+        switch (types) {
+            case "中成药": workLoad.setChinesePatentCost(cost); break;
+            case "西药":   workLoad.setWestCost(cost); break;
+            case "中草药": workLoad.setChineseCost(cost); break;
+            case "材料":   workLoad.setStuffCost(cost); break;
+            case "检验":   workLoad.setExaminesCost(cost); break;
+            case "检查":   workLoad.setCheckoutCost(cost); break;
+            case "理疗":   workLoad.setTherapyCost(cost); break;
+            case "治疗":   workLoad.setCureCost(cost); break;
+            case "其他":   workLoad.setOtherCost(cost); break;
+            default: break;
+        }
+    }
+
+    /**
+     * 根据类型名称设置 WorkLoadStat 对应的费用字段
+     */
+    private void setCostByTypeName(WorkLoadStat stat, String types, java.math.BigDecimal cost) {
+        switch (types) {
+            case "中成药": stat.setChinesePatentCost(cost); break;
+            case "西药":   stat.setWestCost(cost); break;
+            case "中草药": stat.setChineseCost(cost); break;
+            case "材料":   stat.setStuffCost(cost); break;
+            case "检验":   stat.setExaminesCost(cost); break;
+            case "检查":   stat.setCheckoutCost(cost); break;
+            case "理疗":   stat.setTherapyCost(cost); break;
+            case "治疗":   stat.setCureCost(cost); break;
+            case "其他":   stat.setOtherCost(cost); break;
+            default: break;
+        }
     }
 }

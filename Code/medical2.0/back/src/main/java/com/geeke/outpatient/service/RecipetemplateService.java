@@ -29,7 +29,7 @@ import com.geeke.utils.StringUtils;
  */
  
 @Service("recipetemplateService")
-@Transactional(readOnly = false)
+@Transactional(readOnly = true)
 public class RecipetemplateService extends CrudService<RecipetemplateDao, Recipetemplate>{
     protected String createBy;
     protected Date createDate;
@@ -48,7 +48,7 @@ public class RecipetemplateService extends CrudService<RecipetemplateDao, Recipe
     private DrugService drugService;
 
     public void allSave(Recipetemplate recipetemplate){
-        if(recipetemplate.getId()=="" || recipetemplate.getId()==null){
+        if(StringUtils.isBlank(recipetemplate.getId())){
             this.saveTemplate(recipetemplate);
         }else {
             this.updateTemplate(recipetemplate);
@@ -147,10 +147,10 @@ public class RecipetemplateService extends CrudService<RecipetemplateDao, Recipe
                 a += r.getDrugStuffId().getName()+ "药品无库存信息\n";
             }
         }
-        if (a != "") {
+        if (!"".equals(a)) {
             return a;
         }
-        if(recipetemplate.getId()=="" || recipetemplate.getId()==null){
+        if(StringUtils.isBlank(recipetemplate.getId())){
             this.saveTemplate(recipetemplate);
         }else {
             this.updateTemplate(recipetemplate);

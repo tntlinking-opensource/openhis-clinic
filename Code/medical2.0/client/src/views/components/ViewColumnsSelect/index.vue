@@ -31,8 +31,7 @@ export default {
   },
   watch:{
     vModel(val, oldVal) {
-      //console.log('new: %s, old: %s', val, oldVal)
-      if(val!=oldVal){
+      if(val!==oldVal){
           this.$emit('input', this.vModel);
       }
     },

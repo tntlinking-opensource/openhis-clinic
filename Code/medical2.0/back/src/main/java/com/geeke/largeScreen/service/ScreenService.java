@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
  
 @Service("ScreenService")
-@Transactional(readOnly = false)
+@Transactional(readOnly = true)
 public class ScreenService{
     @Autowired
     private ScreenDao screenDao;

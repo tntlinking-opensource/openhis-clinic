@@ -1,58 +1,12 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getInspectionCheckById = (id) =>
-    request({
-        url: '/cure/inspectionCheck/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/cure/inspectionCheck')
 
-export const listInspectionCheckPage = (search) =>
-    request({
-        url: '/cure/inspectionCheck/list',
-        method: 'post',
-        data: search
-    })
-
-export const listInspectionCheckAll = (search) =>
-    request({
-        url: '/cure/inspectionCheck/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveInspectionCheck = (inspectionCheck) => 
-    request({
-        url: '/cure/inspectionCheck/save',
-        method: 'post',
-        data: inspectionCheck
-    })
-  
-export const deleteInspectionCheck = (inspectionCheck) =>
-    request({
-        url: '/cure/inspectionCheck/delete',
-        method: 'post',
-        data: inspectionCheck
-    })
-    
-export const bulkInsertInspectionCheck = (inspectionChecks) =>
-    request({
-        url: '/cure/inspectionCheck/bulkInsert',
-        method: 'post',
-        data: inspectionChecks
-    })
-    
-export const bulkUpdateInspectionCheck = (inspectionChecks) =>
-    request({
-        url: '/cure/inspectionCheck/bulkUpdate',
-        method: 'post',
-        data: inspectionChecks
-    })
-
-export const bulkDeleteInspectionCheck = (inspectionChecks) =>
-    request({
-        url: '/cure/inspectionCheck/bulkDelete',
-        method: 'post',
-        data: inspectionChecks
-    })
-    
+export const getInspectionCheckById = baseApi.getById
+export const listInspectionCheckPage = baseApi.listPage
+export const listInspectionCheckAll = baseApi.listAll
+export const saveInspectionCheck = baseApi.save
+export const deleteInspectionCheck = baseApi.delete
+export const bulkInsertInspectionCheck = baseApi.bulkInsert
+export const bulkUpdateInspectionCheck = baseApi.bulkUpdate
+export const bulkDeleteInspectionCheck = baseApi.bulkDelete

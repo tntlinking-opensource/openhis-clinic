@@ -7,6 +7,7 @@ import com.geeke.admin.entity.Router;
 import com.geeke.admin.entity.User;
 import com.geeke.admin.service.UserService;
 import com.geeke.common.data.Parameter;
+import com.geeke.common.data.SearchParamsBuilder;
 import com.geeke.config.cache.RedisProperties;
 import com.geeke.config.shiro.StatelessSessionManager;
 import com.geeke.org.entity.Company;
@@ -43,7 +44,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    private Logger logger = LoggerFactory.getLogger(AuthController.class);
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private PermissionService permissionService;
@@ -72,8 +73,10 @@ public class AuthController {
      * @param loginName
      * @return
      */
-    @RequestMapping("/getUserTenant")
-    public ResponseEntity<?> getUserTenant(@RequestParam(value = "loginName") String loginName, @RequestParam(value = "password") String password) {
+    @PostMapping("/getUserTenant")
+    public ResponseEntity<?> getUserTenant(@RequestBody Map<String, String> body) {
+        String loginName = body.get("loginName");
+        String password = body.get("password");
 
         Subject currentUser = SecurityUtils.getSubject();
         UsernamePasswordToken token = new UsernamePasswordToken(loginName, password);
@@ -126,7 +129,8 @@ public class AuthController {
             //更新用户，返回当前登陆人信息
             response = getLoginUserInfo(request, user, companyId);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("登录失败", e);
+            return ResponseEntity.ok(ResultUtil.errorJson(ErrorEnum.E_10012));
         } finally {
             //把删除的修改回来
             if (!idList.isEmpty()) {
@@ -137,54 +141,6 @@ public class AuthController {
         }
         return ResponseEntity.ok(ResultUtil.successJson(response));
     }
-
-//    @GetMapping("/getToken")
-//    public ResponseEntity<?> Token(HttpServletRequest request) {
-//        Map<String, Object> response = null;
-//        List<String> idList = new ArrayList<>();
-//        String companyId = null;
-//        String loginName = "super";
-//        String password = "123456";
-//        try {
-//            //登陆
-//            HttpStatus httpStatus = loginService.authLogin(loginName, password, companyId);
-//
-//            if (HttpStatus.UNAUTHORIZED.equals(httpStatus)) {        //账号密码错误
-//                return ResponseEntity.ok(ResultUtil.errorJson(ErrorEnum.E_10010));
-//            } else if (HttpStatus.FORBIDDEN.equals(httpStatus)) {            //账号禁用
-//                return ResponseEntity.ok(ResultUtil.errorJson(ErrorEnum.E_10011));
-//            } else if (HttpStatus.SERVICE_UNAVAILABLE.equals(httpStatus)) {  //验证错误
-//                return ResponseEntity.ok(ResultUtil.errorJson(ErrorEnum.E_10012));
-//            }
-//            User user = SessionUtils.getUser();
-//            //确认是否是诊所在做切换
-//            if (!StringUtils.isNullOrEmpty(companyId)) {
-//                //多诊所登录
-//                user = changeClinics(user, companyId);
-//                Company company = companyService.get(companyId);
-//                SessionUtils.setLoginTenantId(companyId);
-//                SessionUtils.setLoginTenant(company);
-//            } else {
-//                //单诊所登录
-//                companyId = user.getCompanyId();
-//                SessionUtils.setLoginTenantId(companyId);
-//                SessionUtils.setLoginTenant(user.getCompany());
-//            }
-//
-//            //更新用户，返回当前登陆人信息
-//            response = LoginUserInfo(request, user, companyId);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        } finally {
-//            //把删除的修改回来
-//            if (!idList.isEmpty()) {
-//                for (String updateId : idList) {
-//                    userService.updateDelFlag(updateId, "0");
-//                }
-//            }
-//        }
-//        return ResponseEntity.ok(ResultUtil.successJson(response));
-//    }
 
     @PostMapping("/loginedtocken")
     public ResponseEntity<?> getLoginedToken(HttpServletRequest request) {
@@ -366,8 +322,9 @@ public class AuthController {
 
     private PersonalTheme getPersonalTheme(String userId) {
         // 获取个性化主题
-        List<Parameter> parms = Lists.newArrayList();
-        parms.add(new Parameter("user_id", "=", userId));
+        List<Parameter> parms = SearchParamsBuilder.create()
+                .eq("user_id", userId)
+                .build();
         List<PersonalTheme> list = personalThemeService.listAll(parms, null);
         if (list != null && list.size() > 0) {
             return list.get(0);
@@ -426,7 +383,8 @@ public class AuthController {
             //更新用户，返回当前登陆人信息
             response = getLoginUserInfo(request, user, companyId);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("登录失败", e);
+            return ResponseEntity.ok(ResultUtil.errorJson(ErrorEnum.E_10012));
         } finally {
             //把删除的修改回来
             if (!idList.isEmpty()) {

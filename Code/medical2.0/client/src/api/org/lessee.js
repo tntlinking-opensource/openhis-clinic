@@ -1,58 +1,12 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getLesseeById = (id) =>
-    request({
-        url: '/org/lessee/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/org/lessee')
 
-export const listLesseePage = (search) =>
-    request({
-        url: '/org/lessee/list',
-        method: 'post',
-        data: search
-    })
-
-export const listLesseeAll = (search) =>
-    request({
-        url: '/org/lessee/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveLessee = (lessee) => 
-    request({
-        url: '/org/lessee/save',
-        method: 'post',
-        data: lessee
-    })
-  
-export const deleteLessee = (lessee) =>
-    request({
-        url: '/org/lessee/delete',
-        method: 'post',
-        data: lessee
-    })
-    
-export const bulkInsertLessee = (lessees) =>
-    request({
-        url: '/org/lessee/bulkInsert',
-        method: 'post',
-        data: lessees
-    })
-    
-export const bulkUpdateLessee = (lessees) =>
-    request({
-        url: '/org/lessee/bulkUpdate',
-        method: 'post',
-        data: lessees
-    })
-
-export const bulkDeleteLessee = (lessees) =>
-    request({
-        url: '/org/lessee/bulkDelete',
-        method: 'post',
-        data: lessees
-    })
-    
+export const getLesseeById = baseApi.getById
+export const listLesseePage = baseApi.listPage
+export const listLesseeAll = baseApi.listAll
+export const saveLessee = baseApi.save
+export const deleteLessee = baseApi.delete
+export const bulkInsertLessee = baseApi.bulkInsert
+export const bulkUpdateLessee = baseApi.bulkUpdate
+export const bulkDeleteLessee = baseApi.bulkDelete

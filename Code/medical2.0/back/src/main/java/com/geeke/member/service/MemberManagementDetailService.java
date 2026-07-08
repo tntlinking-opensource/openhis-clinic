@@ -22,7 +22,7 @@ import java.util.List;
  */
  
 @Service("memberManagementDetailService")
-@Transactional(readOnly = false)
+@Transactional(readOnly = true)
 public class MemberManagementDetailService extends CrudService<MemberManagementDetailDao, MemberManagementDetail>{
   @Autowired
   private MemberItemService memberItemService;

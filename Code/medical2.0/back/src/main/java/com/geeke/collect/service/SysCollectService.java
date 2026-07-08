@@ -4,10 +4,8 @@ import java.util.*;
 
 import com.geeke.admin.common.dao.PermissionDAO;
 import com.geeke.admin.entity.Router;
-import com.geeke.config.exception.CommonJsonException;
-import com.geeke.utils.ResultUtil;
+import com.geeke.common.service.ServiceException;
 import com.geeke.utils.StringUtils;
-import com.geeke.utils.constants.ErrorEnum;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -68,26 +66,10 @@ public class SysCollectService extends CrudService<SysCollectDao, SysCollect> {
      */
     public List<SysCollect> listAllByUserId(String  userId) {
         if (StringUtils.isBlank(userId)) {
-            throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_90003, "参数用户id不能为空。"));
+            throw new ServiceException("参数用户id不能为空。");
         }
 
         List<SysCollect> sysCollectList = sysCollectDao.listAllByUserId(userId);
-
-        // List<String>  stringSet=new ArrayList<>();
-        // if (CollectionUtils.isNotEmpty(sysCollectList)) {
-        //     //获取当前登录人 路由列表
-        //     List<Router> routers = permissionDAO.listRouterPermission(userId);
-        //     for (Router router : routers) {
-        //         stringSet.add(router.getId());
-        //     }
-        //     Iterator<SysCollect> it = sysCollectList.iterator();
-        //     while (it.hasNext()) {
-        //         SysCollect sysCollect1 = it.next();
-        //         if (!stringSet.contains(sysCollect1.getRouterId().getId())) {
-        //             it.remove();
-        //         }
-        //     }
-        // }
         return sysCollectList != null ? sysCollectList : new ArrayList<>();
     }
 }

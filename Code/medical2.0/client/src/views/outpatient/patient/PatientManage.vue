@@ -114,8 +114,6 @@
 import { validatenull } from '@/utils/validate'
 import { listPatientPage, getPatientById, deletePatient } from '@/api/outpatient/patient'
 import PatientForm from '@/views/outpatient/patient/patientForm'
-import ExportExcelButton from '@/components/ExportExcelButton'
-import ViewColumnsSelect from '@/views/components/ViewColumnsSelect'
 import QueryForm from '@/views/components/queryForm'
 import MainUI from '@/views/components/mainUI'
 import OperationIcon from '@/components/OperationIcon'
@@ -126,8 +124,6 @@ export default {
   extends: MainUI,
   components: {
     PatientForm,
-    ExportExcelButton,
-    ViewColumnsSelect,
     QueryForm,
     OperationIcon,
     History
@@ -193,7 +189,7 @@ export default {
       }
       this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
       listPatientPage(this.search).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           this.patientTotal = responseData.data.total
           this.patientList = responseData.data.rows
         } else {
@@ -244,7 +240,7 @@ export default {
 
         let listPatientRespData = await listPatientPage(this.search)
 
-        if(listPatientRespData.code == 100) {
+        if(listPatientRespData.code === 100) {
           this.patientTotal = listPatientRespData.data.total
           this.patientList = listPatientRespData.data.rows
         }
@@ -257,8 +253,8 @@ export default {
     onViewPatient(index, row) {
       this.setLoad()
       getPatientById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.patientForm.$emit('openViewPatientDialog', responseData.data)
+        if(responseData.code === 100) {
+          this.$refs.patientForm.openViewPatientDialog(responseData.data)
         } else {
           this.showMessage(responseData)
         }
@@ -268,13 +264,13 @@ export default {
       })
     },
     onCreatePatient() {
-      this.$refs.patientForm.$emit('openAddPatientDialog')
+      this.$refs.patientForm.openAddPatientDialog()
     },
     onEditPatient(index, row) {
       this.setLoad()
       getPatientById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.patientForm.$emit('openEditPatientDialog', responseData.data)
+        if(responseData.code === 100) {
+          this.$refs.patientForm.openEditPatientDialog(responseData.data)
         }else{
           this.showMessage(responseData)
         }
@@ -286,8 +282,8 @@ export default {
     onCopyPatient(index, row) {
       this.setLoad()
       getPatientById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.patientForm.$emit('openCopyPatientDialog', responseData.data)
+        if(responseData.code === 100) {
+          this.$refs.patientForm.openCopyPatientDialog(responseData.data)
         } else {
           this.showMessage(responseData)
         }
@@ -304,7 +300,7 @@ export default {
       }).then(() => {
         this.setLoad()
         deletePatient(row).then(responseData => {
-          if(responseData.code == 100) {
+          if(responseData.code === 100) {
             this.getPatientList()
             this.showMessage({type: 'success', msg: '删除成功'})
           } else {

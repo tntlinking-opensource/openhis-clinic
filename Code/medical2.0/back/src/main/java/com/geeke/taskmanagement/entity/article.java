@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.geeke.admin.entity.User;
 import com.geeke.common.persistence.DataEntity;
 import com.geeke.org.entity.Company;
-import com.geeke.outpatient.entity.scheduling;
-
 
 import java.util.Date;
 /**

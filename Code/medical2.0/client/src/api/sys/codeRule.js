@@ -1,58 +1,12 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getCodeRuleById = (id) =>
-    request({
-        url: '/sys/codeRule/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/sys/codeRule')
 
-export const listCodeRulePage = (search) =>
-    request({
-        url: '/sys/codeRule/list',
-        method: 'post',
-        data: search
-    })
-
-export const listCodeRuleAll = (search) =>
-    request({
-        url: '/sys/codeRule/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveCodeRule = (codeRule) => 
-    request({
-        url: '/sys/codeRule/save',
-        method: 'post',
-        data: codeRule
-    })
-
-export const deleteCodeRule = (codeRule) =>
-    request({
-        url: '/sys/codeRule/delete',
-        method: 'post',
-        data: codeRule
-    })
-    
-export const bulkInsertCodeRule = (codeRules) =>
-    request({
-        url: '/sys/codeRule/bulkInsert',
-        method: 'post',
-        data: codeRules
-    })
-    
-export const bulkUpdateCodeRule = (codeRules) =>
-    request({
-        url: '/sys/codeRule/bulkUpdate',
-        method: 'post',
-        data: codeRules
-    })
-
-export const bulkDeleteCodeRule = (codeRules) =>
-    request({
-        url: '/sys/codeRule/bulkDelete',
-        method: 'post',
-        data: codeRules
-    })
-    
+export const getCodeRuleById = baseApi.getById
+export const listCodeRulePage = baseApi.listPage
+export const listCodeRuleAll = baseApi.listAll
+export const saveCodeRule = baseApi.save
+export const deleteCodeRule = baseApi.delete
+export const bulkInsertCodeRule = baseApi.bulkInsert
+export const bulkUpdateCodeRule = baseApi.bulkUpdate
+export const bulkDeleteCodeRule = baseApi.bulkDelete

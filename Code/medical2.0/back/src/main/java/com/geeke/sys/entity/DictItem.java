@@ -7,15 +7,17 @@ import org.hibernate.validator.constraints.Length;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import com.geeke.common.persistence.DataEntity;
+import com.geeke.org.entity.Company;
 /**
- * 字典类型Entity
+ * 字典项Entity
  * @author lys
  * @version 2021-12-07
  */
 public class DictItem extends DataEntity<DictItem> {
 
 	private static final long serialVersionUID = 4005L;
-	private DictType dictType;      // 字典类型表ID 
+	private Company company;      // 所属租户
+	private DictType dictType;      // 字典类型表ID
 	private String value;		// 值
 
 	
@@ -29,6 +31,14 @@ public class DictItem extends DataEntity<DictItem> {
 	
 	public DictItem(DictType dictType){
 		this.dictType = dictType;
+	}
+
+	public Company getCompany() {
+		return company;
+	}
+
+	public void setCompany(Company company) {
+		this.company = company;
 	}
 
 	@NotNull(message="字典类型表ID不能为空")

@@ -38,11 +38,13 @@ public class UserExtService extends CrudService<UserExtDao, UserExt>{
         return null;
     }
 
+    @Transactional(readOnly = false)
     public void update(UserExt userId)
     {
         userExtDao.update(userId);
     }
 
+    @Transactional(readOnly = false)
     public void insert(UserExt userExt)
     {
         userExtDao.insert(userExt);

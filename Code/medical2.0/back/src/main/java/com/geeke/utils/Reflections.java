@@ -138,8 +138,35 @@ public class Reflections {
 	}
 
 	/**
+	 * 判断类（含父类）是否包含指定名称的字段
+	 */
+	public static boolean hasField(Class<?> clazz, String fieldName) {
+		for (Class<?> searchType = clazz; searchType != Object.class; searchType = searchType.getSuperclass()) {
+			try {
+				searchType.getDeclaredField(fieldName);
+				return true;
+			} catch (NoSuchFieldException e) {
+				continue;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * 判断类自身（不含父类）是否包含指定名称的字段
+	 */
+	public static boolean hasOwnField(Class<?> clazz, String fieldName) {
+		try {
+			clazz.getDeclaredField(fieldName);
+			return true;
+		} catch (NoSuchFieldException e) {
+			return false;
+		}
+	}
+
+	/**
 	 * 循环向上转型, 获取对象的DeclaredField, 并强制设置为可访问.
-	 * 
+	 *
 	 * 如向上转型到Object仍无法找到, 返回null.
 	 */
 	public static Field getAccessibleField(final Object obj, final String fieldName) {

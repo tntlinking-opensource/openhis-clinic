@@ -3,86 +3,86 @@
     @open='onDialogOpen()' v-loading='loading'>
     <div slot='title' class='dialog-header'>
       {{ dialogProps.title }}
-      <OperationIcon v-show='dialogProps.action == "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
+      <OperationIcon v-show='dialogProps.action === "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
     </div>
 
     <el-form :model='bizFormModel' :rules='formRules' 
       ref='companyForm' label-width='120px' label-position='right' class='edit-form'>  
-      <div class="tab-item" v-show='tabIndex=="1"'>  
+      <div class="tab-item" v-show='tabIndex==="1"'>  
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='租户' prop='parent.id' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.parent.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.parent.name'></el-input>
             <el-cascader v-else v-model='bizFormModel.parent.id' :options='parent_List' :key='key_parent' ref='parentCascader' @change='onParentChange' :props='{value: "id", label: "name", checkStrictly: true, emitPath: false}' filterable clearable placeholder='请选择租户' />
           </el-form-item>
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='全称' prop='fullName' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.fullName' :maxlength='512' :placeholder='dialogProps.action == "view"? "" : "请输入全称"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.fullName' :maxlength='512' :placeholder='dialogProps.action === "view"? "" : "请输入全称"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='名称' prop='name' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.name' :maxlength='128' :placeholder='dialogProps.action == "view"? "" : "请输入名称"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.name' :maxlength='128' :placeholder='dialogProps.action === "view"? "" : "请输入名称"' ></el-input>
           </el-form-item>
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='编码' prop='code' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.code' :maxlength='64' :placeholder='dialogProps.action == "view"? "" : "请输入编码"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.code' :maxlength='64' :placeholder='dialogProps.action === "view"? "" : "请输入编码"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='排序' prop='sort' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.sort'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.sort'></el-input>
             <number-input v-else v-model="bizFormModel.sort"  :precision="2"></number-input>
           </el-form-item>
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='地址（省）' prop='addressProvince' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.addressProvince' :maxlength='10' :placeholder='dialogProps.action == "view"? "" : "请输入地址（省）"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.addressProvince' :maxlength='10' :placeholder='dialogProps.action === "view"? "" : "请输入地址（省）"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='地址（市）' prop='addressCity' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.addressCity' :maxlength='10' :placeholder='dialogProps.action == "view"? "" : "请输入地址（市）"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.addressCity' :maxlength='10' :placeholder='dialogProps.action === "view"? "" : "请输入地址（市）"' ></el-input>
           </el-form-item>
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='地址（区）' prop='addressRegion' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.addressRegion' :maxlength='10' :placeholder='dialogProps.action == "view"? "" : "请输入地址（区）"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.addressRegion' :maxlength='10' :placeholder='dialogProps.action === "view"? "" : "请输入地址（区）"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='地址' prop='address' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.address' :maxlength='100' :placeholder='dialogProps.action == "view"? "" : "请输入地址"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.address' :maxlength='100' :placeholder='dialogProps.action === "view"? "" : "请输入地址"' ></el-input>
           </el-form-item>
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='电话' prop='phoneNumber' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.phoneNumber' :maxlength='21' :placeholder='dialogProps.action == "view"? "" : "请输入电话"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.phoneNumber' :maxlength='21' :placeholder='dialogProps.action === "view"? "" : "请输入电话"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col>
           <el-form-item label='备注信息' prop='remarks' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.remarks' type='textarea'
-                                  :maxlength='255' :placeholder='dialogProps.action == "view"? "" : "请输入备注信息"'  clearable></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.remarks' type='textarea'
+                                  :maxlength='255' :placeholder='dialogProps.action === "view"? "" : "请输入备注信息"'  clearable></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='执业许可科目' prop='licenseSubject' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.licenseSubject' :maxlength='100' :placeholder='dialogProps.action == "view"? "" : "请输入执业许可科目"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.licenseSubject' :maxlength='100' :placeholder='dialogProps.action === "view"? "" : "请输入执业许可科目"' ></el-input>
           </el-form-item>
         </el-col>
                         </el-row>
@@ -93,7 +93,7 @@
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='诊所版本' prop='version.id' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.version.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.version.name'></el-input>
             <el-select v-else v-model='bizFormModel.version' value-key='id' filterable clearable placeholder='请选择诊所版本' 
               @clear='bizFormModel.version={
                 "id": null,
@@ -105,28 +105,28 @@
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='状态' prop='status' >
-            <el-switch :disabled='dialogProps.action == "view"' v-model='bizFormModel.status' active-color='#13ce66' inactive-color='#dbdfe6' :active-value='1' :inactive-value='0'></el-switch>
+            <el-switch :disabled='dialogProps.action === "view"' v-model='bizFormModel.status' active-color='#13ce66' inactive-color='#dbdfe6' :active-value='1' :inactive-value='0'></el-switch>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='诊所启用时间' prop='startUseDate' >
-            <el-date-picker :disabled='dialogProps.action == "view"' v-model='bizFormModel.startUseDate' type='datetime' value-format='yyyy-MM-dd HH:mm:ss' :placeholder='dialogProps.action == "view"? "" : "请输入诊所启用时间"' ></el-date-picker>             
+            <el-date-picker :disabled='dialogProps.action === "view"' v-model='bizFormModel.startUseDate' type='datetime' value-format='yyyy-MM-dd HH:mm:ss' :placeholder='dialogProps.action === "view"? "" : "请输入诊所启用时间"' ></el-date-picker>             
           </el-form-item>
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='诊所到期时间' prop='expireDate' >
-            <el-date-picker :disabled='dialogProps.action == "view"' v-model='bizFormModel.expireDate' type='datetime' value-format='yyyy-MM-dd HH:mm:ss' :placeholder='dialogProps.action == "view"? "" : "请输入诊所到期时间"' ></el-date-picker>             
+            <el-date-picker :disabled='dialogProps.action === "view"' v-model='bizFormModel.expireDate' type='datetime' value-format='yyyy-MM-dd HH:mm:ss' :placeholder='dialogProps.action === "view"? "" : "请输入诊所到期时间"' ></el-date-picker>             
           </el-form-item>
         </el-col>
       </el-row>
       </div>
     </el-form>
     <span slot='footer' class='dialog-footer'>
-      <el-button v-if='dialogProps.action != "view"' :disabled="flage" type='primary' :plain='true' @click='onSubmit("companyForm")'>保 存</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :disabled="flag" type='primary' :plain='true' @click='onSubmit("companyForm")'>保 存</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span>    
   </el-dialog>
 </template>
@@ -138,6 +138,7 @@ import uploadFile from '@/views/components/uploadFile'
 import { saveCompany } from '@/api/org/company'
 import BaseUI from '@/views/components/baseUI'
 import OperationIcon from '@/components/OperationIcon'
+import { getCurrentCompanyId } from "@/utils/userCache";
 export default {
   extends: BaseUI,
   name: 'company-form',
@@ -152,7 +153,7 @@ export default {
           key_parent: 1,    // el-cascader key
           parent_List: [],  // 租户
           version_List: [],  // 诊所版本
-           flage:false,
+           flag:false,
        dialogProps: {
         visible: false,
         action: '',
@@ -198,12 +199,12 @@ export default {
   },  
   methods: {
     onSubmit(formName) {
-      this.flage=true
+      this.flag=true
       this.$refs[formName].validate(valid => {
         if (valid) {
           this.doSave()
         } else {
-          this.flage=false
+          this.flag=false
           return false
         }
       });
@@ -212,8 +213,8 @@ export default {
       this.setLoad()
       let formData = this.createFormData(this.bizFormModel)
       saveCompany(formData).then(responseData => {
-        this.flage=false
-        if(responseData.code == 100) {
+        this.flag=false
+        if(responseData.code === 100) {
           this.dialogProps.visible = false
           this.$emit('save-finished')
         } else {
@@ -221,7 +222,7 @@ export default {
         }
         this.resetLoad()
       }).catch(error => {
-        this.flage=false
+        this.flag=false
         this.outputError(error)
       })
     },
@@ -313,7 +314,7 @@ export default {
         params: []
       }
         // 字段对应表上filter条件
-        version_search.params.push.apply(version_search.params, [{columnName: 'company_id', queryType: '=', value: function() {var user = JSON.parse(sessionStorage.getItem('currentUser')); return user.company.id;}()}])
+        version_search.params.push.apply(version_search.params, [{columnName: 'company_id', queryType: '=', value: getCurrentCompanyId()}])
       // 数据权限: 诊所版本clinic_version
       this.pushDataPermissions(version_search.params, this.$route.meta.routerId, '987744398207139863')
       this.version_List.splice(0, this.version_List.length)
@@ -324,7 +325,7 @@ export default {
   },
   watch: {
     parent_List(newVal, oldVal) {
-      if(newVal != oldVal && this.dialogProps.action == 'add' ) {
+      if(newVal !== oldVal && this.dialogProps.action === 'add' ) {
         this.$nextTick(() => {
           this.onParentChange()
         })
@@ -332,41 +333,41 @@ export default {
     },
   },
   mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openViewCompanyDialog', function(company) {
-        this.dialogProps.action = 'view'
-        this.dialogProps.title = '查看公司'
-        this.bizFormModel = {...this.initFormModel(), ...company}
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openEditCompanyDialog', function(company) {
-        this.dialogProps.action = 'edit'
-        this.dialogProps.title = '修改公司'
-        this.bizFormModel = {...this.initFormModel(), ...company}
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openAddCompanyDialog', function(parent) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加公司'
-        this.bizFormModel = this.initFormModel(parent)
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openCopyCompanyDialog', function(company) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加公司'
-        this.bizFormModel = {...this.initFormModel(), ...company}
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.bizFormModel.id = null   //把id设置为空，添加一个新的
-        this.dialogProps.visible = true
-      })
-    })
-  }  
+  },
+  methods: {
+    openViewCompanyDialog(company) {
+      this.dialogProps.action = 'view'
+      this.dialogProps.title = '查看公司'
+      this.bizFormModel = {...this.initFormModel(), ...company}
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openEditCompanyDialog(company) {
+      this.dialogProps.action = 'edit'
+      this.dialogProps.title = '修改公司'
+      this.bizFormModel = {...this.initFormModel(), ...company}
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openAddCompanyDialog(parent) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加公司'
+      this.bizFormModel = this.initFormModel(parent)
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openCopyCompanyDialog(company) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加公司'
+      this.bizFormModel = {...this.initFormModel(), ...company}
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.bizFormModel.id = null
+      this.dialogProps.visible = true
+    },
+  },
 }
 </script>

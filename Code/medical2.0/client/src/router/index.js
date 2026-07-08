@@ -3,9 +3,6 @@ import Router from 'vue-router'
 import LoginView from '@/views/login/index'
 import { getLocalToken, getLocalRouters } from '@/utils/auth'
 import { routerTree, handleFamily } from '@/utils/routerTree'
-import charge from '@/views/charge/index'
-import chargeaccountreport from '@/views/chargeaccountreport/index'
-import chargecombinereport from '@/views/chargecombinereport/index'
 // Element UI 已通过 CDN 加载
 const ELEMENT = window.ELEMENT
 
@@ -43,15 +40,15 @@ const router = new VueRouter({
     {
       path:'/charge',
       name:'charge',
-      component:charge
+      component: _import('charge/index')
     },{
       path:'/chargeaccountreport',
       name:'charchargeaccountreportge',
-      component:chargeaccountreport
+      component: _import('chargeaccountreport/index')
     },{
       path:'/chargecombinereport',
       name:'chargecombinereport',
-      component:chargecombinereport
+      component: _import('chargecombinereport/index')
     }
   ]
 });
@@ -99,7 +96,7 @@ router.afterEach((to, from) => {
     fullPathSplit.forEach(( item, index ) => {
       let routerBreadCrumb = {
         title: item,
-        to: (index == fullPathSplit.length - 1 ? to.path : '')
+        to: (index === fullPathSplit.length - 1 ? to.path : '')
       }
       breadCrumbItems.push(routerBreadCrumb)
     });
@@ -168,7 +165,9 @@ function generateChildRouters() {
 const originalPush = VueRouter.prototype.push
 
 VueRouter.prototype.push = function push(location) {
-  return originalPush.call(this, location).catch(err => err)
+  return originalPush.call(this, location).catch(err => {
+    if (err.name !== 'NavigationDuplicated') throw err
+  })
 }
 
 export default router;

@@ -1,13 +1,12 @@
 package com.geeke.stock.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
+import com.geeke.common.data.SearchParamsBuilder;
 import com.geeke.common.persistence.DataEntity;
 import com.geeke.common.service.CrudService;
-import com.geeke.org.service.CompanyService;
+import com.geeke.common.service.ServiceException;
+
 import com.geeke.outpatient.entity.PresDrug;
 import com.geeke.outpatient.service.PresDrugService;
 import com.geeke.stock.dao.MedicinalStockControlDao;
@@ -17,7 +16,7 @@ import com.geeke.stock.entity.Stuff;
 import com.geeke.utils.SessionUtils;
 import com.geeke.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -26,7 +25,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * 药品/材料库存总控制Service
@@ -38,15 +36,11 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class MedicinalStockControlService extends CrudService<MedicinalStockControlDao, MedicinalStockControl>{
-    @Autowired
-    private MedicinalStockControlDao dao;
-    @Autowired
-    private DrugService drugService;
-    @Autowired
-    private StuffService stuffService;
+    private final MedicinalStockControlDao dao;
 
-    @Autowired
-    private CompanyService companyService;
+    private final DrugService drugService;
+
+    private final StuffService stuffService;
 
     private final PresDrugService presDrugService;
 
@@ -64,8 +58,9 @@ public class MedicinalStockControlService extends CrudService<MedicinalStockCont
         {
             return;
         }
-        List<Parameter> parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("drug_stuff_id", "=", dataEntity.getId()));
+        List<Parameter> parameters = SearchParamsBuilder.create()
+                .eq("drug_stuff_id", dataEntity.getId())
+                .build();
         List<MedicinalStockControl> list = super.listAll(parameters, "");
         MedicinalStockControl medicinalStockControl = CollectionUtils.isEmpty(list) ? new MedicinalStockControl() : list.get(0);
 
@@ -74,7 +69,7 @@ public class MedicinalStockControlService extends CrudService<MedicinalStockCont
             Drug drug = drugService.get(dataEntity.getId());
             if (Objects.isNull(drug) || StringUtils.isBlank(drug.getId()))
             {
-                throw new RuntimeException("初始化[药品库存]总控制时,未获取到药品基础维护信息！");
+                throw new ServiceException("初始化[药品库存]总控制时,未获取到药品基础维护信息！");
             }
 
             medicinalStockControl.setDrugStuffName(drug.getGoodsName());
@@ -95,7 +90,7 @@ public class MedicinalStockControlService extends CrudService<MedicinalStockCont
             Stuff stuff = stuffService.get(dataEntity.getId());
             if (Objects.isNull(stuff) || StringUtils.isBlank(stuff.getId()))
             {
-                throw new RuntimeException("初始化[材料库存]总控制时,未获取到材料基础维护信息！");
+                throw new ServiceException("初始化[材料库存]总控制时,未获取到材料基础维护信息！");
             }
 
             medicinalStockControl.setDrugStuffName(stuff.getName());
@@ -113,8 +108,6 @@ public class MedicinalStockControlService extends CrudService<MedicinalStockCont
         }
 
         super.save(medicinalStockControl);
-
-        //throw new RuntimeException("111");
     }
 
     /**
@@ -128,8 +121,9 @@ public class MedicinalStockControlService extends CrudService<MedicinalStockCont
         {
             return;
         }
-        List<Parameter> parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("drug_stuff_id", "=", dataEntity.getId()));
+        List<Parameter> parameters = SearchParamsBuilder.create()
+                .eq("drug_stuff_id", dataEntity.getId())
+                .build();
         List<MedicinalStockControl> list = super.listAll(parameters, "");
         for (MedicinalStockControl list1 : list){
             list1.getCompany().setId(dataEntity.getCompany().getId());
@@ -142,7 +136,7 @@ public class MedicinalStockControlService extends CrudService<MedicinalStockCont
             Drug drug = drugService.get(dataEntity.getId());
             if (Objects.isNull(drug) || StringUtils.isBlank(drug.getId()))
             {
-                throw new RuntimeException("初始化[药品库存]总控制时,未获取到药品基础维护信息！");
+                throw new ServiceException("初始化[药品库存]总控制时,未获取到药品基础维护信息！");
             }
 
             medicinalStockControl.setDrugStuffName(drug.getGoodsName());
@@ -163,7 +157,7 @@ public class MedicinalStockControlService extends CrudService<MedicinalStockCont
             Stuff stuff = stuffService.get(dataEntity.getId());
             if (Objects.isNull(stuff) || StringUtils.isBlank(stuff.getId()))
             {
-                throw new RuntimeException("初始化[材料库存]总控制时,未获取到材料基础维护信息！");
+                throw new ServiceException("初始化[材料库存]总控制时,未获取到材料基础维护信息！");
             }
 
             medicinalStockControl.setDrugStuffName(stuff.getName());
@@ -185,8 +179,6 @@ public class MedicinalStockControlService extends CrudService<MedicinalStockCont
         medicinalStockControl.setSurplusStock(BigDecimal.valueOf(0));
         medicinalStockControl.setReimburseStock(BigDecimal.valueOf(0));
         super.save(medicinalStockControl);
-
-        //throw new RuntimeException("111");
     }
 
     /**
@@ -203,8 +195,9 @@ public class MedicinalStockControlService extends CrudService<MedicinalStockCont
 
 
 
-        List<Parameter> parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("drug_stuff_id", "=", dataEntity.getId()));
+        List<Parameter> parameters = SearchParamsBuilder.create()
+                .eq("drug_stuff_id", dataEntity.getId())
+                .build();
         List<MedicinalStockControl> list = super.listAll(parameters, "");
 
 
@@ -213,7 +206,7 @@ public class MedicinalStockControlService extends CrudService<MedicinalStockCont
             //TODO: 在启用动态库存控制功能时，之前的历史产生数据如何处理？？？   不管，还是手工补录数据到数据库
             return;
         }else {
-            throw new RuntimeException("该药品存在库存不能删除！");
+            throw new ServiceException("该药品存在库存不能删除！");
         }
 
 //        MedicinalStockControl medicinalStockControl = list.get(0);
@@ -230,18 +223,14 @@ public class MedicinalStockControlService extends CrudService<MedicinalStockCont
 //        //TODO:是否需要把动态库存操作明细删除掉
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<MedicinalStockControl> getByDrugOrStuffId(String drugOrStuffId, String companyId) {
         return this.dao.getByDrugOrStuffId(drugOrStuffId,companyId);
     }
 
     //查询租户下库存
     public List<MedicinalStockControl> listAlls(List<Parameter> parameters, String orderby) {
-        Optional<Parameter> cartOptional = parameters.stream().filter(item -> item.getColumnName().equals("`company_id`")).findFirst();
-        parameters.remove(0);
-        String id = (String) cartOptional.get().getValue();
-        String institution = companyService.getInstitution(id);
-        PageRequest pageRequest = new PageRequest(parameters, orderby, id, institution);
+        PageRequest pageRequest = buildTenantPageRequest(parameters, orderby);
 
         return dao.listAlls(pageRequest);
     }
@@ -262,11 +251,7 @@ public class MedicinalStockControlService extends CrudService<MedicinalStockCont
 
 
     public List<MedicinalStockControl>  listPreAll(List<Parameter> parameters,String orderby) {
-        Optional<Parameter> cartOptional = parameters.stream().filter(item -> item.getColumnName().equals("`company_id`")).findFirst();
-        parameters.remove(0);
-        String id = (String) cartOptional.get().getValue();
-        String institution = companyService.getInstitution(id);
-        PageRequest pageRequest = new PageRequest(parameters, orderby, id, institution);
+        PageRequest pageRequest = buildTenantPageRequest(parameters, orderby);
         return dao.listPreAll(pageRequest);
     }
 

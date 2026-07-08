@@ -134,6 +134,7 @@
         <include refid="recipelInfoJoins"/>
         WHERE
         a.registration_id=#{registrationId}
+        AND a.del_flag = #{DEL_FLAG_NORMAL}
     </select>
 
     <insert id="insert">
@@ -622,9 +623,9 @@
         left join patient patient on patient.id=registration.patient_id
         <where>
             a.status=1
-            and a.is_pre != '1'
+            and (a.is_pre is null or a.is_pre = false)
             <if test="order!=null and order!=''">
-                AND a.registration_id in (SELECT id FROM registration WHERE patient_id=(SELECT patient_id FROM registration WHERE id=#{order}) )
+                AND EXISTS (SELECT 1 FROM registration r1 JOIN registration r2 ON r2.patient_id = r1.patient_id WHERE r1.id = #{order} AND r2.id = a.registration_id)
             </if>
             <include refid="Common.whereParams"/>
         </where>

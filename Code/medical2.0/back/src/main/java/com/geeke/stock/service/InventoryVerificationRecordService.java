@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service("InventoryVerificationRecordService")
-@Transactional(readOnly = true)
 public class InventoryVerificationRecordService extends CrudService<InventoryVerificationRecordDao, InventoryVerificationRecord> {
 
 }

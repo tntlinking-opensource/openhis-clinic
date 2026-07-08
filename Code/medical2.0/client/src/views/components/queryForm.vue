@@ -114,7 +114,7 @@ export default {
   },
   watch:{
     vModel(val, oldVal) {
-      if(val != oldVal){
+      if(val !== oldVal){
         this.$emit('input', this.vModel)
       }
     }
@@ -128,7 +128,7 @@ export default {
         columnName: 'name',       // 排序字段名
         order: ''             // 排序
       }).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           this.conditionList = responseData.data
         } else {
           this.showMessage(responseData)
@@ -152,12 +152,12 @@ export default {
       this.$emit('moreCodition')
     },
     onResetCondition() {
-      this.$refs.conditionPanel.$emit('reset')
+      this.$refs.conditionPanel.reset()
     },
     onDeleteCondition(condition) {
       deleteQueryCondition(condition).then(responseData => {
-        if(responseData.code == 100) {
-          let arr = this.conditionList.filter(item => item.id != condition.id)
+        if(responseData.code === 100) {
+          let arr = this.conditionList.filter(item => item.id !== condition.id)
           this.conditionList = arr
           this.showMessage({type: 'success', msg: '删除成功'})
         } else {
@@ -189,7 +189,7 @@ export default {
             name: this.nameModel.name,
             conditions: JSON.stringify(this.value)
           }).then(responseData => {
-            if(responseData.code == 100) {
+            if(responseData.code === 100) {
 
               // todo 查询列表
               listQueryConditionAll({
@@ -199,7 +199,7 @@ export default {
                 columnName: 'name',       // 排序字段名
                 order: ''             // 排序
               }).then(responseData => {
-                if(responseData.code == 100) {
+                if(responseData.code === 100) {
                   this.conditionList = responseData.data
                 }
               })

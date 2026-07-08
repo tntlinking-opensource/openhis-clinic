@@ -66,7 +66,7 @@
           <el-table-column
             label="序号"
             type="index"
-            :index="taskindexMethod"
+            :index="indexMethod"
             align="center"
           >
           </el-table-column>
@@ -83,17 +83,17 @@
           <el-table-column prop="auditstatus" label="审核状态" align="center" width="width">
             <template slot-scope="scope">
               <el-label
-                v-if="scope.row.auditstatus == '0'"
+                v-if="scope.row.auditstatus === '0'"
                 style="color: #a7761a"
                 >{{ getauditstatus(scope.row.auditstatus) }}</el-label
               >
               <el-label
-                v-if="scope.row.auditstatus == '1'"
+                v-if="scope.row.auditstatus === '1'"
                 style="color: #3eec5b"
                 >{{ getauditstatus(scope.row.auditstatus) }}</el-label
               >
               <el-label
-                v-if="scope.row.auditstatus == '2'"
+                v-if="scope.row.auditstatus === '2'"
                 style="color: #f5314b"
                 >{{ getauditstatus(scope.row.auditstatus) }}</el-label
               >
@@ -129,18 +129,24 @@
 
 <script>
 import MainUI from "@/views/components/mainUI";
+import listViewMixin from '@/mixins/listViewMixin'
 import History from "@/views/components/history";
 import ArticleForm from "./articleForm";
 import { listarticlepage } from "@/api/taskmanagement/article";
 export default {
   extends: MainUI,
+  mixins: [listViewMixin],
   components: {
     History,
     ArticleForm,
   },
   data() {
     return {
-
+      listApi: listarticlepage,
+      getApi: null,
+      deleteApi: null,
+      entityName: 'Article',
+      permissionPrefix: 'article',
       articlelist: [],
       TimeInterval: this.getInitializeDate(),
       auditstatuslist: [
@@ -148,43 +154,69 @@ export default {
         { auditstatus: "1", auditstatusmc: "已通过" },
         { auditstatus: "2", auditstatusmc: "未通过" },
       ],
-      search: {
-        params: [
-          {
-            columnName: "company_id",
-            queryType: "=",
-            value: currentUser.company.id,
-          },
-        ],
-        offset: 0,
-        limit: 10,
-        columnName: "", // 排序字段名
-        order: "", // 排序
-      },
       formInline: {
-        limit: 20,
-        offset: 0,
         companyId: currentUser.company.id,
         title: "",
         lx: "",
         auditstatus: null,
       },
-      currentPage: 1,
       patientTotal: 0,
     };
   },
   mounted() {
-    //this.editorop();
-    this.getpageinit();
+    this.pageInit()
   },
   methods: {
-    
+    appendSearchParams() {
+      this.search.params.push({
+        columnName: "company_id",
+        queryType: "=",
+        value: currentUser.company.id,
+      })
+      if (this.moreCodition) {
+        this.search.params = this.search.params.concat(this.compositeCondition())
+      } else {
+        // 查询参数: 标题名称
+        this.search.params.push({
+          columnName: "title",
+          queryType: "like",
+          value: this.formInline.title,
+        })
+        if (this.formInline.auditstatus) {
+          // 查询参数: 审核状态
+          this.search.params.push({
+            columnName: "auditstatus",
+            queryType: "=",
+            value: this.formInline.auditstatus,
+          })
+        }
+        if (this.TimeInterval) {
+          // 查询参数: 发布开始时间
+          this.search.params.push({
+            columnName: "aricledate",
+            queryType: ">=",
+            value: this.TimeInterval[0],
+          })
+          // 查询参数: 发布结束时间
+          this.search.params.push({
+            columnName: "aricledate",
+            queryType: "<=",
+            value: this.TimeInterval[1],
+          })
+        }
+      }
+    },
+    handleListResponse(responseData) {
+      this.patientTotal = responseData.data.total
+      this.articlelist = responseData.data.rows
+    },
+
     //搜索重置
     resetCondition(){
         this.TimeInterval = this.getInitializeDate();
         this.formInline.title = "";
         this.formInline.auditstatus = null;
-        this.getpageinit()
+        this.loadData()
     },
 
     //设置默认日期
@@ -210,102 +242,22 @@ export default {
       return [start, end]; //将值设置给组件DatePicker 绑定的数据
     },
     getauditstatus(status) {
-      return status == "0" ? "待审核" : status == "1" ? "已通过" : "未通过";
+      return status === "0" ? "待审核" : status === "1" ? "已通过" : "未通过";
     },
     typeclickload(){
-        this.getpageinit();
+        this.loadData()
     },
-    onSearch() {
-      this.search.offset = 0;
-      this.currentPage = 1;
-      this.getpageinit();
-    },
-    onSizeChange(val) {
-      this.currentPage = 1;
-      this.search.limit = val;
-      this.search.offset = (this.currentPage - 1) * val;
-      this.getpageinit();
-    },
-    onCurrentChange(val) {
-      this.search.offset = (val - 1) * this.search.limit;
-      this.currentPage = val;
-      this.getpageinit();
-    },
-    taskindexMethod(index) {
-      return (this.currentPage - 1) * this.search.limit + index + 1;
-    },
+
     getcontenttext(evt) {
       // let reft=await  this.$refs.quilleditorref;
       // this.content=reft.handleGetHtml();
     },
     onCreatePatient(types,id) {
-      console.log(currentUser);
       let viewlist={
           view:types,
           id:id
       };
-      this.$refs.articleForm.$emit("openAddworkbenchDialog", viewlist);
-    },
-
-    getpageinit() {
-      /* 查询参数 和数据权限 */
-      this.search.params = [
-        {
-          columnName: "company_id",
-          queryType: "=",
-          value: currentUser.company.id,
-        },
-      ];
-      if (this.moreCodition) {
-        this.search.params = this.search.params.concat(
-          this.compositeCondition()
-        );
-      } else {
-        // 查询参数: 标题名称
-        this.search.params.push({
-          columnName: "title",
-          queryType: "like",
-          value: this.formInline.title,
-        });
-        if (this.formInline.auditstatus) {
-          // 查询参数: 审核状态
-          this.search.params.push({
-            columnName: "auditstatus",
-            queryType: "=",
-            value: this.formInline.auditstatus,
-          });
-        }
-
-        if (this.TimeInterval) {
-          // 查询参数: 发布开始时间
-          this.search.params.push({
-            columnName: "aricledate",
-            queryType: ">=",
-            value: this.TimeInterval[0],
-          });
-          // 查询参数: 发布结束时间
-          this.search.params.push({
-            columnName: "aricledate",
-            queryType: "<=",
-            value: this.TimeInterval[1],
-          });
-        }
-      }
-      console.log("查询入参：", this.search);
-      //debugger
-      listarticlepage(this.search)
-        .then((responseData) => {
-          if (responseData.code == 100) {
-            this.patientTotal = responseData.data.total;
-            this.articlelist = responseData.data.rows;
-          } else {
-            this.showMessage(responseData);
-          }
-          this.resetLoad();
-        })
-        .catch((error) => {
-          this.outputError(error);
-        });
+      this.$refs.articleForm.openAddworkbenchDialog(viewlist);
     },
   },
 };

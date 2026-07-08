@@ -3,7 +3,7 @@
     <!-- 历史记录  -->
     <History :bussObject='curentRow' ></History>
     <!-- 编辑窗口  -->
-    <memberItem-form ref='memberItemForm' :permission='permission' v-on:save-finished='getMemberItemList()'></memberItem-form>
+    <memberItem-form ref='memberItemForm' :permission='permission' @save-finished='loadData'></memberItem-form>
     <div class="page-container">
         <!--  搜索栏  开始 -->
         <div class='query-form-container'>
@@ -31,7 +31,7 @@
         <!-- 工具栏 开始 -->
         <div class="page-container-header-end">
           <div>
-            <el-button v-show='permission.add' type='primary' icon='el-icon-plus' :plain='true' @click='onCreateMemberItem()'>添加</el-button>
+            <el-button v-show='permission.add' type='primary' icon='el-icon-plus' :plain='true' @click='onCreateEntity("memberItemForm")'>添加</el-button>
           </div>
         </div>
         <!-- 工具栏 结束 -->
@@ -43,8 +43,8 @@
             <el-table class='drag_table' :data='memberItemList' border @sort-change='onSortChange' @header-dragend='onChangeWidth' :cell-class-name='cellClassName' :header-cell-class-name='headerCellClassName' highlight-current-row>                
               <el-table-column v-for="(cv, index) in columnViews" v-if='cv.display' :prop='cv.prop' :key="`columnViews_${index}`" :label='cv.label' sortable='custom' :align='cv.align' :min-width='cv.miniWidth+"px"' :width='cv.width+"px"' header-align='center' :column-key='index.toString()' :render-header="renderHeader">
                 <template slot-scope='{row,$index}'>
-                  <span v-if='columnViews[index].showType == "Switch" || columnViews[index].showType == "Checkbox" || columnViews[index].showType == "Radio"'>
-                    <li v-if='getAttrValue(row, columnViews[index].prop) == "1"' class='el-icon-check' style='color:#F56C6C;'></li>
+                  <span v-if='columnViews[index].showType === "Switch" || columnViews[index].showType === "Checkbox" || columnViews[index].showType === "Radio"'>
+                    <li v-if='getAttrValue(row, columnViews[index].prop) === "1"' class='el-icon-check' style='color:#F56C6C;'></li>
                   </span>
                   <span v-else>{{ getAttrValue(row, columnViews[index].prop, columnViews[index].javaType )}}</span>
                 </template>
@@ -58,13 +58,13 @@
                 </template>
                 <template slot-scope='scope'>
                   <OperationIcon v-show='permission.view' type='info' content='查看' placement='top-start' icon-name='el-icon-view' 
-                    @click='onViewMemberItem(scope.$index, scope.row)'></OperationIcon>
-                  <OperationIcon v-show='permission.edit' type='primary' content='编辑' placement='top-start' icon-name='el-icon-edit' 
-                    @click='onEditMemberItem(scope.$index, scope.row)'></OperationIcon>
-                  <OperationIcon v-show='permission.add' type='primary' content='复制' placement='top-start' icon-name='el-icon-document' 
-                    @click='onCopyMemberItem(scope.$index, scope.row)'></OperationIcon>
-                  <OperationIcon v-show='permission.remove' type='danger' content='删除' placement='top-start' icon-name='el-icon-delete' 
-                    @click='onDeleteMemberItem(scope.$index, scope.row)'></OperationIcon>
+                    @click='onViewEntity(scope.$index, scope.row, "memberItemForm")'></OperationIcon>
+                  <OperationIcon v-show='permission.edit' type='primary' content='编辑' placement='top-start' icon-name='el-icon-edit'
+                    @click='onEditEntity(scope.$index, scope.row, "memberItemForm")'></OperationIcon>
+                  <OperationIcon v-show='permission.add' type='primary' content='复制' placement='top-start' icon-name='el-icon-document'
+                    @click='onCopyEntity(scope.$index, scope.row, "memberItemForm")'></OperationIcon>
+                  <OperationIcon v-show='permission.remove' type='danger' content='删除' placement='top-start' icon-name='el-icon-delete'
+                    @click='onDeleteEntity(scope.$index, scope.row, deleteApi)'></OperationIcon>
                   <OperationIcon v-show='permission.view' type='info' content='历史记录' placement='top-start' icon-name='el-icon-info' 
                     @click='onShowHistory(scope.$index, scope.row)'></OperationIcon>
                 </template>
@@ -94,9 +94,8 @@
 </template>
 
 <script>
-import { validatenull } from '@/utils/validate'
 import { listMemberItemPage, getMemberItemById, deleteMemberItem } from '@/api/member/memberItem'
-import { listResourcePermission } from '@/api/admin/common/permission'
+import listViewMixin from '@/mixins/listViewMixin'
 import MemberItemForm from './memberItemForm'
 import ExportExcelButton from '@/components/ExportExcelButton'
 import ViewColumnsSelect from '@/views/components/ViewColumnsSelect'
@@ -106,7 +105,8 @@ import OperationIcon from '@/components/OperationIcon'
 import History from '@/views/components/history'
 export default {
   extends: MainUI,
-  components: { 
+  mixins: [listViewMixin],
+  components: {
     MemberItemForm,
     ExportExcelButton,
     ViewColumnsSelect,
@@ -116,197 +116,39 @@ export default {
   },
   data() {
     return {
-      permission: {
-        view: false,
-        add: false,
-        edit: false,
-        remove: false,
-        export: false
-      },
+      listApi: listMemberItemPage,
+      getApi: getMemberItemById,
+      deleteApi: deleteMemberItem,
+      entityName: 'MemberItem',
+      permissionPrefix: 'memberItem',
       queryTypes: {
       },
       queryModel: {
       },
-      search: {
-        params: [{columnName: 'company_id', queryType: '=', value: currentUser.company.id}],    
-        offset: 0,
-        limit: 10,
-		columnName: '',      // 排序字段名
-        order: ''            // 排序
-      },
-      currentPage: 1,
       memberItemTotal: 0,
       memberItemList: [],
-        
-      
       oprColumnWidth: 140,  // 操作列宽
       tableId: '1222698883343517631',
       schemeId: '1222698883343517654'
     }
   },
   methods: {
-    getMemberItemList() {
-      this.setLoad()
-      /* 查询参数 和数据权限 */
-      this.search.params = [{columnName: 'company_id', queryType: '=', value: currentUser.company.id}]
-      if(this.moreCodition) {
+    appendSearchParams() {
+      this.search.params.push({
+        columnName: 'company_id',
+        queryType: '=',
+        value: currentUser.company.id
+      })
+      if (this.moreCodition) {
         this.search.params = this.search.params.concat(this.compositeCondition())
-      }else{
-      }
-      // 数据权限: 会员卡项目member_item
-      this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-      listMemberItemPage(this.search).then(responseData => {
-        if(responseData.code == 100) {
-          this.memberItemTotal = responseData.data.total
-          this.memberItemList = responseData.data.rows
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onSearch() {
-      if(this.moreCodition) {
-        this.search.offset = 0
-        this.currentPage = 1
-        this.getMemberItemList()
-      } else {
-        this.$refs['queryForm'].validate(valid => {
-          if (valid) {
-            this.search.offset = 0
-            this.currentPage = 1
-            this.getMemberItemList()
-          } else {
-            return false
-          }
-        })
       }
     },
-    onSizeChange(val) {
-      this.currentPage = 1
-      this.search.limit = val;
-      this.search.offset = (this.currentPage - 1) * val
-      this.getMemberItemList()
-    },
-    onCurrentChange(val) {
-      this.search.offset = (val - 1) * this.search.limit
-      this.currentPage = val
-      this.getMemberItemList()
-    },
-    async pageInit() {
-      this.setLoad()
-      try {
-        this.initOptions(this.queryModel)
-        this.search.params = [{columnName: 'company_id', queryType: '=', value: currentUser.company.id}]
-        // 数据权限: 会员卡项目member_item
-        this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-        let [listMemberItemRespData, listPermissionRespData] = await Promise.all([
-          listMemberItemPage(this.search),
-          listResourcePermission(this.$route.meta.routerId)
-        ])
-        if(listMemberItemRespData.code == 100 && listPermissionRespData.code == 100) {
-          this.memberItemTotal = listMemberItemRespData.data.total
-          this.memberItemList = listMemberItemRespData.data.rows
-          this.permission.view = listPermissionRespData.data.find(item => {
-            return item.permission === 'memberItem:read'
-          })
-          this.permission.export = listPermissionRespData.data.find(item => {
-            return item.permission === 'memberItem:export'
-          })
-          this.permission.add = listPermissionRespData.data.find(item => {
-            return item.permission === 'memberItem:create'
-          })
-          this.permission.edit = listPermissionRespData.data.find(item => {
-            return item.permission === 'memberItem:update'
-          })
-          this.permission.remove = listPermissionRespData.data.find(item => {
-            return item.permission === 'memberItem:delete'
-          })
-        } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listMemberItemRespData)
-        }
-        this.resetLoad()
-      } catch(error) {
-        this.outputError(error) 
-      }
-    },
-    onViewMemberItem(index, row) {
-      this.setLoad()
-      getMemberItemById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.memberItemForm.$emit('openViewMemberItemDialog', responseData.data)
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onCreateMemberItem() {
-      this.$refs.memberItemForm.$emit('openAddMemberItemDialog')
-    },
-    onEditMemberItem(index, row) {
-      this.setLoad()
-      getMemberItemById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.memberItemForm.$emit('openEditMemberItemDialog', responseData.data)
-        }else{
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onCopyMemberItem(index, row) {
-      this.setLoad()
-      getMemberItemById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.memberItemForm.$emit('openCopyMemberItemDialog', responseData.data)
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onDeleteMemberItem(index, row) {
-      this.$confirm('确定删除吗？', '确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.setLoad()
-        deleteMemberItem(row).then(responseData => {
-          if(responseData.code == 100) {
-            this.getMemberItemList()
-            this.showMessage({type: 'success', msg: '删除成功'})
-          } else {
-            this.showMessage(responseData)
-          }
-          this.resetLoad()
-        }).catch(error => {
-          this.outputError(error)  
-        })
-      }).catch(() => {})
-    },
-    onSortChange( orderby ) {
-      if(validatenull(orderby.prop)) {
-        this.search.columnName = ''
-        this.search.order = ''
-      } else  {
-        this.search.columnName = orderby.prop
-        this.search.order = orderby.order === 'descending' ? 'desc' : 'asc'
-      }
-
-      this.getMemberItemList()
+    handleListResponse(responseData) {
+      this.memberItemTotal = responseData.data.total
+      this.memberItemList = responseData.data.rows
     },
     initOptions(This) {
-    } 
+    }
   },
   watch: {
   },

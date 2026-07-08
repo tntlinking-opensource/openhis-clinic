@@ -1,16 +1,18 @@
 package com.geeke.treatment.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.geeke.common.controller.CrudController;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
 import com.geeke.stock.entity.MedicalProject;
-import com.geeke.sys.controller.BaseController;
 import com.geeke.treatment.entity.CostItem;
 import com.geeke.treatment.entity.CostItemDTO;
 import com.geeke.treatment.entity.CostItemPackage;
 import com.geeke.treatment.service.CostItemService;
 import com.geeke.treatment.service.impl.CostItemPackageService;
 import com.geeke.utils.ResultUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,13 +27,21 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/treatment/costItem")
-public class CostItemController extends BaseController {
+public class CostItemController extends CrudController<CostItemService, CostItem> {
 
-	@Autowired
-	private CostItemService costItemService;
-	@Autowired
+    private static final Logger logger = LoggerFactory.getLogger(CostItemController.class);
+
+    @Autowired
+    protected CostItemService costItemService;
+    @Autowired
     private CostItemPackageService costItemPackageService;
-	
+
+    @Override
+    protected CostItemService getService() {
+        return costItemService;
+    }
+
+    @Override
     @GetMapping("/{id}")
     public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
         //根据诊疗项目的id获取到对应的诊疗项目信息
@@ -57,28 +67,16 @@ public class CostItemController extends BaseController {
         costItemDTO.setCostItems(costItems);
         return ResponseEntity.ok(ResultUtil.successJson(costItemDTO));
     }
-    
-    @PostMapping(value = {"list", ""})
-    public ResponseEntity<JSONObject> listPage(@RequestBody SearchParams searchParams) {
-        Page<CostItem> result = costItemService.listPage(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
 
     @PostMapping(value = {"listForMedical", ""})
     public ResponseEntity<JSONObject> listForMedical(@RequestBody SearchParams searchParams) {
         List<MedicalProject> result = costItemService.listPageForMedical(searchParams.getParams(), searchParams.getOrderby());
         return ResponseEntity.ok(ResultUtil.successJson(result));
     }
-    
-    @PostMapping(value = "listAll")
-    public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
-        List<CostItem> result = costItemService.listAll(searchParams.getParams(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
 
-    @PostMapping(value = "save")
-    public ResponseEntity<JSONObject> save(@RequestBody CostItemDTO costItemDTO) {
-        System.out.println(costItemDTO);
+    @PostMapping(value = "saveDto")
+    public ResponseEntity<JSONObject> saveDto(@RequestBody CostItemDTO costItemDTO) {
+        logger.debug("保存诊疗项目: {}", costItemDTO);
         if(costItemDTO.getCostItemPackage().size()!=0&&costItemDTO.getCostItemPackage().get(0).getReferenceUnit()==null){
             costItemDTO.getCostItem().setIsPackage("1");
         }else {
@@ -94,7 +92,7 @@ public class CostItemController extends BaseController {
                     if(costItemDTO.getCostItemPackage().get(i).getCostItemId()!=null ){
                         if(costItemDTO.getCostItemPackage().get(i).getCostItemId().equals(costItemPackages.get(j).getCostItemId())){
                             costItemDTO.getCostItemPackage().get(i).setId(costItemPackages.get(j).getCostItemId());
-                            System.out.println(costItemDTO.getCostItemPackage().get(i).getId());
+                            logger.debug("匹配到子项目ID: {}", costItemDTO.getCostItemPackage().get(i).getId());
                         }
                     }
                 }
@@ -108,31 +106,6 @@ public class CostItemController extends BaseController {
         return ResponseEntity.ok(ResultUtil.successJson(id));
 
     }
-  
-    @PostMapping(value = "delete")
-    public ResponseEntity<JSONObject> delete(@RequestBody CostItem entity) {
-        int rows = costItemService.delete(entity);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
-
-    @PostMapping(value = "bulkInsert")
-    public ResponseEntity<JSONObject> bulkInsert(@RequestBody List<CostItem> entitys) {
-        List<String> ids = costItemService.bulkInsert(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkUpdate")
-    public ResponseEntity<JSONObject> bulkUpdate(@RequestBody List<CostItem> entitys) {
-        List<String> ids = costItemService.bulkUpdate(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkDelete")
-    public ResponseEntity<JSONObject> bulkDelete(@RequestBody List<CostItem> entitys) {
-        int rows = costItemService.bulkDelete(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
-
 
     /**
      * 查询租户的诊疗项目

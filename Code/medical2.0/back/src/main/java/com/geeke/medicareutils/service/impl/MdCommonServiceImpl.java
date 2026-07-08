@@ -15,7 +15,6 @@ import com.geeke.outpatient.service.MedicalRecordService;
 import com.geeke.outpatient.service.PatientMdDataService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import springfox.documentation.spring.web.json.Json;
 
 import java.util.List;
 import java.util.Objects;

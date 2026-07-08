@@ -72,8 +72,7 @@ public class OutpatientLogController extends BaseController {
         try {
             outpatientLogService.exportExcel(outpatientLogRc,response);
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.error(e.getMessage());
+            logger.error("导出门诊日志失败", e);
             throw new RuntimeException(e);
         }
     }

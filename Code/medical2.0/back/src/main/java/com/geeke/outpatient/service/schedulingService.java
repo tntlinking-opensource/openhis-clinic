@@ -14,25 +14,25 @@ import java.util.*;
 
 @Service("schedulingService")
 @Transactional(readOnly = true)
-public class schedulingService extends CrudService<SchedulingDao, scheduling>{
+public class SchedulingService extends CrudService<SchedulingDao, Scheduling>{
 
     @Autowired
     private SchedulingDao schedulingDao;
 
-    public List<schedulingDTO> getHisuserpblist(schedulingDTO pageRequest) {
-        List<schedulingDTO> buserlist= schedulingDao.getpbuserlist(pageRequest);
+    public List<SchedulingDTO> getHisuserpblist(SchedulingDTO pageRequest) {
+        List<SchedulingDTO> buserlist= schedulingDao.getpbuserlist(pageRequest);
         if (Objects.nonNull(buserlist)){
-            for (schedulingDTO buser : buserlist ){
+            for (SchedulingDTO buser : buserlist ){
                 //String[] weekDays = {"星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"};
 
-                    List<weekdayDTO> weeks = new ArrayList<>();
+                    List<WeekdayDTO> weeks = new ArrayList<>();
                     if (buser.getPbsl() > 0) {
                         buser.setCompanyid(pageRequest.getCompanyid());
                         buser.setStratime(pageRequest.getStratime());
                         buser.setEndtime(pageRequest.getEndtime());
-                        List<scheduling> schedulingList=schedulingDao.listscheduling(buser);
-                        weekdayDTO week=new weekdayDTO();
-                        for (scheduling list:schedulingList)
+                        List<Scheduling> schedulingList=schedulingDao.listscheduling(buser);
+                        WeekdayDTO week=new WeekdayDTO();
+                        for (Scheduling list:schedulingList)
                         {
                             if(list.getDelFlag().equals("1")){
                                 continue;
@@ -43,40 +43,40 @@ public class schedulingService extends CrudService<SchedulingDao, scheduling>{
 
                             int w = cal.get(Calendar.DAY_OF_WEEK) - 1;
                             Date schedulingtime = list.getSchedulingtime();
-                            List<scheduling> list1 =  schedulingDao.getList(schedulingtime);
+                            List<Scheduling> list1 =  schedulingDao.getList(schedulingtime);
                             switch (w) {
                                 case 0:
-                                    for (scheduling ls : list1){
+                                    for (Scheduling ls : list1){
                                         week.setSunday(ls.getTimeid());
                                     }
                                     break;
                                 case 1:
-                                    for (scheduling ls : list1){
+                                    for (Scheduling ls : list1){
                                         week.setMonday(ls.getTimeid());
                                     }
                                     break;
                                 case 2:
-                                    for (scheduling ls : list1){
+                                    for (Scheduling ls : list1){
                                         week.setTuesday(ls.getTimeid());
                                     }
                                     break;
                                 case 3:
-                                    for (scheduling ls : list1){
+                                    for (Scheduling ls : list1){
                                         week.setWednesday(ls.getTimeid());
                                     }
                                     break;
                                 case 4:
-                                    for (scheduling ls : list1){
+                                    for (Scheduling ls : list1){
                                         week.setThursday(ls.getTimeid());
                                     }
                                     break;
                                 case 5:
-                                    for (scheduling ls : list1){
+                                    for (Scheduling ls : list1){
                                         week.setFriday(ls.getTimeid());
                                     }
                                     break;
                                 case 6:
-                                    for (scheduling ls : list1){
+                                    for (Scheduling ls : list1){
                                         week.setSaturday(ls.getTimeid());
                                     }
                                     break;
@@ -84,7 +84,7 @@ public class schedulingService extends CrudService<SchedulingDao, scheduling>{
                         }
                         weeks.add(week);
                     }else {
-                        weekdayDTO week=new weekdayDTO();
+                        WeekdayDTO week=new WeekdayDTO();
                         weeks.add(week);
                     }
                     buser.setDates(weeks);
@@ -94,22 +94,22 @@ public class schedulingService extends CrudService<SchedulingDao, scheduling>{
         }
         return buserlist;
     }
-    public List<schedulingDTO> getlistzl(schedulingDTO pageRequest) {
-        List<schedulingDTO> buserlist= schedulingDao.getpbuserlist(pageRequest);
+    public List<SchedulingDTO> getlistzl(SchedulingDTO pageRequest) {
+        List<SchedulingDTO> buserlist= schedulingDao.getpbuserlist(pageRequest);
         if (Objects.nonNull(buserlist)){
-            for (schedulingDTO buser : buserlist ){
+            for (SchedulingDTO buser : buserlist ){
                 //String[] weekDays = {"星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"};
 
-                weekdayDTO week=new weekdayDTO();
+                WeekdayDTO week=new WeekdayDTO();
                 List<String> dates=new ArrayList<>();
                 if (buser.getPbsl() > 0) {
                     buser.setCompanyid(pageRequest.getCompanyid());
                     buser.setStratime(pageRequest.getStratime());
                     buser.setEndtime(pageRequest.getEndtime());
-                    List<scheduling> schedulingList=schedulingDao.listscheduling(buser);
+                    List<Scheduling> schedulingList=schedulingDao.listscheduling(buser);
 
 
-                    for (scheduling list:schedulingList)
+                    for (Scheduling list:schedulingList)
                     {
                         if(list.getDelFlag().equals("1")){
                             continue;
@@ -165,10 +165,10 @@ public class schedulingService extends CrudService<SchedulingDao, scheduling>{
         return buserlist;
     }
 
-    public List<schedulingDTO> listzlr(schedulingDTO pageRequest) {
-        List<schedulingDTO> buserlist= schedulingDao.getpbuserlist(pageRequest);
+    public List<SchedulingDTO> listzlr(SchedulingDTO pageRequest) {
+        List<SchedulingDTO> buserlist= schedulingDao.getpbuserlist(pageRequest);
         if (Objects.nonNull(buserlist)){
-            for (schedulingDTO buser : buserlist ){
+            for (SchedulingDTO buser : buserlist ){
                 //String[] weekDays = {"星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"};
 
                 List<Integer> house=new ArrayList<>();
@@ -176,9 +176,9 @@ public class schedulingService extends CrudService<SchedulingDao, scheduling>{
                     buser.setCompanyid(pageRequest.getCompanyid());
                     buser.setDatestra(pageRequest.getDatestra());
                     buser.setDateend(pageRequest.getDateend());
-                    List<schedulingmxDTO> schedulingList=schedulingDao.listschedulingmx(buser);
+                    List<SchedulingmxDTO> schedulingList=schedulingDao.listschedulingmx(buser);
 
-                    for (schedulingmxDTO list:schedulingList)
+                    for (SchedulingmxDTO list:schedulingList)
                     {
                         if (list.getHouser()!=null){
                             house.add(list.getHouser());
@@ -195,14 +195,14 @@ public class schedulingService extends CrudService<SchedulingDao, scheduling>{
         }
         return buserlist;
     }
-    public List<schedulingmxDTO> getlistmx(schedulingDTO pageRequest)
+    public List<SchedulingmxDTO> getlistmx(SchedulingDTO pageRequest)
     {
         return schedulingDao.listschedulingmx(pageRequest);
     }
 
 
-    public int listcount(scheduling scheduling){
-        List<scheduling> schedulingList=schedulingDao.listcount(scheduling);
+    public int listcount(Scheduling scheduling){
+        List<Scheduling> schedulingList=schedulingDao.listcount(scheduling);
         int count=0;
         if(schedulingList == null){
             return count;

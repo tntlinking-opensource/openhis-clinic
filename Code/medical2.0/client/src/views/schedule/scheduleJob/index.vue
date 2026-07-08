@@ -3,7 +3,7 @@
     <!-- 历史记录  -->
     <History :bussObject='curentRow' ></History>
     <!-- 编辑窗口  -->
-    <scheduleJob-form ref='scheduleJobForm' :permission='permission' v-on:save-finished='getScheduleJobList()'></scheduleJob-form>
+    <scheduleJob-form ref='scheduleJobForm' :permission='permission' @save-finished='loadData'></scheduleJob-form>
     <div class="page-container">
       <!--  搜索栏  开始 -->
       <div class='query-form-container'>
@@ -35,7 +35,7 @@
       <!-- 工具栏 开始 -->
       <div class="page-container-header-end">
         <div>
-          <el-button v-show='permission.add' type='primary' icon='el-icon-plus'  @click='onCreateScheduleJob()'>添加</el-button>
+          <el-button v-show='permission.add' type='primary' icon='el-icon-plus'  @click="onCreateEntity('scheduleJobForm')">添加</el-button>
         </div>
       </div>
       <!-- 工具栏 结束 -->
@@ -46,8 +46,8 @@
             <el-table class='drag_table' :data='scheduleJobList' border @sort-change='onSortChange' @header-dragend='onChangeWidth' :cell-class-name='cellClassName' :header-cell-class-name='headerCellClassName' highlight-current-row>
               <el-table-column v-for="(cv, index) in columnViews" v-if='cv.display' :prop='cv.prop' :key="`columnViews_${index}`" :label='cv.label' sortable='custom' :align='cv.align' :min-width='cv.miniWidth+"px"' :width='cv.width+"px"' header-align='center' :column-key='index.toString()' :render-header="renderHeader">
                 <template slot-scope='{row,$index}'>
-                  <span v-if='columnViews[index].showType == "Switch" || columnViews[index].showType == "Checkbox" || columnViews[index].showType == "Radio"'>
-                    <li v-if='getAttrValue(row, columnViews[index].prop) == "1"' class='el-icon-check' style='color:#F56C6C;'></li>
+                  <span v-if='columnViews[index].showType === "Switch" || columnViews[index].showType === "Checkbox" || columnViews[index].showType === "Radio"'>
+                    <li v-if='getAttrValue(row, columnViews[index].prop) === "1"' class='el-icon-check' style='color:#F56C6C;'></li>
                   </span>
                   <span v-else>{{ getAttrValue(row, columnViews[index].prop, columnViews[index].javaType )}}</span>
                 </template>
@@ -61,13 +61,13 @@
                 </template>
                 <template slot-scope='scope'>
                   <OperationIcon v-show='permission.view' type='info' content='查看' placement='top-start' icon-name='el-icon-view'
-                    @click='onViewScheduleJob(scope.$index, scope.row)'></OperationIcon>
+                    @click='onViewEntity(scope.$index, scope.row, "scheduleJobForm")'></OperationIcon>
                   <OperationIcon v-show='permission.edit' type='primary' content='编辑' placement='top-start' icon-name='el-icon-edit'
-                    @click='onEditScheduleJob(scope.$index, scope.row)'></OperationIcon>
+                    @click='onEditEntity(scope.$index, scope.row, "scheduleJobForm")'></OperationIcon>
                   <OperationIcon v-show='permission.add' type='primary' content='复制' placement='top-start' icon-name='el-icon-document'
-                    @click='onCopyScheduleJob(scope.$index, scope.row)'></OperationIcon>
+                    @click='onCopyEntity(scope.$index, scope.row, "scheduleJobForm")'></OperationIcon>
                   <OperationIcon v-show='permission.remove' type='danger' content='删除' placement='top-start' icon-name='el-icon-delete'
-                    @click='onDeleteScheduleJob(scope.$index, scope.row)'></OperationIcon>
+                    @click='onDeleteEntity(scope.$index, scope.row, deleteScheduleJob)'></OperationIcon>
                   <OperationIcon v-show='permission.view' type='info' content='历史记录' placement='top-start' icon-name='el-icon-info'
                     @click='onShowHistory(scope.$index, scope.row)'></OperationIcon>
                 </template>
@@ -98,9 +98,8 @@
 </template>
 
 <script>
-import { validatenull } from '@/utils/validate'
 import { listScheduleJobPage, getScheduleJobById, deleteScheduleJob } from '@/api/schedule/scheduleJob'
-import { listResourcePermission } from '@/api/admin/common/permission'
+import listViewMixin from '@/mixins/listViewMixin'
 import ScheduleJobForm from './scheduleJobForm'
 import ExportExcelButton from '@/components/ExportExcelButton'
 import ViewColumnsSelect from '@/views/components/ViewColumnsSelect'
@@ -110,6 +109,7 @@ import OperationIcon from '@/components/OperationIcon'
 import History from '@/views/components/history'
 export default {
   extends: MainUI,
+  mixins: [listViewMixin],
   components: {
     ScheduleJobForm,
     ExportExcelButton,
@@ -120,30 +120,21 @@ export default {
   },
   data() {
     return {
-      permission: {
-        view: false,
-        add: false,
-        edit: false,
-        remove: false,
-        export: false
-      },
+      // listViewMixin 配置
+      listApi: listScheduleJobPage,
+      getApi: getScheduleJobById,
+      deleteApi: deleteScheduleJob,
+      entityName: 'ScheduleJob',
+      permissionPrefix: 'scheduleJob',
+
       queryTypes: {
         'name': 'like',
       },
       queryModel: {
         'name': '',   // 任务名称
       },
-      search: {
-        params: [],
-        offset: 0,
-        limit: 10,
-        columnName: '',       // 排序字段名
-        order: ''             // 排序
-      },
-      currentPage: 1,
       scheduleJobTotal: 0,
       scheduleJobList: [],
-
 
       oprColumnWidth: 140,  // 操作列宽
       tableId: '683898740740005891',
@@ -151,104 +142,33 @@ export default {
     }
   },
   methods: {
-    getScheduleJobList() {
-      this.setLoad()
-      /* 查询参数 和数据权限 */
-      this.search.params = []
-      if(this.moreCodition) {
+    appendSearchParams() {
+      if (this.moreCodition) {
         this.search.params = this.search.params.concat(this.compositeCondition())
-      }else{
-        // 查询参数: 任务名称
+      } else {
         this.search.params.push({
-      	  columnName: 'name',
-      	  queryType: 'like',
+          columnName: 'name',
+          queryType: 'like',
           value: this.queryModel.name
         })
       }
-      // 数据权限: 定时任务schedule_job
-      this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-      listScheduleJobPage(this.search).then(responseData => {
-        if(responseData.code == 100) {
-          this.scheduleJobTotal = responseData.data.total
-          this.scheduleJobList = responseData.data.rows
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
     },
-    onSearch() {
-      if(this.moreCodition) {
-        this.search.offset = 0
-        this.currentPage = 1
-        this.getScheduleJobList()
-      } else {
-        this.$refs['queryForm'].validate(valid => {
-          if (valid) {
-            this.search.offset = 0
-            this.currentPage = 1
-            this.getScheduleJobList()
-          } else {
-            return false
-          }
-        })
-      }
+    handleListResponse(responseData) {
+      this.scheduleJobTotal = responseData.data.total
+      this.scheduleJobList = responseData.data.rows
     },
-    onSizeChange(val) {
-      this.currentPage = 1
-      this.search.limit = val;
-      this.search.offset = (this.currentPage - 1) * val
-      this.getScheduleJobList()
-    },
-    onCurrentChange(val) {
-      this.search.offset = (val - 1) * this.search.limit
-      this.currentPage = val
-      this.getScheduleJobList()
-    },
-    async pageInit() {
+    loadData() {
       this.setLoad()
-      try {
-        this.initOptions(this.queryModel)
-        this.search.params = []
-        // 数据权限: 定时任务schedule_job
+      this.search.params = []
+      if (this.appendSearchParams) {
+        this.appendSearchParams()
+      }
+      if (this.tableId) {
         this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-        let [listScheduleJobRespData, listPermissionRespData] = await Promise.all([
-          listScheduleJobPage(this.search),
-          listResourcePermission(this.$route.meta.routerId)
-        ])
-        if(listScheduleJobRespData.code == 100 && listPermissionRespData.code == 100) {
-          this.scheduleJobTotal = listScheduleJobRespData.data.total
-          this.scheduleJobList = listScheduleJobRespData.data.rows
-          this.permission.view = listPermissionRespData.data.find(item => {
-            return item.permission === 'scheduleJob:read'
-          })
-          this.permission.export = listPermissionRespData.data.find(item => {
-            return item.permission === 'scheduleJob:export'
-          })
-          this.permission.add = listPermissionRespData.data.find(item => {
-            return item.permission === 'scheduleJob:create'
-          })
-          this.permission.edit = listPermissionRespData.data.find(item => {
-            return item.permission === 'scheduleJob:update'
-          })
-          this.permission.remove = listPermissionRespData.data.find(item => {
-            return item.permission === 'scheduleJob:delete'
-          })
-        } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listScheduleJobRespData)
-        }
-        this.resetLoad()
-      } catch(error) {
-        this.outputError(error)
       }
-    },
-    onViewScheduleJob(index, row) {
-      this.setLoad()
-      getScheduleJobById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.scheduleJobForm.$emit('openViewScheduleJobDialog', responseData.data)
+      this.listApi(this.search).then(responseData => {
+        if (responseData.code === 100) {
+          this.handleListResponse(responseData)
         } else {
           this.showMessage(responseData)
         }
@@ -257,67 +177,7 @@ export default {
         this.outputError(error)
       })
     },
-    onCreateScheduleJob() {
-      this.$refs.scheduleJobForm.$emit('openAddScheduleJobDialog')
-    },
-    onEditScheduleJob(index, row) {
-      this.setLoad()
-      getScheduleJobById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.scheduleJobForm.$emit('openEditScheduleJobDialog', responseData.data)
-        }else{
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onCopyScheduleJob(index, row) {
-      this.setLoad()
-      getScheduleJobById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.scheduleJobForm.$emit('openCopyScheduleJobDialog', responseData.data)
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onDeleteScheduleJob(index, row) {
-      this.$confirm('确定删除吗？', '确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.setLoad()
-        deleteScheduleJob(row).then(responseData => {
-          if(responseData.code == 100) {
-            this.getScheduleJobList()
-            this.showMessage({type: 'success', msg: '删除成功'})
-          } else {
-            this.showMessage(responseData)
-          }
-          this.resetLoad()
-        }).catch(error => {
-          this.outputError(error)
-        })
-      }).catch(() => {})
-    },
-    onSortChange( orderby ) {
-      if(validatenull(orderby.prop)) {
-        this.search.columnName = ''
-        this.search.order = ''
-      } else  {
-        this.search.columnName = orderby.prop
-        this.search.order = orderby.order === 'descending' ? 'desc' : 'asc'
-      }
-
-      this.getScheduleJobList()
-    },
-    initOptions(This) {
+    initOptions() {
     }
   },
   watch: {

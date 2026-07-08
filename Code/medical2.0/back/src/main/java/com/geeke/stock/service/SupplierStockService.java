@@ -1,10 +1,12 @@
 package com.geeke.stock.service;
+import com.geeke.common.constants.BizConstants;
 
 import com.geeke.common.data.Page;
 import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
+import com.geeke.common.data.SearchParamsBuilder;
 import com.geeke.common.service.CrudService;
-import com.geeke.config.exception.CommonJsonException;
+import com.geeke.common.service.ServiceException;
 import com.geeke.org.entity.Company;
 import com.geeke.org.service.CompanyService;
 import com.geeke.outpatient.entity.RecipelDetail;
@@ -17,10 +19,9 @@ import com.geeke.stock.dao.MedicinalStockControlDao;
 import com.geeke.stock.dao.SupplierStockDao;
 import com.geeke.stock.entity.*;
 import com.geeke.sys.entity.DictItem;
-import com.geeke.utils.ResultUtil;
 import com.geeke.utils.SessionUtils;
-import com.geeke.utils.constants.ErrorEnum;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -45,6 +46,7 @@ public class SupplierStockService extends CrudService<SupplierStockDao, Supplier
     @Autowired
     private SupplierStockService supplierStockService;
 
+    @Lazy
     @Autowired
     private RegistrationService registrationService;
 
@@ -54,18 +56,21 @@ public class SupplierStockService extends CrudService<SupplierStockDao, Supplier
     @Autowired
     private SupplierStorageService supplierStorageService;
 
+    @Lazy
     @Autowired
     private RecipelInfoService recipelInfoService;
 
     @Autowired
     private StuffService stuffService;
 
+    @Lazy
     @Autowired
     private RecipelDetailService recipelDetailService;
 
     @Autowired
     private MedicinalStorageControlService medicinalStorageControlService;
 
+    @Lazy
     @Autowired
     private InventoryVerificationService inventoryVerificationService;
 
@@ -85,36 +90,20 @@ public class SupplierStockService extends CrudService<SupplierStockDao, Supplier
                 inventoryVerificationService.getByCompanyId(company.getId());
         if ("0".equals(dispensingEvt.getDispensingType())) {
             if (!CollectionUtils.isEmpty(inventoryVerifications)) {
-                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "正在进行盘点，无法进行发药操作!"));
+                throw new ServiceException("正在进行盘点，无法进行发药操作!");
 
             }
         } else {
             if (!CollectionUtils.isEmpty(inventoryVerifications)) {
-                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "正在进行盘点，无法进行退药操作!"));
+                throw new ServiceException("正在进行盘点，无法进行退药操作!");
 
             }
         }
-        List<Parameter> parameters = new ArrayList<>();
         String registrationId = dispensingEvt.getRegistrationId();
         Registration registration = registrationService.get(registrationId);
         if ("0".equals(dispensingEvt.getDispensingType())) {
 
             //发药
-//            for (DispensingDetailEvt dispensingDetailEvt : dispensingEvt.getDispensingDetailEvtList()) {
-//                parameters.clear();
-//                if ("0".equals(dispensingDetailEvt.getType())) {
-//                    //药品发放
-//                    parameters.add(new Parameter("drug_id", "=", dispensingDetailEvt.getId()));
-//                } else {
-//                    //材料发放
-//                    parameters.add(new Parameter("stuff_id", "=", dispensingDetailEvt.getId()));
-//                }
-//                parameters.add(new Parameter("number" , ">", 0));
-//                List<SupplierStock> supplierStockList = supplierStockService.listAll(parameters, "a.create_date");
-//                Integer number = dispensingDetailEvt.getNumber();
-//                //减库存
-//                //stockReduction(registrationId, dispensingDetailEvt.getRecipelInfoId(), supplierStockList, number);
-//            }
             for (String recipelInfoId : dispensingEvt.getRecipelInfoIdList()) {
                 //进行动态库存实占
                 medicinalStorageControlService.okOccupyStock(registrationId, recipelInfoId);
@@ -124,13 +113,13 @@ public class SupplierStockService extends CrudService<SupplierStockDao, Supplier
             //更新处方状态
             List<String> recipelInfoIdList = dispensingEvt.getRecipelInfoIdList();
             if (CollectionUtils.isEmpty(recipelInfoIdList)) {
-                throw new RuntimeException("发药的处方信息不能为空");
+                throw new ServiceException("发药的处方信息不能为空");
             }
 
             for (String recipelInfoId : recipelInfoIdList) {
                 RecipelInfo recipelInfo = this.recipelInfoService.get(recipelInfoId);
                 if (recipelInfo == null || !"0".equals(recipelInfo.getIsDispension())) {
-                    throw new RuntimeException("处方信息校验失败，不存在或已发药过");
+                    throw new ServiceException("处方信息校验失败，不存在或已发药过");
                 }
                 recipelInfo.setIsDispension("1");
                 recipelInfo.setDispensionDate(new Date());
@@ -142,42 +131,29 @@ public class SupplierStockService extends CrudService<SupplierStockDao, Supplier
             registration.setDispensingDate(new Date());
         } else {
             //退药
-            parameters.add(new Parameter("registration_id", "=", registrationId));
-            if (null != dispensingEvt.getRecipelInfoIdList() && !dispensingEvt.getRecipelInfoIdList().isEmpty()) {
-                parameters.add(new Parameter("recipel_info_id", "in", dispensingEvt.getRecipelInfoIdList()));
-            }
+            List<Parameter> parameters = SearchParamsBuilder.create()
+                    .eq("registration_id", registrationId)
+                    .in("recipel_info_id", dispensingEvt.getRecipelInfoIdList())
+                    .build();
             List<Dispensing> dispensingList = dispensingService.listAll(parameters, "");
             if (null != dispensingList && !dispensingList.isEmpty()) {
-//                for (Dispensing dispensing : dispensingList) {
-//                    String supplierStockId = dispensing.getSupplierStock().getId();
-//                    Integer updateNumber = dispensing.getNumber();
-//                    SupplierStock supplierStock = supplierStockService.get(supplierStockId);
-//                    Integer currentNumber = supplierStock.getNumber();
-//                    supplierStock.setNumber(currentNumber + updateNumber);
-//                    supplierStockService.save(supplierStock);
-//                    if(supplierStock.getDrug().getId()!=null){
-//                        drugService.updateInventory(updateNumber,supplierStock.getDrug().getId());
-//                    }else {
-//                        stuffService.updateInventory(updateNumber,supplierStock.getStuff().getId());
-//                    }
-//                }
             }
             //更新处方状态
             List<String> recipelInfoIdList = dispensingEvt.getRecipelInfoIdList();
             if (CollectionUtils.isEmpty(recipelInfoIdList)) {
-                throw new RuntimeException("发药的处方信息不能为空");
+                throw new ServiceException("发药的处方信息不能为空");
             }
             for (String recipelInfoId : recipelInfoIdList) {
                 RecipelInfo recipelInfo = this.recipelInfoService.get(recipelInfoId);
                 if (recipelInfo == null || !"1".equals(recipelInfo.getIsDispension())) {
-                    throw new RuntimeException("处方信息校验失败，不存在或已退药过");
+                    throw new ServiceException("处方信息校验失败，不存在或已退药过");
                 }
-                if ("recipelType_2".equals(recipelInfo.getRecipelType().getValue())) {
+                if (BizConstants.RECIPEL_TYPE_INFUSION.equals(recipelInfo.getRecipelType().getValue())) {
                     List<RecipelDetail> recipelDetails = recipelDetailService.getByRecipelInfoId(recipelInfo.getId());
                     for (RecipelDetail recipelDetail :
                             recipelDetails) {
                         if (recipelDetail.getExecutions() != null) {
-                            throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "输液处方已执行，无法退费！"));
+                            throw new ServiceException("输液处方已执行，无法退费！");
                         }
                     }
                 }
@@ -197,65 +173,6 @@ public class SupplierStockService extends CrudService<SupplierStockDao, Supplier
         registration.setDispensingStatus(dispensingEvt.getDispensingStatus());
         //registration.setDispensingDate(new Date());
         registrationService.save(registration);
-    }
-
-    //循环减库存
-
-    private void stockReduction(String registrationId, String recipelInfoId, List<SupplierStock> supplierStockList,
-                                Integer number) {
-        if (null != supplierStockList && !supplierStockList.isEmpty()) {
-            Dispensing dispensing = new Dispensing();
-            Registration registration = new Registration();
-            registration.setId(registrationId);
-            dispensing.setRegistration(registration);
-            RecipelInfo recipelInfo = new RecipelInfo();
-            recipelInfo.setId(recipelInfoId);
-            dispensing.setRecipelInfo(recipelInfo);
-            for (SupplierStock supplierStock : supplierStockList) {
-                Integer stockNumber = supplierStock.getNumber();
-                if (number > 0 && number <= stockNumber) {
-                    int initalNumber = number;
-                    //修改库存数
-                    supplierStock.setNumber(stockNumber - initalNumber);
-                    supplierStockService.save(supplierStock);
-                    //修改药品或者材料信息表的库存
-                    if (supplierStock.getDrug().getId() != null) {
-                        drugService.updateInventory(0 - initalNumber, supplierStock.getDrug().getId());
-                    } else {
-                        stuffService.updateInventory(0 - initalNumber, supplierStock.getStuff().getId());
-                    }
-                    number = 0;
-                    //保存发药明细表
-                    dispensing.setId("");
-                    dispensing.setSupplierStock(supplierStock);
-                    dispensing.setNumber(initalNumber);
-                    dispensing.setCompany(supplierStock.getCompany());
-                    String id = dispensingService.save(dispensing).getId();
-                    break;
-                } else if (number > 0 && number >= stockNumber) {
-                    number = number - stockNumber;
-                    //修改药品或者材料信息表的库存
-                    if (supplierStock.getDrug().getId() != null) {
-                        drugService.updateInventory(-stockNumber, supplierStock.getDrug().getId());
-                    } else {
-                        stuffService.updateInventory(-stockNumber, supplierStock.getStuff().getId());
-                    }
-                    //修改库存数
-                    supplierStock.setNumber(0);
-                    supplierStockService.save(supplierStock);
-
-                    //保存发药明细表
-                    dispensing.setId("");
-                    dispensing.setSupplierStock(supplierStock);
-                    dispensing.setNumber(stockNumber);
-                    dispensing.setCompany(supplierStock.getCompany());
-                    String id = dispensingService.save(dispensing).getId();
-                }
-            }
-            if (number > 0) {
-                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "库存不足，请补充库存!或者进行退费和作废处方。"));
-            }
-        }
     }
 
     public List<SupplierStock> getByStorageId(String id) {
@@ -356,46 +273,43 @@ public class SupplierStockService extends CrudService<SupplierStockDao, Supplier
         String institution = companyService.getInstitution(id);
 
         PageRequest pageRequest = new PageRequest(offset, limit, parameters, orderby, id, institution);
-        int total = this.dao.countWarning(pageRequest);
-        List<SupplierStock> list = null;
-        if (total > 0) {
-            list = this.dao.getDrugIndateWarning(pageRequest);
-        }
-        if (!CollectionUtils.isEmpty(list)) {
-            for (SupplierStock supplierStock : list) {
-                if (!Objects.isNull(supplierStock.getMedicinalStorageControl()) && !Objects.isNull(supplierStock.getMedicinalStorageControl().getStorageStock())) {
-                    String number =
-                            supplierStock.getMedicinalStorageControl().getStorageStock().subtract(supplierStock.getMedicinalStorageControl().getUsedStock().add(supplierStock.getMedicinalStorageControl().getReimburseStock())).stripTrailingZeros().toPlainString();
-                    supplierStock.setNumber(Integer.parseInt(number));
-                } else {
-                    supplierStock.setNumber(0);
+        return paginate(
+            () -> this.dao.countWarning(pageRequest),
+            () -> {
+                List<SupplierStock> list = this.dao.getDrugIndateWarning(pageRequest);
+                for (SupplierStock supplierStock : list) {
+                    if (!Objects.isNull(supplierStock.getMedicinalStorageControl()) && !Objects.isNull(supplierStock.getMedicinalStorageControl().getStorageStock())) {
+                        String number =
+                                supplierStock.getMedicinalStorageControl().getStorageStock().subtract(supplierStock.getMedicinalStorageControl().getUsedStock().add(supplierStock.getMedicinalStorageControl().getReimburseStock())).stripTrailingZeros().toPlainString();
+                        supplierStock.setNumber(Integer.parseInt(number));
+                    } else {
+                        supplierStock.setNumber(0);
+                    }
                 }
+                return list;
             }
-
-        }
-        return new Page((long) total, list);
+        );
     }
 
     public Page<SupplierStock> getStuffIndateWarning(List<Parameter> parameters, int offset, int limit,
                                                      String orderby) {
         PageRequest pageRequest = new PageRequest(offset, limit, parameters, orderby);
-        int total = this.dao.countStuffWarning(pageRequest);
-        List<SupplierStock> list = null;
-        if (total > 0) {
-            list = this.dao.getStuffIndateWarning(pageRequest);
-        }
-        if (!CollectionUtils.isEmpty(list)) {
-            for (SupplierStock supplierStock : list) {
-                if (!Objects.isNull(supplierStock.getMedicinalStorageControl()) && !Objects.isNull(supplierStock.getMedicinalStorageControl().getStorageStock())) {
-                    String number =
-                            supplierStock.getMedicinalStorageControl().getStorageStock().subtract(supplierStock.getMedicinalStorageControl().getUsedStock().add(supplierStock.getMedicinalStorageControl().getReimburseStock())).stripTrailingZeros().toPlainString();
-                    supplierStock.setNumber(Integer.parseInt(number));
-                } else {
-                    supplierStock.setNumber(0);
+        return paginate(
+            () -> this.dao.countStuffWarning(pageRequest),
+            () -> {
+                List<SupplierStock> list = this.dao.getStuffIndateWarning(pageRequest);
+                for (SupplierStock supplierStock : list) {
+                    if (!Objects.isNull(supplierStock.getMedicinalStorageControl()) && !Objects.isNull(supplierStock.getMedicinalStorageControl().getStorageStock())) {
+                        String number =
+                                supplierStock.getMedicinalStorageControl().getStorageStock().subtract(supplierStock.getMedicinalStorageControl().getUsedStock().add(supplierStock.getMedicinalStorageControl().getReimburseStock())).stripTrailingZeros().toPlainString();
+                        supplierStock.setNumber(Integer.parseInt(number));
+                    } else {
+                        supplierStock.setNumber(0);
+                    }
                 }
+                return list;
             }
-        }
-        return new Page((long) total, list);
+        );
     }
 
     /**
@@ -436,7 +350,7 @@ public class SupplierStockService extends CrudService<SupplierStockDao, Supplier
         DictItem examine = storageEvt.getSupplierStorage().getExamine();
         storageEvt.getSupplierStockList().forEach(stock -> {
             SupplierStorage storage = supplierStorageService.get(stock.getId());
-            if (storage.getExamine().getValue().equalsIgnoreCase("supplierStorageExamineStatus_3")) {
+            if (storage.getExamine().getValue().equalsIgnoreCase(BizConstants.SUPPLIER_STORAGE_EXAMINE_PENDING)) {
                 storage.setExamine(examine);
                 storage.setExamineDate(new Date());
                 supplierStorageService.save(storage);

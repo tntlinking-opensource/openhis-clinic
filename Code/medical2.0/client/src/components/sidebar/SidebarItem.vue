@@ -1,6 +1,6 @@
 <template>
   <div>
-    <template v-if="item.children.length == 0">
+    <template v-if="item.children.length === 0">
       <router-link :to="item.url" :key="item.name">
         <el-menu-item :index="item.id" @click="(item.url === '/screenView' || item.url === '/reportDesign') && handleOpenWindow(item.url)" >
           <svg-icon :iconClass="item.cssClass"/>

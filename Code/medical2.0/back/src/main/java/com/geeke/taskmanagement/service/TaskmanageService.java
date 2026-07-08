@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Service("taskmanageService")
-@Transactional(readOnly = false)
+@Transactional(readOnly = true)
 public class TaskmanageService {
 
     @Autowired
@@ -118,6 +118,7 @@ public class TaskmanageService {
         }
     }
 
+    @Transactional(readOnly = false)
     public int savetaskexecutor(taskmanagement task){
         int result=0;
         for(String itme:task.getTaskregion()){
@@ -144,6 +145,7 @@ public class TaskmanageService {
     /*
     新增反馈
      */
+    @Transactional(readOnly = false)
     public int savefeedbacktable(taskmanagement task){
         int result=0;
         for(String itme:task.getTaskregion()) {
@@ -186,12 +188,6 @@ public class TaskmanageService {
         gettaskrcvo rcvo=new gettaskrcvo();
         rcvo.setCompanyId(gettaskrcvo.getCompanyId());
         List<Sysusertreeentity> fileCatalogs = taskmangementDao.getusertree(rcvo);
-        List<Sysusertreeentity> lists = new ArrayList<>();
-//        for (Sysusertreeentity fileCatalog : fileCatalogs) {
-//            Sysusertreeentity vo = new Sysusertreeentity();
-//            BeanUtils.copyProperties(vo,fileCatalog);
-//            lists.add(vo);
-//        }
         List<Sysusertreeentity> tree = createTree(fileCatalogs, fileCatalogs.get(0).getPatid());
         return tree;
     }
@@ -205,7 +201,7 @@ public class TaskmanageService {
         List<Sysusertreeentity> tree = new ArrayList<>();
         for (Sysusertreeentity catelog : lists) {
             if (catelog.getPatid() == pid) {
-                catelog.setChirldren(createTree(lists,catelog.getId()));
+                catelog.setChildren(createTree(lists,catelog.getId()));
                 tree.add(catelog);
             }
         }
@@ -344,49 +340,5 @@ public class TaskmanageService {
         }
         return null;
     }
-//
-//    private List<Sysusertreeentity>parentandchildren(list<Sysusertreeentity> list){
-//
-//        //最顶层根节点
-//        List<Sysusertreeentity> rootlist = new ArrayList<>();
-//        //非最顶层根节点
-//        List<Sysusertreeentity> bodylist = new ArrayList<>();
-//        for (Sysusertreeentity publishservicetype : list) {
-//            if (StringUtils.isBlank(publishservicetype.getPatid())){
-//                rootlist.add(publishservicetype);
-//            }else{
-//                bodylist.add(publishservicetype);
-//            }
-//        }
-//        return gettree(rootlist,bodylist);
-//    }
-//
-//    public List<Sysusertreeentity> gettree(List<Sysusertreeentity>rootlist, List<Sysusertreeentity>bodylist){
-//        if (!judgeutil.isempty(bodylist)){
-//            //声明一个map，用来过滤已操作过的数据
-//            map<string,string> map = new hashmap<>(bodylist.size());
-//            rootlist.foreach(parent->getchild(parent,bodylist,map));
-//            return rootlist;
-//        }else{
-//            return rootlist;
-//        }
-//    }
-//
-//    private void getchild(publishservicetype parent,list<publishservicetype>bodylist, map<string,string> map){
-//        list<publishservicetype>childlist = new arraylist<>();
-//        bodylist.stream().filter(c->!map.containskey(c.getid()))
-//                .filter(c->c.getparentid().equals(parent.getid()))
-//                .foreach(c->{
-//                    map.put(c.getid(),c.getparentid());
-//                    getchild(c,bodylist,map);
-//                    childlist.add(c);
-//                });
-//
-//        parent.setchildren(childlist);
-//    }
-
-
-
-
 
 }

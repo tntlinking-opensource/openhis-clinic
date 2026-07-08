@@ -1,4 +1,5 @@
 package com.geeke.utils.excel;
+import com.geeke.common.constants.BizConstants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,9 +12,9 @@ public class ExcelCellProcessor {
         /** 性别 */
         converterMap.put("OutpatientLog-gender", value -> {
             String strValue = (String) value;
-            if ("gender_0".equals(strValue)) {
+            if (BizConstants.GENDER_MALE.equals(strValue)) {
                 return "男";
-            } else if ("gender_1".equals(strValue)) {
+            } else if (BizConstants.GENDER_FEMALE.equals(strValue)) {
                 return "女";
             }
             return "未知";
@@ -21,7 +22,7 @@ public class ExcelCellProcessor {
         /** 初/复诊 */
         converterMap.put("OutpatientLog-initialVisit", value -> {
             String strValue = (String) value;
-            if ("registrationSource_0".equals(strValue)) {
+            if (BizConstants.REG_SOURCE_NORMAL.equals(strValue)) {
                 return "初诊";
             } else {
                 return "复诊";
@@ -30,7 +31,7 @@ public class ExcelCellProcessor {
         /** 传染病 */
         converterMap.put("OutpatientLog-infect", value -> {
             String strValue = (String) value;
-            if ("infectType_0".equals(strValue)) {
+            if (BizConstants.INFECT_TYPE_NONE.equals(strValue)) {
                 return "是";
             } else {
                 return "否";

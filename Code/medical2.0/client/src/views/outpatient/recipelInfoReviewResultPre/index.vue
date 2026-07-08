@@ -7,22 +7,18 @@
 </template>
 
 <script>
-import ReviewResult from "./components/reviewResultPre.vue"
+import listViewMixin from '@/mixins/listViewMixin'
 import MainUI from '@/views/components/mainUI'
 import ReviewResultPre from "./components/reviewResultPre.vue";
 export default {
   extends: MainUI,
+  mixins: [listViewMixin],
   components: {
     ReviewResultPre,
   },
   data() {
     return {
     }
-  },
-  methods: {},
-  watch: {
-  },
-  mounted() {
   }
 }
 </script>

@@ -1,4 +1,4 @@
-import request from '@/utils/request'
+import request, { serviceLong } from '@/utils/request'
 
 export const get = (id) =>
   request({
@@ -20,7 +20,7 @@ export const list = (tollInfos) =>
   })
 
 export const exportExcel = (search) =>
-  request({
+  serviceLong({
     url: '/toll/outpatientLog/exportExcel',
     method: 'post',
     data: search,

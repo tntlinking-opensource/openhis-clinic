@@ -3,7 +3,7 @@
     <!-- 历史记录  -->
     <History :bussObject='curentRow' ></History>
     <!-- 编辑窗口  -->
-    <supplier-form ref='supplierForm' :permission='permission' v-on:save-finished='getSupplierList()'></supplier-form>
+    <supplier-form ref='supplierForm' :permission='permission' @save-finished='loadData'></supplier-form>
     <el-card class="page-container">
         <!--  搜索栏  开始 -->
         <div class='query-form-container'>
@@ -61,7 +61,7 @@
                     v-show="permission.add"
                     type="primary"
                     icon="el-icon-plus"                   
-                    @click="onCreateSupplier()"
+                    @click="onCreateEntity('supplierForm')"
                     >添加</el-button
                   >
               </el-button-group>
@@ -89,14 +89,14 @@
             </el-table-column>
               <el-table-column v-for="(cv, index) in columnViews" v-if='cv.display' :prop='cv.prop' :key="`columnViews_${index}`" :label='cv.label' sortable='custom' :align='cv.align' :min-width='cv.miniWidth+"px"' :width='cv.width+"px"' header-align='center' :column-key='index.toString()' :render-header="renderHeader">
                 <template slot-scope='{row,$index}'>
-                  <span v-if='columnViews[index].showType == "Switch" || columnViews[index].showType == "Checkbox" || columnViews[index].showType == "Radio"'>
-                    <li v-if='getAttrValue(row, columnViews[index].prop) == "1"' class='el-icon-check' style='color:#F56C6C;'></li>
+                  <span v-if='columnViews[index].showType === "Switch" || columnViews[index].showType === "Checkbox" || columnViews[index].showType === "Radio"'>
+                    <li v-if='getAttrValue(row, columnViews[index].prop) === "1"' class='el-icon-check' style='color:#F56C6C;'></li>
                   </span>
-                  <span v-else-if="columnViews[index].showType == 'Radios'">
-                    <span v-if='getAttrValue(row, columnViews[index].prop) == "1"'>
+                  <span v-else-if="columnViews[index].showType === 'Radios'">
+                    <span v-if='getAttrValue(row, columnViews[index].prop) === "1"'>
                       药品供应商
                     </span>
-                    <span v-else-if='getAttrValue(row, columnViews[index].prop) == "2"'>
+                    <span v-else-if='getAttrValue(row, columnViews[index].prop) === "2"'>
                       材料供应商
                     </span>
                   </span>
@@ -104,7 +104,7 @@
                 </template>
               </el-table-column>
               <!--表行级操作按钮-->
-              <el-table-column label='操作' header-align='center' :width='140 + "px"' :key="Math.random()">        
+              <el-table-column label='操作' header-align='center' :width='140 + "px"' :key="'operate'">        
                 <template slot='header' slot-scope="scope">
                   <span>操作</span>
                   <view-columns-select v-model='columnViews' v-on:save-column-view='saveColumn' v-on:show-all-column='showAllColumn' v-on:show-default-column='showDefaultColumn'></view-columns-select>
@@ -112,11 +112,11 @@
                 </template>
                 <template slot-scope='scope'>
                   <OperationIcon v-show='permission.view' type='info' content='查看' placement='top-start' icon-name='el-icon-view' 
-                    @click='onViewSupplier(scope.$index, scope.row)'></OperationIcon>
+                    @click='onViewEntity(scope.$index, scope.row, "supplierForm")'></OperationIcon>
                   <OperationIcon v-show='permission.edit' type='primary' content='编辑' placement='top-start' icon-name='el-icon-edit' 
-                    @click='onEditSupplier(scope.$index, scope.row)'></OperationIcon>
+                    @click='onEditEntity(scope.$index, scope.row, "supplierForm")'></OperationIcon>
                   <OperationIcon v-show='permission.add' type='primary' content='复制' placement='top-start' icon-name='el-icon-document' 
-                    @click='onCopySupplier(scope.$index, scope.row)'></OperationIcon>
+                    @click='onCopyEntity(scope.$index, scope.row, "supplierForm")'></OperationIcon>
                   <!-- <OperationIcon v-show='permission.remove' type='danger' content='删除' placement='top-start' icon-name='el-icon-delete' 
                     @click='onDeleteSupplier(scope.$index, scope.row)'></OperationIcon> -->
                   <OperationIcon v-show='permission.view' type='info' content='历史记录' placement='top-start' icon-name='el-icon-info' 
@@ -148,9 +148,8 @@
 </template>
 
 <script>
-import { validatenull } from '@/utils/validate'
 import { listSupplierPage, getSupplierById, deleteSupplier } from '@/api/stock/supplier'
-import { listResourcePermission } from '@/api/admin/common/permission'
+import listViewMixin from '@/mixins/listViewMixin'
 import SupplierForm from './supplierForm'
 import ExportExcelButton from '@/components/ExportExcelButton'
 import ViewColumnsSelect from '@/views/components/ViewColumnsSelect'
@@ -160,7 +159,8 @@ import OperationIcon from '@/components/OperationIcon'
 import History from '@/views/components/history'
 export default {
   extends: MainUI,
-  components: { 
+  mixins: [listViewMixin],
+  components: {
     SupplierForm,
     ExportExcelButton,
     ViewColumnsSelect,
@@ -170,13 +170,13 @@ export default {
   },
   data() {
     return {
-      permission: {
-        view: false,
-        add: false,
-        edit: false,
-        remove: false,
-        export: false
-      },
+      // listViewMixin 配置
+      listApi: listSupplierPage,
+      getApi: getSupplierById,
+      deleteApi: deleteSupplier,
+      entityName: 'Supplier',
+      permissionPrefix: 'supplier',
+
       queryTypes: {
         'name': 'like',
         'linkman': 'like',
@@ -187,7 +187,7 @@ export default {
         {
           value: '1',
           label: '药品供应商'
-        }, 
+        },
         {
           value: '2',
           label: '材料供应商'
@@ -199,223 +199,34 @@ export default {
         'phone': '',   // 电话
         'address': '',   // 地址
       },
-      search: {
-        params: [{columnName: 'company_id', queryType: '=', value: currentUser.company.id}],    
-        offset: 0,
-        limit: 20,
-		columnName: '',      // 排序字段名
-        order: ''            // 排序
-      },
-      currentPage: 1,
       supplierTotal: 0,
       supplierList: [],
-        
-      
+
       oprColumnWidth: 140,  // 操作列宽
       tableId: '1005526731044757538',
       schemeId: '1005526731044757555'
     }
   },
   methods: {
-    indexMethod(index){
-       return (this.currentPage-1)*this.search.limit+index +1;
-    },
-    reset(){
-      this.$refs.queryForm.resetFields()
-      this.onSearch()
-    },
-    getSupplierList() {
-      this.setLoad()
-      /* 查询参数 和数据权限 */
+    appendSearchParams() {
       this.search.params = [{columnName: 'company_id', queryType: '=', value: currentUser.company.id}]
       if(this.moreCodition) {
         this.search.params = this.search.params.concat(this.compositeCondition())
-      }else{
-        // 查询参数: 名称
-        this.search.params.push({
-      	  columnName: 'name',
-      	  queryType: 'like',
-          value: this.queryModel.name
-        })
-        // 查询参数: 联系人
-        this.search.params.push({
-      	  columnName: 'linkman',
-      	  queryType: 'like',
-          value: this.queryModel.linkman
-        })
-        // 查询参数: 电话
-        this.search.params.push({
-      	  columnName: 'phone',
-      	  queryType: 'like',
-          value: this.queryModel.phone
-        })
-        // 查询参数: 地址
-        this.search.params.push({
-      	  columnName: 'address',
-      	  queryType: 'like',
-          value: this.queryModel.address
-        })
-        // 查询参数: 类型
-        this.search.params.push({
-      	  columnName: 'type',
-      	  queryType: '=',
-          value: this.queryModel.type
-        })
-      }
-      // 数据权限: 供应商supplier
-      this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-      listSupplierPage(this.search).then(responseData => {
-        if(responseData.code == 100) {
-          this.supplierTotal = responseData.data.total
-          this.supplierList = responseData.data.rows
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onSearch() {
-      if(this.moreCodition) {
-        this.search.offset = 0
-        this.currentPage = 1
-        this.getSupplierList()
       } else {
-        this.$refs['queryForm'].validate(valid => {
-          if (valid) {
-            this.search.offset = 0
-            this.currentPage = 1
-            this.getSupplierList()
-          } else {
-            return false
-          }
-        })
+        this.search.params.push({columnName: 'name', queryType: 'like', value: this.queryModel.name})
+        this.search.params.push({columnName: 'linkman', queryType: 'like', value: this.queryModel.linkman})
+        this.search.params.push({columnName: 'phone', queryType: 'like', value: this.queryModel.phone})
+        this.search.params.push({columnName: 'address', queryType: 'like', value: this.queryModel.address})
+        this.search.params.push({columnName: 'type', queryType: '=', value: this.queryModel.type})
       }
+      this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
     },
-    onSizeChange(val) {
-      this.currentPage = 1
-      this.search.limit = val;
-      this.search.offset = (this.currentPage - 1) * val
-      this.getSupplierList()
-    },
-    onCurrentChange(val) {
-      this.search.offset = (val - 1) * this.search.limit
-      this.currentPage = val
-      this.getSupplierList()
-    },
-    async pageInit() {
-      this.setLoad()
-      try {
-        this.initOptions(this.queryModel)
-        this.search.params = [{columnName: 'company_id', queryType: '=', value: currentUser.company.id}]
-        // 数据权限: 供应商supplier
-        this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-        let [listSupplierRespData, listPermissionRespData] = await Promise.all([
-          listSupplierPage(this.search),
-          listResourcePermission(this.$route.meta.routerId)
-        ])
-        if(listSupplierRespData.code == 100 && listPermissionRespData.code == 100) {
-          this.supplierTotal = listSupplierRespData.data.total
-          this.supplierList = listSupplierRespData.data.rows
-          this.permission.view = listPermissionRespData.data.find(item => {
-            return item.permission === 'supplier:read'
-          })
-          this.permission.export = listPermissionRespData.data.find(item => {
-            return item.permission === 'supplier:export'
-          })
-          this.permission.add = listPermissionRespData.data.find(item => {
-            return item.permission === 'supplier:create'
-          })
-          this.permission.edit = listPermissionRespData.data.find(item => {
-            return item.permission === 'supplier:update'
-          })
-          this.permission.remove = listPermissionRespData.data.find(item => {
-            return item.permission === 'supplier:delete'
-          })
-        } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listSupplierRespData)
-        }
-        this.resetLoad()
-      } catch(error) {
-        this.outputError(error) 
-      }
-    },
-    onViewSupplier(index, row) {
-      this.setLoad()
-      getSupplierById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.supplierForm.$emit('openViewSupplierDialog', responseData.data)
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onCreateSupplier() {
-      this.$refs.supplierForm.$emit('openAddSupplierDialog')
-    },
-    onEditSupplier(index, row) {
-      this.setLoad()
-      getSupplierById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.supplierForm.$emit('openEditSupplierDialog', responseData.data)
-        }else{
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onCopySupplier(index, row) {
-      this.setLoad()
-      getSupplierById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.supplierForm.$emit('openCopySupplierDialog', responseData.data)
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onDeleteSupplier(index, row) {
-      this.$confirm('确定删除吗？', '确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.setLoad()
-        deleteSupplier(row).then(responseData => {
-          if(responseData.code == 100) {
-            this.getSupplierList()
-            this.showMessage({type: 'success', msg: '删除成功'})
-          } else {
-            this.showMessage(responseData)
-          }
-          this.resetLoad()
-        }).catch(error => {
-          this.outputError(error)  
-        })
-      }).catch(() => {})
-    },
-    onSortChange( orderby ) {
-      if(validatenull(orderby.prop)) {
-        this.search.columnName = ''
-        this.search.order = ''
-      } else  {
-        this.search.columnName = orderby.prop
-        this.search.order = orderby.order === 'descending' ? 'desc' : 'asc'
-      }
-
-      this.getSupplierList()
+    handleListResponse(responseData) {
+      this.supplierTotal = responseData.data.total
+      this.supplierList = responseData.data.rows
     },
     initOptions(This) {
-    } 
+    }
   },
   watch: {
    
@@ -431,14 +242,6 @@ export default {
           deep: true
       }
   },
-  updated(){
-    if(this.$refs.tableRef){
-       this.$nextTick(() => {
-              // tableRef是el-table绑定的ref属性值
-              this.$refs.tableRef.doLayout()// 对 Table 进行重新布局
-          })
-    }
-  },
   mounted() {
     this.pageInit()
   }
@@ -448,29 +251,5 @@ export default {
 .page-container{
   padding: 0;
 }
-   .drag_table {
- // 设置表格header的高度
- /deep/ th {
-   height: 44px;
- }
-/deep/ th.gutter:last-of-type {
-  height: 0 !important;
-}
- // 设置表格body的高度
- /deep/.el-table__body-wrapper {
-  //解决数据展示超出body高度不滚动bug
-  overflow-y: auto;
-   // 减去的是表格header的高度
-   height: calc(100% - 44px) !important;
- }
 
- .el-table__fixed-right {
-      height: 100% !important;
-  }
-}
-</style>
-<style scoped>
-/deep/ .el-table__body-wrapper{
-    height: calc(100% - 44px) !important;
-  }
 </style>

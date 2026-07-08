@@ -2,7 +2,6 @@ package com.geeke.outpatient.controller;
 
 import java.util.List;
 
-import com.geeke.outpatient.entity.RecipeTemplateDTO;
 import com.geeke.outpatient.entity.RecipeTemplateDetail;
 import com.geeke.outpatient.entity.RecipeTemplateInfo;
 import com.geeke.outpatient.service.RecipetemplateDetailService;
@@ -10,22 +9,15 @@ import com.geeke.outpatient.service.RecipetemplateInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.alibaba.fastjson.JSONObject;
 import com.geeke.outpatient.entity.Recipetemplate;
 import com.geeke.outpatient.service.RecipetemplateService;
+import com.geeke.common.controller.CrudController;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
-import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.ResultUtil;
-import com.geeke.utils.StringUtils;
 
 /**
  * 模板处方Controller
@@ -34,23 +26,30 @@ import com.geeke.utils.StringUtils;
  */
 @RestController
 @RequestMapping(value = "/outpatient/recipetemplate")
-public class RecipetemplateController extends BaseController {
+public class RecipetemplateController extends CrudController<RecipetemplateService, Recipetemplate> {
 
 	@Autowired
-	private RecipetemplateService recipetemplateService;
+	protected RecipetemplateService recipetemplateService;
 
 	@Autowired
     private RecipetemplateInfoService recipetemplateInfoService;
 
 	@Autowired
     private RecipetemplateDetailService recipetemplateDetailService;
-	
+
+    @Override
+    protected RecipetemplateService getService() {
+        return recipetemplateService;
+    }
+
+    @Override
     @GetMapping("/{id}")
     public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
         Recipetemplate entity = recipetemplateService.getById(id);
         return ResponseEntity.ok(ResultUtil.successJson(entity));
     }
-    
+
+    @Override
     @PostMapping(value = {"list", ""})
     public ResponseEntity<JSONObject> listPage(@RequestBody SearchParams searchParams) {
         Page<Recipetemplate> result = recipetemplateService.listPage(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
@@ -67,14 +66,8 @@ public class RecipetemplateController extends BaseController {
                 recipetemplate.setRecipeTemplateDetail(recipeTemplateDetails);
             }
         }
-        Page page = new Page(result.getTotal(), recipetemplates);
+        Page<Recipetemplate> page = new Page<>(result.getTotal(), recipetemplates);
         return ResponseEntity.ok(ResultUtil.successJson(page));
-    }
-    
-    @PostMapping(value = "listAll")
-    public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
-        List<Recipetemplate> result = recipetemplateService.listAll(searchParams.getParams(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
     }
 
     @PostMapping(value = "allSave")
@@ -82,30 +75,6 @@ public class RecipetemplateController extends BaseController {
         recipetemplateService.allSave(entity);
 //        String id = recipetemplateService.save(entity).getId();
         return ResponseEntity.ok(ResultUtil.successJson(""));
-    }
-  
-    @PostMapping(value = "delete")
-    public ResponseEntity<JSONObject> delete(@RequestBody Recipetemplate entity) {
-        int rows = recipetemplateService.delete(entity);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
-
-    @PostMapping(value = "bulkInsert")
-    public ResponseEntity<JSONObject> bulkInsert(@RequestBody List<Recipetemplate> entitys) {
-        List<String> ids = recipetemplateService.bulkInsert(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkUpdate")
-    public ResponseEntity<JSONObject> bulkUpdate(@RequestBody List<Recipetemplate> entitys) {
-        List<String> ids = recipetemplateService.bulkUpdate(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkDelete")
-    public ResponseEntity<JSONObject> bulkDelete(@RequestBody List<Recipetemplate> entitys) {
-        int rows = recipetemplateService.bulkDelete(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
     }
 
     // ai模板保存

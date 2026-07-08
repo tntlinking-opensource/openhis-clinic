@@ -92,7 +92,7 @@
     </select>
     
     <select id="count" resultType="int">
-        SELECT COUNT(*) FROM supplier_stock a
+        SELECT COUNT(DISTINCT a.id) FROM supplier_stock a
         <include refid="supplierStockJoins"/>
         <where>
             1=1
@@ -471,7 +471,7 @@
         order by a.create_date
     </select>
     <select id="countWarning" resultType="java.lang.Integer">
-        SELECT COUNT(*) FROM supplier_stock a
+        SELECT COUNT(DISTINCT a.id) FROM supplier_stock a
         <include refid="supplierStockJoins"/>
         <where>
             1=1
@@ -506,7 +506,7 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
     <select id="countStuffWarning" resultType="java.lang.Integer">
-        SELECT COUNT(*) FROM supplier_stock a
+        SELECT COUNT(DISTINCT a.id) FROM supplier_stock a
         <include refid="supplierStockJoins"/>
         <where>
             1=1

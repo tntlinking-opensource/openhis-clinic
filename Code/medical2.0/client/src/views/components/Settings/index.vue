@@ -66,7 +66,7 @@
         <el-button v-show='isCustomerTheme()' size="mini" plain icon="el-icon-refresh-right" @click="handleLayoutReset">重置设置</el-button>
       </div>
 
-      <div v-if="loginId == '1001' || loginId=='1000'" style="text-align: center; margin-top: 15px" >
+      <div v-if="loginId === '1001' || loginId==='1000'" style="text-align: center; margin-top: 15px" >
         <el-button  size="medium"  type="primary" plain @click="saveTheTheme">保存为主题</el-button>
       </div>
     </div>
@@ -185,17 +185,6 @@
         }
       }
     },
-    mounted() {
-      this.$nextTick(() => {
-        this.$on('openLayout', function() {
-          if(this.isFirstOpen) {
-            this.isFirstOpen = false
-            this.getLoginId()
-            this.getThemeList()
-          }
-        })
-      })
-    },
     methods: {
 		  ...Vuex.mapActions({
         changeSetting: 'settings/changeSetting',
@@ -214,12 +203,12 @@
       getThemeList() {
 		    this.drawerLoading = true;
         listThemeAll(this.search).then(responseData => {
-          if(responseData.code == 100) {
+          if(responseData.code === 100) {
             this.drawerLoading = false;
             const result = responseData.data;
             // 引用类型 存放在堆内存中
             const obj = result.find(item => {
-              return item.isDefault == '1'
+              return item.isDefault === '1'
             })
             obj.name = obj.name + '（系统默认）'
             this.sysThemeList = result
@@ -291,7 +280,7 @@
         const personalTheme = getLocalPersonalTheme()
         personalTheme.theme = JSON.stringify(this.settings)
         const result = await this.saveSetting(personalTheme)
-        if (result && result.code == 100) {
+        if (result && result.code === 100) {
           personalTheme.id = result.data
           personalTheme.theme = this.settings
           setLocalPersonalTheme(personalTheme)
@@ -313,9 +302,9 @@
       async handleLayoutReset() {
         this.layoutLoading();
         const result = await this.resetSetting();
-        if (result && result.code == 100) {
+        if (result && result.code === 100) {
           const obj = this.sysThemeList.find(item => {
-              return item.isDefault == '1'
+              return item.isDefault === '1'
           })
           setLocalPersonalTheme({
             userId: getLocalCurrentUser().id,
@@ -361,7 +350,7 @@
                   theme:JSON.stringify(data),
               }
               saveTheme(dateTheme).then(responseData => {
-                  if(responseData.code == 100){
+                  if(responseData.code === 100){
                       this.$message({
                           type: 'success',
                           message: '保存成功'
@@ -384,6 +373,13 @@
           spinner: 'el-icon-loading',
           background: 'rgba(0, 0, 0, 0.7)'
         });
+      },
+      openLayout() {
+        if(this.isFirstOpen) {
+          this.isFirstOpen = false
+          this.getLoginId()
+          this.getThemeList()
+        }
       }
     }
 	}

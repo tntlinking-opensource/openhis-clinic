@@ -249,7 +249,7 @@
     </update>
 
     <select id="reportListCount" resultType="int">
-        SELECT COUNT(*) FROM dispensing a
+        SELECT COUNT(DISTINCT a.id) FROM dispensing a
         LEFT JOIN org_company company ON company.id = a.company_id
         LEFT JOIN registration registration ON registration.id = a.registration_id
         LEFT JOIN supplier_stock supplierStock ON supplierStock.id = a.supplier_stock_id
@@ -355,7 +355,7 @@
 
     </select>
     <select id="getOrganizationListCount" resultType="java.lang.Integer">
-        SELECT COUNT(*) FROM dispensing a
+        SELECT COUNT(DISTINCT a.id) FROM dispensing a
         LEFT JOIN org_company company ON company.id = a.company_id
         LEFT JOIN registration registration ON registration.id = a.registration_id
         LEFT JOIN supplier_stock supplierStock ON supplierStock.id = a.supplier_stock_id

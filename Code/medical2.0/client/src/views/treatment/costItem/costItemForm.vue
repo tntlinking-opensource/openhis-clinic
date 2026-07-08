@@ -11,7 +11,7 @@
     <div slot="title" class="dialog-header">
       {{ dialogProps.title }}
       <OperationIcon
-        v-show="dialogProps.action == 'view' && permission.edit"
+        v-show="dialogProps.action === 'view' && permission.edit"
         type="primary"
         text="编辑"
         placement="top-start"
@@ -31,7 +31,7 @@
     >
     <el-row>
     <el-col :span="11">
-      <div class="tab-item" v-show="tabIndex == '1'">
+      <div class="tab-item" v-show="tabIndex === '1'">
         <el-row>
           <el-col :span="24 / 1">
             <el-form-item label="项目编码" prop="itemCode">
@@ -49,10 +49,10 @@
           <el-col :span="24 / 1">
             <el-form-item label="国家编码" prop="itemCountryCode">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.itemCountryCode"
                 :maxlength="64"
-                :placeholder="dialogProps.action == 'view' ? '' : '请输入国家编码'"
+                :placeholder="dialogProps.action === 'view' ? '' : '请输入国家编码'"
                 autofocus
               ></el-input>
             </el-form-item>
@@ -62,12 +62,12 @@
           <el-col :span="24 / 1">
             <el-form-item label="项目名称" prop="itemName">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.itemName"
                 :maxlength="64"
                 @input="pinyinInput"
                 :placeholder="
-                  dialogProps.action == 'view' ? '' : '请输入项目名称'
+                  dialogProps.action === 'view' ? '' : '请输入项目名称'
                 "
               ></el-input>
             </el-form-item>
@@ -82,7 +82,7 @@
                 :maxlength="64"
                 @input="pinyinInput"
                 :placeholder="
-                  dialogProps.action == 'view' ? '' : '请输入拼音码'
+                  dialogProps.action === 'view' ? '' : '请输入拼音码'
                 "
               ></el-input>
             </el-form-item>
@@ -91,8 +91,8 @@
         <el-row>
           <el-col :span="24 / 1">
             <el-form-item label="项目类型" prop="isPackage">
-                 <el-radio :disabled='dialogProps.action == "view"' v-model="bizFormModel.isPackage" label="0">单项项目</el-radio>
-                 <el-radio :disabled='dialogProps.action == "view"' v-model="bizFormModel.isPackage" label="1">组合项目</el-radio>
+                 <el-radio :disabled='dialogProps.action === "view"' v-model="bizFormModel.isPackage" label="0">单项项目</el-radio>
+                 <el-radio :disabled='dialogProps.action === "view"' v-model="bizFormModel.isPackage" label="1">组合项目</el-radio>
             </el-form-item>
           </el-col>
         </el-row>
@@ -100,7 +100,7 @@
           <el-col :span="24 / 1">
             <el-form-item label="项目类别" prop="itemType.value">
               <el-input
-                v-if="dialogProps.action == 'view'"
+                v-if="dialogProps.action === 'view'"
                 :disabled="true"
                 v-model="bizFormModel.itemType.name"
               ></el-input>
@@ -132,7 +132,7 @@
           <el-col :span="24 / 1">
             <el-form-item label="单位" prop="unit.value">
               <el-input
-                v-if="dialogProps.action == 'view'"
+                v-if="dialogProps.action === 'view'"
                 :disabled="true"
                 v-model="bizFormModel.unit.name"
               ></el-input>
@@ -164,7 +164,7 @@
           <el-col :span="24 / 1">
             <el-form-item label="成本价" prop="costPrice">
               <el-input
-                v-if="dialogProps.action == 'view'"
+                v-if="dialogProps.action === 'view'"
                 :disabled="true"
                 v-model="bizFormModel.costPrice"
               ></el-input>
@@ -182,7 +182,7 @@
           <el-col :span="24 / 1">
             <el-form-item label="销售价" prop="salePrice">
               <el-input
-                v-if="dialogProps.action == 'view'"
+                v-if="dialogProps.action === 'view'"
                 :disabled="true"
                 v-model="bizFormModel.salePrice"
               ></el-input>
@@ -200,7 +200,7 @@
           <el-col :span="24 / 1">
             <el-form-item label="是否启用" prop="isUse">
               <el-switch
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.isUse"
                 active-color="#13ce66"
                 inactive-color="#dbdfe6"
@@ -214,12 +214,12 @@
           <el-col>
             <el-form-item label="备注信息" prop="remarks">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.remarks"
                 type="textarea"
                 :maxlength="255"
                 :placeholder="
-                  dialogProps.action == 'view' ? '' : '请输入备注信息'
+                  dialogProps.action === 'view' ? '' : '请输入备注信息'
                 "
                 clearable
               ></el-input>
@@ -230,7 +230,7 @@
           <el-col :span="24 / 1">
             <el-form-item label="是否执行划扣" prop="isDeduct">
               <el-switch
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.isDeduct"
                 active-color="#13ce66"
                 inactive-color="#dbdfe6"
@@ -245,13 +245,13 @@
     <el-col :span="2">
     <div class="verticalBar"></div>
     </el-col>
-    <div v-if="objectType=='1'">
+    <div v-if="objectType==='1'">
        <el-col :span="11">
       <el-row>
         <el-col :span="24/1">
             <el-form-item label="诊疗子项目名称" prop="itemNames">
                 <el-select
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                    multiple
                   v-model="subjectName"
                   value-key="value"
@@ -293,7 +293,7 @@
                   label="数量"
                   width="120">
                   <template slot-scope="scope">
-                  <el-input-number :disabled="dialogProps.action == 'view'" size="mini" v-model="subproject[scope.$index].quantity" @change="handleChange" :min="0"   ></el-input-number>
+                  <el-input-number :disabled="dialogProps.action === 'view'" size="mini" v-model="subproject[scope.$index].quantity" @change="handleChange" :min="0"   ></el-input-number>
                   </template>
                 </el-table-column>
                 <el-table-column
@@ -311,7 +311,7 @@
                   width="50">
                   <template slot-scope="scope">
                     <el-button
-                      :disabled="dialogProps.action == 'view'"
+                      :disabled="dialogProps.action === 'view'"
                       @click.native.prevent="deleteRow(scope.$index, tableData)"
                       type="text"
                       size="small">
@@ -328,10 +328,10 @@
       <el-col :span="11">
       <el-form ref="form" :model="examine" label-width="80px">
         <el-form-item label="参考单位">
-          <el-input  label="请输入参考单位" :disabled="dialogProps.action == 'view'" v-model="examine.referenceUnit"></el-input>
+          <el-input  label="请输入参考单位" :disabled="dialogProps.action === 'view'" v-model="examine.referenceUnit"></el-input>
         </el-form-item>
         <el-form-item label="参考值">
-          <el-input label="请输入参考值，换行添加多组" :disabled="dialogProps.action == 'view'" type="textarea" v-model="examine.referenceValue"></el-input>
+          <el-input label="请输入参考值，换行添加多组" :disabled="dialogProps.action === 'view'" type="textarea" v-model="examine.referenceValue"></el-input>
         </el-form-item>
       </el-form>
       </el-col>
@@ -340,9 +340,9 @@
     </el-form>
    
     <span slot='footer' class='dialog-footer'>
-      <el-button v-if='dialogProps.action != "view"' type='primary' :disabled="flage" :plain='true' @click='onSubmit("costItemForm")'>保 存</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+      <el-button v-if='dialogProps.action !== "view"' type='primary' :disabled="flag" :plain='true' @click='onSubmit("costItemForm")'>保 存</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span>    
   </el-dialog>
 </template>
@@ -350,6 +350,7 @@
 
 import { validatenull } from "@/utils/validate";
 import { listDictItemAll } from "@/api/sys/dictItem";
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 import { saveCostItem } from "@/api/treatment/costItem";
 import BaseUI from "@/views/components/baseUI";
 import OperationIcon from "@/components/OperationIcon";
@@ -378,7 +379,7 @@ export default {
       itemType_List: [], // 项目类别
       itemName_List:[],//子项目名称
       unit_List: [], // 单位
-      flage:false,
+      flag:false,
       subproject:[],//子项目表格集合
       examine:{
         referenceUnit:"",
@@ -428,11 +429,10 @@ export default {
   },
   methods: {
     onSubmit(formName) {
-      console.log(this.subproject);
-      this.flage=true
+      this.flag=true
       this.$refs[formName].validate(valid => {
         if (valid) {
-          if(this.bizFormModel.isPackage=="0"&&this.bizFormModel.itemType.value=="treatmentItemType_0"){
+          if(this.bizFormModel.isPackage==="0"&&this.bizFormModel.itemType.value==="treatmentItemType_0"){
             this.dto.costItem=this.bizFormModel
             this.dto.costItemPackage=[]
             this.dto.costItemPackage.push(this.examine)
@@ -443,7 +443,7 @@ export default {
           
           this.doSave();
         } else {
-          this.flage=false
+          this.flag=false
           this.salesFlage=false
           return false
         }
@@ -452,12 +452,11 @@ export default {
     },
     doSave() {
       this.setLoad()
-      console.log(this.dto,"所有");
      // return
       saveCostItem(this.dto).then(responseData => {
-        this.flage=false
+        this.flag=false
         this.salesFlage=false
-         if(responseData.code == 100) {
+         if(responseData.code === 100) {
            this.dialogProps.visible = false
            this.$emit('save-finished',"1")
          } else {
@@ -465,7 +464,7 @@ export default {
          }
          this.resetLoad()
       }).catch(error => {
-        this.flage=false
+        this.flag=false
         this.outputError(error)
       })
     },
@@ -510,47 +509,11 @@ export default {
       };
     },
     initOptions(This) {
-      let itemType_search = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "998465736089977631",
-          },
-        ],
-      };
-      // 字段对应表上filter条件
-      itemType_search.params.push.apply(itemType_search.params, []);
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(
-        itemType_search.params,
-        this.$route.meta.routerId,
-        "4005"
-      );
-      this.itemType_List.splice(0, this.itemType_List.length);
-      listDictItemAll(itemType_search).then((responseData) => {
-        this.itemType_List = responseData.data;
+      getDictItemsByCode(DICT_CODE.TREATMENT_ITEM_TYPE).then((data) => {
+        this.itemType_List = data;
       });
-      let unit_search = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "999976636865404934",
-          },
-        ],
-      };
-      // 字段对应表上filter条件
-      unit_search.params.push.apply(unit_search.params, []);
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(
-        unit_search.params,
-        this.$route.meta.routerId,
-        "4005"
-      );
-      this.unit_List.splice(0, this.unit_List.length);
-      listDictItemAll(unit_search).then((responseData) => {
-        this.unit_List = responseData.data;
+      getDictItemsByCode(DICT_CODE.TREATMENT_ITEM_UNIT).then((data) => {
+        this.unit_List = data;
       });
     },
 
@@ -565,7 +528,7 @@ export default {
         this.subproject[index].quantity=0;
         this.subproject.splice(index, 1);
         this.subjectName.splice(index,1);
-        if(this.subproject.length!=0){
+        if(this.subproject.length!==0){
           this.salesFlage=true
         }else{
           this.salesFlage=false
@@ -586,7 +549,7 @@ export default {
     //子项目select下拉框事件
     changeMessage(value){
       
-      if(value.length==0){
+      if(value.length===0){
          this.arr=[]
          for (let i = 0; i < this.subproject.length; i++) {
           this.subproject[i].quantity=0         
@@ -597,20 +560,20 @@ export default {
          this.sale=0
          this.cost=0
        }else{
-          if(this.arr.length==0){
+          if(this.arr.length===0){
             this.arr=value
          }else{
             for (let i = 0; i < this.arr.length; i++) {
               for (let j = 0; j < value.length; j++) {
-                if(this.arr[i]==value[j]){
+                if(this.arr[i]===value[j]){
                   this.arr.splice(i,1);
                 }           
               }       
             }
-            if(this.arr.length!=0){
+            if(this.arr.length!==0){
               for (let i = 0; i < this.subproject.length; i++) {
                 for (let j = 0; j < this.arr.length; j++) {
-                  if(this.subproject[i].itemName==this.arr[j]){
+                  if(this.subproject[i].itemName===this.arr[j]){
                      //计算销售价
                     this.bizFormModel.salePrice-=(this.subproject[i].quantity*this.subproject[i].salePrice)
                     this.sale-=(this.subproject[i].quantity*this.subproject[i].salePrice)
@@ -634,22 +597,20 @@ export default {
       if(this.subjectName.length>this.subproject.length){
       let selectChange1=[];         
         for (let i = 0; i < this.subjectName.length; i++) {
-          let flages=false;
+          let flags=false;
           for (let j = 0; j < this.subproject.length; j++) {
-            if(this.subjectName[i]==this.subproject[j].itemName){
-              flages=true;
+            if(this.subjectName[i]===this.subproject[j].itemName){
+              flags=true;
               break;
             }
           } 
-          if(!flages){
-            console.log("hhah");
+          if(!flags){
             selectChange1.push(this.subjectName[i]);
           }
         }
-       console.log(selectChange1,'123');
         for (let x = 0; x < this.itemName_List.length; x++) {
         for (let j = 0; j < selectChange1.length; j++) {
-            if(selectChange1[j]==this.itemName_List[x].itemName){
+            if(selectChange1[j]===this.itemName_List[x].itemName){
               this.subproject.push(this.itemName_List[x])
             }
         }
@@ -658,7 +619,7 @@ export default {
         let selectChange2=[];
         for (let i = 0; i < this.subproject.length; i++) {
           for (let j = 0; j < this.subjectName.length; j++) {
-           if(this.subjectName[j]==this.subproject[i].itemName){
+           if(this.subjectName[j]===this.subproject[i].itemName){
             selectChange2.push(this.subproject[i]);
            }
           }     
@@ -675,7 +636,7 @@ export default {
     //     }
     //   }
     //  }
-      if(this.subproject.length!=0){
+      if(this.subproject.length!==0){
           this.salesFlage=true
         }else{
           this.salesFlage=false
@@ -691,7 +652,7 @@ export default {
        this.bizFormModel.costPrice=this.bizFormModel.costPrice-this.cost
        this.cost=0
       for (let i = 0; i < this.subproject.length; i++) {              
-        if(this.subproject[i].quantity!=undefined){
+        if(this.subproject[i].quantity!==undefined){
           this.sale+=(this.subproject[i].quantity*this.subproject[i].salePrice)
           this.cost+=(this.subproject[i].quantity*this.subproject[i].costPrice)
         }
@@ -711,14 +672,14 @@ export default {
   },
   watch: {
     "bizFormModel.isPackage":function(newVal, oldVal){
-          if(newVal=="0"&&this.bizFormModel.itemType.value=="treatmentItemType_0"){
+          if(newVal==="0"&&this.bizFormModel.itemType.value==="treatmentItemType_0"){
             this.objectType="0"
           }else{
             this.objectType="1"
           }
     },
     "bizFormModel.itemType":function(newVal, oldVal){
-       if(this.bizFormModel.isPackage=="0"&&newVal.value=="treatmentItemType_0"){
+       if(this.bizFormModel.isPackage==="0"&&newVal.value==="treatmentItemType_0"){
             this.objectType="0"
           }else{
             this.objectType="1"
@@ -745,7 +706,7 @@ export default {
         }
         for (let i = 0; i < this.subproject.length; i++) {
           for (let j = 0; j < costItemDTO.costItems.length; j++) {
-            if(this.subproject[i].costItemId==costItemDTO.costItems[j].id){
+            if(this.subproject[i].costItemId===costItemDTO.costItems[j].id){
               this.subproject[i].itemCode=costItemDTO.costItems[j].itemCode
               this.subproject[i].itemName=costItemDTO.costItems[j].itemName
               this.subproject[i].salePrice=costItemDTO.costItems[j].salePrice
@@ -787,7 +748,7 @@ export default {
         }
         for (let i = 0; i < this.subproject.length; i++) {
           for (let j = 0; j < costItemDTO.response.costItems.length; j++) {
-            if(this.subproject[i].costItemId==costItemDTO.response.costItems[j].id){
+            if(this.subproject[i].costItemId===costItemDTO.response.costItems[j].id){
               this.subproject[i].itemCode=costItemDTO.response.costItems[j].itemCode
               this.subproject[i].itemName=costItemDTO.response.costItems[j].itemName
               this.subproject[i].salePrice=costItemDTO.response.costItems[j].salePrice
@@ -812,7 +773,6 @@ export default {
           this.sale+=(this.subproject[i].quantity*this.subproject[i].salePrice)
           this.cost+=(this.subproject[i].quantity*this.subproject[i].costPrice)
         }
-         console.log(this.cost,"现在价格");
         this.assign(costItemDTO.res)
         this.arr=this.subjectName
         this.tabIndex = "1";
@@ -870,7 +830,7 @@ export default {
         }
         for (let i = 0; i < this.subproject.length; i++) {
           for (let j = 0; j < costItemDTO.response.costItems.length; j++) {
-            if(this.subproject[i].costItemId==costItemDTO.response.costItems[j].id){
+            if(this.subproject[i].costItemId===costItemDTO.response.costItems[j].id){
               this.subproject[i].itemCode=costItemDTO.response.costItems[j].itemCode
               this.subproject[i].itemName=costItemDTO.response.costItems[j].itemName
               this.subproject[i].salePrice=costItemDTO.response.costItems[j].salePrice
@@ -897,7 +857,6 @@ export default {
         }
         this.bizFormModel.id = null;
         this.bizFormModel.itemCode = "";
-         console.log(this.cost,"现在价格");
         this.assign(costItemDTO.res)
         this.arr=this.subjectName
         this.tabIndex = "1";

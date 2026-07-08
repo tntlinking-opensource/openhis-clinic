@@ -96,7 +96,7 @@ public class MdInventoryServiceImpl implements MdInventoryService {
     public JSONObject updateInventory_3502(StorageEvt storageEvt, String invChgType) {
         JSONObject invinfo = new JSONObject();
         SupplierStock supplierStock = storageEvt.getSupplierStockList().get(0);
-        //TODO
+        //以下字段需根据实际业务补充
         invinfo.put("med_list_codg", ""); // 医疗目录编码
         invinfo.put("inv_chg_type", invChgType); // 库存变更类型
         invinfo.put("fixmedins_hist_id", ""); // 定点医药机构目录编号

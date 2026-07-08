@@ -23,7 +23,7 @@ import java.util.Date;
  */
  
 @Service
-@Transactional(readOnly = false)
+@Transactional(readOnly = true)
 public class RecipetemplateInfoService extends CrudService<RecipeTemplateInfoDao, RecipeTemplateInfo>{
     protected String createBy;
     protected Date createDate;
@@ -35,6 +35,7 @@ public class RecipetemplateInfoService extends CrudService<RecipeTemplateInfoDao
     private RecipeTemplateInfoDao recipeTemplateInfoDao;
 
 
+    @Transactional(readOnly = false)
     public void allSave(RecipeTemplateInfo recipeTemplateInfo){
         recipeTemplateInfo.preInsert();
         recipeTemplateInfo.setId(IdGen.uuid());
@@ -56,6 +57,7 @@ public class RecipetemplateInfoService extends CrudService<RecipeTemplateInfoDao
         return recipeTemplateInfo;
     }
 
+    @Transactional(readOnly = false)
     public void updateInfo(RecipeTemplateInfo recipeTemplateInfo) {
         this.dao.updateInfo(recipeTemplateInfo);
     }

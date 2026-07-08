@@ -1,66 +1,29 @@
-import request from '@/utils/request'
+import request, { serviceLong } from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
+const baseApi = createCrudApi('/sys/sysFile')
+
+// 导出标准CRUD接口（保持向后兼容）
+export const listSysFilePage = baseApi.listPage
+export const listSysFileAll = baseApi.listAll
+export const saveSysFile = baseApi.save
+export const deleteSysFile = baseApi.delete
+export const bulkInsertSysFile = baseApi.bulkInsert
+export const bulkUpdateSysFile = baseApi.bulkUpdate
+export const bulkDeleteSysFile = baseApi.bulkDelete
+
+// 自定义接口（带特殊responseType）
 export const getSysFileById = (id) =>
-    request({
+    serviceLong({
         url: '/sys/sysFile/' + id,
         method: 'get',
         responseType: 'blob'
     })
 
-export const listSysFilePage = (search) =>
-    request({
-        url: '/sys/sysFile/list',
-        method: 'post',
-        data: search
-    })
-
-export const listSysFileAll = (search) =>
-    request({
-        url: '/sys/sysFile/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveSysFile = (sysFile) =>
-    request({
-        url: '/sys/sysFile/save',
-        method: 'post',
-        data: sysFile
-    })
-
-export const deleteSysFile = (sysFile) =>
-    request({
-        url: '/sys/sysFile/delete',
-        method: 'post',
-        data: sysFile
-    })
-
-export const bulkInsertSysFile = (sysFiles) =>
-    request({
-        url: '/sys/sysFile/bulkInsert',
-        method: 'post',
-        data: sysFiles
-    })
-
-export const bulkUpdateSysFile = (sysFiles) =>
-    request({
-        url: '/sys/sysFile/bulkUpdate',
-        method: 'post',
-        data: sysFiles
-    })
-
-export const bulkDeleteSysFile = (sysFiles) =>
-    request({
-        url: '/sys/sysFile/bulkDelete',
-        method: 'post',
-        data: sysFiles
-    })
-
 export const fileUploadById = (fileId) =>
-  request({
-    url: '/sys/fileContent/export/' + fileId,
-    method: 'get',
-    type:'blob',
-    responseType: 'arraybuffer'
-  })
+    serviceLong({
+        url: '/sys/fileContent/export/' + fileId,
+        method: 'get',
+        type: 'blob',
+        responseType: 'arraybuffer'
+    })

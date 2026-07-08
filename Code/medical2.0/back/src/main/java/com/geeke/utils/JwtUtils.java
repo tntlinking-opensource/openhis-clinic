@@ -29,7 +29,7 @@ public class JwtUtils {
 	@Value(value = "${jwtUtils.id:jwt}")
 	private String id;
 	
-	@Value(value = "${jwtUtils.secret:6686df7fc3a34e26a61c034d5ec82488}")
+	@Value(value = "${jwtUtils.secret}")
 	private String secret;
 	
 	/**
@@ -45,6 +45,9 @@ public class JwtUtils {
 	 * @return
 	 */
 	private SecretKey generalKey() {
+		if (secret == null || secret.trim().isEmpty()) {
+			throw new IllegalStateException("JWT secret is not configured. Set 'jwtUtils.secret' in application config.");
+		}
 		byte[] encodedKey = Base64.getDecoder().decode(secret);
 		SecretKey key = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
 		return key;
@@ -64,10 +67,10 @@ public class JwtUtils {
 		JwtBuilder builder = Jwts.builder().setId(id).setIssuedAt(now).setSubject(subject).signWith(signatureAlgorithm,
 				key);
 		if (ttlMillis >= 0) {
-			// long expMillis = nowMillis + ttlMillis;
-			// Date exp = new Date(expMillis);
-			// builder.setExpiration(exp);
-			
+			long expMillis = nowMillis + ttlMillis;
+			Date exp = new Date(expMillis);
+			builder.setExpiration(exp);
+
 			SecurityUtils.getSubject().getSession().setTimeout(ttlMillis);  // session到期时间
 		}
 		return builder.compact();
@@ -75,24 +78,39 @@ public class JwtUtils {
 
 	/**
 	 * 解密jwt
-	 * 
+	 *
 	 * @param jwt
 	 * @return
-	 * @throws Exception
+	 * @throws ExpiredJwtException token过期时抛出
+	 * @throws io.jsonwebtoken.SignatureException 签名验证失败时抛出
 	 */
 	public Claims parseJWT(String jwt) {
 		SecretKey key = generalKey();
-		Claims claims;
-        try {
-            claims = Jwts.parser()
-                    .setSigningKey(key) // 设置标识名
-                    .parseClaimsJws(jwt)  //解析token
-                    .getBody();
-        } catch (ExpiredJwtException e) {
-            claims = e.getClaims();
-        }
-		
+		// 不再吞掉 ExpiredJwtException — 过期token应被视为无效
+		Claims claims = Jwts.parser()
+				.setSigningKey(key)
+				.parseClaimsJws(jwt)
+				.getBody();
 		return claims;
+	}
+
+	/**
+	 * 解密jwt，过期时返回null而非抛出异常
+	 * 用于需要静默处理过期token的场景（如从过期token中提取sessionId做清理）
+	 *
+	 * @param jwt
+	 * @return claims，过期时返回null
+	 */
+	public Claims parseJWTLenient(String jwt) {
+		SecretKey key = generalKey();
+		try {
+			return Jwts.parser()
+					.setSigningKey(key)
+					.parseClaimsJws(jwt)
+					.getBody();
+		} catch (ExpiredJwtException e) {
+			return e.getClaims();
+		}
 	}
 
 	public long getTtlMillis() {

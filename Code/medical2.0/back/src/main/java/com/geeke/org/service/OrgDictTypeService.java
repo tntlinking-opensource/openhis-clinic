@@ -10,6 +10,7 @@ import java.util.List;
 
 import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
+import com.geeke.common.data.SearchParamsBuilder;
 import com.geeke.common.service.CrudService;
 import com.geeke.org.dao.OrgDictItemDao;
 import com.geeke.org.dao.OrgDictTypeDao;
@@ -34,10 +35,10 @@ public class OrgDictTypeService extends CrudService<OrgDictTypeDao, OrgDictType>
 
     public OrgDictType get(String id) {
         OrgDictType dictType = (OrgDictType)super.get(id);
-        List<Parameter> params = null;
-        params = Lists.newArrayList();
-        params.add(new Parameter("dict_type_id", "=", dictType.getId()));
-        params.add(new Parameter("company_id", "=", dictType.getCompany().getId()));
+        List<Parameter> params = SearchParamsBuilder.create()
+                .eq("dict_type_id", dictType.getId())
+                .eq("company_id", dictType.getCompany().getId())
+                .build();
         PageRequest pageRequest = new PageRequest(params);
         List<OrgDictItem> orgDictItems = this.dictItemDao.listAll(pageRequest);
         dictType.setDictItemList(orgDictItems);
@@ -74,9 +75,9 @@ public class OrgDictTypeService extends CrudService<OrgDictTypeDao, OrgDictType>
             readOnly = false
     )
     public int delete(OrgDictType dictType) {
-        List<Parameter> params = null;
-        params = Lists.newArrayList();
-        params.add(new Parameter("dict_type_id", "=", dictType.getId()));
+        List<Parameter> params = SearchParamsBuilder.create()
+                .eq("dict_type_id", dictType.getId())
+                .build();
         PageRequest pageRequest = new PageRequest(params);
         dictType.setDictItemList(this.dictItemDao.listAll(pageRequest));
         if (dictType.getDictItemList() != null && dictType.getDictItemList().size() > 0) {
@@ -87,31 +88,10 @@ public class OrgDictTypeService extends CrudService<OrgDictTypeDao, OrgDictType>
         return rows;
     }
 
-//    protected Action createAction(String actionTypeId, OrgDictType entity) {
-//        Action action = super.createAction(actionTypeId, entity);
-//        if (action == null) {
-//            return null;
-//        } else {
-//            if ("deleted".equals(actionTypeId)) {
-//                Iterator var4 = entity.getDictItemList().iterator();
-//
-//                while(var4.hasNext()) {
-//                    OrgDictItem child = (OrgDictItem)var4.next();
-//                    ActionRecycle recycle = new ActionRecycle();
-//                    recycle.setTableName(child.getBusTableName());
-//                    recycle.setObjectId(child.getId());
-//                    recycle.setObjectName((String)Reflections.invokeGetter(child, "name"));
-//                    action.getActionRecycleList().add(recycle);
-//                }
-//            }
-//
-//            return action;
-//        }
-//    }
-
     private void saveDictItemList(OrgDictType dictType) {
-        List<Parameter> params = Lists.newArrayList();
-        params.add(new Parameter("dict_type_id", "=", dictType.getId()));
+        List<Parameter> params = SearchParamsBuilder.create()
+                .eq("dict_type_id", dictType.getId())
+                .build();
         PageRequest pageRequest = new PageRequest(params);
         List<OrgDictItem> list_DictItem = this.dictItemDao.listAll(pageRequest);
         List<OrgDictItem> deletes = Lists.newArrayList();

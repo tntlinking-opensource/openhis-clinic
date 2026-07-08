@@ -1,24 +1,24 @@
 import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getCompanyById = (id) =>
-    request({
-        url: '/org/company/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/org/company')
 
-export const listCompanyPage = (search) =>
+// 导出标准CRUD接口（保持向后兼容）
+export const getCompanyById = baseApi.getById
+export const listCompanyPage = baseApi.listPage
+export const listCompanyAll = baseApi.listAll
+export const saveCompany = (data) =>
     request({
-        url: '/org/company/list',
+        url: '/org/company/saveWithFile',
         method: 'post',
-        data: search
+        data
     })
+export const deleteCompany = baseApi.delete
+export const bulkInsertCompany = baseApi.bulkInsert
+export const bulkUpdateCompany = baseApi.bulkUpdate
+export const bulkDeleteCompany = baseApi.bulkDelete
 
-export const listCompanyAll = (search) =>
-    request({
-        url: '/org/company/listAll',
-        method: 'post',
-        data: search
-    })
+// 自定义接口
 export const getCompanys = (id) =>
     request({
         url: '/org/company/getCompanys',
@@ -32,39 +32,3 @@ export const treeCompany = (search) =>
         method: 'post',
         data: search
     })
-
-export const saveCompany = (formData) =>
-    request({
-        url: '/org/company/save',
-        method: 'post',
-        data: formData
-    })
-  
-export const deleteCompany = (company) =>
-    request({
-        url: '/org/company/delete',
-        method: 'post',
-        data: company
-    })
-    
-export const bulkInsertCompany = (companys) =>
-    request({
-        url: '/org/company/bulkInsert',
-        method: 'post',
-        data: companys
-    })
-    
-export const bulkUpdateCompany = (companys) =>
-    request({
-        url: '/org/company/bulkUpdate',
-        method: 'post',
-        data: companys
-    })
-
-export const bulkDeleteCompany = (companys) =>
-    request({
-        url: '/org/company/bulkDelete',
-        method: 'post',
-        data: companys
-    })
-    

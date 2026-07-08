@@ -3,7 +3,7 @@
     <!-- 历史记录  -->
     <History :bussObject='curentRow' ></History>
     <!-- 编辑窗口  -->
-    <router-form ref='routerForm' :permission='permission' v-on:save-finished='getRouterList()'></router-form>
+    <router-form ref='routerForm' :permission='permission' @save-finished='loadData'></router-form>
     <div class="page-container">
       <!--  搜索栏  开始 -->
       <div class='query-form-container'>
@@ -47,8 +47,8 @@
             <el-table class='drag_table' :data='routerList' row-key='id' :tree-props="{children: 'children', hasChildren: 'hasChildren'}"border @sort-change='onSortChange' @header-dragend='onChangeWidth' :cell-class-name='cellClassName' :header-cell-class-name='headerCellClassName' highlight-current-row>                
               <el-table-column v-for="(cv, index) in columnViews" v-if='cv.display' :prop='cv.prop' :key="`columnViews_${index}`" :label='cv.label' sortable='custom' :align='cv.align' :min-width='cv.miniWidth+"px"' :width='cv.width+"px"' header-align='center' :column-key='index.toString()' :render-header="renderHeader">
                 <template slot-scope='{row,$index}'>
-                  <span v-if='columnViews[index].showType == "Switch" || columnViews[index].showType == "Checkbox" || columnViews[index].showType == "Radio"'>
-                    <li v-if='getAttrValue(row, columnViews[index].prop) == "1"' class='el-icon-check' style='color:#F56C6C;'></li>
+                  <span v-if='columnViews[index].showType === "Switch" || columnViews[index].showType === "Checkbox" || columnViews[index].showType === "Radio"'>
+                    <li v-if='getAttrValue(row, columnViews[index].prop) === "1"' class='el-icon-check' style='color:#F56C6C;'></li>
                   </span>
                   <span v-else>{{ getAttrValue(row, columnViews[index].prop, columnViews[index].javaType )}}</span>
                 </template>
@@ -69,8 +69,8 @@
                     @click='onEditRouter(scope.$index, scope.row)'></OperationIcon>
                   <OperationIcon v-show='permission.add' type='primary' content='复制' placement='top-start' icon-name='el-icon-document' 
                     @click='onCopyRouter(scope.$index, scope.row)'></OperationIcon>
-                  <OperationIcon v-show='permission.remove && (!(scope.row.children) || scope.row.children.length <=0)' type='danger' content='删除' placement='top-start' icon-name='el-icon-delete' 
-                    @click='onDeleteRouter(scope.$index, scope.row)'></OperationIcon>
+                  <OperationIcon v-show='permission.remove && (!(scope.row.children) || scope.row.children.length <=0)' type='danger' content='删除' placement='top-start' icon-name='el-icon-delete'
+                    @click='onDeleteEntity(scope.$index, scope.row, deleteRouter)'></OperationIcon>
                   <OperationIcon v-show='permission.view' type='info' content='历史记录' placement='top-start' icon-name='el-icon-info' 
                     @click='onShowHistory(scope.$index, scope.row)'></OperationIcon>
                 </template>
@@ -87,7 +87,9 @@
 <script>
 import { validatenull } from '@/utils/validate'
 import { treeRouter, getRouterById, deleteRouter } from '@/api/admin/router'
-import { listResourcePermission } from '@/api/admin/common/permission'
+import listViewMixin from '@/mixins/listViewMixin'
+import { listResourcePermission } from '@/api/resourcePermission'
+import { mapPermissions } from '@/utils/searchParamsBuilder'
 import RouterForm from './routerForm'
 import ExportExcelButton from '@/components/ExportExcelButton'
 import ViewColumnsSelect from '@/views/components/ViewColumnsSelect'
@@ -97,7 +99,8 @@ import OperationIcon from '@/components/OperationIcon'
 import History from '@/views/components/history'
 export default {
   extends: MainUI,
-  components: { 
+  mixins: [listViewMixin],
+  components: {
     RouterForm,
     ExportExcelButton,
     ViewColumnsSelect,
@@ -107,13 +110,11 @@ export default {
   },
   data() {
     return {
-      permission: {
-        view: false,
-        add: false,
-        edit: false,
-        remove: false,
-        export: false
-      },
+      listApi: treeRouter,
+      getApi: getRouterById,
+      deleteApi: deleteRouter,
+      entityName: 'Router',
+      permissionPrefix: 'router',
       queryTypes: {
         'name': 'like',
       },
@@ -121,106 +122,65 @@ export default {
         'name': '',   // 名称
       },
       search: {
-        params: [],    
+        params: [],
         offset: 0,
         limit: 10,
-        columnName: '',       // 排序字段名
-        order: ''             // 排序
+        columnName: '',
+        order: ''
       },
       routerList: [],
-        
-      
+
       oprColumnWidth: 165,  // 操作列宽
       tableId: '4003',
       schemeId: '6009'
     }
   },
   methods: {
-    getRouterList() {
-      this.setLoad()
-      /* 查询参数 和数据权限 */
-      this.search.params = []
+    appendSearchParams() {
       if(this.moreCodition) {
         this.search.params = this.search.params.concat(this.compositeCondition())
-      }else{
-        // 查询参数: 名称
+      } else {
         this.search.params.push({
-      	  columnName: 'name',
-      	  queryType: 'like',
+          columnName: 'name',
+          queryType: 'like',
           value: this.queryModel.name
         })
       }
-      // 数据权限: 路由sys_router
       this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-      treeRouter(this.search).then(responseData => {
-        if(responseData.code == 100) {
-          this.routerList = responseData.data
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
     },
-    onSearch() {
-      if(this.moreCodition) {
-        this.getRouterList()
-      } else {
-        this.$refs['queryForm'].validate(valid => {
-          if (valid) {
-            this.getRouterList()
-          } else {
-            return false
-          }
-        })
-      }
+    handleListResponse(responseData) {
+      this.routerList = responseData.data
     },
     async pageInit() {
       this.setLoad()
       try {
         this.initOptions(this.queryModel)
         this.search.params = []
-        // 数据权限: 路由sys_router
         this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
         let [listRouterRespData, listPermissionRespData] = await Promise.all([
           treeRouter(this.search),
           listResourcePermission(this.$route.meta.routerId)
         ])
-        if(listRouterRespData.code == 100 && listPermissionRespData.code == 100) {
-          this.routerList = listRouterRespData.data
-          this.permission.view = listPermissionRespData.data.find(item => {
-            return item.permission === 'router:read'
-          })
-          this.permission.export = listPermissionRespData.data.find(item => {
-            return item.permission === 'router:export'
-          })
-          this.permission.add = listPermissionRespData.data.find(item => {
-            return item.permission === 'router:create'
-          })
-          this.permission.edit = listPermissionRespData.data.find(item => {
-            return item.permission === 'router:update'
-          })
-          this.permission.remove = listPermissionRespData.data.find(item => {
-            return item.permission === 'router:delete'
-          })
+        if(listRouterRespData.code === 100 && listPermissionRespData.code === 100) {
+          this.handleListResponse(listRouterRespData)
+          this.permission = mapPermissions(listPermissionRespData.data, 'router')
         } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listRouterRespData)
+          this.showMessage(listPermissionRespData.code !== 100 ? listPermissionRespData : listRouterRespData)
         }
         this.resetLoad()
       } catch(error) {
-        this.outputError(error) 
+        this.outputError(error)
       }
     },
     onViewRouter(index, row) {
       this.setLoad()
       getRouterById(row.id).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           let router = responseData.data
           if(validatenull(router.parent)) {
             router.parent = {id: null}
-          }        
-          this.$refs.routerForm.$emit('openViewRouterDialog', router)
+          }
+          this.$refs.routerForm.openViewRouterDialog(router)
         } else {
           this.showMessage(responseData)
         }
@@ -230,17 +190,17 @@ export default {
       })
     },
     onCreateRouter(index, row) {
-      this.$refs.routerForm.$emit('openAddRouterDialog', row)
+      this.$refs.routerForm.openAddRouterDialog(row)
     },
     onEditRouter(index, row) {
       this.setLoad()
       getRouterById(row.id).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           let router = responseData.data
           if(validatenull(router.parent)) {
             router.parent = {id: null}
           }
-          this.$refs.routerForm.$emit('openEditRouterDialog', router)
+          this.$refs.routerForm.openEditRouterDialog(router)
         }else{
           this.showMessage(responseData)
         }
@@ -252,12 +212,12 @@ export default {
     onCopyRouter(index, row) {
       this.setLoad()
       getRouterById(row.id).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           let router = responseData.data
           if(validatenull(router.parent)) {
             router.parent = {id: null}
-          }        
-          this.$refs.routerForm.$emit('openCopyRouterDialog', router)
+          }
+          this.$refs.routerForm.openCopyRouterDialog(router)
         } else {
           this.showMessage(responseData)
         }
@@ -266,39 +226,8 @@ export default {
         this.outputError(error)
       })
     },
-    onDeleteRouter(index, row) {
-      this.$confirm('确定删除吗？', '确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.setLoad()
-        deleteRouter(row).then(responseData => {
-          if(responseData.code == 100) {
-            this.getRouterList()
-            this.showMessage({type: 'success', msg: '删除成功'})
-          } else {
-            this.showMessage(responseData)
-          }
-          this.resetLoad()
-        }).catch(error => {
-          this.outputError(error)  
-        })
-      }).catch(() => {})
-    },
-    onSortChange( orderby ) {
-      if(validatenull(orderby.prop)) {
-        this.search.columnName = ''
-        this.search.order = ''
-      } else  {
-        this.search.columnName = orderby.prop
-        this.search.order = orderby.order === 'descending' ? 'desc' : 'asc'
-      }
-
-      this.getRouterList()
-    },
     initOptions(This) {
-    } 
+    }
   },
   watch: {
   },

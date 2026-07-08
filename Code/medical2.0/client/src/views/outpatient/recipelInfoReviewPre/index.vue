@@ -14,9 +14,11 @@
 <script>
 import ReviewPre from "./components/reviewPre.vue"
 
+import listViewMixin from '@/mixins/listViewMixin'
 import MainUI from '@/views/components/mainUI'
 export default {
   extends: MainUI,
+  mixins: [listViewMixin],
   components: {
     ReviewPre
   },
@@ -24,11 +26,6 @@ export default {
     return {
       activeName: 'first'
     }
-  },
-  methods: {},
-  watch: {
-  },
-  mounted() {
   }
 }
 </script>

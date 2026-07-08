@@ -28,7 +28,7 @@
         #{isLocked}
         )
     </insert>
-    <select id="getpbuserlist" resultType="com.geeke.outpatient.entity.schedulingDTO">
+    <select id="getpbuserlist" resultType="com.geeke.outpatient.entity.SchedulingDTO">
         select user_id userid,su.name username,sue.office ksname,o.id ksid ,count(sd.userid) pbsl  from sys_user su
         inner join sys_user_ext sue on su.company_id =sue.company_id and su.id =sue.user_id
         left join scheduling_data sd on su.company_id =sd.company_id and su.id =sd.userid and sd.del_flag ='0'and sd.is_locked ='0'
@@ -38,8 +38,10 @@
            and su.company_id =#{companyid}
         group by user_id,su.name,sue.office,su.department_id,o.id
     </select>
-    <select id="listscheduling" resultType="com.geeke.outpatient.entity.scheduling">
-        select * from scheduling_data sd
+    <select id="listscheduling" resultType="com.geeke.outpatient.entity.Scheduling">
+        select id, company_id, userid, schedulingtime, timeid, is_locked,
+               create_by, create_date, update_by, update_date, del_flag
+        from scheduling_data sd
         <where>
             company_id =#{companyid}
             <if test="userid!='' and userid !=null ">
@@ -55,11 +57,14 @@
         order by schedulingtime
     </select>
 
-    <select id="listcount" resultType="com.geeke.outpatient.entity.scheduling">
-        select * from scheduling_data sd where company_id =#{companyid} and userid =#{userid}
+    <select id="listcount" resultType="com.geeke.outpatient.entity.Scheduling">
+        select id, company_id, userid, schedulingtime, timeid, is_locked,
+               create_by, create_date, update_by, update_date, del_flag
+        from scheduling_data sd
+        where company_id =#{companyid} and userid =#{userid}
         and schedulingtime=#{schedulingtime}  and del_flag='0'
     </select>
-    <select id="listschedulingmx" resultType="com.geeke.outpatient.entity.schedulingmxDTO">
+    <select id="listschedulingmx" resultType="com.geeke.outpatient.entity.SchedulingmxDTO">
         select a.id,a.patient_id, p.name,sdib.name gendername,p.age,a.subscribe_date ,su.name ysname,sue.office ksname,sdia.name sourcename,
         sdi.name statusname,a.remarks ,a.create_date,DATE_FORMAT(a.subscribe_date,'%H') houser
         from registration a
@@ -94,11 +99,14 @@
         </where>
         order by a.subscribe_date
     </select>
-    <select id="getList" resultType="com.geeke.outpatient.entity.scheduling">
-        SELECT a.* FROM scheduling_data a
-        WHERE ( datediff ( a.schedulingtime , #{schedulingtime} ) = 0 ) and
-                a.ID = (SELECT MAX(b.ID) FROM scheduling_data b
-                        WHERE b.schedulingtime = a.schedulingtime)
+    <select id="getList" resultType="com.geeke.outpatient.entity.Scheduling">
+        SELECT a.id, a.company_id, a.userid, a.schedulingtime, a.timeid, a.is_locked,
+               a.create_by, a.create_date, a.update_by, a.update_date, a.del_flag
+        FROM scheduling_data a
+        WHERE a.schedulingtime &gt;= #{schedulingtime}
+          AND a.schedulingtime &lt; DATE_ADD(#{schedulingtime}, INTERVAL 1 DAY)
+          AND a.ID = (SELECT MAX(b.ID) FROM scheduling_data b
+                      WHERE b.schedulingtime = a.schedulingtime)
         ORDER BY a.schedulingtime
     </select>
 

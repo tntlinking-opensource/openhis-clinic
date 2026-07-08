@@ -1,66 +1,26 @@
+import { createCrudApi } from '@/utils/apiFactory'
 import request from '@/utils/request'
 
-export const getTollDetailById = (id) =>
-    request({
-        url: '/toll/tollDetail/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/toll/tollDetail')
 
-export const listTollDetailPage = (search) =>
-    request({
-        url: '/toll/tollDetail/list',
-        method: 'post',
-        data: search
-    })
+// Standard CRUD re-exports for backward compatibility
+export const getTollDetailById = baseApi.getById
+export const listTollDetailPage = baseApi.listPage
+export const listTollDetailAll = baseApi.listAll
+export const saveTollDetail = baseApi.save
+export const deleteTollDetail = baseApi.delete
+export const bulkInsertTollDetail = baseApi.bulkInsert
+export const bulkUpdateTollDetail = baseApi.bulkUpdate
+export const bulkDeleteTollDetail = baseApi.bulkDelete
 
-export const listTollDetailAll = (search) =>
-    request({
-        url: '/toll/tollDetail/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveTollDetail = (tollDetail) => 
-    request({
-        url: '/toll/tollDetail/save',
-        method: 'post',
-        data: tollDetail
-    })
-  
-export const deleteTollDetail = (tollDetail) =>
-    request({
-        url: '/toll/tollDetail/delete',
-        method: 'post',
-        data: tollDetail
-    })
-    
-export const bulkInsertTollDetail = (tollDetails) =>
-    request({
-        url: '/toll/tollDetail/bulkInsert',
-        method: 'post',
-        data: tollDetails
-    })
-    
-export const bulkUpdateTollDetail = (tollDetails) =>
-    request({
-        url: '/toll/tollDetail/bulkUpdate',
-        method: 'post',
-        data: tollDetails
-    })
-
-export const bulkDeleteTollDetail = (tollDetails) =>
-    request({
-        url: '/toll/tollDetail/bulkDelete',
-        method: 'post',
-        data: tollDetails
-    })
+// Custom methods
 export const getCreateBy = (tollDetails) =>
     request({
         url: '/toll/tollInfo/getCreateBy',
         method: 'post',
         data: tollDetails
     })
+
 export const orgtolldetail = (tollDetails) =>
     request({
         url: '/toll/tollInfo/orgtolldetail',

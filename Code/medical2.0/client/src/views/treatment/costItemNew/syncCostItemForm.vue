@@ -87,8 +87,8 @@
       </el-card>
     </el-row>
     <span slot='footer' class='dialog-footer'>
-      <el-button :disabled="flage" type='primary' :plain='true' @click='onSubmit()'>同 步</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button :disabled="flag" type='primary' :plain='true' @click='onSubmit()'>同 步</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
     </span>
   </el-dialog>
 </template>
@@ -105,6 +105,7 @@ import {
 import { listResourcePermission } from "@/api/admin/common/permission";
 import CostItemForm from "./costItemForm";
 import { listDictItemAll } from "@/api/sys/dictItem";
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 import { listCostItemAll } from "@/api/treatment/costItem";
 import ExportExcelButton from "@/components/ExportExcelButton";
 import ViewColumnsSelect from "@/views/components/ViewColumnsSelect";
@@ -174,7 +175,7 @@ export default {
             columnName: "company_id",
             queryType: "=",
             value: (function () {
-              var user = JSON.parse(sessionStorage.getItem("currentUser"));
+              const user = JSON.parse(sessionStorage.getItem("currentUser"));
               return user.company.id;
             })(),
           },
@@ -276,7 +277,7 @@ export default {
     },
     handleSource(val) {
       this.source = val
-      if (this.source == 1) {
+      if (this.source === 1) {
         this.columnList = this.columnListOne
       } else {
         this.columnList = this.columnListTwo
@@ -287,23 +288,23 @@ export default {
       this.pageInit()
     },
     selectable(row, index) {
-      if (row.syncNum == 1) {
+      if (row.syncNum === 1) {
         return false
       } else {
         return true
       }
     },
     async onSubmit() {
-      if (this.multipleSelection.length == 0) {
+      if (this.multipleSelection.length === 0) {
         this.$message({
           message: "请选择要同步的项目",
           type: "warning",
         });
         return;
       }
-      const functionSync = this.source == 1 ? listCostItemPageByInstitution : listCostItemPageByInstitutionSync
+      const functionSync = this.source === 1 ? listCostItemPageByInstitution : listCostItemPageByInstitutionSync
       const result = await functionSync(this.multipleSelection)
-      if (result.code == 100) {
+      if (result.code === 100) {
         this.$message({
           message: "同步成功",
           type: "success",
@@ -350,25 +351,23 @@ export default {
           columnName: "company_id",
           queryType: "=",
           value: (function () {
-            var user = JSON.parse(sessionStorage.getItem("currentUser"));
+            const user = JSON.parse(sessionStorage.getItem("currentUser"));
             return user.company.id;
           })(),
         },
       ];
       if (this.moreCodition) {
-        console.log(this.moreCodition, "---=====");
         this.search.params = this.search.params.concat(
           this.compositeCondition()
         );
       } else {
-        console.log(this.search, "---+++++");
         // 查询参数: 项目名称
         this.search.params.push({
-          columnName: this.source == 1 ? "item_name" : 'keyword',
+          columnName: this.source === 1 ? "item_name" : 'keyword',
           queryType: "like",
           value: this.queryModel.itemName,
         });
-        if (this.queryModel.itemType.value != "") {
+        if (this.queryModel.itemType.value !== "") {
           // 查询参数: 项目类别
           this.search.params.push({
             columnName: "item_type",
@@ -392,20 +391,20 @@ export default {
         this.$route.meta.routerId,
         this.tableId
       );
-      const functionList = this.source == 1 ? listCostItemPageByParent : listCostItemPageByInstitutionAll
+      const functionList = this.source === 1 ? listCostItemPageByParent : listCostItemPageByInstitutionAll
       functionList(this.search)
         .then((responseData) => {
-          if (responseData.code == 100) {
-            if (this.source == 1) {
+          if (responseData.code === 100) {
+            if (this.source === 1) {
             this.costItemList = responseData.data.rows && responseData.data.rows.map(item => {
               item.itemTypeName = item.itemType.name
-              item.syncNumName = item.syncNum == 1 ? '是' : '否'
-              item.isUseName = isUse == 1 ? '是' : '否'
+              item.syncNumName = item.syncNum === 1 ? '是' : '否'
+              item.isUseName = isUse === 1 ? '是' : '否'
               return item
             })
           } else {
             this.costItemList = responseData.data.rows && responseData.data.rows.map(item => {
-              item.syncNumName = item.syncNum == 1 ? '是' : '否'
+              item.syncNumName = item.syncNum === 1 ? '是' : '否'
               return item
             })
           }
@@ -457,7 +456,7 @@ export default {
             columnName: "company_id",
             queryType: "=",
             value: (function () {
-              var user = JSON.parse(sessionStorage.getItem("currentUser"));
+              const user = JSON.parse(sessionStorage.getItem("currentUser"));
               return user.company.id;
             })(),
           },
@@ -468,31 +467,30 @@ export default {
           this.$route.meta.routerId,
           this.tableId
         );
-        const functionList = this.source == 1 ? listCostItemPageByParent : listCostItemPageByInstitutionAll
+        const functionList = this.source === 1 ? listCostItemPageByParent : listCostItemPageByInstitutionAll
         let [listCostItemRespData, listPermissionRespData] = await Promise.all([
           functionList(this.search),
           listResourcePermission(this.$route.meta.routerId),
         ]);
         if (
-          listCostItemRespData.code == 100 &&
-          listPermissionRespData.code == 100
+          listCostItemRespData.code === 100 &&
+          listPermissionRespData.code === 100
         ) {
           this.costItemTotal = listCostItemRespData.data.total;
-          if (this.source == 1) {
+          if (this.source === 1) {
             this.costItemList = listCostItemRespData.data.rows && listCostItemRespData.data.rows.map(item => {
               item.itemTypeName = item.itemType.name
-              item.syncNumName = item.syncNum == 1 ? '是' : '否'
-              item.isUseName = isUse == 1 ? '是' : '否'
+              item.syncNumName = item.syncNum === 1 ? '是' : '否'
+              item.isUseName = isUse === 1 ? '是' : '否'
               return item
             })
           } else {
             this.costItemList = listCostItemRespData.data.rows && listCostItemRespData.data.rows.map(item => {
-              item.syncNumName = item.syncNum == 1 ? '是' : '否'
+              item.syncNumName = item.syncNum === 1 ? '是' : '否'
               return item
             })
           }
 
-          console.log(this.costItemList, '--')
           this.permission.view = listPermissionRespData.data.find((item) => {
             return item.permission === "costItemNew:read";
           });
@@ -510,7 +508,7 @@ export default {
           });
         } else {
           this.showMessage(
-            listPermissionRespData.code != 100
+            listPermissionRespData.code !== 100
               ? listPermissionRespData
               : listCostItemRespData
           );
@@ -524,9 +522,7 @@ export default {
       this.setLoad();
       getCostItemById(row.id)
         .then((responseData) => {
-          console.log(responseData);
-          if (responseData.code == 100) {
-            console.log(responseData.data);
+          if (responseData.code === 100) {
             this.$refs.costItemForm.$emit(
               "openViewCostItemDialog",
               responseData.data
@@ -553,13 +549,13 @@ export default {
           columnName: "company_id",
           queryType: "=",
           value: (function () {
-            var user = JSON.parse(sessionStorage.getItem("currentUser"));
+            const user = JSON.parse(sessionStorage.getItem("currentUser"));
             return user.company.id;
           })(),
         },
       ];
       listCostItemAll(this.search).then((res) => {
-        if (res.code == 100) {
+        if (res.code === 100) {
           // this.subproject=res.data
           this.$refs.costItemForm.$emit("openAddCostItemDialog", res.data);
         }
@@ -570,20 +566,20 @@ export default {
       this.setLoad();
       getCostItemById(row.id)
         .then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
 
             this.search.params = [
               {
                 columnName: "company_id",
                 queryType: "=",
                 value: (function () {
-                  var user = JSON.parse(sessionStorage.getItem("currentUser"));
+                  const user = JSON.parse(sessionStorage.getItem("currentUser"));
                   return user.company.id;
                 })(),
               },
             ];
             listCostItemAll(this.search).then((res) => {
-              if (res.code == 100) {
+              if (res.code === 100) {
                 // this.subproject=res.data
                 this.costItemDTO.response = responseData.data
                 this.costItemDTO.res = res.data
@@ -623,20 +619,20 @@ export default {
       //   });
       getCostItemById(row.id)
         .then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
 
             this.search.params = [
               {
                 columnName: "company_id",
                 queryType: "=",
                 value: (function () {
-                  var user = JSON.parse(sessionStorage.getItem("currentUser"));
+                  const user = JSON.parse(sessionStorage.getItem("currentUser"));
                   return user.company.id;
                 })(),
               },
             ];
             listCostItemAll(this.search).then((res) => {
-              if (res.code == 100) {
+              if (res.code === 100) {
                 // this.subproject=res.data
                 this.costItemDTO.response = responseData.data
                 this.costItemDTO.res = res.data
@@ -667,7 +663,7 @@ export default {
           this.setLoad();
           deleteCostItem(row)
             .then((responseData) => {
-              if (responseData.code == 100) {
+              if (responseData.code === 100) {
                 this.getCostItemList();
                 this.showMessage({ type: "success", msg: "删除成功" });
               } else {
@@ -693,32 +689,8 @@ export default {
       this.getCostItemList();
     },
     initOptions(This) {
-      let itemType_search = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "998465736089977631",
-          },
-        ],
-      };
-      // 响应字段的条件操作符，替换成触发字段的操作符
-      itemType_search.params.forEach((item) => {
-        if (this.queryTypes[item.columnName]) {
-          item.queryType = this.queryTypes[item.columnName];
-        }
-      });
-      // 字段对应表上filter条件
-      itemType_search.params.push.apply(itemType_search.params, []);
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(
-        itemType_search.params,
-        this.$route.meta.routerId,
-        "4005"
-      );
-      this.itemType_List.splice(0, this.itemType_List.length);
-      listDictItemAll(itemType_search).then((responseData) => {
-        this.itemType_List = responseData.data;
+      getDictItemsByCode(DICT_CODE.TREATMENT_ITEM_TYPE).then((data) => {
+        this.itemType_List = data;
       });
     },
   },
@@ -743,7 +715,7 @@ export default {
     }
   },
   mounted() {
-    if (this.source == 1) {
+    if (this.source === 1) {
       this.columnList = this.columnListOne
     } else {
       this.columnList = this.columnListTwo
@@ -755,16 +727,22 @@ export default {
         this.pageInit()
       });
     });
-    let _this = this;
-    window.onresize = () => {
-      if (_this.resizeFlag) {
-        clearTimeout(_this.resizeFlag);
+    this._resizeHandler = () => {
+      if (this.resizeFlag) {
+        clearTimeout(this.resizeFlag);
       }
-      _this.resizeFlag = setTimeout(() => {
-        _this.getTableHeight();
-        _this.resizeFlag = null;
+      this.resizeFlag = setTimeout(() => {
+        this.getTableHeight();
+        this.resizeFlag = null;
       }, 100);
     };
+    window.addEventListener('resize', this._resizeHandler);
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this._resizeHandler);
+    if (this.resizeFlag) {
+      clearTimeout(this.resizeFlag);
+    }
   },
   created() {
     this.getTableHeight();
@@ -792,16 +770,16 @@ export default {
 .drag_table {
 
   // 设置表格header的高度
-  /deep/ th {
+  ::v-deep th {
     height: 44px;
   }
 
-  /deep/ th.gutter:last-of-type {
+  ::v-deep th.gutter:last-of-type {
     height: 0 !important;
   }
 
   // 设置表格body的高度
-  /deep/ .el-table__body-wrapper {
+  ::v-deep .el-table__body-wrapper {
     //解决数据展示超出body高度不滚动bug
     overflow-y: auto;
     // 减去的是表格header的高度

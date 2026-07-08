@@ -44,6 +44,11 @@
         LEFT JOIN medical_record medical ON medical.id = a.medical_id
     </sql>
 
+    <!-- 租户兄弟公司过滤：查找同一父组织下的所有子公司 -->
+    <sql id="siblingCompanyFilter">
+        oc.parent_id = (SELECT parent_id FROM org_company WHERE id = #{companyId})
+    </sql>
+
     <select id="get" resultType="com.geeke.toll.entity.TollInfo">
         SELECT
             <include refid="tollInfoColumns"/>
@@ -53,7 +58,7 @@
     </select>
 
     <select id="count" resultType="int">
-        SELECT COUNT(*) FROM toll_info a
+        SELECT COUNT(DISTINCT a.id) FROM toll_info a
         <include refid="tollInfoJoins"/>
         <where>
             1=1
@@ -64,7 +69,7 @@
     </select>
 
     <select id="formTollCount" resultType="int">
-        SELECT COUNT(*) FROM toll_info a
+        SELECT COUNT(DISTINCT a.id) FROM toll_info a
         <include refid="tollInfoJoins"/>
         LEFT JOIN sys_user user ON user.id = medical.doctor_id
         LEFT JOIN clinic_office department ON department.id = user.department_id
@@ -79,7 +84,7 @@
 <!--                and a.company_id =#{jgid}-->
 <!--            </if>-->
 <!--            <if test=" jgid==null and jgzt==1">-->
-<!--                and  oc.parent_id in (select parent_id  from org_company oc2 where id=#{companyId})-->
+<!--                and  <include refid="siblingCompanyFilter"/>-->
 <!--            </if>-->
 <!--            <if test="jgid==null and jgzt==null">-->
 <!--                and a.company_id =#{companyId}-->
@@ -88,7 +93,7 @@
     </select>
 
     <select id="formDetailCount" resultType="int">
-        SELECT COUNT(*) FROM toll_info a
+        SELECT COUNT(DISTINCT a.id) FROM toll_info a
         <include refid="tollInfoJoins"/>
         LEFT JOIN sys_user user ON user.id = medical.doctor_id
         LEFT JOIN clinic_office department ON department.id = user.department_id
@@ -418,7 +423,7 @@
 <!--                and a.company_id =#{jgid}-->
 <!--            </if>-->
 <!--            <if test=" jgid==null and jgzt==1">-->
-<!--                and  oc.parent_id in (select parent_id  from org_company oc2 where id=#{companyId})-->
+<!--                and  <include refid="siblingCompanyFilter"/>-->
 <!--            </if>-->
 <!--            <if test="jgid==null and jgzt==null">-->
 <!--                and a.company_id =#{companyId}-->
@@ -635,32 +640,22 @@
     </select>
 
     <select id="tollTota" resultType="com.geeke.toll.entity.TollVo">
-        SELECT IFNULL(SUM(a.amount_receivable),0) AS amountReceivableTotal,
-        IFNULL(SUM(a.amount_received),0)AS amountReceivedTotal,
-        IFNULL(n.crec,0) AS cashTotal,
-        IFNULL(o.drec,0) AS weChatTotal,
-        IFNULL(p.erec,0) AS alipayTotal,
-        IFNULL(q.frec,0) AS bankCardPayTotal,
-        IFNULL(r.grec,0) AS cashReturnTotal
-        FROM toll_info a,
-        (SELECT SUM(c.amount_received) AS crec FROM toll_info c
-        where c.amount_status = 'amountStatus_1' and c.payment_type = 'payType_0' and c.del_flag = '0' and <include refid="Common.whereParams"/>) n,
-        (SELECT SUM(d.amount_received) AS drec FROM toll_info d
-        where d.amount_status = 'amountStatus_1' and d.payment_type = 'payType_1' and d.del_flag = '0' and <include refid="Common.whereParams"/>) o,
-        (SELECT SUM(e.amount_received) AS erec FROM toll_info e
-        where e.amount_status = 'amountStatus_1' and e.payment_type = 'payType_2' and e.del_flag = '0' and <include refid="Common.whereParams"/>) p,
-        (SELECT SUM(f.amount_received) AS frec FROM toll_info f
-        where f.amount_status = 'amountStatus_1' and f.payment_type = 'payType_3' and f.del_flag = '0' and <include refid="Common.whereParams"/>) q,
-        (SELECT SUM(g.amount_received) AS grec FROM toll_info g
-        where g.amount_status = 'amountStatus_2' and g.del_flag = '0' and <include refid="Common.whereParams"/>) r
+        SELECT
+        IFNULL(SUM(a.amount_receivable), 0) AS amountReceivableTotal,
+        IFNULL(SUM(a.amount_received), 0) AS amountReceivedTotal,
+        IFNULL(SUM(CASE WHEN a.payment_type = 'payType_0' THEN a.amount_received ELSE 0 END), 0) AS cashTotal,
+        IFNULL(SUM(CASE WHEN a.payment_type = 'payType_1' THEN a.amount_received ELSE 0 END), 0) AS weChatTotal,
+        IFNULL(SUM(CASE WHEN a.payment_type = 'payType_2' THEN a.amount_received ELSE 0 END), 0) AS alipayTotal,
+        IFNULL(SUM(CASE WHEN a.payment_type = 'payType_3' THEN a.amount_received ELSE 0 END), 0) AS bankCardPayTotal,
+        IFNULL((SELECT SUM(g.amount_received) FROM toll_info g
+                WHERE g.amount_status = 'amountStatus_2' AND g.del_flag = '0' <include refid="Common.whereParams"/>), 0) AS cashReturnTotal
+        FROM toll_info a
         <where>
-            1=1
-            AND a.id > 0
+            a.id > 0
             AND a.del_flag = #{DEL_FLAG_NORMAL}
             AND a.amount_status = 'amountStatus_1'
             <include refid="Common.whereParams"/>
         </where>
-        group by cAShTotal,weChatTotal,alipayTotal,bankCardPayTotal,cAShReturnTotal
     </select>
     <select id="getTollInfoByRegistrationId" resultType="com.geeke.toll.entity.TollInfo">
         SELECT
@@ -669,6 +664,36 @@
         <include refid="tollInfoJoins"/>
         WHERE
         registration_fee_id=#{registrationId}
+        AND a.del_flag = #{DEL_FLAG_NORMAL}
+    </select>
+
+    <select id="tollTotalAllPayments" resultType="com.geeke.toll.entity.TollVo">
+        SELECT
+        IFNULL(SUM(CASE WHEN a.amount_status = 'amountStatus_1' THEN a.amount_receivable ELSE 0 END), 0)
+        - IFNULL(SUM(CASE WHEN a.amount_status = 'amountStatus_2' THEN a.amount_receivable ELSE 0 END), 0) AS amountReceivableTotal,
+        IFNULL(SUM(CASE WHEN a.amount_status = 'amountStatus_1' THEN a.amount_received ELSE 0 END), 0)
+        - IFNULL(SUM(CASE WHEN a.amount_status = 'amountStatus_2' THEN a.amount_received ELSE 0 END), 0) AS amountReceivedTotal,
+        IFNULL(SUM(CASE WHEN a.payment_type = 'payType_0' AND a.amount_status = 'amountStatus_1' THEN a.amount_received ELSE 0 END), 0)
+        - IFNULL(SUM(CASE WHEN a.payment_type = 'payType_0' AND a.amount_status = 'amountStatus_2' THEN a.amount_received ELSE 0 END), 0) AS cashTotal,
+        IFNULL(SUM(CASE WHEN a.payment_type = 'payType_1' AND a.amount_status = 'amountStatus_1' THEN a.amount_received ELSE 0 END), 0)
+        - IFNULL(SUM(CASE WHEN a.payment_type = 'payType_1' AND a.amount_status = 'amountStatus_2' THEN a.amount_received ELSE 0 END), 0) AS alipayTotal,
+        IFNULL(SUM(CASE WHEN a.payment_type = 'payType_2' AND a.amount_status = 'amountStatus_1' THEN a.amount_received ELSE 0 END), 0)
+        - IFNULL(SUM(CASE WHEN a.payment_type = 'payType_2' AND a.amount_status = 'amountStatus_2' THEN a.amount_received ELSE 0 END), 0) AS weChatTotal,
+        IFNULL(SUM(CASE WHEN a.payment_type = 'payType_3' AND a.amount_status = 'amountStatus_1' THEN a.amount_received ELSE 0 END), 0)
+        - IFNULL(SUM(CASE WHEN a.payment_type = 'payType_3' AND a.amount_status = 'amountStatus_2' THEN a.amount_received ELSE 0 END), 0) AS bankCardPayTotal,
+        IFNULL(SUM(CASE WHEN a.payment_type = 'payType_4' AND a.amount_status = 'amountStatus_1' THEN a.amount_received ELSE 0 END), 0)
+        - IFNULL(SUM(CASE WHEN a.payment_type = 'payType_4' AND a.amount_status = 'amountStatus_2' THEN a.amount_received ELSE 0 END), 0) AS ybTotal
+        FROM toll_info a
+        <include refid="tollInfoJoins"/>
+        LEFT JOIN sys_user user ON user.id = medical.doctor_id
+        LEFT JOIN clinic_office department ON department.id = user.department_id
+        LEFT JOIN sys_dict_item gender ON gender.value = patient.gender
+        left join org_company oc on a.company_id =oc.id and oc.del_flag ='0'
+        <where>
+            a.id > 0
+            AND a.del_flag = #{DEL_FLAG_NORMAL}
+            <include refid="Common.whereParams"/>
+        </where>
     </select>
 
     <select id="getCreateBy" resultType="com.geeke.toll.entity.TollInfo">
@@ -694,7 +719,9 @@
         left join recipel_info ri on ri.id=a.recipel_id
         left join org_company oc on a.company_id =oc.id and oc.del_flag ='0'
         <where>
-            su.name!='' and a.update_date > '2022-08-05 17:20:07'
+            su.name!=''
+            <!-- 数据迁移截止时间，过滤迁移前的历史数据，勿删 -->
+            and a.update_date > '2022-08-05 17:20:07'
             and a.amount_status = 'amountStatus_1'
             and a.return_type=0
             AND a.del_flag = #{DEL_FLAG_NORMAL}
@@ -715,7 +742,9 @@
         left join recipel_info ri on ri.id=a.recipel_id
         left join org_company oc on a.company_id =oc.id and oc.del_flag ='0'
         <where>
-        su.name!='' and a.update_date > '2022-08-05 17:20:07'
+        su.name!=''
+        <!-- 数据迁移截止时间，过滤迁移前的历史数据，勿删 -->
+        and a.update_date > '2022-08-05 17:20:07'
         and a.amount_status = 'amountStatus_1' and a.return_type=0
         AND a.del_flag = #{DEL_FLAG_NORMAL}
         <include refid="Common.whereParams"/>
@@ -793,8 +822,44 @@
         left join cost_item costItem on costItem.id = rd.drug_stuff_id
         left join org_company oc on a.company_id =oc.id and oc.del_flag ='0'
         <where>
-        su.name!='' and a.update_date > '2022-08-05 17:20:07'
+        su.name!=''
+        <!-- 数据迁移截止时间，过滤迁移前的历史数据，勿删 -->
+        and a.update_date > '2022-08-05 17:20:07'
         and a.amount_status = 'amountStatus_1' and a.return_type=0 and ri.charge_status=1 and r.status = 'registrationStatus_1'
+        <include refid="Common.whereParams"/>
+        </where>
+        group by oc.id,oc.name,su.name,sue.office,types
+    </select>
+
+    <select id="getTemporaryCostBatch" resultType="com.geeke.toll.entity.WorkLoad">
+        select oc.id jgid,oc.name jgmc,
+        su.name,
+        sum(rd.actual_payment) as temporaryCost,
+        IF(stuff.id != '', '材料', IF(drug.id != '', IF(drug.type = 'medicalType_0', '西药', IF(drug.type = 'medicalType_1', '中草药', '中成药')),
+        IF(a.toll_type = 'tollType_4', '挂号',
+        IF(costItem.id != '', IF(costItem.item_type = 'treatmentItemType_0', '检验',
+        IF(costItem.item_type = 'treatmentItemType_1', '检查', IF(costItem.item_type = 'treatmentItemType_2', '理疗',
+        IF(costItem.item_type = 'treatmentItemType_3', '治疗', IF(costItem.item_type = 'treatmentItemType_4', '其他', ''))))), '')))) as types
+        from toll_info a
+        left join recipel_info ri on ri.id =a.recipel_id
+        left join recipel_detail rd on rd.recipel_info_id = ri.id
+        left join medical_record mr on mr.id=a.medical_id
+        left join registration r on r.id = a.registration_fee_id or mr.registration_id =r.id
+        left join sys_user su on su.id=mr.doctor_id or su.id=r.doctor_id
+        left join sys_user_ext sue on sue.user_id =su.id
+        left join drug drug on drug.id = rd.drug_stuff_id
+        left join stuff stuff on stuff.id = rd.drug_stuff_id
+        left join cost_item costItem on costItem.id = rd.drug_stuff_id
+        left join org_company oc on a.company_id =oc.id and oc.del_flag ='0'
+        <where>
+        su.name!=''
+        <!-- 数据迁移截止时间，过滤迁移前的历史数据，勿删 -->
+        and a.update_date > '2022-08-05 17:20:07'
+        and a.amount_status = 'amountStatus_1' and a.return_type=0 and ri.charge_status=1 and r.status = 'registrationStatus_1'
+        AND su.name IN
+        <foreach collection="doctorNames" item="name" open="(" separator="," close=")">
+            #{name}
+        </foreach>
         <include refid="Common.whereParams"/>
         </where>
         group by oc.id,oc.name,su.name,sue.office,types
@@ -831,6 +896,7 @@
 <!--        left join dispensing dis on dis.recipel_info_id = ri.id-->
         left join org_company oc on a.company_id =oc.id and oc.del_flag ='0'
         <where>
+            <!-- 数据迁移截止时间，过滤迁移前的历史数据，勿删 -->
             a.update_date > '2022-08-05 17:20:07'
             and a.amount_status = 'amountStatus_1' and a.return_type=0 and ri.charge_status = 1
             AND a.del_flag = #{DEL_FLAG_NORMAL}
@@ -908,7 +974,9 @@
         left join cost_item costItem on costItem.id = rd.drug_stuff_id
         left join org_company oc on a.company_id =oc.id and oc.del_flag ='0'
         <where>
-            su.name!='' and a.update_date > '2022-08-05 17:20:07'
+            su.name!=''
+            <!-- 数据迁移截止时间，过滤迁移前的历史数据，勿删 -->
+            and a.update_date > '2022-08-05 17:20:07'
             and a.amount_status = 'amountStatus_1' and a.return_type=0 and ri.charge_status=1 and r.status = 'registrationStatus_1'
             <include refid="Common.whereParams"/>
         </where>
@@ -925,6 +993,7 @@
         left join sys_dict_item  pack on pack.value =d.pack
         left join org_company oc on a.company_id =oc.id and oc.del_flag ='0'
         <where>
+            <!-- 数据迁移截止时间，过滤迁移前的历史数据，勿删 -->
             a.update_date > '2022-08-05 17:20:07'
             and ri.charge_status = 1
             AND a.del_flag = #{DEL_FLAG_NORMAL}
@@ -970,7 +1039,7 @@
         where
          msc.id is not null
         <if test=" jgid==null and jgzt==1 ">
-            and  oc.parent_id in (select parent_id  from org_company oc2 where id=#{companyId})
+            and  <include refid="siblingCompanyFilter"/>
         </if>
         <if test="jgid==null and jgzt==null">
             and (a.company_id =#{companyId} or a.company_id =#{jgid})
@@ -1036,7 +1105,7 @@
             and a.company_id =#{jgid}
         </if>
         <if test=" jgid==null and jgzt==1">
-            and  oc.parent_id in (select parent_id  from org_company oc2 where id=#{companyId})
+            and  <include refid="siblingCompanyFilter"/>
         </if>
         <if test="jgid==null and jgzt==null">
             and a.company_id =#{companyId}
@@ -1106,7 +1175,7 @@
         where
         msc.id is not null
         <if test=" jgid==null and jgzt==1">
-            and  oc.parent_id in (select parent_id  from org_company oc2 where id=#{companyId})
+            and  <include refid="siblingCompanyFilter"/>
         </if>
         <if test="jgid==null and jgzt==null">
             and (a.company_id =#{companyId} or a.company_id =#{jgid})
@@ -1132,6 +1201,39 @@
             order by b.batch_no desc
         </if>
         LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countYpjxcManagement" resultType="int">
+        SELECT COUNT(*) FROM (
+            SELECT a.code
+            FROM drug a
+            left join supplier_stock b on a.id=b.drug_id and a.company_id =b.company_id
+            left join medicinal_storage_control msc on msc.storage_id =b.id and msc.company_id =a.company_id and msc.del_flag ='0'
+            left join supplier d on b.supplier_id =d.id and a.company_id =d.company_id
+            left join manufacture_factory f on a.factory =f.id and a.company_id =f.company_id
+            left join sys_dict_item j on a.preparation_unit=j.value and j.del_flag ='0'
+            left join sys_dict_item h on a.pack=h.value and j.del_flag ='0'
+            where msc.id is not null
+            <if test="jgid==null and jgzt==1">
+                and <include refid="siblingCompanyFilter"/>
+            </if>
+            <if test="jgid==null and jgzt==null">
+                and (a.company_id =#{companyId} or a.company_id =#{jgid})
+            </if>
+            <if test="lx!='' and lx!=null">
+                and a.type=#{lx}
+            </if>
+            <if test="zt!='' and zt!=null">
+                and a.status=#{zt}
+            </if>
+            <if test="spm!='' and spm!=null">
+                and (a.goods_name like concat('%',#{spm},'%'))
+            </if>
+            <if test="ph!='' and ph!=null">
+                and (b.batch_no like concat('%',#{ph},'%'))
+            </if>
+            GROUP BY a.code,a.goods_name,b.norms,b.bid,b.batch_no
+        ) t
     </select>
 
     <!--<select id="getypjxcmanagementsums" resultType="com.geeke.toll.entity.Ypjxc">
@@ -1172,7 +1274,7 @@
             and a.company_id =#{jgid}
         </if>
         <if test=" jgid==null and jgzt==1">
-            and  oc.parent_id in (select parent_id  from org_company oc2 where id=#{companyId})
+            and  <include refid="siblingCompanyFilter"/>
         </if>
         <if test="jgid==null and jgzt==null">
             and a.company_id =#{companyId}
@@ -1248,7 +1350,7 @@
             and a.company_id =#{jgid}
         </if>
         <if test=" jgid==null and jgzt==1">
-            and  oc.parent_id in (select parent_id  from org_company oc2 where id=#{companyId})
+            and  <include refid="siblingCompanyFilter"/>
         </if>
         <if test="jgid==null and jgzt==null">
             and a.company_id =#{companyId}
@@ -1287,7 +1389,7 @@
         left join org_company oc on a.company_id =oc.id and oc.del_flag ='0'
         where  c.stuff_type='4'  and  a.del_flag ='0' and d.code is not null and a.return_type = '0'
         <if test=" jgid==null and jgzt==1">
-            and  oc.parent_id in (select parent_id  from org_company oc2 where id=#{companyId})
+            and  <include refid="siblingCompanyFilter"/>
         </if>
         <if test="jgid==null and jgzt==null">
             and (a.company_id =#{companyId} or a.company_id =#{jgid})
@@ -1315,7 +1417,7 @@
         left join org_company oc on a.company_id =oc.id and oc.del_flag ='0'
         where  c.stuff_type='4'  and  a.del_flag ='0' and d.code is not null and a.return_type = '0'
         <if test=" jgid==null and jgzt==1">
-            and  oc.parent_id in (select parent_id  from org_company oc2 where id=#{companyId})
+            and  <include refid="siblingCompanyFilter"/>
         </if>
         <if test="jgid==null and jgzt==null">
             and (a.company_id =#{companyId} or a.company_id =#{jgid})
@@ -1333,6 +1435,33 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
+    <select id="countStuffSalesSummary" resultType="int">
+        SELECT COUNT(*) FROM (
+            SELECT d.code
+            FROM toll_info a
+            left join recipel_info b on a.recipel_id =b.id and a.company_id =b.company_id and b.del_flag ='0'
+            left join recipel_detail c on b.id=c.recipel_info_id and a.company_id =c.company_id and c.del_flag ='0'
+            left join stuff d on c.drug_stuff_id =d.id and (a.company_id =d.company_id or d.company_id =#{jgid}) and d.del_flag ='0'
+            where c.stuff_type='4' and a.del_flag ='0' and d.code is not null and a.return_type = '0'
+            <if test="jgid==null and jgzt==1">
+                and <include refid="siblingCompanyFilter"/>
+            </if>
+            <if test="jgid==null and jgzt==null">
+                and a.company_id =#{companyId}
+            </if>
+            <if test="kssj!=null and jssj!=null">
+                and a.create_date between #{kssj} and #{jssj}
+            </if>
+            <if test="clmc!='' and clmc!=null">
+                and (d.name like concat('%',#{clmc},'%'))
+            </if>
+            <if test="lx!='' and lx!=null">
+                and d.type=#{lx}
+            </if>
+            GROUP BY d.code,d.name,d.specifications,d.pack_number
+        ) t
+    </select>
+
     <select id="getStuffsalessummarysums" resultType="com.geeke.toll.entity.Stuffsalessummary">
         select sum(z.sl) sl,sum(z.zj) zj from(
         select oc.id jgid,oc.name jgmc, d.code clbm,d.name clmc,CONCAT(d.pack_number,f.name,'/',e.name) gg,d.pack_number bzsl,e.name bzdw,f.name zxdw,d.type cllx,sum((if(c.total &gt; 0,c.total,0))) sl,
@@ -1348,7 +1477,7 @@
             and a.company_id =#{jgid}
         </if>
         <if test=" jgid==null and jgzt==1">
-            and  oc.parent_id in (select parent_id  from org_company oc2 where id=#{companyId})
+            and  <include refid="siblingCompanyFilter"/>
         </if>
         <if test="jgid==null and jgzt==null">
             and a.company_id =#{companyId}
@@ -1501,6 +1630,38 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
+    <select id="countCljxcManagement" resultType="int">
+        SELECT COUNT(*) FROM (
+            SELECT a.code
+            FROM stuff a
+            left join supplier_stock b on a.id=b.stuff_id and (a.company_id = b.company_id or #{jgid} = b.company_id)
+            left join medicinal_storage_control msc on msc.storage_id =b.id and (a.company_id = msc.company_id or #{jgid} = msc.company_id) and msc.del_flag ='0'
+            where a.del_flag ='0' and b.del_flag ='0' and msc.id is not null
+            <if test="jgid!=null and jgzt==1">
+                and a.company_id =#{jgid}
+            </if>
+            <if test="jgid==null and jgzt==1">
+                and (a.company_id = oc.id or #{jgid} = oc.id)
+            </if>
+            <if test="jgid==null and jgzt==null">
+                and (a.company_id = oc.id or #{jgid} = oc.id)
+            </if>
+            <if test="lx!='' and lx!=null">
+                and a.type=#{lx}
+            </if>
+            <if test="zt!='' and zt!=null">
+                and a.status=#{zt}
+            </if>
+            <if test="spm!='' and spm!=null">
+                and (a.name like concat('%',#{spm},'%'))
+            </if>
+            <if test="ph!='' and ph!=null">
+                and (b.batch_no like concat('%',#{ph},'%'))
+            </if>
+            GROUP BY a.code,a.name,b.norms,b.bid,b.batch_no
+        ) t
+    </select>
+
     <select id="getcljxcmanagementsums" resultType="com.geeke.toll.entity.Ypjxc">
         select sum(lsj) lsj,sum(cbj) cbj,sum(qcsl) qcsl,sum(qccb) qccb,sum(bqrk) bqrk,sum(bqrkcb) bqrkcb,
         sum(bqcksl) bqcksl,sum(bqckcb) bqckcb,sum(bqpdsl) bqpdsl,sum(bqpdcb) bqpdcb,sum(qmsl) qmsl,sum(qmcb) qmcb
@@ -1592,7 +1753,7 @@
             and a.company_id =#{jgid}
         </if>
         <if test=" jgid==null and jgzt==1">
-            and  oc.parent_id in (select parent_id  from org_company oc2 where id=#{companyId})
+            and  <include refid="siblingCompanyFilter"/>
         </if>
         <if test="jgid==null and jgzt==null">
             and a.company_id =#{companyId}
@@ -1620,7 +1781,7 @@
             and a.company_id =#{jgid}
         </if>
         <if test=" jgid==null and jgzt==1">
-            and  oc.parent_id in (select parent_id  from org_company oc2 where id=#{companyId})
+            and  <include refid="siblingCompanyFilter"/>
         </if>
         <if test="jgid==null and jgzt==null">
             and a.company_id =#{companyId}
@@ -1669,7 +1830,7 @@
             and a.company_id =#{jgid}
         </if>
         <if test=" jgid==null and jgzt==1">
-            and  oc.parent_id in (select parent_id  from org_company oc2 where id=#{companyId})
+            and  <include refid="siblingCompanyFilter"/>
         </if>
         <if test="jgid==null and jgzt==null">
             and a.company_id =#{companyId}
@@ -1697,7 +1858,7 @@
             and a.company_id =#{jgid}
         </if>
         <if test=" jgid==null and jgzt==1">
-            and  oc.parent_id in (select parent_id  from org_company oc2 where id=#{companyId})
+            and  <include refid="siblingCompanyFilter"/>
         </if>
         <if test="jgid==null and jgzt==null">
             and a.company_id =#{companyId}
@@ -1726,6 +1887,30 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
+    <select id="countYpclrkcx" resultType="int">
+        SELECT COUNT(*) FROM (
+            SELECT a.code
+            FROM supplier_storage a
+            left join supplier_stock b on a.id=b.supplier_storage_id and a.company_id =b.company_id and b.del_flag ='0'
+            left join medicinal_storage_control msc on msc.storage_id =b.id and msc.company_id =a.company_id and msc.del_flag ='0'
+            where a.del_flag='0' and (b.drug_id is not null or b.stuff_id is not null) and a.examine != 'supplierStorageExamineStatus_2'
+            <if test="jgid!=null and jgzt==1">
+                and a.company_id =#{jgid}
+            </if>
+            <if test="jgid==null and jgzt==1">
+                and <include refid="siblingCompanyFilter"/>
+            </if>
+            <if test="jgid==null and jgzt==null">
+                and a.company_id =#{companyId}
+            </if>
+            and msc.id is not null
+            <if test="kssj!=null and jssj!=null">
+                and a.create_date between #{kssj} and #{jssj}
+            </if>
+            GROUP BY a.code,a.create_date
+        ) t
+    </select>
+
     <select id="getypclrkcxsums" resultType="com.geeke.toll.entity.Ypclrkcx">
         select sum(sl) sl, sum(lsj) lsj, sum(cbj) cbj, sum(cbhj) cbhj from (
         select
@@ -1746,7 +1931,7 @@
             and a.company_id =#{jgid}
         </if>
         <if test=" jgid==null and jgzt==1">
-            and  oc.parent_id in (select parent_id  from org_company oc2 where id=#{companyId})
+            and  <include refid="siblingCompanyFilter"/>
         </if>
         <if test="jgid==null and jgzt==null">
             and a.company_id =#{companyId}
@@ -1774,7 +1959,7 @@
             and a.company_id =#{jgid}
         </if>
         <if test=" jgid==null and jgzt==1">
-            and  oc.parent_id in (select parent_id  from org_company oc2 where id=#{companyId})
+            and  <include refid="siblingCompanyFilter"/>
         </if>
         <if test="jgid==null and jgzt==null">
             and a.company_id =#{companyId}

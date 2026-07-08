@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CachingConfigurerSupport;
+import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.cache.support.NoOpCacheManager;
@@ -35,25 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Data
 @EnableCaching
 @RequiredArgsConstructor
-public class RedisConfig extends CachingConfigurerSupport {
-//
-//	@Value("${spring.cache.type:redis}")
-//	private String cacheType;		// 缓存类型
-//
-//    @Value("${spring.redis.host:61.172.179.73}")
-//    private String host;
-//
-//    @Value("${spring.redis.port:5012}")
-//    private String port;
-//
-//    @Value("${spring.redis.database:0}")
-//    private int database;
-//
-//    @Value("${spring.redis.password:bW9Ivzt0CAQdoJTDZ2wAnduvi}")
-//    private String password;
-//
-//    @Value("${spring.redis.timeout:3600}")
-//    private int timeout;
+public class RedisConfig implements CachingConfigurer {
 
     private  final  RedisProperties redisProperties;
 
@@ -120,5 +102,24 @@ public class RedisConfig extends CachingConfigurerSupport {
 		return "redis".equals(redisProperties.getCacheType());
 	}
 
+	@Override
+	public CacheManager cacheManager() {
+		return null;
+	}
+
+	@Override
+	public org.springframework.cache.interceptor.CacheErrorHandler errorHandler() {
+		return null;
+	}
+
+	@Override
+	public org.springframework.cache.interceptor.KeyGenerator keyGenerator() {
+		return KeyGenerator();
+	}
+
+	@Override
+	public org.springframework.cache.interceptor.CacheResolver cacheResolver() {
+		return null;
+	}
 
 }

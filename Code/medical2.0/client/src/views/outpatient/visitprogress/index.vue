@@ -265,12 +265,11 @@ pickerOptions: {
     this.visitprogresspara.kssj="";
     this.visitprogresspara.jssj=""
   }
-this.visitprogresspara.status=this.formInline.status=="qb"?"":this.formInline.status;
+this.visitprogresspara.status=this.formInline.status==="qb"?"":this.formInline.status;
 this.visitprogresspara.values=this.formInline.values;
 selectvisiprogresslist(this.visitprogresspara).then((responseData)=>{
-  if (responseData.code == 100){
+  if (responseData.code === 100){
     this.patientTotal=responseData.data.total;
-    console.log(responseData,'看看');
     if( responseData.data.rows!=null){
     responseData.data.rows.forEach((item)=>{
       switch(item.jzzt.trim()){
@@ -320,7 +319,6 @@ selectvisiprogresslist(this.visitprogresspara).then((responseData)=>{
           sr:item.sr,
           phone:item.phone,
       })
-     console.log(this.tableData,'乞丐i');
     })
     }
   }

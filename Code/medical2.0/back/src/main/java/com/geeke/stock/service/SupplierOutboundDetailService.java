@@ -1,15 +1,13 @@
 package com.geeke.stock.service;
 
 import com.geeke.common.service.CrudService;
-import com.geeke.config.exception.CommonJsonException;
+import com.geeke.common.service.ServiceException;
 import com.geeke.stock.dao.SupplierOutboundDao;
 import com.geeke.stock.dao.SupplierOutboundDetailDao;
 import com.geeke.stock.entity.*;
 import com.geeke.sys.entity.DictItem;
-import com.geeke.toll.untils.BigdecimalConvert;
-import com.geeke.utils.ResultUtil;
+import com.geeke.toll.utils.BigdecimalConvert;
 import com.geeke.utils.StringUtils;
-import com.geeke.utils.constants.ErrorEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,7 +61,7 @@ public class SupplierOutboundDetailService extends CrudService<SupplierOutboundD
         List<SupplierOutboundDetail> exist = supplierOutboundDetailDao.getByOutboundId(outboundId);
 
         SupplierOutbound outbound = supplierOutboundService.get(outboundId);
-        if (outbound == null) throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50002, "出库单不存在"));
+        if (outbound == null) throw new ServiceException("出库单不存在");
 
         //更新已有明细，找出需要删除的明细
         List<SupplierOutboundDetail> willDeleteDetail = new ArrayList<>();
@@ -91,11 +89,11 @@ public class SupplierOutboundDetailService extends CrudService<SupplierOutboundD
             MedicinalStorageControl medicinalStorageControl = d.getMedicinalStorage();
             MedicinalStorageControl queryStorageControl = medicinalStorageControlService.get(d.getMedicinalStorage().getId());
             if (queryStorageControl == null) {
-                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50002, "动态库存记录不存在"));
+                throw new ServiceException("动态库存记录不存在");
             }
 
             if (queryStorageControl.getSurplusStock().compareTo(d.getNumber()) < 0) {
-                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50002, "可用库存不够"));
+                throw new ServiceException("可用库存不够");
             }
             medicinalStorageControl.setOccupyStock(queryStorageControl.getOccupyStock().add(d.getNumber()));
             medicinalStorageControlService.save(queryStorageControl);
@@ -113,7 +111,7 @@ public class SupplierOutboundDetailService extends CrudService<SupplierOutboundD
     public void deleteSupplierOutboundDetail(String detailId) {
         SupplierOutboundDetail detail = supplierOutboundDetailDao.get(detailId);
         if (detail == null) {
-            throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50002, "出库单明细不存在"));
+            throw new ServiceException("出库单明细不存在");
         }
 
         MedicinalStorageControl medicinalStorageControl = medicinalStorageControlService.get(detail.getMedicinalStorage().getId()); //detail.getMedicinalStorage();
@@ -146,13 +144,13 @@ public class SupplierOutboundDetailService extends CrudService<SupplierOutboundD
     @Transactional(readOnly = false)
     public void updateSupplierOutboundDetail(SupplierOutboundDetail detail) {
         SupplierOutboundDetail old = supplierOutboundDetailDao.get(detail.getId());
-        if (old == null) throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50002, "出库单明细不存在"));
+        if (old == null) throw new ServiceException("出库单明细不存在");
 
         MedicinalStorageControl medicinalStorageControl = medicinalStorageControlService.get(detail.getMedicinalStorage().getId());//old.getMedicinalStorage();
         BigDecimal addNumber = detail.getNumber().subtract(old.getNumber());//增加冻结的数量
         if (addNumber.compareTo(BigDecimal.ZERO) > 0) {
             if (addNumber.compareTo(medicinalStorageControl.getSurplusStock()) > 0) {
-                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50002, "可用库存不够"));
+                throw new ServiceException("可用库存不够");
             }
             medicinalStorageControl.setOccupyStock(medicinalStorageControl.getOccupyStock().add(addNumber));
             medicinalStorageControl.setSurplusStock(medicinalStorageControl.getSurplusStock().subtract(addNumber));

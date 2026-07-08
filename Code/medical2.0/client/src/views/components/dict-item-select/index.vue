@@ -51,7 +51,7 @@
         let arr = [];
         for (let i in alldicitemSelectList) {
           let d = alldicitemSelectList[i];
-          if (d.dictType && d.dictType.code == this.type) {
+          if (d.dictType && d.dictType.code === this.type) {
             arr.push(d);
           }
         }
@@ -72,11 +72,11 @@
         };
 
         listDictItemAll(search).then(res => {
-          if (res.code == '100') {
+          if (res.code === 100) {
             alldicitemSelectList = res.data;
             that.refreshSelectedList();
           } else {
-            console.log('load all dicitem error:' + res.code);
+            console.error('load all dicitem error:' + res.code);
           }
         }).catch(error => {})
       }

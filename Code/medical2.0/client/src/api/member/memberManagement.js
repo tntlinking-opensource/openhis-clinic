@@ -1,10 +1,19 @@
 import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getMemberManagementById = (id) =>
-    request({
-        url: '/member/memberManagement/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/member/memberManagement')
+
+// 标准CRUD接口
+export const getMemberManagementById = baseApi.getById
+export const listMemberManagementPage = baseApi.listPage
+export const listMemberManagementAll = baseApi.listAll
+export const saveMemberManagement = baseApi.save
+export const deleteMemberManagement = baseApi.delete
+export const bulkInsertMemberManagement = baseApi.bulkInsert
+export const bulkUpdateMemberManagement = baseApi.bulkUpdate
+export const bulkDeleteMemberManagement = baseApi.bulkDelete
+
+// 自定义接口
 export const getByPatientId = (id) =>
     request({
         url: '/member/memberManagement/getByPatientId/' + id,
@@ -17,55 +26,6 @@ export const getPoverty = (id) =>
     method: 'post'
   })
 
-export const listMemberManagementPage = (search) =>
-    request({
-        url: '/member/memberManagement/list',
-        method: 'post',
-        data: search
-    })
-
-export const listMemberManagementAll = (search) =>
-    request({
-        url: '/member/memberManagement/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveMemberManagement = (memberManagement) =>
-    request({
-        url: '/member/memberManagement/save',
-        method: 'post',
-        data: memberManagement
-    })
-
-export const deleteMemberManagement = (memberManagement) =>
-    request({
-        url: '/member/memberManagement/delete',
-        method: 'post',
-        data: memberManagement
-    })
-
-export const bulkInsertMemberManagement = (memberManagements) =>
-    request({
-        url: '/member/memberManagement/bulkInsert',
-        method: 'post',
-        data: memberManagements
-    })
-
-export const bulkUpdateMemberManagement = (memberManagements) =>
-    request({
-        url: '/member/memberManagement/bulkUpdate',
-        method: 'post',
-        data: memberManagements
-    })
-
-export const bulkDeleteMemberManagement = (memberManagements) =>
-    request({
-        url: '/member/memberManagement/bulkDelete',
-        method: 'post',
-        data: memberManagements
-    })
 export const getMember = (recipleInfo) =>
     request({
         url: '/member/memberManagement/getMember',

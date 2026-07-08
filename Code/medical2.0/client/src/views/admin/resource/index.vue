@@ -4,7 +4,7 @@
       <!-- 历史记录  -->
       <History :bussObject='curentRow' ></History>
       <!-- 编辑窗口  -->
-      <resource-form ref='resourceForm' :permission='permission' v-on:save-finished='getResourceList()'></resource-form>
+      <resource-form ref='resourceForm' :permission='permission' @save-finished='loadData'></resource-form>
       <div class="page-left-container">
         <el-aside>
           <el-table ref='treeTable' :data='routers' row-key='id' :tree-props="{children: 'children', hasChildren: 'hasChildren'}" highlight-current-row :cell-style="function() {return {borderBottom: 'none'} }" @current-change='onLeftCurrentChange'>
@@ -55,8 +55,8 @@
             <el-table class='drag_table' :data='resourceList' border @sort-change='onSortChange' @header-dragend='onChangeWidth' :cell-class-name='cellClassName' :header-cell-class-name='headerCellClassName' highlight-current-row>                
               <el-table-column v-for="(cv, index) in columnViews" v-if='cv.display' :prop='cv.prop' :key="`columnViews_${index}`" :label='cv.label' sortable='custom' :align='cv.align' :min-width='cv.miniWidth+"px"' :width='cv.width+"px"' header-align='center' :column-key='index.toString()' :render-header="renderHeader">
                 <template slot-scope='{row,$index}'>
-                  <span v-if='columnViews[index].showType == "Switch" || columnViews[index].showType == "Checkbox" || columnViews[index].showType == "Radio"'>
-                    <li v-if='getAttrValue(row, columnViews[index].prop) == "1"' class='el-icon-check' style='color:#F56C6C;'></li>
+                  <span v-if='columnViews[index].showType === "Switch" || columnViews[index].showType === "Checkbox" || columnViews[index].showType === "Radio"'>
+                    <li v-if='getAttrValue(row, columnViews[index].prop) === "1"' class='el-icon-check' style='color:#F56C6C;'></li>
                   </span>
                   <span v-else>{{ getAttrValue(row, columnViews[index].prop, columnViews[index].javaType )}}</span>
                 </template>
@@ -70,13 +70,13 @@
                 </template>
                 <template slot-scope='scope'>
                   <OperationIcon v-show='permission.view' type='info' content='查看' placement='top-start' icon-name='el-icon-view' 
-                    @click='onViewResource(scope.$index, scope.row)'></OperationIcon>
+                    @click='onViewEntity(scope.$index, scope.row, "resourceForm")'></OperationIcon>
                   <OperationIcon v-show='permission.edit' type='primary' content='编辑' placement='top-start' icon-name='el-icon-edit' 
-                    @click='onEditResource(scope.$index, scope.row)'></OperationIcon>
+                    @click='onEditEntity(scope.$index, scope.row, "resourceForm")'></OperationIcon>
                   <OperationIcon v-show='permission.add' type='primary' content='复制' placement='top-start' icon-name='el-icon-document' 
-                    @click='onCopyResource(scope.$index, scope.row)'></OperationIcon>
+                    @click='onCopyEntity(scope.$index, scope.row, "resourceForm")'></OperationIcon>
                   <OperationIcon v-show='permission.remove' type='danger' content='删除' placement='top-start' icon-name='el-icon-delete' 
-                    @click='onDeleteResource(scope.$index, scope.row)'></OperationIcon>
+                    @click='onDeleteEntity(scope.$index, scope.row, deleteApi)'></OperationIcon>
                   <OperationIcon v-show='permission.view' type='info' content='历史记录' placement='top-start' icon-name='el-icon-info' 
                     @click='onShowHistory(scope.$index, scope.row)'></OperationIcon>
                 </template>
@@ -111,6 +111,7 @@
 import { validatenull } from '@/utils/validate'
 import { listResourcePage, getResourceById, deleteResource,saveResource } from '@/api/admin/resource'
 import { listResourcePermission } from '@/api/admin/common/permission'
+import listViewMixin from '@/mixins/listViewMixin'
 import ResourceForm from './resourceForm'
 import { treeRouter } from '@/api/admin/router'
 
@@ -122,7 +123,8 @@ import OperationIcon from '@/components/OperationIcon'
 import History from '@/views/components/history'
 export default {
   extends: MainUI,
-  components: { 
+  mixins: [listViewMixin],
+  components: {
     ResourceForm,
     ExportExcelButton,
     ViewColumnsSelect,
@@ -132,13 +134,11 @@ export default {
   },
   data() {
     return {
-      permission: {
-        view: false,
-        add: false,
-        edit: false,
-        remove: false,
-        export: false
-      },
+      listApi: listResourcePage,
+      getApi: getResourceById,
+      deleteApi: deleteResource,
+      entityName: 'Resource',
+      permissionPrefix: 'resource',
       queryTypes: {
         'name': 'like',
     	'router_id': '=',
@@ -151,14 +151,9 @@ export default {
         },
       },
       search: {
-        params: [],       
-        offset: 0,
-        limit: 10,
-        columnName: '',       // 排序字段名
-        order: ''             // 排序
+        limit: 10
       },
       currentRouter: {},     //树形结构中选择的路由
-      currentPage: 1,
       resourceTotal: 0,
       resourceList: [],     // 数表数据
       routers: [],           // 路由树表
@@ -170,130 +165,65 @@ export default {
     }
   },
   methods: {
-    getResourceList() {
-      this.search.params = []
-      if(validatenull(this.currentRouter)) {
-        this.$alert('请选择路由', '提示', {
-          confirmButtonText: '确定',
-          type: 'info'
-        })
-        return
-      } 
-      this.search.params.push({
-      	columnName: 'router_id',
-      	queryType: '=',
-      	value: this.currentRouter.id
-      })
-
-      this.setLoad()
-      /* 查询参数 和数据权限 */
-      if(this.moreCodition) {
-        this.search.params = this.search.params.concat(this.compositeCondition())
-      }else{
-        // 查询参数: 名称
-        this.search.params.push({
-      	  columnName: 'name',
-      	  queryType: 'like',
-          value: this.queryModel.name
-        })
-      }
-      // 数据权限: 资源sys_resource
-      this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-      listResourcePage(this.search).then(responseData => {
-        if(responseData.code == 100) {
-          this.resourceTotal = responseData.data.total
-          this.resourceList = responseData.data.rows
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onSearch() {
-      if(this.moreCodition) {
-        this.search.offset = 0
-        this.currentPage = 1
-        this.getResourceList()
-      } else {    
-          this.$refs['queryForm'].validate(valid => {
-            if (valid) {
-              this.search.offset = 0
-              this.currentPage = 1
-              this.getResourceList()
-            } else {
-              return false
-            }
-          })
-       }
-    },
-    onSizeChange(val) {
-      this.currentPage = 1
-      this.search.limit = val;
-      this.search.offset = (this.currentPage - 1) * val
-      this.getResourceList()
-    },
-    onCurrentChange(val) {
-      this.search.offset = (val - 1) * this.search.limit
-      this.currentPage = val
-      this.getResourceList()
-    },
     async pageInit() {
       this.setLoad()
       try {
         let params = []
-        // 表有禁用字段 
         params.push.apply(params, [{columnName: 'is_locked', queryType: '=', value: '0'}])
-        // 数据权限: 路由sys_router
         this.pushDataPermissions(params, this.$route.meta.routerId, '4003')
         let [treeRouterRespData, listPermissionRespData] = await Promise.all([
           treeRouter({params: params, columnName: '', order: ''}),
           listResourcePermission(this.$route.meta.routerId)
         ])
-        if(treeRouterRespData.code == 100 && listPermissionRespData.code == 100) {
+        if(treeRouterRespData.code === 100 && listPermissionRespData.code === 100) {
           this.routers = treeRouterRespData.data
           this.$nextTick(() => {
             if(this.routers && this.routers.length > 0 && this.$refs.treeTable){
               this.$refs.treeTable.setCurrentRow(this.routers[0])
             }
           })
-          this.permission.view = listPermissionRespData.data.find(item => {
-            return item.permission === 'resource:read'
-          })
-          this.permission.export = listPermissionRespData.data.find(item => {
-            return item.permission === 'resource:export'
-          })
-          this.permission.add = listPermissionRespData.data.find(item => {
-            return item.permission === 'resource:create'
-          })
-          this.permission.edit = listPermissionRespData.data.find(item => {
-            return item.permission === 'resource:update'
-          })
-          this.permission.remove = listPermissionRespData.data.find(item => {
-            return item.permission === 'resource:delete'
-          })
+          this.permission.view = listPermissionRespData.data.find(item => item.permission === 'resource:read')
+          this.permission.export = listPermissionRespData.data.find(item => item.permission === 'resource:export')
+          this.permission.add = listPermissionRespData.data.find(item => item.permission === 'resource:create')
+          this.permission.edit = listPermissionRespData.data.find(item => item.permission === 'resource:update')
+          this.permission.remove = listPermissionRespData.data.find(item => item.permission === 'resource:delete')
         } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : treeRouterRespData)
+          this.showMessage(listPermissionRespData.code !== 100 ? listPermissionRespData : treeRouterRespData)
         }
         this.resetLoad()
       } catch(error) {
-        this.outputError(error) 
+        this.outputError(error)
       }
     },
-    onViewResource(index, row) {
-      this.setLoad()
-      getResourceById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.resourceForm.$emit('openViewResourceDialog', responseData.data)
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
+    appendSearchParams() {
+      if(validatenull(this.currentRouter)) {
+        this.$alert('请选择路由', '提示', {
+          confirmButtonText: '确定',
+          type: 'info'
+        })
+        return
+      }
+      this.search.params.push({
+        columnName: 'router_id',
+        queryType: '=',
+        value: this.currentRouter.id
       })
+      if(this.moreCodition) {
+        this.search.params = this.search.params.concat(this.compositeCondition())
+      }else{
+        this.search.params.push({
+          columnName: 'name',
+          queryType: 'like',
+          value: this.queryModel.name
+        })
+      }
+      this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
     },
+    handleListResponse(responseData) {
+      this.resourceTotal = responseData.data.total
+      this.resourceList = responseData.data.rows
+    },
+
     onFastCreateResourc() {
       if(validatenull(this.currentRouter)) {
         this.$alert('请选择路由', '提示', {
@@ -321,12 +251,12 @@ export default {
         this.setLoad()
         saveResource(resource).then(responseData => {
           this.resetLoad()
-          if(this.loadcount == 0) {
+          if(this.loadcount === 0) {
             this.getResourceList()
           }
         }).catch(error => {
           this.outputError(error)
-          if(this.loadcount == 0) {
+          if(this.loadcount === 0) {
             this.getResourceList()
           }
         })
@@ -343,67 +273,10 @@ export default {
       let row={
           'router': this.currentRouter
         }
-      this.$refs.resourceForm.$emit('openAddResourceDialog', row)
-    },
-    onEditResource(index, row) {
-      this.setLoad()
-      getResourceById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.resourceForm.$emit('openEditResourceDialog', responseData.data)
-        }else{
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onCopyResource(index, row) {
-      this.setLoad()
-      getResourceById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.resourceForm.$emit('openCopyResourceDialog', responseData.data)
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },    
-    onDeleteResource(index, row) {
-      this.$confirm('确定删除吗？', '确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.setLoad()
-        deleteResource(row).then(responseData => {
-          if(responseData.code == 100) {
-            this.getResourceList()
-            this.showMessage({type: 'success', msg: '删除成功'})
-          } else {
-            this.showMessage(responseData)
-          }
-          this.resetLoad()
-        }).catch(error => {
-          this.outputError(error)  
-        })
-      }).catch(() => {})
-    },
-    onSortChange( orderby ) {
-      if(validatenull(orderby.prop)) {
-        this.search.columnName = ''
-        this.search.order = ''
-      } else  {
-        this.search.columnName = orderby.prop
-        this.search.order = orderby.order === 'descending' ? 'desc' : 'asc'
-      }
-
-      this.getResourceList()
+      this.$refs.resourceForm.openAddResourceDialog(row)
     },
     onLeftCurrentChange(currentRow, oldCurrentRow) {
-      if(currentRow != oldCurrentRow) {
+      if(currentRow !== oldCurrentRow) {
         this.currentRouter = currentRow
         this.queryModel['router'] = currentRow
         this.initOptions(this.queryModel)
@@ -411,8 +284,6 @@ export default {
       }
     },
     
-    initOptions(This) {
-    }
   },
   watch: {
   },

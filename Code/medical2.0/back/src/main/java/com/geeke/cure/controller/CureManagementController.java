@@ -25,7 +25,6 @@ public class CureManagementController {
     private RecipelInfoService recipelInfoService;
     @PostMapping("save")
     public ResponseEntity<JSONObject> save(@RequestBody CureManagement entity){
-        System.out.println(entity.getId());
         String crueId=entity.getId();
         String id="";
         if("3".equals(entity.getRecipelDetail().getStuffType())){

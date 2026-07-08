@@ -1,58 +1,12 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getInspectionCheckDetailById = (id) =>
-    request({
-        url: '/cure/inspectionCheckDetail/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/cure/inspectionCheckDetail')
 
-export const listInspectionCheckDetailPage = (search) =>
-    request({
-        url: '/cure/inspectionCheckDetail/list',
-        method: 'post',
-        data: search
-    })
-
-export const listInspectionCheckDetailAll = (search) =>
-    request({
-        url: '/cure/inspectionCheckDetail/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveInspectionCheckDetail = (inspectionCheckDetail) => 
-    request({
-        url: '/cure/inspectionCheckDetail/save',
-        method: 'post',
-        data: inspectionCheckDetail
-    })
-  
-export const deleteInspectionCheckDetail = (inspectionCheckDetail) =>
-    request({
-        url: '/cure/inspectionCheckDetail/delete',
-        method: 'post',
-        data: inspectionCheckDetail
-    })
-    
-export const bulkInsertInspectionCheckDetail = (inspectionCheckDetails) =>
-    request({
-        url: '/cure/inspectionCheckDetail/bulkInsert',
-        method: 'post',
-        data: inspectionCheckDetails
-    })
-    
-export const bulkUpdateInspectionCheckDetail = (inspectionCheckDetails) =>
-    request({
-        url: '/cure/inspectionCheckDetail/bulkUpdate',
-        method: 'post',
-        data: inspectionCheckDetails
-    })
-
-export const bulkDeleteInspectionCheckDetail = (inspectionCheckDetails) =>
-    request({
-        url: '/cure/inspectionCheckDetail/bulkDelete',
-        method: 'post',
-        data: inspectionCheckDetails
-    })
-    
+export const getInspectionCheckDetailById = baseApi.getById
+export const listInspectionCheckDetailPage = baseApi.listPage
+export const listInspectionCheckDetailAll = baseApi.listAll
+export const saveInspectionCheckDetail = baseApi.save
+export const deleteInspectionCheckDetail = baseApi.delete
+export const bulkInsertInspectionCheckDetail = baseApi.bulkInsert
+export const bulkUpdateInspectionCheckDetail = baseApi.bulkUpdate
+export const bulkDeleteInspectionCheckDetail = baseApi.bulkDelete

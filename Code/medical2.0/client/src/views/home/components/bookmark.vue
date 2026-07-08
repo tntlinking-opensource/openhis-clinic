@@ -174,6 +174,11 @@
     },
     mounted() {
       this.initMoreList()
+    },
+    beforeDestroy() {
+      clearInterval(this.moreScrollUp)
+      clearInterval(this.moreScrollDown)
+      document.body.removeEventListener('click', this.close)
       this.getDatas()
     },
     methods: {
@@ -192,7 +197,7 @@
         const userId = this.getUserId()
         return new Promise((resolve, reject) => {
           listCollectsByUserId(userId).then(responseData => {
-            if(responseData.code == 100) {
+            if(responseData.code === 100) {
               this.staticList = responseData.data;
               this.collectList = this.staticList.slice(0, this.limit)
               this.collectMoreList = this.staticList.slice(this.limit)
@@ -208,7 +213,7 @@
       },
       getCollectId() {
         const temp = this.staticList.find((item) => {
-          return item.routerId.id == this.getRouterId()
+          return item.routerId.id === this.getRouterId()
         })
         if (temp) {
           return temp.id
@@ -216,7 +221,7 @@
       },
       isFavorite(routerId) {
         const temp = this.staticList.find((item) => {
-          return item.routerId.id == routerId
+          return item.routerId.id === routerId
         })
 
         this.isCollected = temp? true : false
@@ -255,7 +260,7 @@
           this.isClick = false
           if (!this.isCollected) {
             saveCollect(mark).then(responseData => {
-              if(responseData.code == 100) {
+              if(responseData.code === 100) {
                 const id = responseData.data
                 const name = this.$route.meta.name
                 const url = this.$route.path.slice(1)
@@ -357,7 +362,7 @@
         if (this.isDeleteClick) {
           this.isDeleteClick = false
           deleteCollect(collectId).then(async responseData => {
-            if(responseData.code == 100) {
+            if(responseData.code === 100) {
               const isNew = await this.getDatas()
               if (isNew) {
                 this.staticList = [...this.collectList, ...this.collectMoreList]

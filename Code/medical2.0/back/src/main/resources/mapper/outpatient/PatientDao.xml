@@ -140,8 +140,8 @@
             <include refid="patientColumns"/>
         from patient a
             <include refid="patientJoins"/>
-        where
-        a.id=(select patient_id from registration where id=#{registrationId})
+            INNER JOIN registration reg ON reg.patient_id = a.id
+        WHERE reg.id = #{registrationId}
     </select>
     <select id="getByOpenId" resultType="com.geeke.outpatient.entity.Patient">
         select

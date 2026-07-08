@@ -1,58 +1,13 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getNoticeReceiveSiteById = (id) =>
-    request({
-        url: '/noticesend/noticeReceiveSite/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/noticesend/noticeReceiveSite')
 
-export const listNoticeReceiveSitePage = (search) =>
-    request({
-        url: '/noticesend/noticeReceiveSite/list',
-        method: 'post',
-        data: search
-    })
-
-export const listNoticeReceiveSiteAll = (search) =>
-    request({
-        url: '/noticesend/noticeReceiveSite/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveNoticeReceiveSite = (noticeReceiveSite) => 
-    request({
-        url: '/noticesend/noticeReceiveSite/save',
-        method: 'post',
-        data: noticeReceiveSite
-    })
-
-export const deleteNoticeReceiveSite = (noticeReceiveSite) =>
-    request({
-        url: '/noticesend/noticeReceiveSite/delete',
-        method: 'post',
-        data: noticeReceiveSite
-    })
-    
-export const bulkInsertNoticeReceiveSite = (noticeReceiveSites) =>
-    request({
-        url: '/noticesend/noticeReceiveSite/bulkInsert',
-        method: 'post',
-        data: noticeReceiveSites
-    })
-    
-export const bulkUpdateNoticeReceiveSite = (noticeReceiveSites) =>
-    request({
-        url: '/noticesend/noticeReceiveSite/bulkUpdate',
-        method: 'post',
-        data: noticeReceiveSites
-    })
-
-export const bulkDeleteNoticeReceiveSite = (noticeReceiveSites) =>
-    request({
-        url: '/noticesend/noticeReceiveSite/bulkDelete',
-        method: 'post',
-        data: noticeReceiveSites
-    })
-    
+// 导出标准CRUD接口（保持向后兼容）
+export const getNoticeReceiveSiteById = baseApi.getById
+export const listNoticeReceiveSitePage = baseApi.listPage
+export const listNoticeReceiveSiteAll = baseApi.listAll
+export const saveNoticeReceiveSite = baseApi.save
+export const deleteNoticeReceiveSite = baseApi.delete
+export const bulkInsertNoticeReceiveSite = baseApi.bulkInsert
+export const bulkUpdateNoticeReceiveSite = baseApi.bulkUpdate
+export const bulkDeleteNoticeReceiveSite = baseApi.bulkDelete

@@ -10,7 +10,7 @@
     <!-- <div slot="title" class="dialog-header">
       {{ dialogProps.title }}
       <OperationIcon
-        v-show="dialogProps.action == 'view' && permission.edit"
+        v-show="dialogProps.action === 'view' && permission.edit"
         type="primary"
         text="编辑"
         placement="top-start"
@@ -28,18 +28,18 @@
       label-position="right"
       class="edit-form"
     >
-      <div class="tab-item" v-show="tabIndex == '1'">
+      <div class="tab-item" v-show="tabIndex === '1'">
          <div class="specifications">材料信息</div>
         <el-row>
           <el-col :span="24 / 2">
             <el-form-item label="材料名称" prop="name">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.name"
                 :maxlength="64"
                 @input="pinyinInput"
                 :placeholder="
-                  dialogProps.action == 'view' ? '' : '请输入材料名称'
+                  dialogProps.action === 'view' ? '' : '请输入材料名称'
                 "
                 autofocus
               ></el-input>
@@ -48,11 +48,11 @@
           <el-col :span="24 / 2">
             <el-form-item label="常用名" prop="commonName">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.commonName"
                 :maxlength="45"
                 :placeholder="
-                  dialogProps.action == 'view' ? '' : '请输入常用名'
+                  dialogProps.action === 'view' ? '' : '请输入常用名'
                 "
               ></el-input>
             </el-form-item>
@@ -72,7 +72,7 @@
           <el-col :span="24 / 2">
             <el-form-item label="材料类型" prop="type.value">
               <el-input
-                v-if="dialogProps.action == 'view'"
+                v-if="dialogProps.action === 'view'"
                 :disabled="true"
                 v-model="bizFormModel.type.name"
               ></el-input>
@@ -104,7 +104,7 @@
           <el-col :span="24 / 2">
             <el-form-item label="生产厂家" prop="factory.id">
               <el-input
-                v-if="dialogProps.action == 'view'"
+                v-if="dialogProps.action === 'view'"
                 :disabled="true"
                 v-model="bizFormModel.factory.name"
               ></el-input>
@@ -134,7 +134,7 @@
           <el-col :span="24 / 2">
             <el-form-item label="性质" prop="nature.value">
               <el-input
-                v-if="dialogProps.action == 'view'"
+                v-if="dialogProps.action === 'view'"
                 :disabled="true"
                 v-model="bizFormModel.nature.name"
               ></el-input>
@@ -166,11 +166,11 @@
           <el-col :span="24 / 2">
             <el-form-item label="条形码" prop="barCode">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.barCode"
                 :maxlength="64"
                 :placeholder="
-                  dialogProps.action == 'view' ? '' : '请输入条形码'
+                  dialogProps.action === 'view' ? '' : '请输入条形码'
                 "
               ></el-input>
             </el-form-item>
@@ -178,11 +178,11 @@
           <el-col :span="24 / 2">
             <el-form-item label="注册证名称" prop="registrationName">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.registrationName"
                 :maxlength="64"
                 :placeholder="
-                  dialogProps.action == 'view' ? '' : '请输入注册证名称'
+                  dialogProps.action === 'view' ? '' : '请输入注册证名称'
                 "
               ></el-input>
             </el-form-item>
@@ -192,11 +192,11 @@
           <el-col :span="24 / 2">
             <el-form-item label="注册证号" prop="registrationCode">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.registrationCode"
                 :maxlength="64"
                 :placeholder="
-                  dialogProps.action == 'view' ? '' : '请输入注册证号'
+                  dialogProps.action === 'view' ? '' : '请输入注册证号'
                 "
               ></el-input>
             </el-form-item>
@@ -204,10 +204,10 @@
           <el-col :span="24 / 2">
             <el-form-item label="规格" prop="specifications">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.specifications"
                 :maxlength="45"
-                :placeholder="dialogProps.action == 'view' ? '' : '请输入规格'"
+                :placeholder="dialogProps.action === 'view' ? '' : '请输入规格'"
               ></el-input>
             </el-form-item>
           </el-col>
@@ -216,7 +216,7 @@
           <el-col :span="24 / 2">
             <el-form-item label="包装数量" prop="packNumber">
               <el-input
-                v-if="dialogProps.action == 'view'"
+                v-if="dialogProps.action === 'view'"
                 :disabled="true"
                 v-model="bizFormModel.packNumber"
               ></el-input>
@@ -230,7 +230,7 @@
           <el-col :span="24 / 2">
             <el-form-item label="最小单位" prop="minUnit.value">
               <el-input
-                v-if="dialogProps.action == 'view'"
+                v-if="dialogProps.action === 'view'"
                 :disabled="true"
                 v-model="bizFormModel.minUnit.name"
               ></el-input>
@@ -262,7 +262,7 @@
           <el-col :span="24 / 2">
             <el-form-item label="包装单位" prop="packUnit.value">
               <el-input
-                v-if="dialogProps.action == 'view'"
+                v-if="dialogProps.action === 'view'"
                 :disabled="true"
                 v-model="bizFormModel.packUnit.name"
               ></el-input>
@@ -292,7 +292,7 @@
            <el-col :span="24 / 2">
             <el-form-item label="允许对外销售" prop="isOutSell">
               <el-switch
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.isOutSell"
                 active-color="#13ce66"
                 inactive-color="#dbdfe6"
@@ -306,7 +306,7 @@
           <el-col :span="24 / 2">
             <el-form-item label="对外销售价格" prop="priceOutSell">
               <el-input
-                v-if="dialogProps.action == 'view'"
+                v-if="dialogProps.action === 'view'"
                 :disabled="true"
                 v-model="bizFormModel.priceOutSell"
               ></el-input>
@@ -322,7 +322,7 @@
           <el-col :span="24 / 2">
             <el-form-item label="允许拆零销售" prop="isUnpackSell">
               <el-switch
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.isUnpackSell"
                 active-color="#13ce66"
                 inactive-color="#dbdfe6"
@@ -336,7 +336,7 @@
           <el-col :span="24 / 2">
             <el-form-item label="拆开后零售价" prop="retailPrice">
               <el-input
-                v-if="dialogProps.action == 'view'"
+                v-if="dialogProps.action === 'view'"
                 :disabled="true"
                 v-model="bizFormModel.retailPrice"
               ></el-input>
@@ -351,7 +351,7 @@
           </el-col>
           <el-col :span="24 / 2">
             <el-form-item label='是否启用' prop='status' >
-            <el-switch :disabled='dialogProps.action == "view"' v-model='value' active-color='#13ce66' inactive-color='#dbdfe6' active-value='1' inactive-value='0'></el-switch>
+            <el-switch :disabled='dialogProps.action === "view"' v-model='value' active-color='#13ce66' inactive-color='#dbdfe6' active-value='1' inactive-value='0'></el-switch>
           </el-form-item>
             </el-col>
         </el-row>
@@ -375,7 +375,7 @@
              <el-col :span="24 / 3">
             <el-form-item label="有效期" prop="indate">
               <el-input
-                :disabled="dialogProps.action == 'view'&&updateType=='0'"
+                :disabled="dialogProps.action === 'view'&&updateType==='0'"
                 v-model="bizFormModel.indate"
                 :maxlength="64"
                 placeholder="请输入有效期"
@@ -387,7 +387,7 @@
              <el-col :span="24 / 3">
             <el-form-item label="库存下限" prop="inventoryFloor">
               <el-input
-                :disabled="dialogProps.action == 'view'&&updateType=='0'"
+                :disabled="dialogProps.action === 'view'&&updateType==='0'"
                 v-model="bizFormModel.inventoryFloor"
                 :maxlength="64"
                 placeholder="请输入库存下限"
@@ -401,7 +401,7 @@
            <el-col :span="24 / 3">
             <el-form-item label="库存上限" prop="inventoryLimit">
               <el-input
-                :disabled="dialogProps.action == 'view'&&updateType=='0'"
+                :disabled="dialogProps.action === 'view'&&updateType==='0'"
                 v-model="bizFormModel.inventoryLimit"
                 :maxlength="64"
                 placeholder="请输入库存上限"
@@ -417,7 +417,7 @@
             <el-col :span="24 / 3">
             <el-form-item label="货位号" prop="locationNumber">
               <el-input
-                :disabled="dialogProps.action == 'view'&&updateType=='0'"
+                :disabled="dialogProps.action === 'view'&&updateType==='0'"
                 v-model="bizFormModel.locationNumber"
                 :maxlength="64"
                 placeholder="请输入货位号"
@@ -429,16 +429,17 @@
       </div>
     </el-form>
     <span slot='footer' class='dialog-footer'>
-      <el-button v-if='updateType==="1"||dialogProps.action == "add"' :disabled="flage" type='primary' :plain='true' @click='onSubmit("stuffForm")'>保 存</el-button>
-       <el-button v-if='dialogProps.action == "add"' :disabled="flage" type='primary' :plain='true' @click='onGoSubmit("stuffForm")'>保 存 继 续</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+      <el-button v-if='updateType==="1"||dialogProps.action === "add"' :disabled="flag" type='primary' :plain='true' @click='onSubmit("stuffForm")'>保 存</el-button>
+       <el-button v-if='dialogProps.action === "add"' :disabled="flag" type='primary' :plain='true' @click='onGoSubmit("stuffForm")'>保 存 继 续</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span>
   </el-dialog>
 </template>
 <script>
 import { validatenull } from "@/utils/validate";
 import { listDictItemAll } from "@/api/sys/dictItem";
+import { getDictItemsByCode, DICT_CODE } from "@/utils/dictCache";
 import { listManufactureFactoryAll } from "@/api/basicdata/manufactureFactory";
 import { saveStuff } from "@/api/stock/stuff";
 import BaseUI from "@/views/components/baseUI";
@@ -461,7 +462,7 @@ export default {
       minUnit_List: [], // 最小单位
       packUnit_List: [], // 包装单位
       value:'1',
-      flage:false,
+      flag:false,
       dialogProps: {
         visible: false,
         action: '',
@@ -496,29 +497,27 @@ export default {
         this.$message.error('无法修改机构药品信息，请联系机构修改药品基础信息')
         return
       }*/
-      console.log(this.bizFormModel);
-      this.flage=true
+      this.flag=true
       this.$refs[formName].validate(valid => {
         if (valid) {
           this.doSave();
         } else {
-          this.flage=false
+          this.flag=false
           return false
         }
       });
     },
     //保存继续
      onGoSubmit(formName) {
-      this.flage=true
+      this.flag=true
       this.$refs[formName].validate(valid => {
         if (valid) {
            this.setLoad()
             this.bizFormModel.status=this.value
             saveStuff(this.bizFormModel).then(responseData => {
-              this.flage=false
-              if(responseData.code == 100) {
+              this.flag=false
+              if(responseData.code === 100) {
                // this.dialogProps.visible = false
-               console.log(this.bizFormModel);
                 this.bizFormModel.name=""
                 this.bizFormModel.commonName=""
                 this.bizFormModel.code=""
@@ -546,11 +545,11 @@ export default {
               }
               this.resetLoad()
             }).catch(error => {
-              this.flage=false
+              this.flag=false
               this.outputError(error)
             })
               } else {
-                this.flage=false
+                this.flag=false
                 return false
               }
             });
@@ -559,8 +558,8 @@ export default {
       this.setLoad()
       this.bizFormModel.status=this.value
       saveStuff(this.bizFormModel).then(responseData => {
-        this.flage=false
-        if(responseData.code == 100) {
+        this.flag=false
+        if(responseData.code === 100) {
           this.dialogProps.visible = false
           this.$emit('save-finished',"1")
         } else {
@@ -568,7 +567,7 @@ export default {
         }
         this.resetLoad()
       }).catch(error => {
-        this.flage=false
+        this.flag=false
         this.outputError(error)
       })
     },
@@ -633,26 +632,8 @@ export default {
       };
     },
     initOptions(This) {
-      let type_search = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "1004462867645374476",
-          },
-        ],
-      };
-      // 字段对应表上filter条件
-      type_search.params.push.apply(type_search.params, []);
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(
-        type_search.params,
-        this.$route.meta.routerId,
-        "4005"
-      );
-      this.type_List.splice(0, this.type_List.length);
-      listDictItemAll(type_search).then((responseData) => {
-        this.type_List = responseData.data;
+      getDictItemsByCode(DICT_CODE.STUFF_TYPE).then((data) => {
+        this.type_List = data;
       });
       let factory_search = {
         params: [],
@@ -680,68 +661,14 @@ export default {
       listManufactureFactoryAll(factory_search).then((responseData) => {
         this.factory_List = responseData.data;
       });
-      let nature_search = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "1004078055755374607",
-          },
-        ],
-      };
-      // 字段对应表上filter条件
-      nature_search.params.push.apply(nature_search.params, []);
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(
-        nature_search.params,
-        this.$route.meta.routerId,
-        "4005"
-      );
-      this.nature_List.splice(0, this.nature_List.length);
-      listDictItemAll(nature_search).then((responseData) => {
-        this.nature_List = responseData.data;
+      getDictItemsByCode(DICT_CODE.MEDICAL_NATURE).then((data) => {
+        this.nature_List = data;
       });
-      let minUnit_search = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "1004406758192578593",
-          },
-        ],
-      };
-      // 字段对应表上filter条件
-      minUnit_search.params.push.apply(minUnit_search.params, []);
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(
-        minUnit_search.params,
-        this.$route.meta.routerId,
-        "4005"
-      );
-      this.minUnit_List.splice(0, this.minUnit_List.length);
-      listDictItemAll(minUnit_search).then((responseData) => {
-        this.minUnit_List = responseData.data;
+      getDictItemsByCode(DICT_CODE.MEDICAL_PREPARATION_UNIT).then((data) => {
+        this.minUnit_List = data;
       });
-      let packUnit_search = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "1004406758192578597",
-          },
-        ],
-      };
-      // 字段对应表上filter条件
-      packUnit_search.params.push.apply(packUnit_search.params, []);
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(
-        packUnit_search.params,
-        this.$route.meta.routerId,
-        "4005"
-      );
-      this.packUnit_List.splice(0, this.packUnit_List.length);
-      listDictItemAll(packUnit_search).then((responseData) => {
-        this.packUnit_List = responseData.data;
+      getDictItemsByCode(DICT_CODE.MEDICAL_PACK_UNIT).then((data) => {
+        this.packUnit_List = data;
       });
     },
     //输入框拼音码
@@ -752,52 +679,49 @@ export default {
   },
   watch: {},
   mounted: function () {
-    this.$nextTick(() => {
-      this.$on("openViewStuffDialog", function (stuff) {
+  },
+  methods: {
+    openViewStuffDialog(stuff) {
+      this.dialogProps.action = "view";
+      this.updateType = "0"
+      this.dialogProps.title = "查看材料信息";
+      this.bizFormModel = { ...this.initFormModel(), ...stuff };
+      this.initOptions(this.bizFormModel);
+      this.value = this.bizFormModel.status
+      this.tabIndex = "1";
+      this.dialogProps.visible = true;
+    },
+    openEditStuffDialog(stuff) {
+      if ((stuff.stock.storageStock - stuff.stock.usedStock - stuff.stock.reimburseStock)) {
         this.dialogProps.action = "view";
-        this.updateType = "0"
-        this.dialogProps.title = "查看材料信息";
-        this.bizFormModel = { ...this.initFormModel(), ...stuff };
-        this.initOptions(this.bizFormModel);
-        this.value=this.bizFormModel.status
-        this.tabIndex = "1";
-
-        this.dialogProps.visible = true;
-      });
-      this.$on("openEditStuffDialog", function (stuff) {
-
-        if((stuff.stock.storageStock-stuff.stock.usedStock-stuff.stock.reimburseStock)){
-          this.dialogProps.action = "view";
-        }else{
-          this.dialogProps.action = "edit";
-        }
-        this.updateType = "1"
-        this.dialogProps.title = "修改材料信息";
-        this.bizFormModel = { ...this.initFormModel(), ...stuff };
-        this.initOptions(this.bizFormModel);
-        this.value=this.bizFormModel.status
-        this.tabIndex = "1";
-        console.log(this.updateType);
-        this.dialogProps.visible = true;
-      });
-      this.$on("openAddStuffDialog", function () {
-        this.dialogProps.action = "add";
-        this.dialogProps.title = "添加材料信息";
-        this.bizFormModel = this.initFormModel();
-        this.initOptions(this.bizFormModel);
-        this.tabIndex = "1";
-        this.dialogProps.visible = true;
-      });
-      this.$on("openCopyStuffDialog", function (stuff) {
-        this.dialogProps.action = "add";
-        this.dialogProps.title = "添加材料信息";
-        this.bizFormModel = { ...this.initFormModel(), ...stuff };
-        this.initOptions(this.bizFormModel);
-        this.tabIndex = "1";
-        this.bizFormModel.id = null; //把id设置为空，添加一个新的
-        this.dialogProps.visible = true;
-      });
-    });
+      } else {
+        this.dialogProps.action = "edit";
+      }
+      this.updateType = "1"
+      this.dialogProps.title = "修改材料信息";
+      this.bizFormModel = { ...this.initFormModel(), ...stuff };
+      this.initOptions(this.bizFormModel);
+      this.value = this.bizFormModel.status
+      this.tabIndex = "1";
+      this.dialogProps.visible = true;
+    },
+    openAddStuffDialog() {
+      this.dialogProps.action = "add";
+      this.dialogProps.title = "添加材料信息";
+      this.bizFormModel = this.initFormModel();
+      this.initOptions(this.bizFormModel);
+      this.tabIndex = "1";
+      this.dialogProps.visible = true;
+    },
+    openCopyStuffDialog(stuff) {
+      this.dialogProps.action = "add";
+      this.dialogProps.title = "添加材料信息";
+      this.bizFormModel = { ...this.initFormModel(), ...stuff };
+      this.initOptions(this.bizFormModel);
+      this.tabIndex = "1";
+      this.bizFormModel.id = null;
+      this.dialogProps.visible = true;
+    },
   },
 };
 </script>

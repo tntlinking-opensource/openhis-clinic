@@ -1,16 +1,13 @@
 package com.geeke.stock.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.geeke.common.controller.SearchParams;
-import com.geeke.common.data.Page;
+import com.geeke.common.controller.CrudController;
 import com.geeke.medicareutils.config.MedicareConfigProperties;
 import com.geeke.medicareutils.service.MdInventoryService;
 import com.geeke.stock.entity.OutboundEvt;
 import com.geeke.stock.entity.SupplierOutbound;
 import com.geeke.stock.service.SupplierOutboundService;
-import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.ResultUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,31 +21,24 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/stock/supplierOutbound")
-@RequiredArgsConstructor
-public class SupplierOutboundController extends BaseController {
+public class SupplierOutboundController extends CrudController<SupplierOutboundService, SupplierOutbound> {
 
     @Autowired
-    private SupplierOutboundService supplierOutboundService;
+    protected SupplierOutboundService supplierOutboundService;
 
-    private final MedicareConfigProperties medicareConfigProperties;
+    @Autowired
+    private MedicareConfigProperties medicareConfigProperties;
 
-    private final MdInventoryService mdInventoryService;
+    @Autowired
+    private MdInventoryService mdInventoryService;
 
-    @PostMapping(value = {"list", ""})
-    public ResponseEntity<JSONObject> listPage(@RequestBody SearchParams searchParams) {
-        Page<SupplierOutbound> result = supplierOutboundService.listPage(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
+    @Override
+    protected SupplierOutboundService getService() {
+        return supplierOutboundService;
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
-        SupplierOutbound entity = supplierOutboundService.get(id);
-        return ResponseEntity.ok(ResultUtil.successJson(entity));
-    }
-
-
-    @PostMapping(value = "save")
-    public ResponseEntity<JSONObject> save(@RequestBody OutboundEvt entity) {
+    @PostMapping(value = "saveEvt")
+    public ResponseEntity<JSONObject> saveEvt(@RequestBody OutboundEvt entity) {
         String id = supplierOutboundService.save(entity).getId();
         if("true".equals(medicareConfigProperties.getCheck())){
             //开启医保接口 出库

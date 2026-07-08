@@ -354,7 +354,7 @@ export default {
               };
               this.InfusionItemList.push(JSON.parse(JSON.stringify(InfoModel)));
               prescriptionItem.recipelDetailEvtList.map((item) => {
-                if (group == item.infuseGroup) {
+                if (group === item.infuseGroup) {
                   this.InfusionItemList[group - 1].infuseUse = item.infuseUse;
                   this.InfusionItemList[group - 1].frequency = item.frequency;
                   this.InfusionItemList[group - 1].days = item.days;

@@ -42,7 +42,7 @@
         }
         for (let i in alldicitemList) {
           let d = alldicitemList[i];
-          if (d.dictType && d.dictType.code == this.type && d.value == this.dictValue) {
+          if (d.dictType && d.dictType.code === this.type && d.value === this.dictValue) {
             this.dicItemName = d.name;
             return;
           }
@@ -64,11 +64,11 @@
         };
 
         listDictItemAll(search).then(res => {
-          if (res.code == '100') {
+          if (res.code === 100) {
             alldicitemList = res.data;
             that.refreshName();
           } else {
-            console.log('load all dicitem error:' + res.code);
+            console.error('load all dicitem error:' + res.code);
           }
         }).catch(error => {})
       }

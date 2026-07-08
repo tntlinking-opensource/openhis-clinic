@@ -1,7 +1,6 @@
 package com.geeke.stock.service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -15,29 +14,33 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.geeke.common.data.Parameter;
+import com.geeke.common.data.SearchParamsBuilder;
 import com.geeke.common.service.CrudService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.util.CollectionUtils;
 
-import com.geeke.config.exception.CommonJsonException;
+import com.geeke.common.service.ServiceException;
 import com.geeke.outpatient.entity.RecipelDetail;
 import com.geeke.outpatient.entity.RecipelInfo;
 import com.geeke.outpatient.service.RecipelDetailService;
 import com.geeke.stock.dao.MedicinalStorageControlDao;
 import com.geeke.stock.entity.*;
-import com.geeke.utils.ResultUtil;
 import com.geeke.utils.StringUtils;
-import com.geeke.utils.constants.ErrorEnum;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 药品/材料入库明细控制Service
  * @author hl
  * @version 2022-09-26
  */
- 
+
 @Service("medicinalStorageControlService")
 @Transactional(readOnly = true)
 public class MedicinalStorageControlService extends CrudService<MedicinalStorageControlDao, MedicinalStorageControl>{
+
+    private static final Logger logger = LoggerFactory.getLogger(MedicinalStorageControlService.class);
     @Autowired
     private DrugService drugService;
     @Autowired
@@ -54,6 +57,7 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
     @Autowired
     private DispensingService dispensingService;
 
+    @Lazy
     @Autowired
     private RegistrationService registrationService;
     /**
@@ -67,9 +71,8 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
         {
             return;
         }
-        List<Parameter> parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("supplier_storage_id", "=", supplierStorage.getId()));
-        List<SupplierStock> list = this.supplierStockService.listAll(parameters, "");
+        List<SupplierStock> list = this.supplierStockService.listAll(
+                SearchParamsBuilder.create().eq("supplier_storage_id", supplierStorage.getId()).build(), "");
         if (CollectionUtils.isEmpty(list))
         {
             return;
@@ -85,7 +88,7 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
                 Drug drug = this.drugService.get(supplierStock.getDrug().getId());
                 if (Objects.isNull(drug) || StringUtils.isBlank(drug.getId()))
                 {
-                    throw new RuntimeException("入库失败,获取入库的药品基础维护信息失败！");
+                    throw new ServiceException("入库失败,获取入库的药品基础维护信息失败！");
                 }
                 this.medicinalStockControlService.initStock(drug);
 
@@ -98,7 +101,7 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
                 Stuff stuff = this.stuffService.get(supplierStock.getStuff().getId());
                 if (Objects.isNull(stuff) || StringUtils.isBlank(stuff.getId()))
                 {
-                    throw new RuntimeException("入库失败,获取入库的材料基础维护信息失败！");
+                    throw new ServiceException("入库失败,获取入库的材料基础维护信息失败！");
                 }
                 this.medicinalStockControlService.initStock(stuff);
 
@@ -108,7 +111,7 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
             }
             else
             {
-                throw new RuntimeException("入库失败，暂只支持药品或材料入库！");
+                throw new ServiceException("入库失败，暂只支持药品或材料入库！");
             }
 
             medicinalStorageControl.setStorageStock(new BigDecimal(supplierStock.getInitial()));
@@ -120,10 +123,14 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
             //添加药品/材料入库明细控制初始化数据
             super.save(medicinalStorageControl);
 
-            parameters.clear();
-            parameters.add(new Parameter("drug_stuff_id", "=", medicinalStorageControl.getDrugStuffId()));
-            parameters.add(new Parameter("company_id", "=", medicinalStorageControl.getCompany().getId()));
-            List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(parameters, "");
+            List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(
+                    SearchParamsBuilder.create()
+                            .eq("drug_stuff_id", medicinalStorageControl.getDrugStuffId())
+                            .eq("company_id", medicinalStorageControl.getCompany().getId())
+                            .build(), "");
+            if (CollectionUtils.isEmpty(medicinalStockControlList)) {
+                return;
+            }
             MedicinalStockControl medicinalStockControl = medicinalStockControlList.get(0);
             medicinalStockControl.setStorageStock(medicinalStockControl.getStorageStock().add(medicinalStorageControl.getStorageStock()));
             medicinalStockControl.setSurplusStock(medicinalStockControl.getSurplusStock().add(medicinalStorageControl.getSurplusStock()));
@@ -152,19 +159,17 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
         {
             return;
         }
-        List<Parameter> parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("supplier_storage_id", "=", supplierStorage.getId()));
-        List<SupplierStock> list = this.supplierStockService.listAll(parameters, "");
+        List<SupplierStock> list = this.supplierStockService.listAll(
+                SearchParamsBuilder.create().eq("supplier_storage_id", supplierStorage.getId()).build(), "");
         if (CollectionUtils.isEmpty(list))
         {
-            throw new RuntimeException("入库信息作废失败，未查找到需要作废的入库明细信息。");
+            throw new ServiceException("入库信息作废失败，未查找到需要作废的入库明细信息。");
         }
 
         for (SupplierStock supplierStock:list)
         {
-            parameters.clear();
-            parameters.add(new Parameter("storage_id", "=", supplierStock.getId()));
-            List<MedicinalStorageControl> medicinalStorageControlList = super.listAll(parameters, "");
+            List<MedicinalStorageControl> medicinalStorageControlList = super.listAll(
+                    SearchParamsBuilder.create().eq("storage_id", supplierStock.getId()).build(), "");
             if (CollectionUtils.isEmpty(medicinalStorageControlList))
             {
                 continue;
@@ -176,7 +181,7 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
                 BigDecimal surplusStock = medicinalStorageControl.getSurplusStock();    //剩余可用库存数
                 if (storageStock.compareTo(surplusStock) != 0)
                 {
-                    throw new RuntimeException("动态库存控制已发生变化，不能作废删除入库数据！");
+                    throw new ServiceException("动态库存控制已发生变化，不能作废删除入库数据！");
                 }
 
                 //1.作废入库信息时，把可用库存置为0
@@ -185,9 +190,11 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
                 super.save(medicinalStorageControl);
 
                 //2.更新动态库存入库汇总控制记录，把总入库量和总的可用量减去作废的量
-                parameters.clear();
-                parameters.add(new Parameter("drug_stuff_id", "=", medicinalStorageControl.getDrugStuffId()));
-                List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(parameters, "");
+                List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(
+                        SearchParamsBuilder.create().eq("drug_stuff_id", medicinalStorageControl.getDrugStuffId()).build(), "");
+                if (CollectionUtils.isEmpty(medicinalStockControlList)) {
+                    return;
+                }
                 MedicinalStockControl medicinalStockControl = medicinalStockControlList.get(0);
                 medicinalStockControl.setStorageStock(medicinalStockControl.getStorageStock().subtract(storageStock));
                 medicinalStockControl.setSurplusStock(medicinalStockControl.getSurplusStock().subtract(surplusStock));
@@ -216,12 +223,11 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
         List<MedicinalStockRecord> medicinalStockRecords = this.medicinalStockRecordService.getStockRecordByStorageId(supplierStock.getId());
         if (!CollectionUtils.isEmpty(medicinalStockRecords))
         {
-            throw new RuntimeException("当前还存在库存占用或退药未退费库存未释放的情况，请先处理后再操作！");
+            throw new ServiceException("当前还存在库存占用或退药未退费库存未释放的情况，请先处理后再操作！");
         }
 
-        List<Parameter> parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("storage_id", "=", supplierStock.getId()));
-        List<MedicinalStorageControl> medicinalStorageControlList = super.listAll(parameters, "");
+        List<MedicinalStorageControl> medicinalStorageControlList = super.listAll(
+                SearchParamsBuilder.create().eq("storage_id", supplierStock.getId()).build(), "");
         if (CollectionUtils.isEmpty(medicinalStorageControlList))
         {
             return;
@@ -237,9 +243,11 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
         medicinalStorageControl.setReimburseStock(reimburseStock.add(surplusStock));
         super.save(medicinalStorageControl);
 
-        parameters.clear();
-        parameters.add(new Parameter("drug_stuff_id", "=", medicinalStorageControl.getDrugStuffId()));
-        List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(parameters, "");
+        List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(
+                SearchParamsBuilder.create().eq("drug_stuff_id", medicinalStorageControl.getDrugStuffId()).build(), "");
+        if (CollectionUtils.isEmpty(medicinalStockControlList)) {
+            return;
+        }
         MedicinalStockControl medicinalStockControl = medicinalStockControlList.get(0);
         medicinalStockControl.setSurplusStock(medicinalStockControl.getSurplusStock().subtract(surplusStock));
         medicinalStockControl.setReimburseStock(medicinalStockControl.getReimburseStock().add(surplusStock));
@@ -272,9 +280,8 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
         {
             return;
         }
-        List<Parameter> parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("recipel_info_id", "=", recipelInfoId));
-        List<MedicinalStockRecord> list = this.medicinalStockRecordService.listAll(parameters, "");
+        List<MedicinalStockRecord> list = this.medicinalStockRecordService.listAll(
+                SearchParamsBuilder.create().eq("recipel_info_id", recipelInfoId).build(), "");
         if (CollectionUtils.isEmpty(list))
         {
             return;
@@ -284,9 +291,8 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
         {
             BigDecimal operationStock = medicinalStockRecord.getOperationStock();    //占用库存数
             //更新预占用的入库明细
-            parameters.clear();
-            parameters.add(new Parameter("storage_id", "=", medicinalStockRecord.getStorageId()));
-            List<MedicinalStorageControl> medicinalStorageControlList = super.listAll(parameters, "");
+            List<MedicinalStorageControl> medicinalStorageControlList = super.listAll(
+                    SearchParamsBuilder.create().eq("storage_id", medicinalStockRecord.getStorageId()).build(), "");
             if (CollectionUtils.isEmpty(medicinalStorageControlList))
             {
                 return;
@@ -298,9 +304,8 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
             super.save(medicinalStorageControl);
 
             //更新总控制的预占用
-            parameters.clear();
-            parameters.add(new Parameter("drug_stuff_id", "=", medicinalStockRecord.getDrugStuffId()));
-            List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(parameters, "");
+            List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(
+                    SearchParamsBuilder.create().eq("drug_stuff_id", medicinalStockRecord.getDrugStuffId()).build(), "");
             if (CollectionUtils.isEmpty(medicinalStockControlList))
             {
                 return;
@@ -333,9 +338,8 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
         //1.先释放一下预占用库存,报账占用库存的有效性
         this.cancelOccupy(recipelInfo);
         //2.重新占用
-        List<Parameter> parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("recipel_info_id", "=", recipelInfoId));
-        List<RecipelDetail> recipelDetailList = this.recipelDetailService.listAll(parameters, "");
+        List<RecipelDetail> recipelDetailList = this.recipelDetailService.listAll(
+                SearchParamsBuilder.create().eq("recipel_info_id", recipelInfoId).build(), "");
         if (CollectionUtils.isEmpty(recipelDetailList))
         {
             return;
@@ -359,7 +363,7 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
                 medicinalStockRecord.setType(1);
                 if(Objects.equals(drug.getStatus(), "0"))
                 {
-                    throw new RuntimeException("药品已停用");
+                    throw new ServiceException("药品已停用");
                 }
             }
             else if (Objects.nonNull(stuff) && StringUtils.isNotBlank(stuff.getId()))
@@ -369,7 +373,7 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
                 medicinalStockRecord.setType(2);
                 if(Objects.equals(stuff.getStatus(), "0"))
                 {
-                    throw new RuntimeException("材料已停用");
+                    throw new ServiceException("材料已停用");
                 }
             }
             else
@@ -383,7 +387,7 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
             // - 拆零时：需要把总量（制剂单位）转换为包装单位来占用库存
             BigDecimal totalBigDecimal;
             boolean isUnpackSell = recipelDetail.getIsUnpackSell() != null && recipelDetail.getIsUnpackSell() == 1;
-            
+
             if (isUnpackSell) {
                 // 拆零销售：total 是制剂单位，需要转换为包装单位（向上取整）
                 totalBigDecimal = new BigDecimal(recipelDetail.getTotal());
@@ -392,15 +396,9 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
                 totalBigDecimal = new BigDecimal(recipelDetail.getTotal());
             }
             
-            System.out.println("========== 库存占用调试 ==========");
-            System.out.println("药品名称: " + (drug != null ? drug.getGoodsName() : (stuff != null ? stuff.getName() : "未知")));
-            System.out.println("total: " + recipelDetail.getTotal());
-            System.out.println("isUnpackSell: " + isUnpackSell + " (1=拆零, 0=不拆零)");
-            System.out.println("用于比较的总量: " + totalBigDecimal);
-            
             if (totalBigDecimal.compareTo(BigDecimal.ZERO) < 0)
             {
-                throw new RuntimeException("处方用量存在开具负数的情况，请正确填写处方开具信息！");
+                throw new ServiceException("处方用量存在开具负数的情况，请正确填写处方开具信息！");
             }
             if (totalBigDecimal.compareTo(BigDecimal.ZERO) == 0)
             {
@@ -409,12 +407,10 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
 
             String companyId = recipelInfo.getCompany().getId();
             List<MedicinalStorageControl> medicinalStorageControlList = super.dao.getSurplusStockByDrugStuffIdTo(drugStuffId, companyId);
-            System.out.println("库存记录数量: " + (medicinalStorageControlList != null ? medicinalStorageControlList.size() : 0));
-            
+
             if (CollectionUtils.isEmpty(medicinalStorageControlList))
             {
-                System.out.println("【错误】该药品在库存控制表中没有记录！");
-                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "[" + recipelInfo.getName() + "]中[" + medicinalStockRecord.getDrugStuffName() + "]库存不足！"));
+                throw new ServiceException("[" + recipelInfo.getName() + "]中[" + medicinalStockRecord.getDrugStuffName() + "]库存不足！");
             }
 
             // 拆零时，需要把总量（制剂单位）转换为包装单位
@@ -423,7 +419,6 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
                 // 制剂单位转为包装单位：向上取整（确保有足够的制剂数量）
                 BigDecimal preparationBD = new BigDecimal(drug.getPreparation());
                 stockToOccupy = totalBigDecimal.divide(preparationBD, 0, BigDecimal.ROUND_UP);
-                System.out.println("拆零模式，将总量转为包装单位: " + totalBigDecimal + " / " + drug.getPreparation() + " = " + stockToOccupy);
             }
 
             for (int i = 0; i < medicinalStorageControlList.size(); i++) {
@@ -435,10 +430,7 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
 
                 BigDecimal surplusStock = medicinalStorageControl.getSurplusStock();   //剩余可用库存数（包装单位）
                 BigDecimal occupyStock = medicinalStorageControl.getOccupyStock();		// 当前占用库存数
-                
-                System.out.println("库存记录" + i + ": surplusStock=" + surplusStock + ", occupyStock=" + occupyStock);
-                System.out.println("需要占用: " + stockToOccupy + ", 比较: " + surplusStock + " >= " + stockToOccupy + " = " + (surplusStock.compareTo(stockToOccupy) >= 0));
-                
+
                 if (surplusStock.compareTo(stockToOccupy) >= 0)   //明细库存够用
                 {
                     medicinalStockRecord.setId(null);
@@ -454,7 +446,6 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
 
                     calculationBigDecimal = calculationBigDecimal.add(stockToOccupy);
                     stockToOccupy = stockToOccupy.subtract(stockToOccupy);
-                    System.out.println("库存足够，占用成功！剩余待占用: " + stockToOccupy);
                 }
                 else                                            //明细库存不够用
                 {
@@ -471,22 +462,20 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
 
                     calculationBigDecimal = calculationBigDecimal.add(surplusStock);
                     stockToOccupy = stockToOccupy.subtract(surplusStock);
-                    System.out.println("该条库存不够用，占用: " + surplusStock + ", 剩余待占用: " + stockToOccupy);
                 }
             }
 
             if (stockToOccupy.compareTo(BigDecimal.ZERO) > 0)
             {
-                System.out.println("【错误】所有库存记录都不够，剩余还需占用: " + stockToOccupy);
-                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "[" + recipelInfo.getName() + "]中[" + medicinalStockRecord.getDrugStuffName() + "]库存不足！"));
+                throw new ServiceException("[" + recipelInfo.getName() + "]中[" + medicinalStockRecord.getDrugStuffName() + "]库存不足！");
             }
-            System.out.println("========== 库存占用完成 ==========");
 
             //更新总控制的预占用
-            parameters.clear();
-            parameters.add(new Parameter("drug_stuff_id", "=", medicinalStockRecord.getDrugStuffId()));
-            parameters.add(new Parameter("company_id", "=", companyId));
-            List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(parameters, "");
+            List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(
+                    SearchParamsBuilder.create()
+                            .eq("drug_stuff_id", medicinalStockRecord.getDrugStuffId())
+                            .eq("company_id", companyId)
+                            .build(), "");
             if (CollectionUtils.isEmpty(medicinalStockControlList))
             {
                 return;
@@ -526,24 +515,22 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
         this.preOccupyStock(recipelInfo);
 
         //把预占用库存转为实际占用库存
-        List<Parameter> parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("recipel_info_id", "=", recipelInfoId));
-        List<MedicinalStockRecord> medicinalStockRecordList = this.medicinalStockRecordService.listAll(parameters, "");
+        List<MedicinalStockRecord> medicinalStockRecordList = this.medicinalStockRecordService.listAll(
+                SearchParamsBuilder.create().eq("recipel_info_id", recipelInfoId).build(), "");
         if (CollectionUtils.isEmpty(medicinalStockRecordList))
         {
-            //TODO: 暂做返回处理，可考虑没有查询到就抛异常处理
+            logger.warn("处方[{}]未找到库存操作记录，跳过库存处理", recipelInfoId);
             return;
         }
 
         for (MedicinalStockRecord medicinalStockRecord:medicinalStockRecordList)
         {
             BigDecimal operationStock = medicinalStockRecord.getOperationStock();		// 操作库存数
-            parameters.clear();
-            parameters.add(new Parameter("storage_id", "=", medicinalStockRecord.getStorageId()));
-            List<MedicinalStorageControl> medicinalStorageControlList = super.listAll(parameters, "");
+            List<MedicinalStorageControl> medicinalStorageControlList = super.listAll(
+                    SearchParamsBuilder.create().eq("storage_id", medicinalStockRecord.getStorageId()).build(), "");
             if (CollectionUtils.isEmpty(medicinalStorageControlList))
             {
-                throw new RuntimeException("动态库存控制失败，未找到需要控制库存的入库明细[明细ID=" + medicinalStockRecord.getStorageId() + "]。");
+                throw new ServiceException("动态库存控制失败，未找到需要控制库存的入库明细[明细ID=" + medicinalStockRecord.getStorageId() + "]。");
             }
             MedicinalStorageControl medicinalStorageControl = medicinalStorageControlList.get(0);
             medicinalStorageControl.setUsedStock(medicinalStorageControl.getUsedStock().add(operationStock));            //当前已使用库存数应该加上去
@@ -551,12 +538,11 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
             super.save(medicinalStorageControl);
 
             //更新总控制的预占用
-            parameters.clear();
-            parameters.add(new Parameter("drug_stuff_id", "=", medicinalStockRecord.getDrugStuffId()));
-            List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(parameters, "");
+            List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(
+                    SearchParamsBuilder.create().eq("drug_stuff_id", medicinalStockRecord.getDrugStuffId()).build(), "");
             if (CollectionUtils.isEmpty(medicinalStockControlList))
             {
-                throw new RuntimeException("动态库存控制失败，未找到物品[ " + medicinalStockRecord.getDrugStuffName() + " ]的库存总控制记录。");
+                throw new ServiceException("动态库存控制失败，未找到物品[ " + medicinalStockRecord.getDrugStuffName() + " ]的库存总控制记录。");
             }
             MedicinalStockControl medicinalStockControl = medicinalStockControlList.get(0);
             medicinalStockControl.setUsedStock(medicinalStockControl.getUsedStock().add(operationStock));            //当前已使用库存数应该加上去
@@ -598,25 +584,25 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
             return;
         }
 
-        List<Parameter> parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("recipel_info_id", "=", recipelInfoId));
-        parameters.add(new Parameter("operation_type", "=", 3));
-        List<MedicinalStockRecord> medicinalStockRecordList = this.medicinalStockRecordService.listAll(parameters, "");
+        List<MedicinalStockRecord> medicinalStockRecordList = this.medicinalStockRecordService.listAll(
+                SearchParamsBuilder.create()
+                        .eq("recipel_info_id", recipelInfoId)
+                        .eq("operation_type", 3)
+                        .build(), "");
         if (CollectionUtils.isEmpty(medicinalStockRecordList))
         {
-            //TODO: 暂做返回处理，可考虑没有查询到就抛异常处理
+            logger.warn("处方[{}]未找到库存操作记录，跳过库存处理", recipelInfoId);
             return;
         }
 
         for (MedicinalStockRecord medicinalStockRecord:medicinalStockRecordList)
         {
             BigDecimal operationStock = medicinalStockRecord.getOperationStock();		// 操作库存数
-            parameters.clear();
-            parameters.add(new Parameter("storage_id", "=", medicinalStockRecord.getStorageId()));
-            List<MedicinalStorageControl> medicinalStorageControlList = super.listAll(parameters, "");
+            List<MedicinalStorageControl> medicinalStorageControlList = super.listAll(
+                    SearchParamsBuilder.create().eq("storage_id", medicinalStockRecord.getStorageId()).build(), "");
             if (CollectionUtils.isEmpty(medicinalStorageControlList))
             {
-                throw new RuntimeException("动态库存控制失败，未找到需要控制库存的入库明细[明细ID=" + medicinalStockRecord.getStorageId() + "]。");
+                throw new ServiceException("动态库存控制失败，未找到需要控制库存的入库明细[明细ID=" + medicinalStockRecord.getStorageId() + "]。");
             }
             MedicinalStorageControl medicinalStorageControl = medicinalStorageControlList.get(0);
             medicinalStorageControl.setUsedStock(medicinalStorageControl.getUsedStock().subtract(operationStock));            //当前已使用库存数应该减回去
@@ -626,12 +612,11 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
             super.save(medicinalStorageControl);
 
             //更新总控制的预占用
-            parameters.clear();
-            parameters.add(new Parameter("drug_stuff_id", "=", medicinalStockRecord.getDrugStuffId()));
-            List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(parameters, "");
+            List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(
+                    SearchParamsBuilder.create().eq("drug_stuff_id", medicinalStockRecord.getDrugStuffId()).build(), "");
             if (CollectionUtils.isEmpty(medicinalStockControlList))
             {
-                throw new RuntimeException("动态库存控制失败，未找到物品[ " + medicinalStockRecord.getDrugStuffName() + " ]的库存总控制记录。");
+                throw new ServiceException("动态库存控制失败，未找到物品[ " + medicinalStockRecord.getDrugStuffName() + " ]的库存总控制记录。");
             }
             MedicinalStockControl medicinalStockControl = medicinalStockControlList.get(0);
             medicinalStockControl.setUsedStock(medicinalStockControl.getUsedStock().subtract(operationStock));            //当前已使用库存数应该减回去
@@ -662,25 +647,25 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
             return;
         }
 
-        List<Parameter> parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("recipel_info_id", "=", recipelInfoId));
-        parameters.add(new Parameter("operation_type", "=", 4));
-        List<MedicinalStockRecord> medicinalStockRecordList = this.medicinalStockRecordService.listAll(parameters, "");
+        List<MedicinalStockRecord> medicinalStockRecordList = this.medicinalStockRecordService.listAll(
+                SearchParamsBuilder.create()
+                        .eq("recipel_info_id", recipelInfoId)
+                        .eq("operation_type", 4)
+                        .build(), "");
         if (CollectionUtils.isEmpty(medicinalStockRecordList))
         {
-            //TODO: 暂做返回处理，可考虑没有查询到就抛异常处理
+            logger.warn("处方[{}]未找到库存操作记录，跳过库存处理", recipelInfoId);
             return;
         }
 
         for (MedicinalStockRecord medicinalStockRecord:medicinalStockRecordList)
         {
             BigDecimal operationStock = medicinalStockRecord.getOperationStock();		// 操作库存数
-            parameters.clear();
-            parameters.add(new Parameter("storage_id", "=", medicinalStockRecord.getStorageId()));
-            List<MedicinalStorageControl> medicinalStorageControlList = super.listAll(parameters, "");
+            List<MedicinalStorageControl> medicinalStorageControlList = super.listAll(
+                    SearchParamsBuilder.create().eq("storage_id", medicinalStockRecord.getStorageId()).build(), "");
             if (CollectionUtils.isEmpty(medicinalStorageControlList))
             {
-                throw new RuntimeException("动态库存控制失败，未找到需要控制库存的入库明细[明细ID=" + medicinalStockRecord.getStorageId() + "]。");
+                throw new ServiceException("动态库存控制失败，未找到需要控制库存的入库明细[明细ID=" + medicinalStockRecord.getStorageId() + "]。");
             }
             MedicinalStorageControl medicinalStorageControl = medicinalStorageControlList.get(0);
             medicinalStorageControl.setSurplusStock(medicinalStorageControl.getSurplusStock().add(operationStock));            //当前剩余可用库存数应该加回去
@@ -688,20 +673,16 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
             super.save(medicinalStorageControl);
 
             //更新总控制的预占用
-            parameters.clear();
-            parameters.add(new Parameter("drug_stuff_id", "=", medicinalStockRecord.getDrugStuffId()));
-            List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(parameters, "");
+            List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(
+                    SearchParamsBuilder.create().eq("drug_stuff_id", medicinalStockRecord.getDrugStuffId()).build(), "");
             if (CollectionUtils.isEmpty(medicinalStockControlList))
             {
-                throw new RuntimeException("动态库存控制失败，未找到物品[ " + medicinalStockRecord.getDrugStuffName() + " ]的库存总控制记录。");
+                throw new ServiceException("动态库存控制失败，未找到物品[ " + medicinalStockRecord.getDrugStuffName() + " ]的库存总控制记录。");
             }
             MedicinalStockControl medicinalStockControl = medicinalStockControlList.get(0);
             medicinalStockControl.setSurplusStock(medicinalStockControl.getSurplusStock().add(operationStock));            //当前剩余可用库存数应该加回去
             medicinalStockControl.setReturnTodoFeeStock(medicinalStockControl.getReturnTodoFeeStock().subtract(operationStock));
             this.medicinalStockControlService.save(medicinalStockControl);
-
-            //更新动态库存的操作记录状态
-            //this.medicinalStockRecordService.delete(medicinalStockRecord);
         }
 
         //删除占用操作明细（此次物理删除）
@@ -709,18 +690,18 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
     }
 
     //获取所有的库存明细
-    @Transactional
+    @Transactional(readOnly = true)
     public List<MedicinalStorageControl> getAll(String compayId, String type,String variety) {
         return this.dao.getAll(compayId,type,variety);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public BigDecimal getByDrugOrStuffId(String drugOrStuffId) {
         return this.dao.getByDrugOrStuffId(drugOrStuffId, SessionUtils.getLoginTenantId());
     }
 
-    @Transactional
-    public BigDecimal getByDrugOrStuffIds(List drugOrStuffIds) {
+    @Transactional(readOnly = true)
+    public BigDecimal getByDrugOrStuffIds(List<String> drugOrStuffIds) {
         return this.dao.getByDrugOrStuffIds(drugOrStuffIds);
     }
 
@@ -743,25 +724,25 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
             return;
         }
 
-        List<Parameter> parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("recipel_info_id", "=", recipelInfoId));
-        parameters.add(new Parameter("operation_type", "=", 3));
-        List<MedicinalStockRecord> medicinalStockRecordList = this.medicinalStockRecordService.listAll(parameters, "");
+        List<MedicinalStockRecord> medicinalStockRecordList = this.medicinalStockRecordService.listAll(
+                SearchParamsBuilder.create()
+                        .eq("recipel_info_id", recipelInfoId)
+                        .eq("operation_type", 3)
+                        .build(), "");
         if (CollectionUtils.isEmpty(medicinalStockRecordList))
         {
-            //TODO: 暂做返回处理，可考虑没有查询到就抛异常处理
+            logger.warn("处方[{}]未找到库存操作记录，跳过库存处理", recipelInfoId);
             return;
         }
 
         for (MedicinalStockRecord medicinalStockRecord:medicinalStockRecordList)
         {
             BigDecimal operationStock = medicinalStockRecord.getOperationStock();		// 操作库存数
-            parameters.clear();
-            parameters.add(new Parameter("storage_id", "=", medicinalStockRecord.getStorageId()));
-            List<MedicinalStorageControl> medicinalStorageControlList = super.listAll(parameters, "");
+            List<MedicinalStorageControl> medicinalStorageControlList = super.listAll(
+                    SearchParamsBuilder.create().eq("storage_id", medicinalStockRecord.getStorageId()).build(), "");
             if (CollectionUtils.isEmpty(medicinalStorageControlList))
             {
-                throw new RuntimeException("动态库存控制失败，未找到需要控制库存的入库明细[明细ID=" + medicinalStockRecord.getStorageId() + "]。");
+                throw new ServiceException("动态库存控制失败，未找到需要控制库存的入库明细[明细ID=" + medicinalStockRecord.getStorageId() + "]。");
             }
             MedicinalStorageControl medicinalStorageControl = medicinalStorageControlList.get(0);
             medicinalStorageControl.setUsedStock(medicinalStorageControl.getUsedStock().subtract(operationStock));            //当前已使用库存数应该减回去
@@ -771,23 +752,16 @@ public class MedicinalStorageControlService extends CrudService<MedicinalStorage
             super.save(medicinalStorageControl);
 
             //更新总控制的预占用
-            parameters.clear();
-            parameters.add(new Parameter("drug_stuff_id", "=", medicinalStockRecord.getDrugStuffId()));
-            List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(parameters, "");
+            List<MedicinalStockControl> medicinalStockControlList = this.medicinalStockControlService.listAll(
+                    SearchParamsBuilder.create().eq("drug_stuff_id", medicinalStockRecord.getDrugStuffId()).build(), "");
             if (CollectionUtils.isEmpty(medicinalStockControlList))
             {
-                throw new RuntimeException("动态库存控制失败，未找到物品[ " + medicinalStockRecord.getDrugStuffName() + " ]的库存总控制记录。");
+                throw new ServiceException("动态库存控制失败，未找到物品[ " + medicinalStockRecord.getDrugStuffName() + " ]的库存总控制记录。");
             }
             MedicinalStockControl medicinalStockControl = medicinalStockControlList.get(0);
             medicinalStockControl.setUsedStock(medicinalStockControl.getUsedStock().subtract(operationStock));            //当前已使用库存数应该减回去
             medicinalStockControl.setSurplusStock(medicinalStockControl.getSurplusStock().add(operationStock));
-//            BigDecimal returnTodoFeeStock2 =medicinalStockControl.getReturnTodoFeeStock()==null?new BigDecimal("0"):medicinalStockControl.getReturnTodoFeeStock();
-//            medicinalStockControl.setReturnTodoFeeStock(returnTodoFeeStock2.add(operationStock));
             this.medicinalStockControlService.save(medicinalStockControl);
-
-            //更新动态库存的操作记录状态
-//            medicinalStockRecord.setOperationType(4);
-//            this.medicinalStockRecordService.save(medicinalStockRecord);
         }
         //删除占用操作明细（此次物理删除）
         this.medicinalStockRecordService.batchDelete(medicinalStockRecordList);

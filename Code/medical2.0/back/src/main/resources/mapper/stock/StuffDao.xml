@@ -79,7 +79,7 @@
     </select>
 
     <select id="count" resultType="int">
-        SELECT COUNT(*) FROM stuff a
+        SELECT COUNT(DISTINCT a.id) FROM stuff a
         LEFT JOIN org_company company ON company.id = a.company_id
         LEFT JOIN sys_dict_item type ON type.value = a.type
         LEFT JOIN manufacture_factory factory ON factory.id = a.factory
@@ -227,7 +227,7 @@
         </if>
     </select>
     <select id="getCountWarning" resultType="java.lang.Integer">
-        SELECT COUNT(*) FROM stuff a
+        SELECT COUNT(DISTINCT a.id) FROM stuff a
         <include refid="stuffJoins"/>
         <where>
             1=1
@@ -576,12 +576,6 @@
             #{entity.id}
         </foreach>
     </update>
-    <update id="updateInventory">
-        update stuff
-        set inventory=#{inventory},
-            update_date=now()
-        where id = #{id}
-    </update>
 
     <update id="updateAllIndate">
         update stuff
@@ -645,7 +639,7 @@
     </select>
 
     <select id="countByInstitution" resultType="int">
-        SELECT COUNT(*) FROM stuff a
+        SELECT COUNT(DISTINCT a.id) FROM stuff a
         LEFT JOIN org_company company ON company.id = a.company_id
         LEFT JOIN sys_dict_item type ON type.value = a.type
         LEFT JOIN manufacture_factory factory ON factory.id = a.factory

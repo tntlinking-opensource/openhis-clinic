@@ -5,7 +5,7 @@ import lombok.Data;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
-public class weekdayDTO {
+public class WeekdayDTO {
     //星期天 开始 星期六结束
     //"Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"
     private String Sunday;
