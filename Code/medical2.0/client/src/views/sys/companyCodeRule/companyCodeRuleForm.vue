@@ -3,30 +3,30 @@
     @open='onDialogOpen()' v-loading='loading'>
     <div slot='title' class='dialog-header'>
       {{ dialogProps.title }}
-      <OperationIcon v-show='dialogProps.action == "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
+      <OperationIcon v-show='dialogProps.action === "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
     </div>
     <el-form :model='bizFormModel' :rules='formRules' 
       ref='companyCodeRuleForm' label-width='120px' label-position='right' class='edit-form'>    
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='规则' prop='ruleDef'>
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.ruleDef' :maxlength='512' :placeholder='dialogProps.action == "view"? "" : "请输入规则"' autofocus></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.ruleDef' :maxlength='512' :placeholder='dialogProps.action === "view"? "" : "请输入规则"' autofocus></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col>
           <el-form-item label='备注信息' prop='remarks'>        
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.remarks' type='textarea'  
-             :maxlength='255' :placeholder='dialogProps.action == "view"? "" : "请输入备注信息"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.remarks' type='textarea'  
+             :maxlength='255' :placeholder='dialogProps.action === "view"? "" : "请输入备注信息"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
     </el-form>
     <span slot='footer' class='dialog-footer'>
-      <el-button v-if='dialogProps.action != "view"' :disabled="flage" type='primary' :plain='true' @click='onSubmit("companyCodeRuleForm")'>保 存</el-button>    
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :disabled="flag" type='primary' :plain='true' @click='onSubmit("companyCodeRuleForm")'>保 存</el-button>    
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span>    
   </el-dialog>
 </template>
@@ -44,7 +44,7 @@ export default {
   data() {
     return {
       bizFormModel: this.initFormModel(),
-      flage:false,
+      flag:false,
        dialogProps: {
         visible: false,
         action: '',
@@ -66,12 +66,12 @@ export default {
   },  
   methods: {
     onSubmit(formName) {
-      this.flage=true
+      this.flag=true
       this.$refs[formName].validate(valid => {
         if (valid) {
           this.doSave()
         } else {
-          this.flage=false
+          this.flag=false
           return false
         }
       });
@@ -79,8 +79,8 @@ export default {
     doSave() {
       this.setLoad()
       saveCompanyCodeRule(this.bizFormModel).then(responseData => {
-        this.flage=false
-        if(responseData.code == 100) {
+        this.flag=false
+        if(responseData.code === 100) {
           this.dialogProps.visible = false
           this.$emit('save-finished')
         } else {
@@ -88,7 +88,7 @@ export default {
         }
         this.resetLoad()
       }).catch(error => {
-        this.flage=false
+        this.flag=false
         this.outputError(error)
       })
     },    
@@ -123,42 +123,39 @@ export default {
       }
     },
     initOptions(This) {
-    }
+    },
+    openViewCompanyCodeRuleDialog(companyCodeRule) {
+      this.dialogProps.action = 'view'
+      this.dialogProps.title = '查看公司编码规则'
+      this.bizFormModel = companyCodeRule
+      this.dialogProps.visible = true
+    },
+    openEditCompanyCodeRuleDialog(companyCodeRule) {
+      this.dialogProps.action = 'edit'
+      this.dialogProps.title = '修改公司编码规则'
+      this.bizFormModel = companyCodeRule
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+    },
+    openAddCompanyCodeRuleDialog() {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加公司编码规则'
+      this.bizFormModel = this.initFormModel()
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+    },
+    openCopyCompanyCodeRuleDialog(companyCodeRule) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加公司编码规则'
+      this.bizFormModel = companyCodeRule
+      this.initOptions(this.bizFormModel)
+      this.bizFormModel.id = null
+      this.dialogProps.visible = true
+    },
   },
   watch: {
   },
   mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openViewCompanyCodeRuleDialog', function(companyCodeRule) {
-        this.dialogProps.action = 'view'
-        this.dialogProps.title = '查看公司编码规则'
-        this.bizFormModel = companyCodeRule
-        // this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openEditCompanyCodeRuleDialog', function(companyCodeRule) {
-        this.dialogProps.action = 'edit'
-        this.dialogProps.title = '修改公司编码规则'
-        this.bizFormModel = companyCodeRule
-        this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openAddCompanyCodeRuleDialog', function() {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加公司编码规则'
-        this.bizFormModel = this.initFormModel()
-        this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openCopyCompanyCodeRuleDialog', function(companyCodeRule) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加公司编码规则'
-        this.bizFormModel = companyCodeRule
-        this.initOptions(this.bizFormModel)
-        this.bizFormModel.id = null   //把id设置为空，添加一个新的
-        this.dialogProps.visible = true
-      })
-    })
-  }  
+  },
 }
 </script>

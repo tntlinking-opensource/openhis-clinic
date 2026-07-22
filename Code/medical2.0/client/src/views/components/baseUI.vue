@@ -30,8 +30,8 @@ export default {
     },
     getAttrValue(entity, attr, javaType) {
       let pos = attr.indexOf('.')
-      if(pos == -1) {
-        if(javaType == "java.math.BigDecimal") {  // 金额类型，保留两位小数，千分位
+      if(pos === -1) {
+        if(javaType === "java.math.BigDecimal") {  // 金额类型，保留两位小数，千分位
           return  (entity[attr] || 0).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,')
         }
         return entity[attr]
@@ -49,7 +49,7 @@ export default {
       if(moreParm.groupOne) {
         moreParm.groupOne.forEach((item, index) => {
           if(item.column && item.queryType && item.value && (!(item.value instanceof Array) || (item.value instanceof Array && item.value.length > 0))) {
-            if(groupOne.length == 0) {
+            if(groupOne.length === 0) {
               groupOne.push({logic: '', columnName: item.column.name, queryType: item.queryType, value: item.value})
             } else {
               groupOne.push({logic: item.logic, columnName: item.column.name, queryType: item.queryType, value: item.value})
@@ -60,7 +60,7 @@ export default {
       if(moreParm.groupTwo) {
         moreParm.groupTwo.forEach((item, index) => {
           if(item.column && item.queryType && item.value && (!(item.value instanceof Array) || (item.value instanceof Array && item.value.length > 0))) {
-            if(groupTwo.length == 0) {
+            if(groupTwo.length === 0) {
               groupTwo.push({logic: '', columnName: item.column.name, queryType: item.queryType, value: item.value})
             } else {
               groupTwo.push({logic: item.logic, columnName: item.column.name, queryType: item.queryType, value: item.value})
@@ -96,7 +96,7 @@ export default {
     pushDataPermissions(params, routerId, mataId) {
       let items = [];
       let permissions = getLocalDataPermisions()
-      let thePermissions = permissions.filter((permission)=>{return permission.routerId == routerId && permission.metaId == mataId });
+      let thePermissions = permissions.filter((permission)=>{return permission.routerId === routerId && permission.metaId === mataId });
       if(thePermissions.length <= 0){
         return params
       }
@@ -133,15 +133,15 @@ export default {
     },
     showMessage(msgData) {
       let tip = ''
-      if(msgData.type == 'error' && msgData.data) {
+      if(msgData.type === 'error' && msgData.data) {
         console.error(msgData.data)
         tip = '， 请按F12查看浏览器日志。'
       }
 
-      if (msgData.type == 'warning' || msgData.type == 'error') {
+      if (msgData.type === 'warning' || msgData.type === 'error') {
         if(!this.isAlert) {
           this.isAlert = true
-          this.$alert(msgData.msg + tip, msgData.type == 'warning' ? '警告' : '错误', {
+          this.$alert(msgData.msg + tip, msgData.type === 'warning' ? '警告' : '错误', {
             type: msgData.type,
             callback: action => {
               if(this.loadcount <= 0) {
@@ -153,12 +153,11 @@ export default {
       } else {
         this.$message({
           showClose: true,
-          dangerouslyUseHTMLString: true,
           message: msgData.msg + tip,
           type: msgData.type
         })
       }
-      if (msgData.code == 20011) {
+      if (msgData.code === 20011) {
         if(this.dialogProps) {   // 隐藏对话框
           this.dialogProps.visible = false
         }
@@ -176,7 +175,7 @@ export default {
   },
   watch: {
     loadcount: function(val, oldVal) {
-      if(val == 0) {
+      if(val === 0) {
         this.isAlert = false
       }
     }

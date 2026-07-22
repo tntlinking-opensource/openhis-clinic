@@ -2,7 +2,6 @@ package com.geeke.toll.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.geeke.common.data.Page;
-import com.geeke.utils.excel.ExcelCell;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -20,31 +19,24 @@ public class OutpatientLog {
     private String id;
 
     /** 患者姓名 */
-    @ExcelCell(name = "患者姓名")
     private String patientName;
 
     /**家长姓名 */
-    @ExcelCell(name = "家长姓名")
     private String patriarchName;
 
     /** 性别 */
-    @ExcelCell(name = "性别",convertKey = "OutpatientLog-gender")
     private String sex;
 
     /** 患者年龄 */
-    @ExcelCell(name = "患者年龄")
     private String age;
 
     /** 民族 */
-    @ExcelCell(name = "民族")
     private String nation;
 
     /** 职业 */
-    @ExcelCell(name = "职业")
     private String occupation;
 
     /** 详细地址 */
-    @ExcelCell(name = "详细地址")
     private String address;
 
     /** 就诊日期 */
@@ -54,76 +46,58 @@ public class OutpatientLog {
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd'T'HH:mm:ss")
 */
-    @ExcelCell(name = "就诊日期")
     private Date visitDate;
     /** 初/复诊 */
-    @ExcelCell(name = "初/复诊",convertKey = "OutpatientLog-initialVisit")
     private String initialVisit;
 
     /** 血压 */
-    @ExcelCell(name = "血压")
     private String bloodPressure;
 
     /** 临床症状 */
-    @ExcelCell(name = "临床症状")
     private String symptom;
 
     /** 体温发热 */
-    @ExcelCell(name = "体温发热")
     private String fever;
 
      /** 流行病学史 */
-     @ExcelCell(name = "流行病学史")
     private String epidemicDisease;
 
     /** 西医诊断 */
-    @ExcelCell(name = "西医诊断")
     private String westernDiagnose;
 
     /** 中医诊断 */
-    @ExcelCell(name = "中医诊断")
     private String chinaDiagnose;
 
     /** 传染病 */
-    @ExcelCell(name = "传染病",convertKey = "OutpatientLog-infect")
     private String infect;
 
     /** 处理情况 */
-    @ExcelCell(name = "处理情况")
     private String handle;
 
     /** 有效证件号 */
-    @ExcelCell(name = "有效证件号")
     private String certificate;
 
     /** 工作单位 */
-    @ExcelCell(name = "工作单位")
     private String unit;
 
     /** 医生签名 */
-    @ExcelCell(name = "医生签名")
     private String signature;
 
     /** 贫困标志 */
-    @ExcelCell(name = "贫困标志")
     private String poverty;
 
     /** 联系电话 */
-    @ExcelCell(name = "联系电话")
     private String telephone;
 
     /** 发病日期 */
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    @ExcelCell(name = "发病日期")
     private Date morbidityDate;
 
     /** 实验室阳性结果 */
-    @ExcelCell(name = "实验室阳性结果")
     private String positiveResult;
 
     /** 个体化健康教育 */
-    @ExcelCell(name = "个体化健康教育")
     private String healthEducation;
 
     public OutpatientLog() {

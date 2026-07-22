@@ -395,16 +395,16 @@ this.Getypjxclist();
   this.StuffsalessummaryRc.jssj=this.TimeInterval[1]
   }
 //   this.StuffsalessummaryRc.zt=this.formInline.zt=="qb"?"":this.formInline.zt;
- this.StuffsalessummaryRc.lx=this.formInline.lx=="qb"?"":this.formInline.lx;
+ this.StuffsalessummaryRc.lx=this.formInline.lx==="qb"?"":this.formInline.lx;
  this.StuffsalessummaryRc.clmc=this.formInline.clmc;
 // this.StuffsalessummaryRc.ph=this.formInline.ph;
 // this.StuffsalessummaryRc.orderby=this.StuffsalessummaryRc.orderby;
 getStuffsalessummarylists(this.StuffsalessummaryRc).then((responseData)=>{
-if (responseData.code == 100){
+if (responseData.code === 100){
   this.patientTotal=responseData.data.total;
   if(responseData.data.total>0){
 responseData.data.rows.forEach((item)=>{
-  if(item.cllx=="stuffType_0"){item.cllx="医用材料"}else if(item.cllx=="stuffType_1"){item.cllx="非医用材料"}else{item.cllx=""}
+  if(item.cllx==="stuffType_0"){item.cllx="医用材料"}else if(item.cllx==="stuffType_1"){item.cllx="非医用材料"}else{item.cllx=""}
     this.tableData.push({
       clbm:item.clbm,
       clmc:item.clmc,

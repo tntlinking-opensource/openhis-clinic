@@ -43,22 +43,22 @@
 
 <script>
   import MainUI from '@/views/components/mainUI'
+  import listViewMixin from '@/mixins/listViewMixin'
   import {listSysParamConfigAll, saveSysParamConfigList} from '@/api/sys/sysParamConfig'
   import {getLocalCurrentCompany} from "@/utils/auth";
 
   export default {
   extends: MainUI,
+  mixins: [listViewMixin],
   components: {
   },
   data() {
     return {
-      permission: {
-        view: false,
-        add: false,
-        edit: false,
-        remove: false,
-        export: false
-      },
+      listApi: listSysParamConfigAll,
+      getApi: listSysParamConfigAll,
+      deleteApi: saveSysParamConfigList,
+      entityName: 'SysParamConfig',
+      permissionPrefix: 'sys_param_config',
       //这个对象很重要，每次增加了类型config_name都要对应加上
       sysParamConfigForm: {
         chronicDays: null,//慢病处方天数
@@ -81,8 +81,8 @@
      */
     async pageInit() {
       listSysParamConfigAll({params:[this.search]}).then(responseData => {
-        if(responseData.code == 100) {
-          if (responseData.data.length >= 1){
+        if(responseData.code === 100) {
+          if (Array.isArray(responseData.data) && responseData.data.length >= 1){
             responseData.data.forEach(data=>{
               this.saveMap.set(data.configName, data);
               if (this.sysParamConfigForm.hasOwnProperty(data.configName)) {
@@ -105,7 +105,6 @@
     initSaveDatas(){
       for (let key in this.sysParamConfigForm) {
         if (this.sysParamConfigForm.hasOwnProperty(key)) {
-          console.log(key); // 输出键名
           let data = {
             id: null,
             configName: key,
@@ -158,11 +157,11 @@
         .replace(/^(\-)*(\d+)\.(\d\d).*$/, "$1$2.$3") //只能输入两个小数
         .replace(/\.{2,}/g, "."); //出现多个点时只保留第一个
       // 第一位不让输小数点
-      if (amount == ".") {
+      if (amount === ".") {
         amount = "";
       }
       // 如果第一位是0，第二位必须大于0或者小数点
-      if (amount.substring(0, 1) == 0) {
+      if (amount.substring(0, 1) === 0) {
         if (amount.substring(1, 2) > 0) {
           amount = amount.substring(1, 2);
         } else if (
@@ -175,18 +174,13 @@
         // 如果第一位数字大于0（不等于0肯定就大于0），仅需考虑第二位是小数点的情况
         if (amount.indexOf(".") !== -1) {
           if (amount.substring(0, 1) > 0) {
-            console.log("第一位大于0");
           } else {
-            console.log("第一位等于0");
             if (amount.substring(2, 3) > 0) {
-              console.log("小数点后第一位大于0");
             } else {
-              console.log("小数点后第一位等于0");
               amount = "0.";
             }
           }
         } else {
-          console.log("没有小数点，正常输入");
         }
       }
       this.sysParamConfigForm[field] = amount;
@@ -198,7 +192,6 @@
     getSaveData(){
       let saveDatas = [];
       this.saveMap.forEach((value, key) => {
-        console.log(`${key}: ${value}`);
         saveDatas.push(value);
       })
       return saveDatas;
@@ -207,10 +200,9 @@
      * 保存数据
      */
     saveData(){
-      console.log('saveData')
       let saveDatas = this.getSaveData();
       saveSysParamConfigList(saveDatas).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           this.showMessage({type: 'success', msg: '操作成功'})
         } else {
           this.showMessage(responseData.msg);

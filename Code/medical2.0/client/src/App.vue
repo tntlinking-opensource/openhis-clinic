@@ -1,10 +1,8 @@
 <template>
   <div id="app" style="height: 100%;">
-    <transition >
-      <keep-alive  v-if="isRouterAlice">
-        <router-view></router-view>
-      </keep-alive>
-    </transition>
+    <keep-alive :max="20" v-if="isRouterAlice">
+      <router-view></router-view>
+    </keep-alive>
   </div>
 </template>
 <script>

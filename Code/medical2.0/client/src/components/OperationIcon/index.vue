@@ -1,5 +1,5 @@
 <template>
-  <el-tooltip v-if='text == "" || text == undefined' class=item effect=light :content='content' :placement='placement' @mouseenter.native='onMouseEnter' @mouseleave.native='onMouseLeave'>
+  <el-tooltip v-if='text === "" || text === undefined' class=item effect=light :content='content' :placement='placement' @mouseenter.native='onMouseEnter' @mouseleave.native='onMouseLeave'>
     <i class="opt-icon" :class='iconName' :style='"color:" + leaveColor() + ";cursor:pointer;"' @click='onIconClik'></i>
     <!--<el-button :type="type" :icon="iconName" circle  @click='onIconClik'></el-button>-->
   </el-tooltip>
@@ -60,25 +60,25 @@ export default {
       this.$emit('click', e)
     },
     enterColor() {
-      if(this.type == 'primary') {
+      if(this.type === 'primary') {
         return this.settings.theme
-      } else if(this.type == 'success') {
+      } else if(this.type === 'success') {
         return '#85ce61'
-      } else if(this.type == 'warning') {
+      } else if(this.type === 'warning') {
         return '#ebb563'
-      } else if(this.type == 'danger') {
+      } else if(this.type === 'danger') {
         return '#f78989'
       }
       return '#a6a9ad'
     },
     leaveColor() {
-      if(this.type == 'primary') {
+      if(this.type === 'primary') {
         return this.settings.theme
-      } else if(this.type == 'success') {
+      } else if(this.type === 'success') {
         return '#67c23a'
-      } else if(this.type == 'warning') {
+      } else if(this.type === 'warning') {
         return '#e6a23c'
-      } else if(this.type == 'danger') {
+      } else if(this.type === 'danger') {
         return '#f56c6c'
       }
       return '#909399'

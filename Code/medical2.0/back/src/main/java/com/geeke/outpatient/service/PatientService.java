@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.geeke.common.service.CrudService;
-import com.geeke.config.exception.CommonJsonException;
+import com.geeke.common.service.ServiceException;
 import com.geeke.medicareutils.config.MedicareConfigProperties;
 import com.geeke.medicareutils.service.MdPsnDataService;
 import com.geeke.medicareutils.util.MdRequestUtil;
@@ -14,12 +14,10 @@ import com.geeke.outpatient.dao.PatientMdDataMapper;
 import com.geeke.outpatient.entity.Patient;
 import com.geeke.outpatient.entity.PatientMdData;
 import com.geeke.utils.IdGen;
-import com.geeke.utils.ResultUtil;
 import com.geeke.utils.SessionUtils;
-import com.geeke.utils.constants.ErrorEnum;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -40,8 +38,7 @@ import java.util.Objects;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class PatientService extends CrudService<PatientDao, Patient>{
-    @Autowired
-    private PatientDao patientDao;
+    private final PatientDao patientDao;
 
 
     @Override
@@ -53,14 +50,13 @@ public class PatientService extends CrudService<PatientDao, Patient>{
         colMaps.put("phone", "phone");
         
 //        if(exists(dao, patient, colMaps)) {
-//            throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "患者联系方式已存在"));
+//            throw new ServiceException("患者联系方式已存在");
 //        }
-        System.out.println(patient.toString());
        if(patient.getId()==null){
            //判断电话号码是否存在
            if(!Objects.equals(patient.getPhone(),"") && patient.getPhone()!=null){
                if(patientDao.countPatientByPhone(patient.getPhone(),patient.getCompany().getId(),null).size()>0){
-                   throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "患者联系方式已存在"));
+                   throw new ServiceException("患者联系方式已存在");
 
                }
            }
@@ -69,7 +65,7 @@ public class PatientService extends CrudService<PatientDao, Patient>{
            if(!Objects.equals(patient.getCard(),"") && patient.getCard()!=null){
                List<Patient> patientByCard = patientDao.getPatientByCard(patient.getCard(), patient.getCompany().getId(),null);
                if(!CollectionUtils.isEmpty(patientByCard)){
-                       throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "患者身份证号已存在"));
+                       throw new ServiceException("患者身份证号已存在");
                }
            }
        }
@@ -79,7 +75,7 @@ public class PatientService extends CrudService<PatientDao, Patient>{
            if(!Objects.equals(patient.getPhone(),"") && patient.getPhone()!=null){
                List<Patient> patients = patientDao.countPatientByPhone(patient.getPhone(), patient.getCompany().getId(),patient.getId());
                if(patients.size()>0&&!Objects.equals(patients.get(0).getPhone(),patient.getPhone())){
-                   throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "患者联系方式已存在"));
+                   throw new ServiceException("患者联系方式已存在");
 
                }
            }
@@ -89,7 +85,7 @@ public class PatientService extends CrudService<PatientDao, Patient>{
                List<Patient> patientByCard = patientDao.getPatientByCard(patient.getCard(), patient.getCompany().getId(),patient.getId());
                if(!CollectionUtils.isEmpty(patientByCard)){
                    if(Objects.equals(patientByCard.get(0).getCard(),patient.getCard())) {
-                       throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "患者身份证号已存在"));
+                       throw new ServiceException("患者身份证号已存在");
                    }
                }
            }
@@ -114,9 +110,9 @@ public class PatientService extends CrudService<PatientDao, Patient>{
             return patient;
         }else if(!ObjectUtils.isEmpty(patientByCard.get(0)) && !ObjectUtils.isEmpty(patientByCard.get(0).getOpenId())){
             if(Objects.equals(patient.getOpenId(),patientByCard.get(0).getOpenId())){
-                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "该患者身份证号已绑定！"));
+                throw new ServiceException("该患者身份证号已绑定！");
             }else {
-                throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "该患者身份证号已绑定其他微信账号，不能重复绑定！"));
+                throw new ServiceException("该患者身份证号已绑定其他微信账号，不能重复绑定！");
             }
         }else {
             patient.setId(IdGen.uuid());

@@ -66,7 +66,7 @@
                         v-for="(o,index) in prescriptionMainList"
                         :key="index"
                         @click="AlreadyPatientDescriptionsQuery(o,index)"
-                        :class="{clickTest:index==overColor}"
+                        :class="{clickTest:index===overColor}"
                       >
                         <div style="
 
@@ -162,7 +162,7 @@
                         v-for="(o,index) in prescriptionMainList"
                         :key="index"
                         @click="AlreadyPatientDescriptionsQuery(o,index)"
-                        :class="{clickTest:index==overColor}"
+                        :class="{clickTest:index===overColor}"
                       >
                         <div style="
 
@@ -171,7 +171,7 @@
                         <!-- <br> -->
                         <p style="font-weight: bold;margin-top: 15px;margin-left:30px;font-size: 12px;
                             color: #606266;">
-                          {{ o.recipelInfo && o.recipelInfo.name ? o.recipelInfo.name : '' }}<span v-if="o.recipelInfo && o.recipelInfo.dispensionStatus==-1"
+                          {{ o.recipelInfo && o.recipelInfo.name ? o.recipelInfo.name : '' }}<span v-if="o.recipelInfo && o.recipelInfo.dispensionStatus===-1"
                                                         style="font-weight: bold;margin-left: 15px;color:red">已退药</span>
                         </p>
 
@@ -193,7 +193,7 @@
                         >
                           <el-descriptions-item
                             contentStyle="font-weight: bold;margin-top: 6px;"
-                            >{{ o.recipelInfo.name }} <span v-if="o.recipelInfo.dispensionStatus==-1" style="font-weight: bold;margin-left: 15px;color:red">已退药</span> </el-descriptions-item
+                            >{{ o.recipelInfo.name }} <span v-if="o.recipelInfo.dispensionStatus===-1" style="font-weight: bold;margin-left: 15px;color:red">已退药</span> </el-descriptions-item
                           >
                           <el-descriptions-item
                             >{{ o.recipelInfo.id }}
@@ -253,7 +253,7 @@
                           }}</span>
                       </template>
                       <div v-for="(o,index) in prescriptionMainList" :key="o"
-                           :class="{clickTest:index==overColor}"
+                           :class="{clickTest:index===overColor}"
                            @click="AlreadyPatientDescriptionsQuery(o,index)"
                       >
                         <div style="
@@ -314,22 +314,22 @@
       <el-card class="box-card sub-card" style="height: 50px; display: flex">
         <!-- <div style="font-weight: bold">收费</div> -->
         <div class="flex-space-between">
-          <div class="goods-back" v-if="chargeStatusActiveName == '3'&&!isRetail">
+          <div class="goods-back" v-if="chargeStatusActiveName === '3'&&!isRetail">
             已退费
           </div>
-          <div class="goods-back" v-if="chargeStatusActiveName == '2'&&!isRetail">
+          <div class="goods-back" v-if="chargeStatusActiveName === '2'&&!isRetail">
             已收费
           </div>
-          <div v-if="chargeStatusActiveName == '1' && payState &&!isRetail && diagnosisPrescription" style="margin-right:10px">
+          <div v-if="chargeStatusActiveName === '1' && payState &&!isRetail && diagnosisPrescription" style="margin-right:10px">
             总计：{{ this.totalMoney }}元
           </div>
-          <!--<div v-if="chargeStatusActiveName == '1' && payState &&!isRetail && diagnosisPrescription" style="margin-right:10px">
+          <!--<div v-if="chargeStatusActiveName === '1' && payState &&!isRetail && diagnosisPrescription" style="margin-right:10px">
             总计：{{ this.hisTotalMoney.toFixed(2) }}元
           </div>-->
           <el-button
             type="primary"
             @click="chargeClick(1)"
-            v-if="chargeStatusActiveName == '1' && payState && !isRetail"
+            v-if="chargeStatusActiveName === '1' && payState && !isRetail"
           >收费
           </el-button
           >
@@ -344,14 +344,14 @@
             style="margin-right:10px"
             title="确定退费吗？"
             @confirm="chargeClick(2)"
-            v-if="chargeStatusActiveName == '2' && selRowChargeStatus != '4' && medicalEditTabs.length>0"
+            v-if="chargeStatusActiveName === '2' && selRowChargeStatus !== '4' && medicalEditTabs.length>0"
           >
             <el-button style="height:30px" slot="reference" type="primary" plain>退费</el-button>
 
           </el-popconfirm>
 
           <el-button
-            v-if="chargeStatusActiveName == '2' && medicalEditTabs.length>0"
+            v-if="chargeStatusActiveName === '2' && medicalEditTabs.length>0"
             type="primary"
             @click="print"
           >打印
@@ -580,7 +580,7 @@
                     {{ item.title }}
                   </span>
                   <el-row style="padding-top:8px" type="flex" justify="space-between" align="center"
-                          v-if="chargeStatusActiveName == '1' && payState">
+                          v-if="chargeStatusActiveName === '1' && payState">
                     <div class="single">
                       本处方费用：{{ item.content.recipelInfo.fee }}元
                     </div>
@@ -594,7 +594,7 @@
                     </el-popconfirm>
                   </el-row>
                   <el-row type="flex" justify="space-between" align="center" style="padding-top:8px"
-                          v-if="chargeStatusActiveName == '2' && medicalEditTabs.length>0">
+                          v-if="chargeStatusActiveName === '2' && medicalEditTabs.length>0">
                     <div class="single">
                       本处方费用：{{ item.content.recipelInfo.amountReceivedTotal }}元
                     </div>
@@ -607,22 +607,22 @@
 
                     </el-popconfirm>
                   </el-row>
-                  <el-row style="padding-top:8px" v-if="chargeStatusActiveName == '3' && medicalEditTabs.length>0">
+                  <el-row style="padding-top:8px" v-if="chargeStatusActiveName === '3' && medicalEditTabs.length>0">
                     <div class="single">
                       本处方费用：{{ item.content.recipelInfo.amountReceivedTotal }}元
                     </div>
                   </el-row>
-                  <div v-if="item.type!='recipelType_2'">
+                  <div v-if="item.type!=='recipelType_2'">
                     <el-row>
                       <el-divider content-position="left">处方信息</el-divider>
 
                       <el-input
                         disabled
-                        v-if="item.type!='recipelType_3'"
+                        v-if="item.type!=='recipelType_3'"
                         :value="item.content.recipelInfo.smallType.name"
                         style="width:100px">
                       </el-input>
-                      <el-checkbox v-if="item.type == 'recipelType_0'" style="margin-left: 20px;"
+                      <el-checkbox v-if="item.type === 'recipelType_0'" style="margin-left: 20px;"
                                    v-model="item.content.recipelInfo.chronicDisease" disabled>是否慢病
                       </el-checkbox>
                     </el-row>
@@ -633,14 +633,14 @@
 
                       <el-input
                         disabled
-                        v-if="item.type!='recipelType_3'"
+                        v-if="item.type!=='recipelType_3'"
                         :value="item.content.recipelInfo.smallType.name"
                         style="width:100px"
                       >
                       </el-input>
                     </el-row>
                   </div>
-                  <div v-if="item.type!='recipelType_2'">
+                  <div v-if="item.type!=='recipelType_2'">
                     <el-table :data="item.content.notExtra" style="width: 100%">
                       <el-table-column label="序号" type="index" align="center">
                       </el-table-column>
@@ -650,7 +650,7 @@
                         width="width">
                         <template slot-scope="scope">
                           {{ scope.row.drugStuffId.name }}
-                          <div v-if="item.type=='recipelType_0'">
+                          <div v-if="item.type==='recipelType_0'">
                         <span class="nameStyle"
                         >{{
                             scope.row.drugStuffId.drug.dosis
@@ -676,14 +676,14 @@
                         prop="westernMedicineUse.name"
                         label="用法"
                         width="width"
-                        v-if="item.type == 'recipelType_0' && !diagnosisPrescription"
+                        v-if="item.type === 'recipelType_0' && !diagnosisPrescription"
                       >
                       </el-table-column>
                       <el-table-column
                         prop="singleDosage"
                         label="单次用量"
                         width="width"
-                        v-if="item.type!='recipelType_3'"
+                        v-if="item.type!=='recipelType_3'"
                       >
                         <template slot-scope="scope">
                           <template>{{
@@ -696,7 +696,7 @@
                         prop="frequency"
                         label="频次"
                         align="center"
-                        v-if="item.type == 'recipelType_0' && !diagnosisPrescription"
+                        v-if="item.type === 'recipelType_0' && !diagnosisPrescription"
                         width="width"
                       >
                         <template slot-scope="scope"
@@ -707,7 +707,7 @@
                         >
                       </el-table-column>
                       <el-table-column prop="days.name" label="天数" width="width" align="center"
-                                       v-if="item.type == 'recipelType_0'">
+                                       v-if="item.type === 'recipelType_0'">
                         <template slot-scope="scope">
                           {{ scope.row.days.name }}天
                         </template>
@@ -773,7 +773,7 @@
                         <template slot-scope="scope">
                       <span
                       >{{ (scope.row.unitPrice).toFixed(4) }}元/{{
-                          scope.row.isUnpackSell == 1
+                          scope.row.isUnpackSell === 1
                             ? scope.row.drugStuffId.preparationUnit.name
                             : scope.row.drugStuffId.pack.name
                         }}</span
@@ -791,7 +791,7 @@
                           </template>
                       </el-table-column>
                     </el-table>
-                    <!--<div v-if="item.type=='recipelType_1'" style="margin:10px 0">
+                    <!--<div v-if="item.type==='recipelType_1'" style="margin:10px 0">
                      <el-input style="width:50px" disabled v-model="item.content.recipelInfo.dosage">
                      </el-input>
                      剂
@@ -802,7 +802,7 @@
                      <el-input style="width:80px" disabled v-model="item.content.recipelInfo.singleDosage">
                      </el-input>{{'格'}}
                    </div>-->
-                    <el-row v-if="item.type=='recipelType_1'">
+                    <el-row v-if="item.type==='recipelType_1'">
                       <el-input disabled v-model="item.content.recipelInfo.dosage"
                                 oninput="value=value.replace(/[^\d.]/g,'')" style="width: 60px"></el-input>
                       &nbsp;剂 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;用法：
@@ -979,7 +979,7 @@
                           <template slot-scope="scope">
                       <span
                       >{{ (scope.row.unitPrice).toFixed(4) }}元/{{
-                          scope.row.isUnpackSell == 1
+                          scope.row.isUnpackSell === 1
                             ? scope.row.drugStuffId.preparationUnit.name
                             : scope.row.drugStuffId.pack.name
                         }}</span
@@ -1088,7 +1088,7 @@
                       <template slot-scope="scope">
                       <span
                       >{{ (scope.row.unitPrice).toFixed(4) }}元/{{
-                          scope.row.isUnpackSell == 1
+                          scope.row.isUnpackSell === 1
                             ? scope.row.drugStuffId.preparationUnit.name
                             : scope.row.drugStuffId.pack.name
                         }}</span
@@ -1247,7 +1247,7 @@
               </el-form-item>
             </el-col> -->
           </el-row>
-          <el-row v-if="chargeForm.paymentType=='payType_0'">
+          <el-row v-if="chargeForm.paymentType==='payType_0'">
             <el-col :span="8">
               <el-form-item label="实付金额" prop="amountPaidRule">
                 <el-input
@@ -1363,7 +1363,7 @@
               </el-form-item>
             </el-col> -->
           </el-row>
-          <el-row v-if="chargeForm.paymentType=='payType_0'">
+          <el-row v-if="chargeForm.paymentType==='payType_0'">
             <el-col :span="8">
               <el-form-item label="实付金额">
                 <el-input
@@ -1412,7 +1412,7 @@
 
             </el-col>
           </el-row>
-          <el-row v-if="member.length>0&&this.medicalEditTabsValue.type=='recipelType_3'">
+          <el-row v-if="member.length>0&&this.medicalEditTabsValue.type==='recipelType_3'">
             <el-col :span="24">
               <el-form-item label="会员卡">
                 <el-select
@@ -1542,7 +1542,7 @@
     getMedicalRecordById,
     listMedicalRecordPage,
   } from "@/api/outpatient/medicalRecord";
-  import {listDictItemAll} from "@/api/sys/dictItem";
+  import {getDictItemsByCode, DICT_CODE} from "@/utils/dictCache";
   import BaseUI from "@/views/components/baseUI";
   import {getLocalToken} from '@/utils/auth';
   import axios from 'axios'
@@ -1573,8 +1573,6 @@
       };
       let amountPaidRule = (rule, value, callback) => {
         //这里为什么不用 value,因为之前 写这个代码的人没有按照element-ui的规则写,他绑定的数据不是表单里面的，气人啊
-        console.log(this.amountPaid, this.chargeForm.amountReceived,
-          Number(this.amountPaid) <= Number(this.chargeForm.amountReceived), "cao")
         if (!this.amountPaid) {
           callback(new Error("请输入实付金额"));
         } else {
@@ -1829,7 +1827,6 @@
       // 获取到省市区三级联动的值
       onChangeProvince(data) {
         this.province = data.value
-        console.log("5555555555555555"+data.value)
 
       },
       onChangeCity(data) {
@@ -1876,10 +1873,8 @@
         await this.$axios.post('/token/Auth/GetAppFrienAuthToken', loginForm, config)
           .then((response) => {
             this.tokenData = response.data.BusData.data.Token
-            console.log(response.data.BusData.data.Token)
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
       },
 
@@ -1900,11 +1895,8 @@
         })
           .then((response) => {
             this.hisPatient = response.data.BusData.data
-            console.log("his患者会诊信息"+JSON.stringify(this.hisPatient))
-            console.log(response);
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
       },
 
@@ -1932,11 +1924,8 @@
           }
         })
           .then((response) => {
-            console.log("地址新增"+JSON.stringify(response.data.BusData.data))
-            console.log(response);
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
       },
 
@@ -1964,11 +1953,8 @@
           }
         })
           .then((response) => {
-            console.log("地址修改"+JSON.stringify(response.data.BusData.data))
-            console.log(response);
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
       },
 
@@ -1995,13 +1981,8 @@
               this.prescriptionCollection[this.hisCheck[i].PresId]
               this.hisTotalMoney += this.hisCheck[i].PresAmt;
             }
-            console.log("his待支付账单"+JSON.stringify(this.hisCheck))
-            console.log("查看远程诊疗处方id"+this.prescriptionCollection);
-            console.log("查看远程诊疗付款金额"+this.hisTotalMoney);
-            console.log(response);
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
       },
 
@@ -2026,11 +2007,8 @@
             /*for (let i = 0; i < this.hisCheckDetail.length; i++) {
               this.hisTotalMoney += this.hisCheckDetail[i].Amt;
             }*/
-            console.log("his患者会诊信息"+JSON.stringify(this.hisCheckDetail))
-            console.log(response);
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
       },
 
@@ -2055,10 +2033,8 @@
         })
           .then((response) => {
             this.orderForm = response.data.BusData.data[0]
-            console.log("锁定订单后返回信息"+JSON.stringify(response.data.BusData.data));
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
       },
 
@@ -2091,10 +2067,8 @@
         })
           .then((response) => {
             this.orderForm = response.data.BusData.data
-            console.log("创建订单后返回信息"+JSON.stringify(response.data.BusData.data));
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
 
         await this.$axios.post('apis/PayOrder/BillOrderLockApply', {
@@ -2112,10 +2086,8 @@
           }
         })
           .then((response) => {
-            console.log("锁定订单后返回信息"+JSON.stringify(response.data.BusData.data));
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
       },
 
@@ -2137,10 +2109,8 @@
           }
         })
           .then((response) => {
-            console.log("锁定订单后返回信息"+JSON.stringify(response.data.BusData.data));
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
       },
 
@@ -2169,10 +2139,8 @@
           }
         })
           .then((response) => {
-            console.log("结算订单后返回信息"+JSON.stringify(response.data.BusData.data));
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
       },
 
@@ -2204,7 +2172,6 @@
         this.amountOfChange = 0
         let amount = this.amountPaid ? this.amountPaid : 0
         if (amount > 0) {
-          console.log(this.singleForm.amountReceived);
           if (this.singleForm.amountReceived > 0) {
             this.amountOfChange = (this.amountPaid - this.singleForm.amountReceived).toFixed(2)
           } else {
@@ -2219,19 +2186,17 @@
         let memberCopy = JSON.parse(JSON.stringify(this.memberCopy))
         if (memberCopy) {
           for (let i = 0; i < memberCopy.length; i++) {
-            if (memberCopy[i].id == row.id) {
+            if (memberCopy[i].id === row.id) {
               row = memberCopy[i]
             }
           }
         }
         this.singleForm.amountReceived = this.singleForm.amountReceivable
-        console.log(row, '选择的体验卡');
-        console.log(this.medicalEditTabsValue, '这个对于你的项目');
         for (let i = 0; i < this.medicalEditTabsValue.content.recipelDetailEvtList.length; i++) {
           for (let j = 0; j < row.memberItems.length; j++) {
-            if (row.memberItems[j].costItem.id == this.medicalEditTabsValue.content.recipelDetailEvtList[i].drugStuffId.costItem.id) {
+            if (row.memberItems[j].costItem.id === this.medicalEditTabsValue.content.recipelDetailEvtList[i].drugStuffId.costItem.id) {
               for (let m = 0; m < row.memberManagementDetails.length; m++) {
-                if (row.memberManagementDetails[m].number > row.memberManagementDetails[m].useNumber && row.memberManagementDetails[m].memberItem.id == row.memberItems[j].id) {
+                if (row.memberManagementDetails[m].number > row.memberManagementDetails[m].useNumber && row.memberManagementDetails[m].memberItem.id === row.memberItems[j].id) {
                   let recipelDetailNum = this.medicalEditTabsValue.content.recipelDetailEvtList[i].total
                   let memberNum = row.memberManagementDetails[m].number - row.memberManagementDetails[m].useNumber
                   if (memberNum >= recipelDetailNum) {
@@ -2254,19 +2219,17 @@
           return;
         }
         this.medicalClickTabsValue = this.medicalEditTabsValue;
-        console.log(this.medicalEditTabsValue);
         let num = 0
         for (let i = 0; i < this.medicalEditTabs.length; i++) {
-          if (this.medicalEditTabs[i].key == this.medicalEditTabsValue.key) {
+          if (this.medicalEditTabs[i].key === this.medicalEditTabsValue.key) {
             num = i
           }
         }
         this.AlreadyPatientDescriptionsQuery(this.medicalClickTabsValue.content, num)
       },
       AlreadyPatientDescriptionsQuery(item, index) {
-        console.log(item, "点击处方");
         this.medicalEditTabs.forEach((element) => {
-          if (element.content.uuid == item.uuid) {
+          if (element.content.uuid === item.uuid) {
             this.medicalEditTabsValue = element;
             this.medicalClickTabsValue = this.medicalEditTabsValue;
           }
@@ -2296,10 +2259,10 @@
         this.medicalEditTabsValue = {}
         this.medicalClickTabsValue = {}
         this.payState = false
-        if (this.chargeStatusActiveName == "1") {
+        if (this.chargeStatusActiveName === "1") {
           this.selectPatientList();
           this.allMember = []
-        } else if (this.chargeStatusActiveName == "2") {
+        } else if (this.chargeStatusActiveName === "2") {
           this.allMember = []
           this.getIsPayPatientList();
         } else {
@@ -2308,7 +2271,7 @@
         }
       },
       print() {
-        if (this.prescriptionMainList.length == 0) {
+        if (this.prescriptionMainList.length === 0) {
           this.$message.error("未选择数据");
           return;
         }
@@ -2341,33 +2304,22 @@
         this.initOptions()
       },
       initOptions() {
-        this.getOption("1014474470772899981")
-        this.getOption("1014474470772899985")
-        this.getOption("1014474470772900058")
-        this.getOption("1014474470772899990")
-      },
-      getOption(optionId) {
-        let model = {
-          params: [{
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: optionId,
-          },],
-        };
-        listDictItemAll(model).then((responseData) => {
-          if (optionId == "1014474470772899981") {
-            this.ChineseUseOption = responseData.data;
-            if (this.isSpecial) {
-              this.ChineseUseOption = this.ChineseUseOption.filter(
-                (item) => item.name == "水冲"
-              );
-            }
-          } else if (optionId == "1014474470772899985")
-            this.ChineseTimeOption = responseData.data;
-          else if (optionId == "1014474470772899990")
-            this.FrequencyOption = responseData.data;
-          else if (optionId == "1014474470772900058")
-            this.ChineseUseTimeOption = responseData.data;
+        getDictItemsByCode(DICT_CODE.CHINESE_MEDICINE_RECIPEL_USE).then((data) => {
+          this.ChineseUseOption = data;
+          if (this.isSpecial) {
+            this.ChineseUseOption = this.ChineseUseOption.filter(
+              (item) => item.name === "水冲"
+            );
+          }
+        });
+        getDictItemsByCode(DICT_CODE.CHINESE_MEDICINE_RECIPEL_FREQUENCY).then((data) => {
+          this.ChineseTimeOption = data;
+        });
+        getDictItemsByCode(DICT_CODE.CHINESE_MEDICINE_RECIPEL_TAKE_FREQUENCY).then((data) => {
+          this.FrequencyOption = data;
+        });
+        getDictItemsByCode(DICT_CODE.CHINESE_MEDICINE_USE).then((data) => {
+          this.ChineseUseTimeOption = data;
         });
       },
       handlePatientPage(pageNum) {
@@ -2383,25 +2335,21 @@
         this.returnPayPatientList();
       },
       isPayChange(val) {
-        console.log(val);
       },
       //单独收费
       singleCharge(type) {
-        if (type == 1) {
+        if (type === 1) {
           this.IsSingleCorrect();
           this.singleForm.member = ""
-          console.log(this.medicalEditTabsValue, '其实看可能');
-          console.log(this.medicalEditTabsValue.content.recipelDetailEvtList)
           //如果单独收费时为诊疗项目，判断其项目是否存在体验项目
-          if (this.medicalEditTabsValue.type == "recipelType_3") {
+          if (this.medicalEditTabsValue.type === "recipelType_3") {
             let recipelInfoEvt = {
               recipelInfo: this.medicalEditTabsValue.content.recipelInfo,
               recipelDetailEvtList: this.medicalEditTabsValue.content.recipelDetailEvtList
             }
 
             getMember(recipelInfoEvt).then(res => {
-              if (res.code == "100") {
-                //console.log(res,'看看奇观');
+              if (res.code === 100) {
                 this.member = res.data
                 this.memberCopy = JSON.parse(JSON.stringify(res.data))
               } else {
@@ -2426,10 +2374,9 @@
         /* this.diagnosis.province = this.province;
          this.diagnosis.market = this.city;
          this.diagnosis.distinguish = this.area;*/
-        console.log("this.area" + this.area)
 
         await modifiedState(this.diagnosis).then(res => {
-          if (res.code === '100') {
+          if (res.code === 100) {
             this.addresseeDialogVisible = false
             this.$message.success("收件人信息添加成功！")
             // 发起订单锁定
@@ -2462,10 +2409,8 @@
               this.createOrder();
               // this.PatientAddressAdd()
             }
-            console.log("查询订单后返回信息"+JSON.stringify(response.data.BusData.data));
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
       },
       /*收费退费按钮点击*/
@@ -2474,11 +2419,11 @@
           this.chargeForm.amountReceived = this.hisTotalMoney.toFixed(2)
           this.chargeForm.amountReceivable = this.hisTotalMoney.toFixed(2)
         }
-        if (this.prescriptionMainList.length == 0) {
+        if (this.prescriptionMainList.length === 0) {
           this.$message.error("未选择数据");
           return;
         }
-        if (type == "1") {
+        if (type === "1") {
           if (!this.isRetail) {
             let IsOpen = this.IsChargeCorrect("0");
             if (!IsOpen) {
@@ -2495,7 +2440,7 @@
           this.singleForm.amountReceived = 0
         } else {
           if (
-            this.prescriptionMainList[0].recipelInfo.recipelType.name ==
+            this.prescriptionMainList[0].recipelInfo.recipelType.name ===
             "零售处方"
           ) {
             let IsOpen = this.IsChargeCorrect("1");
@@ -2514,30 +2459,12 @@
       },
       getPayTypeList() {
         //支付类型查询
-        let payType_search = {
-          params: [
-            {
-              columnName: "dict_type_id",
-              queryType: "=",
-              value: "1008793465990693120",
-            },
-          ],
-        };
-        // 字段对应表上filter条件
-        payType_search.params.push.apply(payType_search.params, []);
-        // 数据权限: 字典项sys_dict_item
-        this.pushDataPermissions(
-          payType_search.params,
-          this.$route.meta.routerId,
-          "4005"
-        );
-        this.payType_List.splice(0, this.payType_List.length);
-        listDictItemAll(payType_search).then((responseData) => {
-          this.payType_List = responseData.data;
+        getDictItemsByCode(DICT_CODE.PAY_TYPE).then((data) => {
+          this.payType_List = data;
         });
       },
       getPrescriptionTotalCost(data) {
-        var totalCost = 0;
+        let totalCost = 0;
         data.forEach((element) => {
           if (element.totalCost) {
             totalCost += element.totalCost;
@@ -2547,7 +2474,7 @@
       },
       /*计算当前退费处方合计*/
       getRefundTotalCost() {
-        var totalCost = 0;
+        let totalCost = 0;
         this.refundPrescriptionMainList.forEach((element) => {
           if (element.totalCost) {
             totalCost += element.totalCost;
@@ -2586,9 +2513,8 @@
         this.$nextTick(() => {
           this.$refs["patientInfoForm"].clearValidate();
         });
-        if (this.chargeStatusActiveName == "1") this.payState = true;
+        if (this.chargeStatusActiveName === "1") this.payState = true;
         this.prescriptionMainList = [];
-        console.log(this.patientInfoRow, 'ajglka');
         //根据登记信息获取病例信息
         // let medicalSearch={
         //   params: [
@@ -2609,15 +2535,13 @@
         //   order: "", // 排序
         // }
         // listMedicalRecordPage(medicalSearch).then((res)=>{
-        //   if(res.code=="100"){
-        //     console.log(res,'woailuo');
-        //     if(res.data.rows[0].westernDiagnose!=undefined){
+        //   if(res.code==="100"){
+        //     if(res.data.rows[0].westernDiagnose!==undefined){
         //         this.patientInfoForm.westernDiagnose=res.data.rows[0].westernDiagnose
         //       }else{
         //         this.patientInfoForm.westernDiagnose="无"
         //       }
-        //       console.log(res.data.rows[0].chinaDiagnose);
-        //       if(res.data.rows[0].chinaDiagnose!=undefined){
+        //       if(res.data.rows[0].chinaDiagnose!==undefined){
         //         this.patientInfoForm.chinaDiagnose=res.data.rows[0].chinaDiagnose
         //       }else{
         //         this.patientInfoForm.chinaDiagnose="无"
@@ -2629,7 +2553,7 @@
         //根据患者id获取会员信息
         if (this.patientInfoRow.patientId) {
           getByPatientId(this.patientInfoRow.patientId.id).then(res => {
-            if (res.code === '100') {
+            if (res.code === 100) {
               this.allMember = res.data
             } else {
               this.$message.error("后台数据异常请联系管理！")
@@ -2643,7 +2567,6 @@
 
         // 获取患者远程诊疗信息（已注释）
         // this.diagnosis = null
-        // console.log("akakkakakakakkakkkakakak"+this.patientInfoRow.id)
         // getRegistrationId(this.patientInfoRow.id).then(res => {
         //   if (res.data.id !== null) {
         //     // this.diagnosis = res.data;
@@ -2664,11 +2587,11 @@
       },
       //获取就诊患者的个人信息
       getPatientById(id) {
-        return this.AllPatientOption.find((item) => item.id == id);
+        return this.AllPatientOption.find((item) => item.id === id);
       },
       /*查询病人*/
       selectPatientList() {
-        var now = new Date();
+        const now = new Date();
         this.patientQueryCondition.limit = this.patientPageSize;
         this.patientQueryCondition.companyId = this.Company.id;
         /*待收费*/
@@ -2690,20 +2613,20 @@
         }
         listRegistrationPages(this.patientQueryCondition)
           .then((responseData) => {
-            if (responseData.code == 100) {
+            if (responseData.code === 100) {
               if (responseData.data.rows != null) {
                 this.patientList = responseData.data.rows.filter(
-                  (item) => item.recipeStatus != "1"
+                  (item) => item.recipeStatus !== "1"
                 );
                 let num = responseData.data.rows.length - this.patientList.length;
-                if (this.chargeStatusActiveName == "1") {
+                if (this.chargeStatusActiveName === "1") {
                   this.patientTotalCount = responseData.data.total - num;
                 } else {
                   this.isPayTotalCount = responseData.data.total - num;
                 }
               } else {
                 this.patientList = responseData.data.rows
-                if (this.chargeStatusActiveName == "1") {
+                if (this.chargeStatusActiveName === "1") {
                   this.patientTotalCount = 0;
                 } else {
                   this.isPayTotalCount = 0;
@@ -2715,13 +2638,12 @@
             }
           })
           .catch((error) => {
-            console.log(error);
             this.$message.error(error);
           });
       },
       //查询已收费列表
       getIsPayPatientList() {
-        var now = new Date();
+        const now = new Date();
         this.patientQueryCondition.limit = this.patientPageSize;
         this.patientQueryCondition.companyId = this.Company.id;
         this.isOnlyRead = true;
@@ -2742,7 +2664,7 @@
         }
         listRegistrationPages(this.patientQueryCondition)
           .then((responseData) => {
-            if (responseData.code == 100) {
+            if (responseData.code === 100) {
               this.isPayTotalCount = responseData.data.total;
               this.isPayPatientList = responseData.data.rows;
             } else {
@@ -2750,14 +2672,13 @@
             }
           })
           .catch((error) => {
-            console.log(error);
             this.$message.error(error);
           });
       },
 
       //查询已退费列表
       returnPayPatientList() {
-        var now = new Date();
+        const now = new Date();
         this.patientQueryCondition.limit = this.patientPageSize;
         this.patientQueryCondition.companyId = this.Company.id;
         this.patientQueryCondition.offset =
@@ -2779,7 +2700,7 @@
 
         listRegistrationPages(this.patientQueryCondition)
           .then((responseData) => {
-            if (responseData.code == 100) {
+            if (responseData.code === 100) {
               this.returnTotalCount = responseData.data.total;
               this.returnPatientList = responseData.data.rows;
             } else {
@@ -2787,7 +2708,6 @@
             }
           })
           .catch((error) => {
-            console.log(error);
             this.$message.error(error);
           });
       },
@@ -2796,33 +2716,33 @@
       getSaveInfo(visitId) {
         this.VisitRecordsList = [];
         allQueryMedicalRecord(visitId).then((responseData) => {
-          if (responseData.code == 100) {
-            if (this.chargeStatusActiveName != "3") {
+          if (responseData.code === 100) {
+            if (this.chargeStatusActiveName !== "3") {
               this.prescriptionMainList =
                 responseData.data.recipelInfoEvtList.filter(
-                  (item) => item.recipelInfo.status != -1
+                  (item) => item.recipelInfo.status !== -1
                 );
             } else {
               this.prescriptionMainList = responseData.data.recipelInfoEvtList;
             }
-            if (this.chargeStatusActiveName == "1") {
+            if (this.chargeStatusActiveName === "1") {
               this.prescriptionMainList = this.prescriptionMainList.filter(
-                (item) => item.recipelInfo.chargeStatus == 0
+                (item) => item.recipelInfo.chargeStatus === 0
               );
-            } else if (this.chargeStatusActiveName == "2") {
+            } else if (this.chargeStatusActiveName === "2") {
               this.prescriptionMainList = this.prescriptionMainList.filter(
-                (item) => item.recipelInfo.chargeStatus == 1
+                (item) => item.recipelInfo.chargeStatus === 1
               );
             } else {
               this.prescriptionMainList = this.prescriptionMainList.filter(
-                (item) => item.recipelInfo.chargeStatus == -1
+                (item) => item.recipelInfo.chargeStatus === -1
               );
             }
             this.prescriptionMainList.forEach((item) => {
               item.isExtra = [];
               item.notExtra = [];
               item.recipelDetailEvtList.forEach((items) => {
-                if (items.isExtra == 1) {
+                if (items.isExtra === 1) {
                   item.isExtra.push(items);
                 } else {
                   item.notExtra.push(items);
@@ -2845,30 +2765,23 @@
             this.totalMoney = 0;
             let money = 0;
             this.prescriptionMainList.forEach((item) => {
-              console.log(item.recipelInfo.fee, "qian");
               money += item.recipelInfo.fee;
-              console.log("处方金额 = " +money)
             });
             this.totalMoney = money.toFixed(2);
             this.createMedicalEditTab(this.prescriptionMainList);
-            console.log(this.prescriptionMainList, "zheme");
-            console.log(this.diagnosis, "少时诵诗书");
-            console.log(this.totalMoney, "少时诵是诗书");
 
           }
         });
       },
       createMedicalEditTab(recipelInfoEvtList) {
-        console.log("---------recipelInfoEvtList------------");
-        console.log(recipelInfoEvtList);
         this.medicalEditTabs = [];
-        if (recipelInfoEvtList == undefined || recipelInfoEvtList == null) {
+        if (recipelInfoEvtList === undefined || recipelInfoEvtList == null) {
           return;
         }
 
         recipelInfoEvtList.forEach((element) => {
           element.uuid = element.recipelInfo.id;
-          if (element.recipelInfo.recipelType.value == "recipelType_2") {
+          if (element.recipelInfo.recipelType.value === "recipelType_2") {
             let infusion = {
               defaultNumber: 1,//默认组号
               infusionProject: [[]],
@@ -2899,7 +2812,7 @@
             for (let i = 0; i < element.recipelDetailEvtList.length; i++) {
 
 
-              if (element.recipelDetailEvtList[i].isExtra != 1) {
+              if (element.recipelDetailEvtList[i].isExtra !== 1) {
 
                 infusion.infusionProject[element.recipelDetailEvtList[i].infuseGroup - 1].push(element.recipelDetailEvtList[i])
                 infusion.drippingSpeed[element.recipelDetailEvtList[i].infuseGroup - 1] = element.recipelDetailEvtList[i].drippingSpeed
@@ -2948,15 +2861,14 @@
           ],
         };
         listPatientAll(searchModel).then((responseData) => {
-          if (responseData.code == 100) {
-            console.log(responseData.data, "kankan");
+          if (responseData.code === 100) {
             // responseData.data.filter(item=>)
             this.AllPatientOption = responseData.data;
           }
         });
       },
       clinicDateFormatter(row, column) {
-        var date = new Date(row[column.property]);
+        const date = new Date(row[column.property]);
         return (
           this.padleftZero(date.getMonth() + 1) +
           "/" +
@@ -2991,9 +2903,8 @@
           ],
         };
 
-        var pattern2 = new RegExp("[A-Za-z]+");
+        const pattern2 = new RegExp("[A-Za-z]+");
         if (pattern2.test(this.SearchDrugName)) {
-          // console.log(this.SearchWesternInput,'字符');
           SearchModel.params[1].value = this.SearchDrugName.toUpperCase();
           SearchModel.params[1].columnName = "pinyin_code";
         } else {
@@ -3001,7 +2912,7 @@
           SearchModel.params[1].columnName = "goods_name";
         }
         listAllStock(SearchModel).then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             responseData.data.forEach((element) => {
               let isUnpackSell = element.isUnpackSell; //允许拆零销售
               let stockNumber = element.stockNumber; //库存数量
@@ -3077,7 +2988,6 @@
             allFee: 0,
             ...JSON.parse(JSON.stringify(row)),
           });
-          console.log(this.RetailTable);
         }
       },
 
@@ -3086,22 +2996,21 @@
       },
 
       chengeDrugTypeItems(sel) {
-        console.log(sel);
       },
       //根据是否零售与新增还是查看获取单位
       GetDrugUnit(index, row) {
         if (row.preparationUnit) {
-          if (row.isUnpackSell == "1") {
+          if (row.isUnpackSell === "1") {
             return row.preparationUnit.name;
-          } else if (row.type.name == "中药") {
+          } else if (row.type.name === "中药") {
             return row.dosisUnit.name;
           } else {
             return row.pack.name;
           }
         } else {
           if (
-            row.drugStuffId.drug.isUnpackSell == "1" ||
-            row.drugStuffId.drug.type.name == "中药"
+            row.drugStuffId.drug.isUnpackSell === "1" ||
+            row.drugStuffId.drug.type.name === "中药"
           ) {
             return row.drugStuffId.drug.preparationUnit.name;
           } else {
@@ -3111,7 +3020,7 @@
       },
 
       GetAllDrugFee(index, row) {
-        if (row.isUnpackSell == "1" && row.type.name != "中药") {
+        if (row.isUnpackSell === "1" && row.type.name !== "中药") {
           row.allFee = row.total * row.retailPrice;
         } else {
           row.allFee = row.total * row.price;
@@ -3128,15 +3037,15 @@
 
       GetStatusColor(status) {
         return {
-          redStateStyle: status == "2",
-          greenStateStyle: status == "1",
+          redStateStyle: status === "2",
+          greenStateStyle: status === "1",
         };
       },
       GetPrescriptionStatus(status) {
         let returnStatus;
-        if (status == "0") returnStatus = "待收费";
-        else if (status == "1") returnStatus = "已收费";
-        else if (status == "-1") returnStatus = "已退费";
+        if (status === "0") returnStatus = "待收费";
+        else if (status === "1") returnStatus = "已收费";
+        else if (status === "-1") returnStatus = "已退费";
         return returnStatus;
       },
 
@@ -3144,13 +3053,11 @@
       GetAmountReceived() {
         this.chargeForm.amountReceived = null;
         let discount = this.chargeForm.discount;
-        if (this.chargeForm.discount == 0) {
+        if (this.chargeForm.discount === 0) {
           discount = 10;
         }
 
-        console.log("所有处方应收费用" + this.medicalEditTabsValue.content.recipelDetailEvtList.length)
         for (let i = 0; i < this.medicalEditTabsValue.content.recipelDetailEvtList.length; i++) {
-          console.log("i == " + Number((this.medicalEditTabsValue.content.recipelDetailEvtList[i].allFee * discount * 0.1).toFixed(2)))
           this.chargeForm.amountReceived += Number((this.medicalEditTabsValue.content.recipelDetailEvtList[i].allFee * discount * 0.1).toFixed(2))
         }
         this.signleAmountOfRemission = Number(this.chargeForm.amountReceivable - this.chargeForm.amountReceived).toFixed(2)
@@ -3166,12 +3073,10 @@
       GetSingleAmountReceived() {
         this.singleForm.amountReceived = null;
         let discount = this.singleForm.discount;
-        if (this.singleForm.discount == 0) {
+        if (this.singleForm.discount === 0) {
           discount = 10;
         }
-        console.log("单处方应收费用" + this.medicalEditTabsValue.content.recipelDetailEvtList.length)
         for (let i = 0; i < this.medicalEditTabsValue.content.recipelDetailEvtList.length; i++) {
-          console.log("i == " + Number((this.medicalEditTabsValue.content.recipelDetailEvtList[i].allFee * discount * 0.1).toFixed(2)))
           this.singleForm.amountReceived += Number((this.medicalEditTabsValue.content.recipelDetailEvtList[i].allFee * discount * 0.1).toFixed(2))
         }
         this.signleAmountOfRemission = (this.singleForm.amountReceivable - this.singleForm.amountReceived).toFixed(2)
@@ -3191,56 +3096,56 @@
         let allFee = 0;
         this.prescriptionMainList.map((item) => {
           if (
-            item.recipelInfo.recipelType.name == "西药处方" &&
+            item.recipelInfo.recipelType.name === "西药处方" &&
             this.WesternCheck
           ) {
-            if (item.recipelInfo.isPay != type) {
+            if (item.recipelInfo.isPay !== type) {
               IsSure = false;
             } else {
               allFee += item.recipelInfo.fee;
             }
           } else if (
-            item.recipelInfo.recipelType.name == "中药处方" &&
+            item.recipelInfo.recipelType.name === "中药处方" &&
             this.ChineseCheck
           ) {
-            if (item.recipelInfo.isPay != type) {
+            if (item.recipelInfo.isPay !== type) {
               IsSure = false;
             } else {
               allFee += item.recipelInfo.fee;
             }
           } else if (
-            item.recipelInfo.recipelType.name == "输液处方" &&
+            item.recipelInfo.recipelType.name === "输液处方" &&
             this.InfusionCheck
           ) {
-            if (item.recipelInfo.isPay != type) {
+            if (item.recipelInfo.isPay !== type) {
               IsSure = false;
             } else {
               allFee += item.recipelInfo.fee;
             }
           } else if (
-            item.recipelInfo.recipelType.name == "诊疗项目" &&
+            item.recipelInfo.recipelType.name === "诊疗项目" &&
             this.CostItemCheck
           ) {
-            if (item.recipelInfo.isPay != type) {
+            if (item.recipelInfo.isPay !== type) {
               IsSure = false;
             } else {
               allFee += item.recipelInfo.fee;
             }
           } else if (
-            item.recipelInfo.recipelType.name == "附加费" &&
+            item.recipelInfo.recipelType.name === "附加费" &&
             this.SurchargeCheck
           ) {
-            if (item.recipelInfo.isPay != type) {
+            if (item.recipelInfo.isPay !== type) {
               IsSure = false;
             } else {
               allFee += item.recipelInfo.fee;
             }
-          } else if (item.recipelInfo.recipelType.name == "零售处方") {
-            if (type == 0) {
+          } else if (item.recipelInfo.recipelType.name === "零售处方") {
+            if (type === 0) {
               IsSure = false;
             } else if (
-              type == 1 &&
-              this.prescriptionMainList[0].recipelInfo.isPay == "2"
+              type === 1 &&
+              this.prescriptionMainList[0].recipelInfo.isPay === "2"
             ) {
               IsSure = false;
             }
@@ -3256,7 +3161,7 @@
       GetRetailRecipelDetailEvtList(type) {
         let recipelDetailEvtList = [];
         let allFee = 0;
-        if (this.patientInfoForm.gender.value == "gender_0") {
+        if (this.patientInfoForm.gender.value === "gender_0") {
           this.patientInfoForm.gender.name = "男";
         } else {
           this.patientInfoForm.gender.name = "女";
@@ -3285,7 +3190,7 @@
             retailType: retailType,
           });
         });
-        if (type == 1) {
+        if (type === 1) {
           this.chargeForm.amountReceivable = allFee.toFixed(2);
           this.chargeForm.amountReceived = allFee.toFixed(2);
         }
@@ -3414,7 +3319,6 @@
           ],
           chargeStatus: "2",
         };
-        console.log(model);
         this.saveTollTollInfo(model);
       },
       submit() {
@@ -3422,7 +3326,6 @@
           if (valid) {
             this.chargeBtn(1);
           } else {
-            console.log('error submit!!');
             return false;
           }
         });
@@ -3432,7 +3335,6 @@
           name: "",
           value: this.singleForm.paymentType,
         };
-        console.log(this.singleForm.paymentType + "收费收费收费收费收费收费收费收费")
         switch (this.singleForm.paymentType) {
           case "payType_0":
             paymentType.name = "现金";
@@ -3482,7 +3384,7 @@
             id: this.medicalEditTabsValue.content.recipelInfo.id,
           },
         });
-        if (type == 1) {
+        if (type === 1) {
           tollInfo.amountStatus = {
             name: "已收费",
             value: "amountStatus_1",
@@ -3503,7 +3405,6 @@
           memberManagement: this.saveMember
         };
 
-        // console.log(this.medicalEditTabsValue.content,'封杀iOS发哈夫');
         //return
         this.saveTollTollInfo(model);
       },
@@ -3561,8 +3462,8 @@
         this.prescriptionMainList.map((item) => {
           switch (item.recipelInfo.recipelType.name) {
             case "中药处方":
-              if (type == 1 && item.recipelInfo.isPay == 1) IsAll += 1;
-              else if (type == 2 && item.recipelInfo.isPay == 2) IsAll += 1;
+              if (type === 1 && item.recipelInfo.isPay === 1) IsAll += 1;
+              else if (type === 2 && item.recipelInfo.isPay === 2) IsAll += 1;
               if (this.ChineseCheck) {
                 IsAll += 1;
                 recipelInfos.push({
@@ -3573,8 +3474,8 @@
               }
               break;
             case "西药处方":
-              if (type == 1 && item.recipelInfo.isPay == 1) IsAll += 1;
-              else if (type == 2 && item.recipelInfo.isPay == 2) IsAll += 1;
+              if (type === 1 && item.recipelInfo.isPay === 1) IsAll += 1;
+              else if (type === 2 && item.recipelInfo.isPay === 2) IsAll += 1;
               if (this.WesternCheck) {
                 IsAll += 1;
                 recipelInfos.push({
@@ -3585,8 +3486,8 @@
               }
               break;
             case "输液处方":
-              if (type == 1 && item.recipelInfo.isPay == 1) IsAll += 1;
-              else if (type == 2 && item.recipelInfo.isPay == 2) IsAll += 1;
+              if (type === 1 && item.recipelInfo.isPay === 1) IsAll += 1;
+              else if (type === 2 && item.recipelInfo.isPay === 2) IsAll += 1;
               if (this.InfusionCheck) {
                 IsAll += 1;
                 recipelInfos.push({
@@ -3597,8 +3498,8 @@
               }
               break;
             case "诊疗项目":
-              if (type == 1 && item.recipelInfo.isPay == 1) IsAll += 1;
-              else if (type == 2 && item.recipelInfo.isPay == 2) IsAll += 1;
+              if (type === 1 && item.recipelInfo.isPay === 1) IsAll += 1;
+              else if (type === 2 && item.recipelInfo.isPay === 2) IsAll += 1;
               if (this.CostItemCheck) {
                 IsAll += 1;
                 recipelInfos.push({
@@ -3609,8 +3510,8 @@
               }
               break;
             case "附加费":
-              if (type == 1 && item.recipelInfo.isPay == 1) IsAll += 1;
-              else if (type == 2 && item.recipelInfo.isPay == 2) IsAll += 1;
+              if (type === 1 && item.recipelInfo.isPay === 1) IsAll += 1;
+              else if (type === 2 && item.recipelInfo.isPay === 2) IsAll += 1;
               if (this.SurchargeCheck) {
                 IsAll += 1;
                 recipelInfos.push({
@@ -3626,8 +3527,8 @@
         });
 
         let chargeStatus = "0";
-        if (IsAll == this.prescriptionMainList.length) {
-          if (type == 1) {
+        if (IsAll === this.prescriptionMainList.length) {
+          if (type === 1) {
             tollInfo.amountStatus = {
               name: "已收费",
               value: "amountStatus_1",
@@ -3641,7 +3542,7 @@
             chargeStatus = "4";
           }
         } else {
-          if (type == 1) {
+          if (type === 1) {
             tollInfo.amountStatus = {
               name: "已收费",
               value: "amountStatus_1",
@@ -3656,9 +3557,9 @@
           }
         }
         let state = false
-        if (type == 2) {
+        if (type === 2) {
           this.prescriptionMainList.forEach(item => {
-            if (item.recipelInfo.dispensionStatus == 1) {
+            if (item.recipelInfo.dispensionStatus === 1) {
               state = true
             }
           })
@@ -3679,10 +3580,9 @@
       //收费
       saveTollTollInfo(model) {
         let type = "null";
-        console.log(model, '保存会员体验卡');
         if (this.diagnosis !== null){
           /*modifiedState(this.diagnosis).then(res => {
-            if (res.code === '100') {
+            if (res.code === 100) {
               this.$message.success("收费成功！")
             } else {
               this.$message.error("后台数据异常请联系管理员！")
@@ -3690,7 +3590,7 @@
           }).catch()*/
 
           chargeState(model).then(res => {
-            if (res.code === '100') {
+            if (res.code === 100) {
               this.$message.success("收费成功！")
               if (this.diagnosis != null){
                 // 查询远程诊疗订单
@@ -3706,7 +3606,7 @@
                 this.diagnosis.orderNo = this.orderForm.OrderNo // 订单号
                 this.diagnosis.payFee = this.chargeForm.amountReceivable // 支付费用
                 modifiedState(this.diagnosis).then(responseData => {
-                  if (responseData.code == 100) {
+                  if (responseData.code === 100) {
                     this.reset()
                   } else {
                     this.reset()
@@ -3727,10 +3627,9 @@
           // return
           saveTollTollInfo(model, type)
             .then((responseData) => {
-              if (responseData.code == 100) {
+              if (responseData.code === 100) {
                 this.$message.success("操作成功！");
                 this.selectPatientList();
-                console.log('在哈克发撒看风景');
                 this.search();
                 this.payState = false;
                 this.chargeDialogVisible = false;
@@ -3751,7 +3650,7 @@
                   paymentType: "payType_0",
                   meno: "",
                 }
-              } else if (responseData.code == '50001') {
+              } else if (responseData.code === '50001') {
                 this.$message.warning(responseData.msg)
               } else {
                 this.$message.error(responseData.msg);
@@ -3774,7 +3673,7 @@
 
 
 <style scoped>
-  /deep/ .el-aside {
+  ::v-deep .el-aside {
     /* background-color: #e6d6d3; */
     color: #333;
     /* text-align: center; */
@@ -3784,7 +3683,7 @@
     height: calc(100vh - 118px);
   }
 
-  /deep/ .el-main {
+  ::v-deep .el-main {
     /* background-color: #E9EEF3; */
     color: #333;
     /* text-align: center; */
@@ -3793,27 +3692,27 @@
     height: calc(100vh - 118px);
   }
 
-  /deep/ .el-card__header {
+  ::v-deep .el-card__header {
     padding: 12px 20px;
   }
 
-  /deep/ .el-form-item--mini {
+  ::v-deep .el-form-item--mini {
     margin-bottom: 8px !important;
   }
 
-  /deep/ .main-card {
+  ::v-deep .main-card {
     margin-bottom: 10px;
   }
 
-  /deep/ .main-card > .el-card__header {
+  ::v-deep .main-card > .el-card__header {
     padding: 0px 20px;
   }
 
-  /deep/ .main-card > .el-card__body {
+  ::v-deep .main-card > .el-card__body {
     font-size: 14px;
   }
 
-  /deep/ .sub-card > .el-card__body {
+  ::v-deep .sub-card > .el-card__body {
     padding: 12px 20px;
     font-size: 18px;
     font-weight: bold;
@@ -3821,30 +3720,30 @@
     line-height: 28px;
   }
 
-  /deep/ .chinese-medicine-card > .el-card__header {
+  ::v-deep .chinese-medicine-card > .el-card__header {
     padding: 0px 20px;
   }
 
-  /deep/ .el-divider--horizontal {
+  ::v-deep .el-divider--horizontal {
     margin: 10px 0 10px 0px;
   }
 
-  /deep/ .el-tabs__header {
+  ::v-deep .el-tabs__header {
     margin: 0 0 0;
   }
 
-  /deep/ .el-collapse-item__content {
+  ::v-deep .el-collapse-item__content {
     padding-bottom: 0;
   }
 
-  /deep/ .el-divider--vertical {
+  ::v-deep .el-divider--vertical {
     width: 5px;
     height: 2em;
     margin-left: 0;
     background-color: #409eff;
   }
 
-  /deep/ .el-input-group__append {
+  ::v-deep .el-input-group__append {
     padding: 4px;
   }
 
@@ -4017,17 +3916,17 @@
     transform: scale(0.5);
   }
 
-  /deep/ .el-dialog__body {
+  ::v-deep .el-dialog__body {
     padding: 0 7px;
     margin: 0
   }
 
-  /deep/ .el-form-item__label {
+  ::v-deep .el-form-item__label {
     text-align: left;
 
   }
 
-  /deep/ .el-dialog .el-row {
+  ::v-deep .el-dialog .el-row {
     padding: 0 10px;
   }
 

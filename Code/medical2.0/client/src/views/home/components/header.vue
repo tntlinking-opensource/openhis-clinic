@@ -76,7 +76,7 @@
               v-for="(module, index) in handleRouters"
               v-show="
                 index < limitNumber &&
-                (module.parentId == '' || module.parentId == '0')
+                (module.parentId === '' || module.parentId === '0')
               "
               :key="module.id"
               :index="module.id"
@@ -146,7 +146,7 @@
         <div class="header-function" style="max-width: 400px" ref="headerRight">
           <div
             class="company-name"
-            v-show="currentUser.id != 1000 && currentUser.id != 1001"
+            v-show="currentUser.id !== 1000 && currentUser.id !== 1001"
           >
             <el-dropdown
               @command="changeCompany"
@@ -277,7 +277,7 @@
               <el-dropdown-item command="layoutSet"
               ><svg-icon iconClass="layout" /> 布局设置</el-dropdown-item
               >
-              <el-dropdown-item command="sysSet" v-if="currentUser.id == 1000"
+              <el-dropdown-item command="sysSet" v-if="currentUser.id === 1000"
               ><svg-icon iconClass="sysSet" /> 系统设置</el-dropdown-item
               >
               <el-dropdown-item command="logout" divided
@@ -347,43 +347,42 @@ export default {
       cachedHandleRouters: [],
     };
   },
-  mounted: function () {
-    const that = this;
-    if (that.routers.length <= 0) {
-      that.$alert("该账号暂未分配权限，请联系管理员！", "", {
+  mounted() {
+    if (this.routers.length <= 0) {
+      this.$alert("该账号暂未分配权限，请联系管理员！", "", {
         confirmButtonText: "知道了",
         type: "warning",
         callback: (action) => {},
       });
     }
-    getUserById(that.currentUser.id).then(res=>{
-      if(res.code == 100){
-        if(res.data.userExt&&res.data.userExt.photoId){
+    getUserById(this.currentUser.id).then(res => {
+      if (res.code === 100) {
+        if (res.data.userExt && res.data.userExt.photoId) {
           getPhotoById(res.data.userExt.photoId).then((responseData) => {
             const src = `data:image/png;base64,${responseData}`;
-            that.userHeader = src;
+            this.userHeader = src;
           })
         }
       }
     })
-    that.setLimitNumber();
-    that.getUserIsIndate();
+    this.setLimitNumber();
+    this.getUserIsIndate();
   },
   watch: {
-    "$store.state.notices.noticeTotal": function (val) {
+    "$store.state.notices.noticeTotal"(val) {
       this.noticeTotal = val;
     },
-    "$store.state.notices.drugIndateWarningTotal":function (val) {
+    "$store.state.notices.drugIndateWarningTotal"(val) {
       this.drugIndateWarningTotal = val+this.$store.state.notices.drugInventoryWarningTotal;
       this.$forceUpdate()
     },
-    "$store.state.notices.drugInventoryWarningTotal":function (val){
+    "$store.state.notices.drugInventoryWarningTotal"(val){
       this.drugIndateWarningTotal = val+this.$store.state.notices.drugIndateWarningTotal
     },
-    "$store.state.notices.stuffIndateWarningTotal":function(val){
+    "$store.state.notices.stuffIndateWarningTotal"(val){
       this.stuffIndateWarningTotal = val+this.$store.state.notices.stuffInventoryWarningTotal
     },
-    "$store.state.notices.stuffInventoryWarningTotal":function(val){
+    "$store.state.notices.stuffInventoryWarningTotal"(val){
       this.stuffIndateWarningTotal = val+this.$store.state.notices.stuffIndateWarningTotal
     },
     "settings.size"(val, old) {
@@ -415,7 +414,7 @@ export default {
       return this.updateCachedRouters();
     },
     isLight() {
-      return function (colorType) {
+      return (colorType) => {
         return isLightOrDark(this.settings[colorType]);
       };
     },
@@ -437,11 +436,11 @@ export default {
         ? this.cachedHandleRouters
         : this.handleRouters;
 
-      if (route.meta.family && route.meta.parentId != 0) {
+      if (route.meta.family && route.meta.parentId !== 0) {
         this.getMenus(route.meta.family[0]);
         return route.meta.family[0];
       } else {
-        if (route.path == "/") {
+        if (route.path === "/") {
           this.$router.push({ path: "/homepage" });
         }
         if (!this.menus.topMenuId) {
@@ -462,7 +461,7 @@ export default {
     updateCachedRouters() {
       let routers = [];
       this.routers.forEach((item, index) => {
-        if (!item.code && item.parentId == 0) {
+        if (!item.code && (item.parentId === '0' || item.parentId === '')) {
           routers.push(item);
         }
       });
@@ -474,7 +473,7 @@ export default {
     getChildRouters(parentId) {
       let childRouters = [];
       this.routers.forEach((item) => {
-        if (item.parentId == parentId && item.code) {
+        if (item.parentId === parentId && item.code) {
           childRouters.push(item);
         }
       });
@@ -491,9 +490,7 @@ export default {
       this.$refs.menuUl && this.$refs.menuUl.updatePopper();
     },
     getUserIsIndate(){
-      console.log(currentUser.id);
       let router = JSON.parse(sessionStorage.getItem("routers"));
-      console.log(router);
       let flags = false;
       router.forEach((item)=>{
         if(item.code==='stock/warning'){
@@ -502,8 +499,8 @@ export default {
       });
       if(flags){
         getUserIndateWarning(currentUser.id).then((res)=>{
-          if(res.code==100){
-            if(res.data!=null&&res.data!=undefined){
+          if(res.code===100){
+            if(res.data!=null&&res.data!==undefined){
               this.drugIndateWarning=true;
             }else{
               this.drugIndateWarning = false;
@@ -534,7 +531,7 @@ export default {
         id
       )
         .then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.handleLoginInfo(responseData.data);
           } else {
             this.isError = true;
@@ -834,7 +831,7 @@ export default {
         display: flex;
         height: 100%;
       }
-      /deep/ .el-popover__reference-wrapper {
+      ::v-deep .el-popover__reference-wrapper {
         display: flex;
         align-items: center;
       }
@@ -853,7 +850,7 @@ export default {
         width: 30px;
         margin-left: 10px;
         position: relative;
-        /deep/ .el-icon-bell {
+        ::v-deep .el-icon-bell {
           font-size: 18px !important;
         }
       }
@@ -910,7 +907,7 @@ export default {
       border-bottom: 0;
       width: 100%;
     }
-    /deep/ .el-menu--horizontal {
+    ::v-deep .el-menu--horizontal {
       // 一级submenu标题样式
       .el-submenu {
         height: 45px !important;
@@ -1012,7 +1009,7 @@ export default {
     }
 
     // popper-class 样式
-    /deep/ .top-submenu {
+    ::v-deep .top-submenu {
       background-color: #fff !important;
 
       .el-menu-item {
@@ -1031,7 +1028,7 @@ export default {
     }
 
     // 关键：确保 popper-class 样式生效
-    /deep/ .top-submenu {
+    ::v-deep .top-submenu {
 
 
       .el-menu-item {
@@ -1075,7 +1072,7 @@ export default {
   }
 }
 // 自定义子菜单弹出层样式 - 提升优先级
-/deep/ .top-submenu {
+::v-deep .top-submenu {
   background-color: #fff !important;
 
   .el-menu-item {
@@ -1093,7 +1090,7 @@ export default {
   }
 }
 // 下拉菜单选项悬浮样式
-/deep/ .el-dropdown-menu__item:not(.is-disabled) {
+::v-deep .el-dropdown-menu__item:not(.is-disabled) {
   &:hover {
     color: #1890ff !important;
     .svg-icon {
@@ -1103,7 +1100,7 @@ export default {
   }
 }
 // 强制覆盖Element UI默认的子菜单样式（关键修复）
-/deep/ .el-menu--popup {
+::v-deep .el-menu--popup {
   .el-menu-item {
     &:hover {
       color: #1890ff !important;

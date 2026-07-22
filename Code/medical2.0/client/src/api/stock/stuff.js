@@ -1,24 +1,26 @@
-import request from "@/utils/request";
+import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getStuffById = id =>
-  request({
-    url: "/stock/stuff/" + id,
-    method: "get"
-  });
+const baseApi = createCrudApi('/stock/stuff')
 
-export const listStuffPage = search =>
-  request({
-    url: "/stock/stuff/list",
-    method: "post",
-    data: search
-  });
+// 标准CRUD接口
+export const getStuffById = baseApi.getById
+export const listStuffPage = baseApi.listPage
+export const listStuffAll = baseApi.listAll
+export const saveStuff = baseApi.save
+export const deleteStuff = baseApi.delete
+export const bulkInsertStuff = baseApi.bulkInsert
+export const bulkUpdateStuff = baseApi.bulkUpdate
+export const bulkDeleteStuff = baseApi.bulkDelete
 
+// 自定义接口
 export const listSyncStuffPage = search =>
   request({
     url: "/stock/stuff/listByCompany",
     method: "post",
     data: search
   });
+
 // 获取上级租户材料列表
 export const listParentStuffPage = search =>
   request({
@@ -26,7 +28,8 @@ export const listParentStuffPage = search =>
     method: "post",
     data: search
   });
-  // 获取院版材料列表
+
+// 获取院版材料列表
 export const listInstitutionStuffPage = search =>
   request({
     url: "/hosdata/HosCollectData/getHosMaterials",
@@ -57,53 +60,11 @@ export const listDrug = search =>
     data: search
   });
 
-export const listStuffAll = search =>
-  request({
-    url: "/stock/stuff/listAll",
-    method: "post",
-    data: search
-  });
-
 export const inventory = search =>
   request({
     url: "/stock/stuff/inventory",
     method: "post",
     data: search
-  });
-
-export const saveStuff = stuff =>
-  request({
-    url: "/stock/stuff/save",
-    method: "post",
-    data: stuff
-  });
-
-export const deleteStuff = stuff =>
-  request({
-    url: "/stock/stuff/delete",
-    method: "post",
-    data: stuff
-  });
-
-export const bulkInsertStuff = stuffs =>
-  request({
-    url: "/stock/stuff/bulkInsert",
-    method: "post",
-    data: stuffs
-  });
-
-export const bulkUpdateStuff = stuffs =>
-  request({
-    url: "/stock/stuff/bulkUpdate",
-    method: "post",
-    data: stuffs
-  });
-
-export const bulkDeleteStuff = stuffs =>
-  request({
-    url: "/stock/stuff/bulkDelete",
-    method: "post",
-    data: stuffs
   });
 
 export const listStuffPageForMedical = search =>
@@ -134,7 +95,7 @@ export const uploadExcel = formData =>
     data: formData
   });
 
-  // 院版发药列表
+// 院版发药列表
 export const listInstitutionDispensingPage = search =>
   request({
     url: "/hosdata/HosDepartmentStorage/getHosDrugsStorage",
@@ -142,12 +103,10 @@ export const listInstitutionDispensingPage = search =>
     data: search
   });
 
-  // 院版发药同步
+// 院版发药同步
 export const syncInstitutionDispensing = search =>
   request({
     url: "/hosdata/HosDepartmentStorage/auditHosDrugsStorage",
     method: "post",
     data: search
   });
-
-  // 院版发药同步

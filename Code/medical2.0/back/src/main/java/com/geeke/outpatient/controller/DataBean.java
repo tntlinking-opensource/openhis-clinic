@@ -3,8 +3,10 @@ package com.geeke.outpatient.controller;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.geeke.common.constants.BizConstants;
 import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
+import com.geeke.common.data.SearchParamsBuilder;
 import com.geeke.outpatient.dao.MedicalRecordDao;
 import com.geeke.outpatient.dao.RecipelDetailDao;
 import com.geeke.outpatient.dao.RegistrationDao;
@@ -24,10 +26,8 @@ import com.geeke.utils.DateUtils;
 import com.geeke.utils.StringUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import sun.java2d.pipe.OutlineTextRenderer;
 
 import javax.annotation.Resource;
 import java.io.UnsupportedEncodingException;
@@ -47,7 +47,28 @@ public class DataBean {
 
     private static final String REGISTRATION_REMARK = "温馨提示：\n此凭条不具备报销功能，请妥善保管好你的缴费凭条，就诊，退费时请出示该凭条。";
 
-    private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
+    /**
+     * 支付方式显示名称映射
+     */
+    private static final java.util.Map<String, String> PAY_TYPE_DISPLAY = new java.util.HashMap<>();
+    static {
+        PAY_TYPE_DISPLAY.put(BizConstants.PAY_TYPE_CASH, "现金支付");
+        PAY_TYPE_DISPLAY.put(BizConstants.PAY_TYPE_ALIPAY, "支付宝支付");
+        PAY_TYPE_DISPLAY.put(BizConstants.PAY_TYPE_WECHAT, "微信支付");
+        PAY_TYPE_DISPLAY.put(BizConstants.PAY_TYPE_BANK_CARD, "银行卡支付");
+        PAY_TYPE_DISPLAY.put(BizConstants.PAY_TYPE_MEDICAL, "医保支付");
+    }
+
+    /**
+     * 获取支付方式显示名称
+     * @param payTypeValue 支付方式字典值
+     * @return 显示名称，未知时返回空字符串
+     */
+    private static String getPayTypeDisplayName(String payTypeValue) {
+        return PAY_TYPE_DISPLAY.getOrDefault(payTypeValue, "");
+    }
 
     @Autowired
     private RegistrationService registrationService;
@@ -94,8 +115,9 @@ public class DataBean {
         //处方|发药 0|1
         String type = (String) parameters.get("type");
         RecipelInfo recipelInfo = recipelInfoService.get(recipelInfoId);
-        List<Parameter> parameters2 = new ArrayList<>();
-        parameters2.add(new Parameter("registration_id", "=", recipelInfo.getRegistration().getId()));
+        List<Parameter> parameters2 = SearchParamsBuilder.create()
+                .eq("registration_id", recipelInfo.getRegistration().getId())
+                .build();
         PageRequest pageRequest = new PageRequest(parameters2, "");
         List<MedicalRecord> medicalRecords = medicalRecordDao.listAll(pageRequest);
         MedicalRecord medicalRecord = medicalRecords.get(0);
@@ -120,7 +142,7 @@ public class DataBean {
         recipelTempletEvt.setBillDate("开单日期：" + billDate);
         recipelTempletEvt.setAge("年龄：" + patient.getAge() + "岁");
         recipelTempletEvt.setFeeType("费别：" + (null == tollInfo ? "" : tollInfo.getPaymentType().getName()));
-        recipelTempletEvt.setDispenseDate("0".equals(type) ? "" : ("发药日期：" + format.format(recipelInfo.getDispensionDate())));
+        recipelTempletEvt.setDispenseDate("0".equals(type) ? "" : ("发药日期：" + new SimpleDateFormat(DATE_FORMAT).format(recipelInfo.getDispensionDate())));
         recipelTempletEvt.setIdCard("身份证号：" + patient.getCard());
         recipelTempletEvt.setDiagnose("临床诊断：" + (StringUtils.isNotBlank(medicalRecord.getWesternDiagnose()) ? "西医诊断：" + medicalRecord.getWesternDiagnose() + ";" : "")
                 + (StringUtils.isNotBlank(medicalRecord.getChinaDiagnose()) ? "中医诊断：" + medicalRecord.getChinaDiagnose() + ";" : ""));
@@ -326,7 +348,7 @@ public class DataBean {
             }
         }
         if (!chineseMedicalNames.isEmpty()) {
-            List<List<String>> lists = fixedGrouping(chineseMedicalNames, 4);
+            List<List<String>> lists = com.google.common.collect.Lists.partition(chineseMedicalNames, 4);
             for (List<String> list : lists) {
                 EachChineseMedicalEvt eachChineseMedicalEvt = new EachChineseMedicalEvt();
                 for (int i = 0; i < list.size(); i++) {
@@ -418,21 +440,11 @@ public class DataBean {
                 createBy = createBy.substring(0,createBy.indexOf("("));
             }
             chargeTicketEvt.setPeople("收费人：" + createBy);
-            chargeTicketEvt.setDate("就诊日期：" + format.format(recipelInfo.getCreateDate()));
+            chargeTicketEvt.setDate("就诊日期：" + new SimpleDateFormat(DATE_FORMAT).format(recipelInfo.getCreateDate()));
             chargeTicketEvt.setOffice("就诊科室：" + registration.getClinicOffice().getName());
             chargeTicketEvt.setFee("收费金额：" + recipelInfo.getFee());
-            String feeType = "";
-            if ("payType_0".equals(tollInfo.getPaymentType().getValue()))
-                feeType = "现金支付：" + recipelInfo.getFee();
-            else if ("payType_1".equals(tollInfo.getPaymentType().getValue()))
-                feeType = "支付宝支付：" + recipelInfo.getFee();
-            else if ("payType_2".equals(tollInfo.getPaymentType().getValue()))
-                feeType = "微信支付：" + recipelInfo.getFee();
-            else if ("payType_3".equals(tollInfo.getPaymentType().getValue()))
-                feeType = "银行卡支付：" + recipelInfo.getFee();
-            else if ("payType_4".equals(tollInfo.getPaymentType().getValue()))
-                feeType = "医保支付：" + recipelInfo.getFee();
-            chargeTicketEvt.setFeeType(feeType);
+            String payTypeName = getPayTypeDisplayName(tollInfo.getPaymentType().getValue());
+            chargeTicketEvt.setFeeType(payTypeName.isEmpty() ? "" : payTypeName + "：" + recipelInfo.getFee());
         }
         outList.add(chargeTicketEvt);
         return outList;
@@ -464,9 +476,11 @@ public class DataBean {
                 evt.setTollCollector("收费员："+name);
                 evt.setDeploy("审核/调配："+name);
             }
-            Parameter parameter = new Parameter("registration_id", "=", registration.getId());
-            Parameter parameter1 = new Parameter("recipel_info_id", "=", recipelInfoId);
-            List<Dispensing> dispensings = dispensingService.listAll(ListUtil.of(parameter, parameter1), null);
+            List<Parameter> dispensingParams = SearchParamsBuilder.create()
+                    .eq("registration_id", registration.getId())
+                    .eq("recipel_info_id", recipelInfoId)
+                    .build();
+            List<Dispensing> dispensings = dispensingService.listAll(dispensingParams, null);
             if (CollectionUtil.isNotEmpty(dispensings)) {
                 String name = dispensings.get(0).getCreateBy()
                         .substring(0, dispensings.get(0).getCreateBy().indexOf("("));
@@ -491,7 +505,7 @@ public class DataBean {
         chargeTicketEvt.setName("姓名：" + patient.getName());
         chargeTicketEvt.setGender("性别：" + patient.getGender().getName());
         chargeTicketEvt.setAge("年龄：" + patient.getAge());
-        chargeTicketEvt.setDate("挂号时间：" + format.format(registration.getCreateDate()));
+        chargeTicketEvt.setDate("挂号时间：" + new SimpleDateFormat(DATE_FORMAT).format(registration.getCreateDate()));
         String createBy = registration.getCreateBy();
         if (createBy.contains("(")) {
             createBy = createBy.substring(0,createBy.indexOf("("));
@@ -500,27 +514,18 @@ public class DataBean {
         chargeTicketEvt.setOffice("挂号科室：" + registration.getClinicOffice().getName());
         chargeTicketEvt.setProject("挂号医生：" + registration.getDoctor().getName());
         chargeTicketEvt.setFee("挂号金额：" + registration.getRegistrationFee() + "元");
-        String feeType = "";
-        if ("payType_0".equals(registration.getPayType().getValue()))
-            feeType = "现金支付：" + registration.getRegistrationFee() + "元";
-        else if ("payType_1".equals(registration.getPayType().getValue()))
-            feeType = "支付宝支付：" + registration.getRegistrationFee() + "元";
-        else if ("payType_2".equals(registration.getPayType().getValue()))
-            feeType = "微信支付：" + registration.getRegistrationFee() + "元";
-        else if ("payType_3".equals(registration.getPayType().getValue()))
-            feeType = "银行卡支付：" + registration.getRegistrationFee() + "元";
-        else if ("payType_4".equals(registration.getPayType().getValue()))
-            feeType = "医保支付：" + registration.getRegistrationFee() + "元";
-        chargeTicketEvt.setFeeType(feeType);
+        String payTypeName = getPayTypeDisplayName(registration.getPayType().getValue());
+        chargeTicketEvt.setFeeType(payTypeName.isEmpty() ? "" : payTypeName + "：" + registration.getRegistrationFee() + "元");
         chargeTicketEvt.setTip(REGISTRATION_REMARK);
         Date zeroTimeOfDate = DateUtils.getZeroTimeOfDate(registration.getCreateDate());
         String todayStart = DateUtils.formatDateTime(zeroTimeOfDate);
         Date endTimeOfDate = DateUtils.getEndTimeOfDate(registration.getCreateDate());
         String todayEnd = DateUtils.formatDateTime(endTimeOfDate);
-        List<Parameter> regParameters = new ArrayList<>();
-        regParameters.add(new Parameter("a.doctor_id", "=",registration.getDoctor().getId()));
-        regParameters.add(new Parameter("a.create_date", ">=",todayStart));
-        regParameters.add(new Parameter("a.create_date", "<=",todayEnd));
+        List<Parameter> regParameters = SearchParamsBuilder.create()
+                .eq("a.doctor_id", registration.getDoctor().getId())
+                .ge("a.create_date", todayStart)
+                .le("a.create_date", todayEnd)
+                .build();
         List<Registration> registrations = registrationService.listAll(regParameters, "a.create_date asc");
         String todayNum = "0";
         if (CollectionUtils.isNotEmpty(registrations)) {
@@ -535,33 +540,6 @@ public class DataBean {
         chargeTicketEvt.setNum("今日序号："+todayNum);
         outList.add(chargeTicketEvt);
         return outList;
-    }
-
-    /**
-     * 将一组数据固定分组，每组n个元素
-     *
-     * @param source 要分组的数据源
-     * @param n      每组n个元素
-     * @param <T>
-     * @return
-     */
-    public static <T> List<List<T>> fixedGrouping(List<T> source, int n) {
-        if (null == source || source.size() == 0 || n <= 0)
-            return null;
-        List<List<T>> result = new ArrayList<List<T>>();
-        int remainder = source.size() % n;//余数
-        int size = (source.size() / n);//商 不算余数 要分多少组。有余数的话下面有单独处理余数数据的
-        for (int i = 0; i < size; i++) {//循环要分多少组
-            List<T> subset = null;
-            subset = source.subList(i * n, (i + 1) * n);//截取list
-            result.add(subset);
-        }
-        if (remainder > 0) {//有余数的情况下把余数得到的数据再添加到list里面
-            List<T> subset = null;
-            subset = source.subList(size * n, size * n + remainder);
-            result.add(subset);
-        }
-        return result;
     }
 
 }

@@ -89,6 +89,7 @@ public abstract class TreeService<D extends TreeDao<T>, T extends TreeEntity<T>>
 	 * @return
 	 */
 	public List<T> tree(List<Parameter> parameters, String orderby) {
+		ensureCompanyFilter(parameters);
 		PageRequest pageRequest = new PageRequest(parameters, orderby);
 		List<T> list = dao.listAll(pageRequest);
 		return bulid(list);

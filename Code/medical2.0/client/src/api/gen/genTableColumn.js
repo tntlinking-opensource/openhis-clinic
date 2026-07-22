@@ -1,37 +1,10 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getGenTableColumnById = (id) =>
-    request({
-        url: '/gen/genTableColumn/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/gen/genTableColumn')
 
-export const listGenTableColumnPage = (search) =>
-    request({
-        url: '/gen/genTableColumn/list',
-        method: 'post',
-        data: search
-    })
-
-export const listGenTableColumnAll = (search) =>
-    request({
-        url: '/gen/genTableColumn/listAll',
-        method: 'post',
-        data: search
-    })    
-
-
-export const saveGenTableColumn = (genTableColumn) => 
-    request({
-        url: '/gen/genTableColumn/save',
-        method: 'post',
-        data: genTableColumn
-    })
-
-export const deleteGenTableColumn = (genTableColumn) =>
-    request({
-        url: '/gen/genTableColumn/delete',
-        method: 'post',
-        data: genTableColumn
-    })
-    
+// 导出标准CRUD接口（保持向后兼容）
+export const getGenTableColumnById = baseApi.getById
+export const listGenTableColumnPage = baseApi.listPage
+export const listGenTableColumnAll = baseApi.listAll
+export const saveGenTableColumn = baseApi.save
+export const deleteGenTableColumn = baseApi.delete

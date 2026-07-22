@@ -31,7 +31,7 @@ export default {
   },
   watch:{
     bussObject(val, oldVal) {
-      if(val!=oldVal){
+      if(val!==oldVal){
         this.getHistory(val.id)
       }
     }, 
@@ -51,7 +51,7 @@ export default {
         order: ''             // 排序
       }
       listActionAll(search).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           this.activities = responseData.data
         } else {
           //this.showMessage(responseData)

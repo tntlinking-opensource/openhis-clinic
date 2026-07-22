@@ -28,7 +28,7 @@
         #{isLocked}
         )
     </insert>
-    <select id="getpbuserlist" resultType="com.geeke.outpatient.entity.schedulingDTO">
+    <select id="getpbuserlist" resultType="com.geeke.outpatient.entity.SchedulingDTO">
         select user_id userid,su.name username,sue.office ksname,o.id ksid ,count(sd.userid) pbsl  from sys_user su
         inner join sys_user_ext sue on su.company_id =sue.company_id and su.id =sue.user_id
         left join scheduling_data sd on su.company_id =sd.company_id and su.id =sd.userid and sd.del_flag ='0'and sd.is_locked ='0'
@@ -38,7 +38,7 @@
            and su.company_id =#{companyid}
         group by user_id,su.name,sue.office,su.department_id,o.id
     </select>
-    <select id="listscheduling" resultType="com.geeke.outpatient.entity.scheduling">
+    <select id="listscheduling" resultType="com.geeke.outpatient.entity.Scheduling">
         select * from scheduling_data sd
         <where>
             company_id =#{companyid}
@@ -55,11 +55,11 @@
         order by schedulingtime
     </select>
 
-    <select id="listcount" resultType="com.geeke.outpatient.entity.scheduling">
+    <select id="listcount" resultType="com.geeke.outpatient.entity.Scheduling">
         select * from scheduling_data sd where company_id =#{companyid} and userid =#{userid}
         and schedulingtime=#{schedulingtime}  and del_flag='0'
     </select>
-    <select id="listschedulingmx" resultType="com.geeke.outpatient.entity.schedulingmxDTO">
+    <select id="listschedulingmx" resultType="com.geeke.outpatient.entity.SchedulingmxDTO">
         select a.id,a.patient_id, p.name,sdib.name gendername,p.age,a.subscribe_date ,su.name ysname,sue.office ksname,sdia.name sourcename,
         sdi.name statusname,a.remarks ,a.create_date,DATE_FORMAT(a.subscribe_date,'%H') houser
         from registration a
@@ -94,7 +94,7 @@
         </where>
         order by a.subscribe_date
     </select>
-    <select id="getList" resultType="com.geeke.outpatient.entity.scheduling">
+    <select id="getList" resultType="com.geeke.outpatient.entity.Scheduling">
         SELECT a.* FROM scheduling_data a
         WHERE ( datediff ( a.schedulingtime , #{schedulingtime} ) = 0 ) and
                 a.ID = (SELECT MAX(b.ID) FROM scheduling_data b

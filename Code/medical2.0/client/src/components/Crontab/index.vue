@@ -177,7 +177,6 @@ export default {
       "updateCrontabValue", name, value, from;
       this.crontabValueObj[name] = value;
       if (from && from !== name) {
-        console.log(`来自组件 ${from} 改变了 ${name} ${value}`);
         this.changeRadio(name, value);
       }
     },
@@ -210,10 +209,10 @@ export default {
           insValue = 4;
           this.$refs[refName].checkboxList = value.split(",");
         }
-      } else if (name == "day") {
+      } else if (name === "day") {
         if (value === "*") {
           insValue = 1;
-        } else if (value == "?") {
+        } else if (value === "?") {
           insValue = 2;
         } else if (value.indexOf("-") > -1) {
           let indexArr = value.split("-");
@@ -241,10 +240,10 @@ export default {
           this.$refs[refName].checkboxList = value.split(",");
           insValue = 7;
         }
-      } else if (name == "week") {
+      } else if (name === "week") {
         if (value === "*") {
           insValue = 1;
-        } else if (value == "?") {
+        } else if (value === "?") {
           insValue = 2;
         } else if (value.indexOf("-") > -1) {
           let indexArr = value.split("-");
@@ -270,10 +269,10 @@ export default {
           this.$refs[refName].checkboxList = value.split(",");
           insValue = 7;
         }
-      } else if (name == "year") {
-        if (value == "") {
+      } else if (name === "year") {
+        if (value === "") {
           insValue = 1;
-        } else if (value == "*") {
+        } else if (value === "*") {
           insValue = 2;
         } else if (value.indexOf("-") > -1) {
           insValue = 3;
@@ -338,7 +337,7 @@ export default {
         obj.month +
         " " +
         obj.week +
-        (obj.year == "" ? "" : " " + obj.year);
+        (obj.year === "" ? "" : " " + obj.year);
       return str;
     },
   },

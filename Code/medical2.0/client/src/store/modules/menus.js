@@ -25,7 +25,7 @@ const actions = {
         children:[],
       };
       // if (router.parent.id === menuId || (router.parent.id == 0 && router.code)) {
-      if (router.parent.id === menuId || (router.parent.id == 0 && router.code && router.code != 'homepage/homepage')) {
+      if (router.parent.id === menuId || (router.parent.id === 0 && router.code && router.code !== 'homepage/homepage')) {
           menus.push(tree(item, routers))
       }
     }
@@ -55,7 +55,7 @@ const tree = function (menu, routers){
       component: routerProperties.component,
       children:[],
     };
-    if (menu.id === item.parentId && menu.parentId != "0"){
+    if (menu.id === item.parentId && menu.parentId !== "0"){
       menu.children.push(tree(item, routers))
     }
   }

@@ -15,20 +15,15 @@ import java.util.List;
 
 
 @Service("schedulesService")
-@Transactional(readOnly = false)
+@Transactional(readOnly = true)
 public  class SchedulesService  {
     @Autowired
     private SchedulesDao schedulesDao;
 
+    @Transactional(readOnly = false)
     public int updateoverlookid(String strRecipelInfoIds){
         return schedulesDao.updateoverlookid(strRecipelInfoIds);
     }
-
-//    public Page<VisitProgress> visitProgressPage(Visitprogresspara visitprogresspara){
-//        List<VisitProgress> list = schedulesDao.visitprogresspage(visitprogresspara);
-//        int total=list.size();
-//        return new Page((long)total, list);
-//    }
 
         public Page<VisitProgress> visitProgressPage(Visitprogresspara visitprogresspara){
         List<VisitProgress> list = schedulesDao.visitprogresspagecounts(visitprogresspara);
@@ -37,7 +32,7 @@ public  class SchedulesService  {
             if(total>0){
                 list2 = schedulesDao.visitprogresspage(visitprogresspara);
             }
-        return new Page((long)total, list2);
+        return new Page<>((long)total, list2);
     }
 
     public List<String> listPages(PageRegistration pageRegistration){

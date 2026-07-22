@@ -150,7 +150,7 @@ export default {
         init(){
             this.setLoad()
             getStuffIndateWarning(this.search).then((res)=>{
-                if(res.code==100){
+                if(res.code===100){
                     if(res.data.rows){
                          this.stuffIndateList = res.data.rows;
                     }else{
@@ -167,13 +167,13 @@ export default {
 
         inventoryInit(){
             getStuffInventoryWarning(this.inventorySearch).then((res)=>{
-                if(res.code==100){
+                if(res.code===100){
                     if(res.data.rows){
                         this.inventoryList = res.data.rows
                     }else{
                         this.inventoryList = []
                     }
-                    if(this.activeName=='stuffInventory'){
+                    if(this.activeName==='stuffInventory'){
                         this.total = res.data.total
                     }
                     this.$store.dispatch('notices/SetStuffInventoryWarningTotal',res.data.total)

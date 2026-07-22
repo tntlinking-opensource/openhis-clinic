@@ -15,8 +15,6 @@ import java.util.List;
  */
 @Mapper
 public interface StuffDao extends CrudDao<Stuff> {
-    void updateInventory(@Param("id") String id,@Param("inventory") int inventory);
-
     List<Stuff> getAll(@Param("companyId") String companyId,@Param("type") String type);
 
     int updateAllIndate(@Param("indate") String indate,@Param("companyId") String companyId);

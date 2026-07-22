@@ -8,11 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import com.alibaba.fastjson.JSONObject;
 import com.geeke.collect.entity.SysCollect;
 import com.geeke.collect.service.SysCollectService;
-import com.geeke.common.controller.SearchParams;
-import com.geeke.common.data.Page;
-import com.geeke.sys.controller.BaseController;
+import com.geeke.common.controller.CrudController;
 import com.geeke.utils.ResultUtil;
-import com.geeke.utils.StringUtils;
 
 /**
  * 收藏夹Controller
@@ -21,15 +18,18 @@ import com.geeke.utils.StringUtils;
  */
 @RestController
 @RequestMapping(value = "/collect/sysCollect")
-public class SysCollectController extends BaseController {
+public class SysCollectController extends CrudController<SysCollectService, SysCollect> {
 
-	@Autowired
-	private SysCollectService sysCollectService;
+    @Autowired
+    protected SysCollectService sysCollectService;
+
+    @Override
+    protected SysCollectService getService() {
+        return sysCollectService;
+    }
 
     /**
      * 根据用户id查询收藏列表
-     * @param userId
-     * @return
      */
     @GetMapping(value = "listAllByUserId/{userId}")
     public ResponseEntity<JSONObject> listAllByUserId(@PathVariable("userId") String userId) {
@@ -38,38 +38,20 @@ public class SysCollectController extends BaseController {
     }
 
     /**
-     * 保存收藏
-     * @param entity
-     * @return
-     */
-    @PostMapping(value = "save")
-    public ResponseEntity<JSONObject> save(@RequestBody SysCollect entity) {
-        String id = sysCollectService.save(entity).getId();
-        return ResponseEntity.ok(ResultUtil.successJson(id));
-    }
-
-    /**
      * 移动收藏触发
-     * @param sysCollectList
-     * @param userId
-     * @return
      */
     @PostMapping(value = "updateBatch/{userId}")
     public ResponseEntity<JSONObject> updateBatch(@RequestBody List<SysCollect> sysCollectList, @PathVariable String userId) {
-        List<SysCollect> result = sysCollectService.updateBatch(sysCollectList,userId);
+        List<SysCollect> result = sysCollectService.updateBatch(sysCollectList, userId);
         return ResponseEntity.ok(ResultUtil.successJson(result));
     }
 
-
     /**
-     * 删除收藏
-     * @param entity
-     * @return
+     * 删除收藏（保留 @DeleteMapping 以兼容前端调用）
      */
+    @Override
     @DeleteMapping(value = "delete")
     public ResponseEntity<JSONObject> delete(@RequestBody SysCollect entity) {
-        int rows = sysCollectService.delete(entity);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
+        return super.delete(entity);
     }
-
 }

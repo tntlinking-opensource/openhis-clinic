@@ -39,7 +39,7 @@
           :show-header="false"
           highlight-current-row
           @row-click="selectPatientChange"
-          style="width: 100%,height:80%;margin-top:-15px"
+          style="width: 100%;height:80%;margin-top:-15px"
         >
           <el-table-column prop="name" label="姓名"> </el-table-column>
           <el-table-column
@@ -74,12 +74,12 @@
           <div class="goods-back">已退药</div>
           <div style="margin-top: 5px; margin-right: 10px">23.00</div>
           <el-button
-            :type="chargeStatusActiveName == '1' ? 'warning' : ''"
-            :disabled="chargeStatusActiveName == '3'"
+            :type="chargeStatusActiveName === '1' ? 'warning' : ''"
+            :disabled="chargeStatusActiveName === '3'"
             @click="chargeClick"
-            >{{ chargeStatusActiveName == "2" ? "退费" : "收费" }}</el-button
+            >{{ chargeStatusActiveName === "2" ? "退费" : "收费" }}</el-button
           >
-          <el-button v-if="chargeStatusActiveName == '2'">开票</el-button>
+          <el-button v-if="chargeStatusActiveName === '2'">开票</el-button>
         </div>
       </div>
       <div class="patientinfo_form">
@@ -182,7 +182,7 @@
           v-for="(prescriptionMain, index) in prescriptionMainList"
           :key="index"
         >
-          <div v-if="prescriptionMain.prescriptionType == 1">
+          <div v-if="prescriptionMain.prescriptionType === 1">
             
             <el-table :data="prescriptionMain.prescriptionDetail" style="width: 100%">
               <el-table-column prop="goodsName" label="西药处方" width="width">
@@ -203,7 +203,7 @@
             </div>
           </div>
           <!--中药-->
-          <div v-else-if="prescriptionMain.prescriptionType == 2">
+          <div v-else-if="prescriptionMain.prescriptionType === 2">
             <el-table :data="prescriptionMain.prescriptionDetail" style="width: 100%">
               <el-table-column prop="goodsName" label="中药处方" width="width">
               </el-table-column>
@@ -235,7 +235,7 @@
             </div>
           </div>
           <!--附加费-->
-          <div v-if="prescriptionMain.prescriptionType == 3">
+          <div v-if="prescriptionMain.prescriptionType === 3">
             <el-table :data="prescriptionMain.prescriptionDetail" style="width: 100%">
               <el-table-column prop="goodsName" label="附加费" width="width">
               </el-table-column>
@@ -337,7 +337,7 @@
           v-for="(refundPrescriptionMain, index) in refundPrescriptionMainList"
           :key="index"
         >
-          <div v-if="refundPrescriptionMain.prescriptionType == 1">
+          <div v-if="refundPrescriptionMain.prescriptionType === 1">
             <el-table :data="refundPrescriptionMain.prescriptionDetail" style="width: 100%">
               <el-table-column align="left" width="55px">
                 <template slot="header"  slot-scope="scope">
@@ -359,7 +359,7 @@
             </el-table>
           </div>
           <!--中药-->
-          <div v-else-if="refundPrescriptionMain.prescriptionType == 2">
+          <div v-else-if="refundPrescriptionMain.prescriptionType === 2">
             <el-table  :data="refundPrescriptionMain.prescriptionDetail" style="width: 100%">
               <el-table-column align="left"  width="55px">
                 <template slot="header" slot-scope="scope">
@@ -383,7 +383,7 @@
             </el-table>
           </div>
           <!--附加费-->
-          <div v-if="refundPrescriptionMain.prescriptionType == 3">
+          <div v-if="refundPrescriptionMain.prescriptionType === 3">
             <el-table :data="refundPrescriptionMain.prescriptionDetail" style="width: 100%">
               <el-table-column align="left"  width="55px">
                 <template slot="header"  slot-scope="scope">
@@ -575,14 +575,14 @@ export default {
   methods: {
     /*收费退费按钮点击*/
     chargeClick() {
-      if (this.chargeStatusActiveName == "1") {
+      if (this.chargeStatusActiveName === "1") {
         this.chargeDialogVisible = true;
       } else {
         this.refundDialogVisible = true;
       }
     },
     getPrescriptionTotalCost(data){
-       var totalCost = 0;
+       let totalCost = 0;
        data.forEach(element => {
         if(element.totalCost){
           totalCost+=element.totalCost
@@ -592,7 +592,7 @@ export default {
     },
     /*计算当前退费处方合计*/
     getRefundTotalCost(){
-      var totalCost = 0;
+      let totalCost = 0;
       this.refundPrescriptionMainList.forEach(element => {
         if(element.totalCost){
           totalCost+=element.totalCost
@@ -623,7 +623,7 @@ export default {
     /*查询病人*/
     selectPatientList() {},
     clinicDateFormatter(row) {
-      var date = new Date(row.clinicDate);
+      const date = new Date(row.clinicDate);
       return (
         date.getMonth() +
         1 +

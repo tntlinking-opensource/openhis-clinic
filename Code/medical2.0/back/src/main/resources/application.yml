@@ -1,9 +1,9 @@
 server:
   tomcat:
-    max-http-post-size: -1
+    max-http-post-size: 104857600  # 100MB，防止恶意大请求体攻击
 spring:
   profiles:
-    active: demo
+    active: dev
   application:
     name: medical
   servlet:
@@ -17,22 +17,15 @@ spring:
     maxWait: 6000
     maxPoolPreparedStatementPerConnectionSize: 20
     timeBetweenEvictionRunsMillis: 6000
-    driver-class-name: com.mysql.jdbc.Driver     #com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
   main:
     allow-bean-definition-overriding: true    #当遇到同样名字的时候，是否允许覆盖注册
+    allow-circular-references: true
   cache:
-    type: redis  # 可选 redis、none、ehcache
-  redis:
-     timeout: 20000     # 链接超时时间（毫秒）
-     lettuce:
-       pool:
-         max-idle: 8        # 最大空闲连接
-         min-idle: 0        # 最小空闲链接
-         max-active: 8      # 最大连接数（负数表示没有限制）
-         max-wait: -1       # 最大阻塞等待时间（负数表示没有限制）
+    type: none
   #院版配置
   hosconfig:
     hos-token-url: http://61.172.179.73:41150 # 获取院版token的url
@@ -61,23 +54,25 @@ logging:
 mybatis:
   mapper-locations: classpath:/mapper/**/*.xml
   configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     auto-mapping-behavior: FULL
     map-underscore-to-camel-case: true
     default-executor-type: SIMPLE
     local-cache-scope: SESSION
 
 mybatis-plus:
+  global-config:
+    db-config:
+      id-type: auto
+  mapper-locations: classpath:/mapper/**/*.xml
   configuration:
-    global-config:
-      db-config:
-        id-type: auto
-    mapper-locations: classpath:/mapper/**/*.xml
-    # 其他 MyBatis-Plus 配置项
+    map-underscore-to-camel-case: true
 
 genConfigure:
-  rootPath: C:\Users\developer\IdeaProjects\medical #代码生成地址配置
   dbName: mysql                          #数据库类型:  mysql/oracle/mssql
+
+app:
+  cache:
+    type: none  # 可选 redis、none、ehcache
 
 
 

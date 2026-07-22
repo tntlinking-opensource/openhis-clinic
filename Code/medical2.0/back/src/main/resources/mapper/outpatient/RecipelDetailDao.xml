@@ -502,6 +502,17 @@
         </foreach>
     </update>
 
+    <select id="getByRecipelInfoIds" resultType="com.geeke.outpatient.entity.RecipelDetail">
+        SELECT
+        <include refid="recipelDetailColumns"/>
+        FROM recipel_detail a
+        <include refid="recipelDetailJoins"/>
+        WHERE a.recipel_info_id IN
+        <foreach collection="recipelInfoIds" item="recipelInfoId" open="(" separator="," close=")">
+            #{recipelInfoId}
+        </foreach>
+    </select>
+
     <select id="getByRecipelInfoId" parameterType="java.lang.String"
             resultType="com.geeke.outpatient.entity.RecipelDetail">
         SELECT

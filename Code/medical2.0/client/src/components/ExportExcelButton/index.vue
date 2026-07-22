@@ -52,8 +52,7 @@ export default {
         })
         this.loading = false
       }).catch(error => {
-        console.log('-----------export excel error-------------')
-        console.error(error)
+        console.error('export excel error:', error)
         this.loading = false
       })
     },
@@ -69,7 +68,7 @@ export default {
     parsValue(val, keys) {
       let entity = val
       let arr = keys.split('.')
-      for (var i = 0; i < arr.length; i++) {
+      for (let i = 0; i < arr.length; i++) {
         entity = entity[arr[i]]
       }
       return entity;

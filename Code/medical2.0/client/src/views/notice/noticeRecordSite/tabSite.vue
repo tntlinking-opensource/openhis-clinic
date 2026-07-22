@@ -122,7 +122,7 @@
           msg.innerHTML = row.siteContent;
           if(row.readStatus === "0"){
              saveNoticeReceiveSite({id:row.id,readStatus:'1'}).then(result =>{ //查询赋值并修改 状态为已读
-                if(result.code === "100"){
+                if(result.code === 100){
                   row.readStatus = "1";
                 }
             })
@@ -173,12 +173,11 @@
         }
       },
       onSearch(){
-        console.log("执行看");
         this.setLoad();
         this.search.params = [{'columnName':'receive_by', 'queryType': '=', 'value': currentUser.id}];
         this.search.params.push({'columnName':'read_status', 'queryType': '=', 'value': this.readStatus});
         listNoticeReceiveSitePage(this.search).then(responseData => {
-          if(responseData.code == 100) {
+          if(responseData.code === 100) {
             this.noticeRecordSiteTotal = responseData.data.total;
 
             this.noticeRecordSiteList = responseData.data.rows === null ? []:responseData.data.rows;

@@ -134,6 +134,7 @@ import moment from "moment";
 import { listInspectionCheckPage } from '@/api/cure/inspectionCheck'
 import { listRecipelInfoReviewPage } from '@/api/outpatient/recipelInfoReview'
 import { Loading } from 'element-ui'
+import { getCurrentUser, getCurrentUserId } from "@/utils/userCache";
 
 export default {
   extends: MainUI,
@@ -142,7 +143,7 @@ export default {
     History: History
   },
 
-  data: function () {
+  data() {
     return {
       // 待就诊
       TobeseenList: [],
@@ -162,7 +163,7 @@ export default {
         order: "desc",
         companyId: "",
         recipeStatus: "0",
-        updateDate: "2022-06-01 00:00:00",
+        updateDate: "2022-06-01 00:00:00", // 数据迁移截止时间，过滤迁移前的历史数据
         status: "registrationStatus_1",
         chargeStatus: 1,
         dispensionStatus: 0,
@@ -264,48 +265,46 @@ export default {
   },
 
   computed: {
-    Company: function () {
-      var user = JSON.parse(sessionStorage.getItem("currentUser"));
+    Company() {
+      const user = getCurrentUser();
       return {
         id: user && user.company && user.company.id,
         label: user && user.company && user.company.label,
         name: user && user.company && user.company.name,
       };
     },
-    UserId: function () {
-      var user = JSON.parse(sessionStorage.getItem("currentUser"));
-      return user && user.id;
+    UserId() {
+      return getCurrentUserId();
     },
   },
 
   methods: {
     // 类型映射配置
-    getTypeConfig: function (type) {
-      var self = this;
-      var configs = {
+    getTypeConfig(type) {
+      const configs = {
         djz: {
-          load: function () { return self.loadDjz(); },
-          ignore: function () { return self.ignoreDjz(); }
+          load: () => this.loadDjz(),
+          ignore: () => this.ignoreDjz()
         },
         dsf: {
-          load: function () { return self.loadDsf(); },
-          ignore: function () { return self.ignoreDsf(); }
+          load: () => this.loadDsf(),
+          ignore: () => this.ignoreDsf()
         },
         dfy: {
-          load: function () { return self.loadDfy(); },
-          ignore: function () { return self.ignoreDfy(); }
+          load: () => this.loadDfy(),
+          ignore: () => this.ignoreDfy()
         },
         dzl: {
-          load: function () { return self.loadDzl(); },
-          ignore: function () { return self.ignoreDzl(); }
+          load: () => this.loadDzl(),
+          ignore: () => this.ignoreDzl()
         },
         dsy: {
-          load: function () { return self.loadDsy(); },
-          ignore: function () { return self.ignoreDsy(); }
+          load: () => this.loadDsy(),
+          ignore: () => this.ignoreDsy()
         },
         djyjc: {
-          load: function () { return self.loadDjyjc(); },
-          ignore: function () { return self.ignoreDjyjc(); }
+          load: () => this.loadDjyjc(),
+          ignore: () => this.ignoreDjyjc()
         }
       };
       return configs[type];
@@ -314,12 +313,11 @@ export default {
     // ========== 加载方法 ==========
 
     // 待就诊
-    loadDjz: function () {
-      var self = this;
-      self.Totalsums = 0;
-      self.TobeseenList = [];
+    loadDjz() {
+      this.Totalsums = 0;
+      this.TobeseenList = [];
 
-      var params = [
+      const params = [
         { columnName: "company_id", queryType: "=", value: this.Company.id },
         { columnName: "status", queryType: "=", value: "registrationStatus_0" },
         { columnName: "doctor_id", queryType: "=", value: this.UserId },
@@ -330,29 +328,28 @@ export default {
       this.SearchPreModel.limit = 10;
       this.SearchPreModel.offset = 0;
 
-      return listSchedulesPage(this.SearchPreModel).then(function (responseData) {
-        if (responseData.code == 100) {
-          self.Totalsums = responseData.data.total;
-          var rows = responseData.data.rows || [];
-          rows.forEach(function (element) {
-            var birthday = element.patientId && element.patientId.birthday;
+      return listSchedulesPage(this.SearchPreModel).then((responseData) => {
+        if (responseData.code === 100) {
+          this.Totalsums = responseData.data.total;
+          const rows = responseData.data.rows || [];
+          rows.forEach((element) => {
+            const birthday = element.patientId && element.patientId.birthday;
             if (birthday) {
               element.patientId.age = moment.duration(moment().diff(birthday)).years();
             } else {
               element.patientId.age = "--";
             }
           });
-          self.TobeseenList = rows;
+          this.TobeseenList = rows;
         }
         return responseData;
       });
     },
 
     // 待发药
-    loadDfy: function () {
-      var self = this;
-      self.dispensingsum = 0;
-      self.listdispensingcounts = [];
+    loadDfy() {
+      this.dispensingsum = 0;
+      this.listdispensingcounts = [];
 
       this.PageRegistration.overlook = "0";
       this.PageRegistration.columnName = "return_date";
@@ -360,38 +357,37 @@ export default {
       this.PageRegistration.offset = 0;
       this.PageRegistration.companyId = this.Company.id;
 
-      return listdispensingPages(this.PageRegistration).then(function (responseData) {
-        if (responseData.code == 100) {
-          self.dispensingsum = responseData.data.total;
-          var rows = responseData.data.rows || [];
-          rows.forEach(function (item) {
-            var datainfo = item.patient && item.patient.name || '';
+      return listdispensingPages(this.PageRegistration).then((responseData) => {
+        if (responseData.code === 100) {
+          this.dispensingsum = responseData.data.total;
+          const rows = responseData.data.rows || [];
+          rows.forEach((item) => {
+            let datainfo = item.patient && item.patient.name || '';
             if (item.recipelInfoEvtList) {
-              item.recipelInfoEvtList.forEach(function (itemevt) {
-                var typeValue = itemevt.recipelInfo && itemevt.recipelInfo.recipelType && itemevt.recipelInfo.recipelType.value;
-                if (typeValue == "recipelType_0" || typeValue == "recipelType_1") {
+              item.recipelInfoEvtList.forEach((itemevt) => {
+                const typeValue = itemevt.recipelInfo && itemevt.recipelInfo.recipelType && itemevt.recipelInfo.recipelType.value;
+                if (typeValue === "recipelType_0" || typeValue === "recipelType_1") {
                   datainfo += " / " + (itemevt.recipelInfo.recipelType.name || '');
                   if (itemevt.recipelDetailEvtList) {
-                    itemevt.recipelDetailEvtList.forEach(function (itemevt2) {
+                    itemevt.recipelDetailEvtList.forEach((itemevt2) => {
                       datainfo += " : " + (itemevt2.drugStuffId && itemevt2.drugStuffId.name || '');
                     });
                   }
                 }
               });
             }
-            self.$set(item, "displaycontent", datainfo);
+            this.$set(item, "displaycontent", datainfo);
           });
-          self.listdispensingcounts = rows;
+          this.listdispensingcounts = rows;
         }
         return responseData;
       });
     },
 
     // 待收费
-    loadDsf: function () {
-      var self = this;
-      self.Patientchargesum = 0;
-      self.PatientchargeList = [];
+    loadDsf() {
+      this.Patientchargesum = 0;
+      this.PatientchargeList = [];
 
       this.patientQueryCondition.overlook = "0";
       this.patientQueryCondition.limit = 10;
@@ -403,35 +399,34 @@ export default {
       this.patientQueryCondition.updateDate = "2022-06-01 00:00:00";
       this.patientQueryCondition.status = "registrationStatus_1";
 
-      return listdispensingPages(this.patientQueryCondition).then(function (responseData) {
-        if (responseData.code == 100) {
-          self.Patientchargesum = responseData.data.total;
-          var rows = responseData.data.rows || [];
-          rows.forEach(function (item) {
-            var datainfo = item.patient && item.patient.name || '';
+      return listdispensingPages(this.patientQueryCondition).then((responseData) => {
+        if (responseData.code === 100) {
+          this.Patientchargesum = responseData.data.total;
+          const rows = responseData.data.rows || [];
+          rows.forEach((item) => {
+            let datainfo = item.patient && item.patient.name || '';
             if (item.recipelInfoEvtList) {
-              item.recipelInfoEvtList.forEach(function (itemevt) {
+              item.recipelInfoEvtList.forEach((itemevt) => {
                 datainfo += " / " + (itemevt.recipelInfo && itemevt.recipelInfo.recipelType && itemevt.recipelInfo.recipelType.name || '');
                 if (itemevt.recipelDetailEvtList) {
-                  itemevt.recipelDetailEvtList.forEach(function (itemevt2) {
+                  itemevt.recipelDetailEvtList.forEach((itemevt2) => {
                     datainfo += " : " + (itemevt2.drugStuffId && itemevt2.drugStuffId.name || '');
                   });
                 }
               });
             }
-            self.$set(item, "displaycontent", datainfo);
+            this.$set(item, "displaycontent", datainfo);
           });
-          self.PatientchargeList = rows;
+          this.PatientchargeList = rows;
         }
         return responseData;
       });
     },
 
     // 待治疗
-    loadDzl: function () {
-      var self = this;
-      self.patientcuresum = 0;
-      self.patientcurecounts = [];
+    loadDzl() {
+      this.patientcuresum = 0;
+      this.patientcurecounts = [];
 
       this.patientcure.overlook = "0";
       this.patientcure.limit = 10;
@@ -444,38 +439,36 @@ export default {
       this.patientcure.status = "registrationStatus_1";
       this.patientcure.cureType = 0;
 
-      return listdispensingPages(this.patientcure).then(function (responseData) {
-        if (responseData.code == 100) {
-          self.patientcuresum = responseData.data.total;
-          var rows = responseData.data.rows || [];
-          rows.forEach(function (item) {
-            var datainfo = item.patient && item.patient.name || '';
+      return listdispensingPages(this.patientcure).then((responseData) => {
+        if (responseData.code === 100) {
+          this.patientcuresum = responseData.data.total;
+          const rows = responseData.data.rows || [];
+          rows.forEach((item) => {
+            let datainfo = item.patient && item.patient.name || '';
             if (item.recipelInfoEvtList) {
-              item.recipelInfoEvtList.forEach(function (itemevt) {
+              item.recipelInfoEvtList.forEach((itemevt) => {
                 datainfo += " / " + (itemevt.recipelInfo && itemevt.recipelInfo.recipelType && itemevt.recipelInfo.recipelType.name || '');
                 if (itemevt.recipelDetailEvtList) {
-                  itemevt.recipelDetailEvtList.forEach(function (itemevt2) {
+                  itemevt.recipelDetailEvtList.forEach((itemevt2) => {
                     datainfo += " : " + (itemevt2.drugStuffId && itemevt2.drugStuffId.name || '');
                   });
                 }
               });
             }
-            self.$set(item, "displaycontent", datainfo);
+            this.$set(item, "displaycontent", datainfo);
           });
-          self.patientcurecounts = rows;
+          this.patientcurecounts = rows;
         }
         return responseData;
-      }).catch(function (error) {
-        console.log(error);
-        self.$message.error(error.message || '加载失败');
+      }).catch((error) => {
+        this.$message.error(error.message || '加载失败');
       });
     },
 
     // 待输液
-    loadDsy: function () {
-      var self = this;
-      self.patientdsylistsums = 0;
-      self.patientdsylistcounts = [];
+    loadDsy() {
+      this.patientdsylistsums = 0;
+      this.patientdsylistcounts = [];
 
       this.patientdsylist.overlook = "0";
       this.patientdsylist.limit = 10;
@@ -487,60 +480,57 @@ export default {
       this.patientdsylist.status = "registrationStatus_1";
       this.patientdsylist.infuseType = 0;
 
-      return listdispensingPages(this.patientdsylist).then(function (responseData) {
-        if (responseData.code == 100) {
-          self.patientdsylistsums = responseData.data.total;
-          var rows = responseData.data.rows || [];
-          rows.forEach(function (item) {
-            var datainfo = item.patient && item.patient.name || '';
+      return listdispensingPages(this.patientdsylist).then((responseData) => {
+        if (responseData.code === 100) {
+          this.patientdsylistsums = responseData.data.total;
+          const rows = responseData.data.rows || [];
+          rows.forEach((item) => {
+            let datainfo = item.patient && item.patient.name || '';
             if (item.recipelInfoEvtList) {
-              item.recipelInfoEvtList.forEach(function (itemevt) {
+              item.recipelInfoEvtList.forEach((itemevt) => {
                 datainfo += " / " + (itemevt.recipelInfo && itemevt.recipelInfo.recipelType && itemevt.recipelInfo.recipelType.name || '');
                 if (itemevt.recipelDetailEvtList) {
-                  itemevt.recipelDetailEvtList.forEach(function (itemevt2) {
+                  itemevt.recipelDetailEvtList.forEach((itemevt2) => {
                     datainfo += " : " + (itemevt2.drugStuffId && itemevt2.drugStuffId.name || '');
                   });
                 }
               });
             }
-            self.$set(item, "displaycontent", datainfo);
+            this.$set(item, "displaycontent", datainfo);
           });
-          self.patientdsylistcounts = rows;
+          this.patientdsylistcounts = rows;
         }
         return responseData;
-      }).catch(function (error) {
-        console.log(error);
-        self.$message.error(error.message || '加载失败');
+      }).catch((error) => {
+        this.$message.error(error.message || '加载失败');
       });
     },
 
     // 待检验检查
-    loadDjyjc: function () {
-      var self = this;
-      self.jyjctotal = 0;
-      self.jyjclistcounts = [];
+    loadDjyjc() {
+      this.jyjctotal = 0;
+      this.jyjclistcounts = [];
 
       this.searchjyjc.offset = 0;
       this.searchjyjc.limit = 10;
 
-      return listInspectionCheckPage(this.searchjyjc).then(function (responseData) {
-        if (responseData.code == 100) {
-          self.jyjctotal = responseData.data.total;
-          self.jyjclistcounts = responseData.data.rows || [];
+      return listInspectionCheckPage(this.searchjyjc).then((responseData) => {
+        if (responseData.code === 100) {
+          this.jyjctotal = responseData.data.total;
+          this.jyjclistcounts = responseData.data.rows || [];
         }
         return responseData;
-      }).catch(function (error) {
-        self.outputError(error);
+      }).catch((error) => {
+        this.outputError(error);
       });
     },
 
     // ========== 并发加载所有 ==========
-    loadlist: function () {
-      var self = this;
-      var loadingInstance = Loading.service({ fullscreen: true });
+    loadlist() {
+      const loadingInstance = Loading.service({ fullscreen: true });
 
       // 所有加载请求
-      var requests = [
+      const requests = [
         this.loadDjz(),
         this.loadDfy(),
         this.loadDsf(),
@@ -549,57 +539,54 @@ export default {
         this.loadDjyjc()
       ];
 
-      Promise.all(requests).then(function () {
-        setTimeout(function () {
+      Promise.all(requests).then(() => {
+        setTimeout(() => {
           loadingInstance.close();
         }, 500);
-      }).catch(function (error) {
+      }).catch((error) => {
         console.error('加载失败:', error);
         loadingInstance.close();
       });
     },
 
     // ========== 刷新单个 ==========
-    typeclickload: function (type) {
-      var config = this.getTypeConfig(type);
+    typeclickload(type) {
+      const config = this.getTypeConfig(type);
       if (config && config.load) {
         config.load();
       }
     },
 
     // ========== 忽略单条 ==========
-    btnoverlook: function (id, type) {
-      var self = this;
-      updateoverlockids(id).then(function (responseData) {
-        self.$message.success(responseData.msg);
-        self.typeclickload(type);
+    btnoverlook(id, type) {
+      updateoverlockids(id).then((responseData) => {
+        this.$message.success(responseData.msg);
+        this.typeclickload(type);
       });
     },
 
     // ========== 忽略全部 ==========
-    btnoverlookidlist: function (type) {
-      var config = this.getTypeConfig(type);
+    btnoverlookidlist(type) {
+      const config = this.getTypeConfig(type);
       if (config && config.ignore) {
         config.ignore();
       }
     },
 
     // 忽略全部 - 待就诊
-    ignoreDjz: function () {
-      var self = this;
+    ignoreDjz() {
       this.SearchPreModel.companyId = this.Company.id;
       this.SearchPreModel.doctorid = this.UserId;
       this.SearchPreModel.status = "registrationStatus_0";
       this.SearchPreModel.overlook = "0";
-      updateoverlockidlist(this.SearchPreModel).then(function (responseData) {
-        self.typeclickload('djz');
-        self.$message.success(responseData.msg);
+      updateoverlockidlist(this.SearchPreModel).then((responseData) => {
+        this.typeclickload('djz');
+        this.$message.success(responseData.msg);
       });
     },
 
     // 忽略全部 - 待收费
-    ignoreDsf: function () {
-      var self = this;
+    ignoreDsf() {
       this.patientQueryCondition.overlook = "0";
       this.patientQueryCondition.limit = 10;
       this.patientQueryCondition.offset = 0;
@@ -609,29 +596,27 @@ export default {
       this.patientQueryCondition.chargeStatus = 0;
       this.patientQueryCondition.updateDate = "2022-06-01 00:00:00";
       this.patientQueryCondition.status = "registrationStatus_1";
-      updateoverlockidlist(this.patientQueryCondition).then(function (responseData) {
-        self.typeclickload('dsf');
-        self.$message.success(responseData.msg);
+      updateoverlockidlist(this.patientQueryCondition).then((responseData) => {
+        this.typeclickload('dsf');
+        this.$message.success(responseData.msg);
       });
     },
 
     // 忽略全部 - 待发药
-    ignoreDfy: function () {
-      var self = this;
+    ignoreDfy() {
       this.PageRegistration.overlook = "0";
       this.PageRegistration.columnName = "return_date";
       this.PageRegistration.limit = 10;
       this.PageRegistration.offset = 0;
       this.PageRegistration.companyId = this.Company.id;
-      updateoverlockidlist(this.PageRegistration).then(function (responseData) {
-        self.typeclickload('dfy');
-        self.$message.success(responseData.msg);
+      updateoverlockidlist(this.PageRegistration).then((responseData) => {
+        this.typeclickload('dfy');
+        this.$message.success(responseData.msg);
       });
     },
 
     // 忽略全部 - 待治疗
-    ignoreDzl: function () {
-      var self = this;
+    ignoreDzl() {
       this.patientcure.overlook = "0";
       this.patientcure.limit = 10;
       this.patientcure.offset = 0;
@@ -642,15 +627,14 @@ export default {
       this.patientcure.updateDate = "2022-06-01 00:00:00";
       this.patientcure.status = "registrationStatus_1";
       this.patientcure.cureType = 0;
-      updateoverlockidlist(this.patientcure).then(function (responseData) {
-        self.typeclickload('dzl');
-        self.$message.success(responseData.msg);
+      updateoverlockidlist(this.patientcure).then((responseData) => {
+        this.typeclickload('dzl');
+        this.$message.success(responseData.msg);
       });
     },
 
     // 忽略全部 - 待输液
-    ignoreDsy: function () {
-      var self = this;
+    ignoreDsy() {
       this.patientdsylist.overlook = "0";
       this.patientdsylist.limit = 10;
       this.patientdsylist.offset = 0;
@@ -660,27 +644,26 @@ export default {
       this.patientdsylist.updateDate = "2022-06-01 00:00:00";
       this.patientdsylist.status = "registrationStatus_1";
       this.patientdsylist.infuseType = 0;
-      updateoverlockidlist(this.patientdsylist).then(function (responseData) {
-        self.typeclickload('dsy');
-        self.$message.success(responseData.msg);
+      updateoverlockidlist(this.patientdsylist).then((responseData) => {
+        this.typeclickload('dsy');
+        this.$message.success(responseData.msg);
       });
     },
 
     // 忽略全部 - 待检验检查
-    ignoreDjyjc: function () {
-      var self = this;
+    ignoreDjyjc() {
       this.searchjyjc.companyId = this.Company.id;
       this.searchjyjc.status = "0";
       this.searchjyjc.overlook = "0";
-      updateoverlockidlist(this.searchjyjc).then(function (responseData) {
-        self.typeclickload('djyjc');
-        self.$message.success(responseData.msg);
+      updateoverlockidlist(this.searchjyjc).then((responseData) => {
+        this.typeclickload('djyjc');
+        this.$message.success(responseData.msg);
       });
     },
 
     // ========== 跳转 ==========
-    skiptobeseen: function (itemid, type) {
-      var routeMap = {
+    skiptobeseen(itemid, type) {
+      const routeMap = {
         djz: '/medicalOutpatientRecord',
         dfy: '/supplierStock',
         dsf: '/tollInfo',
@@ -688,20 +671,19 @@ export default {
         dsy: '/infusion',
         djyjc: '/inspectionCheck'
       };
-      var route = routeMap[type];
+      const route = routeMap[type];
       if (route) {
         this.$router.push({ path: route, params: { id: itemid } });
       }
     },
 
     // ========== 打开弹窗 ==========
-    onCreatePatient: function (types) {
-      this.$refs.workbenchForm.$emit('openAddworkbenchDialog', types);
+    onCreatePatient(types) {
+      this.$refs.workbenchForm.openAddworkbenchDialog(types);
     },
 
     // ========== 处方审查 ==========
-    initReviewList: function () {
-      var self = this;
+    initReviewList() {
       this.reviewSearch.params = [
         { columnName: 'recipelInfo.company_id', queryType: '=', value: currentUser.company.id },
         { columnName: 'registration.doctor_id', queryType: '=', value: currentUser.id },
@@ -709,69 +691,63 @@ export default {
         { columnName: 'recipelInfo.not_show', queryType: '=', value: 1 }
       ];
 
-      listRecipelInfoReviewPage(this.reviewSearch).then(function (responseData) {
-        if (responseData.code == 100) {
-          self.reviewTotal = responseData.data.total;
-          var list = [];
+      listRecipelInfoReviewPage(this.reviewSearch).then((responseData) => {
+        if (responseData.code === 100) {
+          this.reviewTotal = responseData.data.total;
+          const list = [];
           if (responseData.data.rows) {
-            responseData.data.rows.forEach(function (row) {
+            responseData.data.rows.forEach((row) => {
               list.push({
                 recipelInfoId: row.recipelInfo.id,
                 content: row.recipelInfo.registration.patientId.name + "/" + row.recipelInfo.recipelType.name + "/" + row.reviewContent
               });
             });
           }
-          self.reviewList = list;
+          this.reviewList = list;
         } else {
-          self.showMessage(responseData);
+          this.showMessage(responseData);
         }
-        self.resetLoad();
-      }).catch(function (error) {
-        self.outputError(error);
+        this.resetLoad();
+      }).catch((error) => {
+        this.outputError(error);
       });
     },
 
-    onClearAll: function (data) {
-      var self = this;
-      data.forEach(function (item) {
-        self.updateNotShowById(item.recipelInfoId, "all");
+    onClearAll(data) {
+      data.forEach((item) => {
+        this.updateNotShowById(item.recipelInfoId, "all");
       });
       this.showMessage({ type: 'success', msg: '操作成功' });
     },
 
-    onOpenAll: function () {
-      console.log("onOpenAll");
+    onOpenAll() {
     },
 
-    onClickContent: function (item) {
-      console.log(item, "onClickContent");
+    onClickContent(item) {
       this.$router.push({ path: '/recipelInfoReviewResult', params: {} });
     },
 
-    onClickOne: function (item) {
-      console.log(item, "onClickOne");
+    onClickOne(item) {
       this.$router.push({ path: '/recipelInfoReviewResult', params: {} });
     },
 
-    onClickTwo: function (item) {
-      console.log(item, "onClickTwo");
+    onClickTwo(item) {
       this.updateNotShowById(item.recipelInfoId, "single");
     },
 
-    updateNotShowById: function (recipelInfoId, type) {
-      var self = this;
-      updateNotShowById(recipelInfoId).then(function (responseData) {
-        if (responseData.code == 100) {
-          self.initReviewList();
-          if ("all" != type) {
-            self.showMessage({ type: 'success', msg: '操作成功' });
+    updateNotShowById(recipelInfoId, type) {
+      updateNotShowById(recipelInfoId).then((responseData) => {
+        if (responseData.code === 100) {
+          this.initReviewList();
+          if ("all" !== type) {
+            this.showMessage({ type: 'success', msg: '操作成功' });
           }
         }
       });
     }
   },
 
-  mounted: function () {
+  mounted() {
     this.loadlist();
     this.initReviewList();
   }

@@ -49,7 +49,7 @@
   </el-form-item>
 
   <el-form-item style="margin-right: 3px;">
-    <el-button type="primary" @click="Getdatalist">查询</el-button>
+    <el-button type="primary" @click="onSearch">查询</el-button>
     <el-button type="info" icon="el-icon-refresh-left" @click='resetCondition' :plain='true'>重置</el-button>
     <!-- <el-button @click="show3 = !show3">{{show3==true?"收起":"展开"}}</el-button> -->
   </el-form-item>
@@ -64,7 +64,7 @@
     <el-table-column
              label="序号"
               type="index"
-              :index="taskindexMethod"
+              :index="indexMethod"
               align="center">
             </el-table-column>
     <!-- <el-table-column
@@ -117,7 +117,7 @@
       label="任务状态"
       width="width">
       <template slot-scope="scope">
-        <span v-if="scope.row.taskstatus=='0'" style="color:orange">
+        <span v-if="scope.row.taskstatus==='0'" style="color:orange">
             待发布
         </span>
          <span v-else style="color:lightgreen">
@@ -134,10 +134,10 @@
       label="操作"
       width="width">
       <template slot-scope="scope">
-        <el-button v-if="scope.row.taskstatus=='1'" @click="onCreatedetails(scope.row,scope.$index)" type="text" size="small">查看</el-button>
-        <el-button v-if="scope.row.taskstatus=='0'" @click="onUpdate(scope.row,scope.$index)" type="text" size="small">修改</el-button>
-        <el-button v-if="scope.row.taskstatus=='0'" @click="onRelease(scope.row,scope.$index)" type="text" size="small" style="color:lightgreen">发布任务</el-button>
-        <el-button v-if="scope.row.taskstatus=='0'" @click="onDelete(scope.row,scope.$index)" type="text" size="small" style="color:red;">删除任务</el-button>
+        <el-button v-if="scope.row.taskstatus==='1'" @click="onCreatedetails(scope.row,scope.$index)" type="text" size="small">查看</el-button>
+        <el-button v-if="scope.row.taskstatus==='0'" @click="onUpdate(scope.row,scope.$index)" type="text" size="small">修改</el-button>
+        <el-button v-if="scope.row.taskstatus==='0'" @click="onRelease(scope.row,scope.$index)" type="text" size="small" style="color:lightgreen">发布任务</el-button>
+        <el-button v-if="scope.row.taskstatus==='0'" @click="onDelete(scope.row,scope.$index)" type="text" size="small" style="color:red;">删除任务</el-button>
         <!-- <el-button type="text" size="small">编辑</el-button> -->
       </template>
     </el-table-column>
@@ -164,12 +164,14 @@
 <script>
 import AddtaskForm from './addtaskForm'
 import TaskdetailsForm from './taskdetailsForm'
+import listViewMixin from '@/mixins/listViewMixin'
 import MainUI from '@/views/components/mainUI'
 import History from '@/views/components/history'
 import {selecttasklist,storageTask,release,deleteTask} from "@/api/taskmanagement/taskmanagement"
 import { getjglist} from "@/api/toll/tollInfo";
   export default {
     extends: MainUI,
+  mixins: [listViewMixin],
   components: {
     AddtaskForm,
     TaskdetailsForm,
@@ -177,19 +179,18 @@ import { getjglist} from "@/api/toll/tollInfo";
   },
     data() {
       return {
+        listApi: (search) => {
+          let flat = { limit: search.limit, offset: search.offset }
+          if (search.params) {
+            search.params.forEach(p => { flat[p.columnName] = p.value })
+          }
+          return selecttasklist(flat)
+        },
+        entityName: 'Task',
+        permissionPrefix: 'task',
         tableData: [],//表格数据
         jglist:[],
         show:false,
-        gettaskrcvo: {
-          limit: 20,
-        offset: 0,
-        jgid: '',
-          kssj:'',
-          jssj:'',
-          tasktype:'',
-          taskstatus:'',
-          taskname:''
-        },
         formInline: {
         jgid: '',
           kssj:'',
@@ -198,7 +199,6 @@ import { getjglist} from "@/api/toll/tollInfo";
           taskstatus:'',
           taskname:''
         },
-        currentPage: 1,
         patientTotal: 0,
       patientList: [],
         TimeInterval:this.getInitializeDate(),
@@ -247,9 +247,9 @@ import { getjglist} from "@/api/toll/tollInfo";
       onDelete(row,index){
         this.setLoad();
         deleteTask(row).then((res)=>{
-          if(res.code==100){
+          if(res.code===100){
             this.$message.success("删除成功！")
-            this.Getcliniclist()
+            this.loadData()
             this.resetLoad();
           }else{
             this.$message.error("执行失败")
@@ -263,7 +263,7 @@ import { getjglist} from "@/api/toll/tollInfo";
       onRelease(row,index){
         row.taskstatus = "1"
         release(row).then((res)=>{
-          if(res.code==100){
+          if(res.code===100){
             this.$message.success("发布成功")
             this.Getcliniclist()
           }
@@ -274,7 +274,7 @@ import { getjglist} from "@/api/toll/tollInfo";
 
       //修改任务
       onUpdate(row,index){
-        this.$refs.addtaskForm.$emit('openUpdateworkbenchDialog',this.taskAll[index]);
+        this.$refs.addtaskForm.openUpdateworkbenchDialog(this.taskAll[index]);
       },
 
          //设置默认日期
@@ -293,32 +293,48 @@ import { getjglist} from "@/api/toll/tollInfo";
      let end = year + '-' + month + '-' + day +' 23:59:59'  //当天
      return [start,end] //将值设置给组件DatePicker 绑定的数据
    },
-       onSizeChange(val) {
-      this.currentPage = 1
-      this.gettaskrcvo.limit = val;
-      this.gettaskrcvo.offset = (this.currentPage - 1) * val
-      this.Getcliniclist();
+       appendSearchParams() {
+      if (this.TimeInterval) {
+        this.search.params.push({ columnName: 'kssj', queryType: '=', value: this.TimeInterval[0] })
+        this.search.params.push({ columnName: 'jssj', queryType: '=', value: this.TimeInterval[1] })
+      }
+      let tasktype = this.formInline.tasktype === "qb" ? "" : this.formInline.tasktype
+      let taskstatus = this.formInline.taskstatus === "qb" ? "" : this.formInline.taskstatus
+      if (tasktype) this.search.params.push({ columnName: 'tasktype', queryType: '=', value: tasktype })
+      if (taskstatus) this.search.params.push({ columnName: 'taskstatus', queryType: '=', value: taskstatus })
+      if (this.formInline.taskname) this.search.params.push({ columnName: 'taskname', queryType: 'like', value: this.formInline.taskname })
     },
-    onCurrentChange(val) {
-      this.gettaskrcvo.offset = (val - 1) * this.gettaskrcvo.limit
-      this.currentPage = val
-      this.Getcliniclist();
-    },
-    taskindexMethod(index){
-       return (this.currentPage-1)*this.gettaskrcvo.limit+index +1;
+    handleListResponse(responseData) {
+      this.patientTotal = responseData.data.total
+      this.taskAll = responseData.data.rows
+      this.tableData = []
+      if (responseData.data.total > 0) {
+        responseData.data.rows.forEach((item) => {
+          this.tableData.push({
+            id: item.id,
+            tasktype: item.tasktype === "0" ? "常规任务" : "宣传活动",
+            taskname: item.taskname,
+            taskdescribe: item.taskdescribe,
+            createdTime: item.createdTime,
+            taskdeadline: item.taskdeadline,
+            taskinitiatorname: item.taskinitiatorname,
+            taskaccessory: item.taskaccessory,
+            taskstatus: item.taskstatus,
+          })
+        })
+      }
     },
       handleClick(row) {
-        console.log(row);
       },
       onCreatePatient(types) {
-      this.$refs.addtaskForm.$emit('openAddworkbenchDialog',types);
+      this.$refs.addtaskForm.openAddworkbenchDialog(types);
     },
     onCreatedetails(values){
 
-      this.$refs.taskdetailsForm.$emit('openAddworkbenchDialog',values);
+      this.$refs.taskdetailsForm.openAddworkbenchDialog(values);
     },
     typeclickload(){
-      this. Getcliniclist();
+      this.loadData();
     },
     resetCondition(){
       this.YpjxcRc={
@@ -329,16 +345,6 @@ import { getjglist} from "@/api/toll/tollInfo";
         jgid:null,
       };
       this.jglist=[];
-        this.gettaskrcvo= {
-          limit: 20,
-        offset: 0,
-        jgid: '',
-          kssj:'',
-          jssj:'',
-          tasktype:'',
-          taskstatus:'',
-          taskname:''
-        };
         this.formInline= {
         jgid: '',
           kssj:'',
@@ -347,17 +353,17 @@ import { getjglist} from "@/api/toll/tollInfo";
           taskstatus:'',
           taskname:''
         };
-        this.Getcliniclist();
+        this.onSearch();
     },
      Getcliniclist(){
        this.setLoad();
           this.jglist=[];
           getjglist(this.YpjxcRc).then((responseData)=>{
-              if (responseData.code == 100){
+              if (responseData.code === 100){
                   if(responseData.data.length>0){
                      this.zsids='';
                       responseData.data.forEach((item)=>{
-                          if(item.jgid!=currentUser.company.id){
+                          if(item.jgid!==currentUser.company.id){
                           this.jglist.push({
                               jgid:item.jgid,
                               jgmc:item.jgmc,
@@ -366,59 +372,16 @@ import { getjglist} from "@/api/toll/tollInfo";
                          }
                       })
                       this.zsids=this.zsids.substring(0, this.zsids.lastIndexOf(','));
-                      //this.jglist = responseData.data.filter((item) => item.jgid !=currentUser.company.id)
-                      this.Getdatalist();
                       this.resetLoad();
                   }
               }
           })
       },
-      Getdatalist() {
-        this.setLoad();
-        this.tableData = [];
-        console.log(this.TimeInterval,"TimeInterval")
-        if (this.TimeInterval) {
-          this.gettaskrcvo.kssj = this.TimeInterval[0];
-          this.gettaskrcvo.jssj = this.TimeInterval[1]
-        }else {
-          this.gettaskrcvo.kssj = null;
-          this.gettaskrcvo.jssj = null;
-        }
-        this.gettaskrcvo.tasktype = this.formInline.tasktype == "qb" ? "" : this.formInline.tasktype;
-        this.gettaskrcvo.taskstatus = this.formInline.taskstatus == "qb" ? "" : this.formInline.taskstatus;
-        this.gettaskrcvo.taskname = this.formInline.taskname;
-        selecttasklist(this.gettaskrcvo).then((responseData) => {
-
-          if (responseData.code == 100) {
-            if (responseData.data.total > 0) {
-              this.patientTotal = responseData.data.total;
-              this.taskAll = responseData.data.rows
-              responseData.data.rows.forEach((item) => {
-
-                this.tableData.push({
-                  id: item.id,
-                  tasktype: item.tasktype == "0" ? "常规任务" : "宣传活动",
-                  taskname: item.taskname,
-                  taskdescribe: item.taskdescribe,
-                  createdTime: item.createdTime,
-                  taskdeadline: item.taskdeadline,
-                  taskinitiatorname: item.taskinitiatorname,
-                  taskaccessory: item.taskaccessory,
-                  taskstatus: item.taskstatus,
-
-                })
-              })
-            }
-          }
-          this.resetLoad();
-        })
-
-      },
-
 
     },
     mounted(){
         this.Getcliniclist();
+        this.pageInit();
     }
   }
 </script>

@@ -1,8 +1,8 @@
 <template>
   <div class="input-number-range">
-    <number-input v-model="beginValue" :currency="type == 'java.math.BigDecimal' ? 'CNY' : null" :precision="precision" clearable></number-input>
+    <number-input v-model="beginValue" :currency="type === 'java.math.BigDecimal' ? 'CNY' : null" :precision="precision" clearable></number-input>
     <span>至</span>
-    <number-input v-model="endValue" :currency="type == 'java.math.BigDecimal' ? 'CNY' : null" :precision="precision" clearable></number-input>
+    <number-input v-model="endValue" :currency="type === 'java.math.BigDecimal' ? 'CNY' : null" :precision="precision" clearable></number-input>
   </div>
 </template>
 
@@ -42,14 +42,12 @@ export default {
   watch: {
     //判断下拉框的值是否有改变
     beginValue(val, oldVal) {
-      //console.log('new: %s, old: %s', val, oldVal)
-      if(val!=oldVal){
+      if(val!==oldVal){
           this.$emit('input', [this.beginValue, this.endValue]);
       }
     },
     endValue(val, oldVal) {
-      //console.log('new: %s, old: %s', val, oldVal)
-      if(val!=oldVal){
+      if(val!==oldVal){
           this.$emit('input', [this.beginValue, this.endValue]);
       }
     }
@@ -69,29 +67,27 @@ export default {
     proving(e){
       let num = e.target.value || ''
       let code = e.which || e.keyCode
-      let str = (e.key && e.key != 'Unidentified') ? e.key : num.substr(num.length - 1)
-      console.log('|type:' + e.type + '|code:' + code + '|str:' + str + '|value112:' + num)
+      let str = (e.key && e.key !== 'Unidentified') ? e.key : num.substr(num.length - 1)
 
 /*      //禁止输入中文
       if(code == '229') {
-        console.log('----------------------------------------====')
         e.returnValue = false
         return false
       }*/
 
       //无论任何情况，皆可执行 回退、删除、左方向、右方向
-      if(code == '8' || code == '46' || code == '37' || code == '39') {
+      if(code === '8' || code === '46' || code === '37' || code === '39') {
         return true
       }
       //没有满足任何一种情况，中断执行
-      if(!(/[\d.]/.test(str) || code == '190')) {
+      if(!(/[\d.]/.test(str) || code === '190')) {
         e.returnValue = false
         return false
       }
       if(num.length > 12 ||
-        (num.indexOf('.') >= 0 && code == '190') ||
-        ((num.indexOf('.') == num.length - 3) && num.length > 3) ||
-        (num.length == 0 && code == '190')) {
+        (num.indexOf('.') >= 0 && code === '190') ||
+        ((num.indexOf('.') === num.length - 3) && num.length > 3) ||
+        (num.length === 0 && code === '190')) {
         e.returnValue = false
         return false
       }

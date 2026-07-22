@@ -323,8 +323,8 @@ export const calendar = {
      * @return Cn string
      */
     toGanZhiYear: function (lYear) {
-        var ganKey = (lYear - 3) % 10;
-        var zhiKey = (lYear - 3) % 12;
+        let ganKey = (lYear - 3) % 10;
+        let zhiKey = (lYear - 3) % 12;
         if (ganKey === 0) ganKey = 10;//如果余数为0则为最后一个天干
         if (zhiKey === 0) zhiKey = 12;//如果余数为0则为最后一个地支
         return this.Gan[ganKey - 1] + this.Zhi[zhiKey - 1];
@@ -434,7 +434,6 @@ export const calendar = {
      * @param mPara  solar month
      * @param dPara  solar day
      * @return JSON object
-     * @eg:console.log(calendar.solar2lunar(1987,11,01));
      */
     solar2lunar: function (yPara, mPara, dPara) {
         let y = parseInt(yPara);
@@ -606,7 +605,6 @@ export const calendar = {
      * @param d  lunar day
      * @param isLeapMonth  lunar month is leap or not.[如果是农历闰月第四个参数赋值true即可]
      * @return JSON object
-     * @eg:console.log(calendar.lunar2solar(1987,9,10));
      */
     lunar2solar: function (y, m, d, isLeapMonth) {
         y = parseInt(y)

@@ -2,6 +2,7 @@ package com.geeke.outpatient.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.geeke.common.controller.CrudController;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
 import com.geeke.medicareutils.config.MedicareConfigProperties;
@@ -19,14 +20,12 @@ import com.geeke.outpatient.service.RegistrationService;
 import com.geeke.outpatient.vo.PrescriptionStatisticsVO;
 import com.geeke.outpatient.vo.ReviewVO;
 import com.geeke.outpatient.vo.StatementVO;
-import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.ResultUtil;
 import com.geeke.utils.SessionUtils;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 import java.util.List;
 
 
@@ -36,49 +35,38 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/outpatient/review")
-@RequiredArgsConstructor
-public class RecipelInfoReviewController extends BaseController {
+public class RecipelInfoReviewController extends CrudController<RecipelInfoReviewService, RecipelInfoReview> {
 
-    @Resource
-    private RecipelInfoReviewService recipelInfoReviewService;
+    @Autowired
+    protected RecipelInfoReviewService recipelInfoReviewService;
 
-    private  final MdMedicationOrderService mdMedicationOrderService;
+    @Autowired
+    private MdMedicationOrderService mdMedicationOrderService;
 
+    @Autowired
+    private RecipelInfoService recipelInfoService;
 
-    private final RecipelInfoService recipelInfoService;
+    @Autowired
+    private MedicalRecordService medicalRecordService;
 
-    private final MedicalRecordService medicalRecordService;
+    @Autowired
+    private RegistrationService registrationService;
 
-    private final RegistrationService registrationService;
+    @Autowired
+    private MedicareConfigProperties medicareConfigProperties;
 
-    private  final MedicareConfigProperties medicareConfigProperties;
-
-
-
-
-    @GetMapping("/{id}")
-    public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
-        RecipelInfoReview entity = recipelInfoReviewService.get(id);
-        return ResponseEntity.ok(ResultUtil.successJson(entity));
+    @Override
+    protected RecipelInfoReviewService getService() {
+        return recipelInfoReviewService;
     }
+
     @GetMapping("/recipelInfo/{recipelInfoId}")
     public ResponseEntity<JSONObject> getByRecipelInfoId(@PathVariable("recipelInfoId") String recipelInfoId) {
         RecipelInfoReview entity = recipelInfoReviewService.getByRecipelInfoId(recipelInfoId);
         return ResponseEntity.ok(ResultUtil.successJson(entity));
     }
 
-    @PostMapping(value = {"list", ""})
-    public ResponseEntity<JSONObject> listPage(@RequestBody SearchParams searchParams) {
-        Page<RecipelInfoReview> result = recipelInfoReviewService.listPage(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
-
-    @PostMapping(value = "listAll")
-    public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
-        List<RecipelInfoReview> result = recipelInfoReviewService.listAll(searchParams.getParams(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
-
+    @Override
     @PostMapping(value = "save")
     public ResponseEntity<JSONObject> save(@RequestBody RecipelInfoReview entity) {
         //获取完整的处方、病历、挂号信息
@@ -110,6 +98,7 @@ public class RecipelInfoReviewController extends BaseController {
     }
 
 
+    @Override
     @DeleteMapping(value = "delete")
     public ResponseEntity<JSONObject> delete(@RequestBody RecipelInfoReview entity) {
         int rows = recipelInfoReviewService.delete(entity);
@@ -144,44 +133,9 @@ public class RecipelInfoReviewController extends BaseController {
      */
     @PostMapping("/pre/getMdMedicineInfo")
     public ResponseEntity<JSONObject> getMdMedicineInfo(@RequestBody RecipelInfoReview entity) {
-//        JSONObject jsonObject = mdMedicationOrderService.queryPrescriptionDispensingResult_Ld7804(entity);
-//        MdPreDrugData mdPreDrugData = JSONObject.parseObject(jsonObject.getString("data"), MdPreDrugData.class);
-//        return ResponseEntity.ok(ResultUtil.successJson(mdPreDrugData));
-
-        String json = "{\n" +
-                "  \"hiRxno\": \"RX1234567890\",\n" +
-                "  \"setlTime\": \"2025-03-25 12:00:00\",\n" +
-                "  \"eltdelts\": [\n" +
-                "    {\n" +
-                "      \"medinsListCodg\": \"MLC1234567890\",\n" +
-                "      \"drugGenname\": \"阿莫西林\",\n" +
-                "      \"drugProdname\": \"阿莫西林胶囊\",\n" +
-                "      \"drugDosform\": \"胶囊\",\n" +
-                "      \"drugSpec\": \"250mg\",\n" +
-                "      \"ent\": 100,\n" +
-                "      \"aprvno\": \"H20100101\",\n" +
-                "      \"bchno\": \"BCH12345678\",\n" +
-                "      \"manuLotnum\": \"LOT12345678\",\n" +
-                "      \"prdrName\": \"华北制药厂\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "      \"medinsListCodg\": \"MLC0987654321\",\n" +
-                "      \"drugGenname\": \"对乙酰氨基酚\",\n" +
-                "      \"drugProdname\": \"扑尔敏片\",\n" +
-                "      \"drugDosform\": \"片剂\",\n" +
-                "      \"drugSpec\": \"500mg\",\n" +
-                "      \"ent\": 200,\n" +
-                "      \"aprvno\": \"H20100202\",\n" +
-                "      \"bchno\": \"BCH98765432\",\n" +
-                "      \"manuLotnum\": \"LOT98765432\",\n" +
-                "      \"prdrName\": \"南方制药厂\"\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}";
-        MdPreDrugData mdPreDrugData = JSONObject.parseObject(json, MdPreDrugData.class);
-
+        JSONObject jsonObject = mdMedicationOrderService.queryPrescriptionDispensingResult_Ld7804(entity);
+        MdPreDrugData mdPreDrugData = JSONObject.parseObject(jsonObject.getString("data"), MdPreDrugData.class);
         return ResponseEntity.ok(ResultUtil.successJson(mdPreDrugData));
-
     }
 
     /**
@@ -191,17 +145,8 @@ public class RecipelInfoReviewController extends BaseController {
      */
     @PostMapping("/pre/getMdExamineInfo")
     public ResponseEntity<JSONObject> getMdExamineInfo(@RequestBody RecipelInfoReview entity) {
-//        JSONObject jsonObject = mdMedicationOrderService.queryElectronicPrescriptionReviewResult_Ld7805(entity);
-//        MdExamine mdExamine = JSONObject.parseObject(jsonObject.getString("data"), MdExamine.class);
-        String json = "{\n" +
-                "  \"hiRxno\": \"RX123456789\",\n" +
-                "  \"pharName\": \"张药师\",\n" +
-                "  \"pharCode\": \"P00123456789\",\n" +
-                "  \"rxChkStasCodg\": \"001\",\n" +
-                "  \"rxChkOpnn\": \"处方审核通过，建议患者继续服用。\",\n" +
-                "  \"rxChkTime\": \"2025-03-25T10:15:30\"\n" +
-                "}\n";
-        MdExamine mdExamine =  JSONObject.parseObject(json, MdExamine.class);
+        JSONObject jsonObject = mdMedicationOrderService.queryElectronicPrescriptionReviewResult_Ld7805(entity);
+        MdExamine mdExamine = JSONObject.parseObject(jsonObject.getString("data"), MdExamine.class);
         return ResponseEntity.ok(ResultUtil.successJson(mdExamine));
     }
 
@@ -232,7 +177,6 @@ public class RecipelInfoReviewController extends BaseController {
         return ResponseEntity.ok(ResultUtil.successJson("撤销成功！"));
 
     }
-
 
 
 

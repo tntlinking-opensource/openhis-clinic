@@ -3,7 +3,7 @@
     @open='onDialogOpen()' v-loading='loading'>
     <div slot='title' class='dialog-header'>
       {{ dialogProps.title }}
-      <OperationIcon v-show='dialogProps.action == "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
+      <OperationIcon v-show='dialogProps.action === "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
     </div>
     <el-form :model='bizFormModel' :rules='formRules'
       ref='roleForm' label-width='120px' label-position='right' class='edit-form'
@@ -12,37 +12,37 @@
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='代码' prop='code'>
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.code' :maxlength='32' :placeholder='dialogProps.action == "view"? "" : "请输入代码"' autofocus></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.code' :maxlength='32' :placeholder='dialogProps.action === "view"? "" : "请输入代码"' autofocus></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='名称' prop='name'>
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.name' :maxlength='32' :placeholder='dialogProps.action == "view"? "" : "请输入名称"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.name' :maxlength='32' :placeholder='dialogProps.action === "view"? "" : "请输入名称"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='是否启用' prop='isLocked'>
-            <el-switch :disabled='dialogProps.action == "view"' v-model='bizFormModel.isLocked' active-color='#13ce66' inactive-color='#dbdfe6' :active-value='0' :inactive-value='1'></el-switch>
+            <el-switch :disabled='dialogProps.action === "view"' v-model='bizFormModel.isLocked' active-color='#13ce66' inactive-color='#dbdfe6' :active-value='0' :inactive-value='1'></el-switch>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col>
           <el-form-item label='备注信息' prop='remarks'>
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.remarks' type='textarea' 
-             :maxlength='255' :placeholder='dialogProps.action == "view"? "" : "请输入备注信息"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.remarks' type='textarea' 
+             :maxlength='255' :placeholder='dialogProps.action === "view"? "" : "请输入备注信息"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
     </el-form>
     <span slot='footer' class='dialog-footer'>
-      <el-button v-if='dialogProps.action != "view"'  :disabled="flage" type='primary' :plain='true' @click='onSubmit("roleForm")'>保 存</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+      <el-button v-if='dialogProps.action !== "view"'  :disabled="flag" type='primary' :plain='true' @click='onSubmit("roleForm")'>保 存</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span>
   </el-dialog>
 </template>
@@ -61,7 +61,7 @@ export default {
   data() {
     return {
       bizFormModel: this.initFormModel(),
-      flage:false,
+      flag:false,
 
        dialogProps: {
         visible: false,
@@ -90,12 +90,12 @@ export default {
   },
   methods: {
     onSubmit(formName) {
-      this.flage=true
+      this.flag=true
       this.$refs[formName].validate(valid => {
         if (valid) {
           this.doSave()
         } else {
-          this.flage=false
+          this.flag=false
           return false
         }
       });
@@ -103,8 +103,8 @@ export default {
     doSave() {
       this.setLoad()
       saveRole(this.bizFormModel).then(responseData => {
-        this.flage=false
-        if(responseData.code == 100) {
+        this.flag=false
+        if(responseData.code === 100) {
           this.dialogProps.visible = false
           this.$emit('save-finished')
         } else {
@@ -112,7 +112,7 @@ export default {
         }
         this.resetLoad()
       }).catch(error => {
-        this.flage=false
+        this.flag=false
         this.outputError(error)
       })
     },
@@ -144,43 +144,39 @@ export default {
     },
     initOptions(This) {
 
-
-    }
+    },
+    openViewRoleDialog(role) {
+      this.dialogProps.action = 'view'
+      this.dialogProps.title = '查看角色'
+      this.bizFormModel = role
+      this.dialogProps.visible = true
+    },
+    openEditRoleDialog(role) {
+      this.dialogProps.action = 'edit'
+      this.dialogProps.title = '修改角色'
+      this.bizFormModel = role
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+    },
+    openAddRoleDialog(parent) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加角色'
+      this.bizFormModel = this.initFormModel(parent)
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+    },
+    openCopyRoleDialog(role) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加角色'
+      this.bizFormModel = role
+      this.initOptions(this.bizFormModel)
+      this.bizFormModel.id = null
+      this.dialogProps.visible = true
+    },
   },
   watch: {
   },
   mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openViewRoleDialog', function(role) {
-        this.dialogProps.action = 'view'
-        this.dialogProps.title = '查看角色'
-        this.bizFormModel = role
-        // this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openEditRoleDialog', function(role) {
-        this.dialogProps.action = 'edit'
-        this.dialogProps.title = '修改角色'
-        this.bizFormModel = role
-        this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openAddRoleDialog', function(parent) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加角色'
-        this.bizFormModel = this.initFormModel(parent)
-        this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openCopyRoleDialog', function(role) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加角色'
-        this.bizFormModel = role
-        this.initOptions(this.bizFormModel)
-        this.bizFormModel.id = null   //把id设置为空，添加一个新的
-        this.dialogProps.visible = true
-      })
-    })
-  }
+  },
 }
 </script>

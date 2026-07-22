@@ -8,20 +8,17 @@
 
 <script>
 import ReviewResult from "./components/reviewResult"
+import listViewMixin from '@/mixins/listViewMixin'
 import MainUI from '@/views/components/mainUI'
 export default {
   extends: MainUI,
+  mixins: [listViewMixin],
   components: {
     ReviewResult
   },
   data() {
     return {
     }
-  },
-  methods: {},
-  watch: {
-  },
-  mounted() {
   }
 }
 </script>

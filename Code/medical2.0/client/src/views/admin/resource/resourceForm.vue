@@ -3,7 +3,7 @@
     @open='onDialogOpen()' v-loading='loading'>
     <div slot='title' class='dialog-header'>
       {{ dialogProps.title }}
-      <OperationIcon v-show='dialogProps.action == "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
+      <OperationIcon v-show='dialogProps.action === "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
     </div>
     <el-form :model='bizFormModel' :rules='formRules' 
       ref='resourceForm' label-width='120px' label-position='right' class='edit-form'>    
@@ -11,59 +11,59 @@
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='名称' prop='name' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.name' :maxlength='128' :placeholder='dialogProps.action == "view"? "" : "请输入名称"' autofocus></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.name' :maxlength='128' :placeholder='dialogProps.action === "view"? "" : "请输入名称"' autofocus></el-input>
           </el-form-item>
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='代码' prop='code' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.code' :maxlength='64' :placeholder='dialogProps.action == "view"? "" : "请输入代码"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.code' :maxlength='64' :placeholder='dialogProps.action === "view"? "" : "请输入代码"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='Url' prop='url' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.url' :maxlength='128' :placeholder='dialogProps.action == "view"? "" : "请输入Url"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.url' :maxlength='128' :placeholder='dialogProps.action === "view"? "" : "请输入Url"' ></el-input>
           </el-form-item>
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='权限' prop='permission' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.permission' :maxlength='32' :placeholder='dialogProps.action == "view"? "" : "请输入权限"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.permission' :maxlength='32' :placeholder='dialogProps.action === "view"? "" : "请输入权限"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='可授权' prop='canPermission' >
-            <el-switch :disabled='dialogProps.action == "view"' v-model='bizFormModel.canPermission' active-color='#13ce66' inactive-color='#dbdfe6' active-value='1' inactive-value='0'></el-switch>
+            <el-switch :disabled='dialogProps.action === "view"' v-model='bizFormModel.canPermission' active-color='#13ce66' inactive-color='#dbdfe6' active-value='1' inactive-value='0'></el-switch>
           </el-form-item>
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='默认权限' prop='isDefault' >
-            <el-switch :disabled='dialogProps.action == "view"' v-model='bizFormModel.isDefault' active-color='#13ce66' inactive-color='#dbdfe6' active-value='1' inactive-value='0'></el-switch>
+            <el-switch :disabled='dialogProps.action === "view"' v-model='bizFormModel.isDefault' active-color='#13ce66' inactive-color='#dbdfe6' active-value='1' inactive-value='0'></el-switch>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='禁用' prop='isLocked' >
-            <el-switch :disabled='dialogProps.action == "view"' v-model='bizFormModel.isLocked' active-color='#13ce66' inactive-color='#dbdfe6' :active-value='1' :inactive-value='0'></el-switch>
+            <el-switch :disabled='dialogProps.action === "view"' v-model='bizFormModel.isLocked' active-color='#13ce66' inactive-color='#dbdfe6' :active-value='1' :inactive-value='0'></el-switch>
           </el-form-item>
         </el-col>
                         </el-row>
             <el-row>
                 <el-col>
                     <el-form-item label='备注信息' prop='remarks' >
-                        <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.remarks' type='textarea'
-                                  :maxlength='255' :placeholder='dialogProps.action == "view"? "" : "请输入备注信息"'  clearable></el-input>
+                        <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.remarks' type='textarea'
+                                  :maxlength='255' :placeholder='dialogProps.action === "view"? "" : "请输入备注信息"'  clearable></el-input>
                     </el-form-item>
                 </el-col>
             </el-row>
     </el-form>
     <span slot='footer' class='dialog-footer'>
-      <el-button v-if='dialogProps.action != "view"' :disabled="flage" type='primary' :plain='true' @click='onSubmit("resourceForm")'>保 存</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :disabled="flag" type='primary' :plain='true' @click='onSubmit("resourceForm")'>保 存</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span>    
   </el-dialog>
 </template>
@@ -81,7 +81,7 @@ export default {
   data() {
     return {
       bizFormModel: this.initFormModel(),
-      flage:false,                                                          
+      flag:false,                                                          
        dialogProps: {
         visible: false,
         action: '',
@@ -112,12 +112,12 @@ export default {
   },  
   methods: {
     onSubmit(formName) {
-      this.flage=true
+      this.flag=true
       this.$refs[formName].validate(valid => {
         if (valid) {
           this.doSave()
         } else {
-          this.flage=false
+          this.flag=false
           return false
         }
       });
@@ -125,8 +125,8 @@ export default {
     doSave() {
       this.setLoad()
       saveResource(this.bizFormModel).then(responseData => {
-        this.flage=false
-        if(responseData.code == 100) {
+        this.flag=false
+        if(responseData.code === 100) {
           this.dialogProps.visible = false
           this.$emit('save-finished')
         } else {
@@ -134,7 +134,7 @@ export default {
         }
         this.resetLoad()
       }).catch(error => {
-        this.flage=false
+        this.flag=false
         this.outputError(error)
       })
     },
@@ -169,44 +169,40 @@ export default {
       }
     },
     initOptions(This) {
-                                                                                           
-                                                                  
-    }
+
+    },
+    openViewResourceDialog(resource) {
+      this.dialogProps.action = 'view'
+      this.dialogProps.title = '查看资源'
+      this.bizFormModel = resource
+      this.dialogProps.visible = true
+    },
+    openEditResourceDialog(resource) {
+      this.dialogProps.action = 'edit'
+      this.dialogProps.title = '修改资源'
+      this.bizFormModel = resource
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+    },
+    openAddResourceDialog(parent) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加资源'
+      this.bizFormModel = this.initFormModel(parent)
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+    },
+    openCopyResourceDialog(resource) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加资源'
+      this.bizFormModel = resource
+      this.initOptions(this.bizFormModel)
+      this.bizFormModel.id = null
+      this.dialogProps.visible = true
+    },
   },
   watch: {
   },
   mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openViewResourceDialog', function(resource) {
-        this.dialogProps.action = 'view'
-        this.dialogProps.title = '查看资源'
-        this.bizFormModel = resource
-        // this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openEditResourceDialog', function(resource) {
-        this.dialogProps.action = 'edit'
-        this.dialogProps.title = '修改资源'
-        this.bizFormModel = resource
-        this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openAddResourceDialog', function(parent) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加资源'
-        this.bizFormModel = this.initFormModel(parent)
-        this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openCopyResourceDialog', function(resource) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加资源'
-        this.bizFormModel = resource
-        this.initOptions(this.bizFormModel)
-        this.bizFormModel.id = null   //把id设置为空，添加一个新的
-        this.dialogProps.visible = true
-      })
-    })
-  }  
+  },
 }
 </script>

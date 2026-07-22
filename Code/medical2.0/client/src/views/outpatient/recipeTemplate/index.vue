@@ -4,7 +4,7 @@
     <History :bussObject='curentRow'></History>
     <!-- 编辑窗口  -->
     <recipetemplate-form ref='recipetemplateForm' :permission='permission'
-                         v-on:save-finished='getRecipetemplateList()'></recipetemplate-form>
+                         @save-finished='loadData'></recipetemplate-form>
     <div class="page-container">
       <!--  搜索栏  开始 -->
       <div class='query-form-container'>
@@ -121,14 +121,14 @@
                                :column-key='index.toString()' :render-header="renderHeader">
                 <template slot-scope='{row,$index}'>
                   <span
-                    v-if='columnViews[index].showType == "Switch" || columnViews[index].showType == "Checkbox" || columnViews[index].showType == "Radio"'>
+                    v-if='columnViews[index].showType === "Switch" || columnViews[index].showType === "Checkbox" || columnViews[index].showType === "Radio"'>
                     <!-- <li v-if='getAttrValue(row, columnViews[index].prop) == "1"' class='el-icon-check' style='color:#F56C6C;'>
 
                     </li> -->
                     <!-- <li v-if='getAttrValue(row, columnViews[index].prop) == "1"' >
 
                    </li> -->
-                    <span v-if='getAttrValue(row, columnViews[index].prop) == "1"'>
+                    <span v-if='getAttrValue(row, columnViews[index].prop) === "1"'>
                       公开模板
                     </span>
                      <span v-else>
@@ -139,7 +139,7 @@
                 </template>
               </el-table-column>
               <!--表行级操作按钮-->
-              <el-table-column label='操作' header-align='center' :width='140 + "px"' :key="Math.random()">
+              <el-table-column label='操作' header-align='center' :width='140 + "px"' :key="'operate'">
                 <template slot='header' slot-scope="scope">
                   <span>操作</span>
                   <view-columns-select v-model='columnViews' v-on:save-column-view='saveColumn'
@@ -217,7 +217,9 @@
 <script>
   import {validatenull} from '@/utils/validate'
   import {listRecipetemplatePage, getRecipetemplateById, deleteRecipetemplate} from '@/api/outpatient/recipetemplate'
-  import {listResourcePermission} from '@/api/admin/common/permission'
+  import { listResourcePermission } from '@/api/resourcePermission'
+  import { mapPermissions } from '@/utils/searchParamsBuilder'
+  import listViewMixin from '@/mixins/listViewMixin'
   import RecipetemplateForm from './recipetemplateForm'
   import ExportExcelButton from '@/components/ExportExcelButton'
   import ViewColumnsSelect from '@/views/components/ViewColumnsSelect'
@@ -226,9 +228,12 @@
   import OperationIcon from '@/components/OperationIcon'
   import History from '@/views/components/history'
   import {listDictItemAll} from '@/api/sys/dictItem'
+  import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
+  import { getCurrentUser } from "@/utils/userCache";
 
   export default {
     extends: MainUI,
+    mixins: [listViewMixin],
     components: {
       RecipetemplateForm,
       ExportExcelButton,
@@ -239,13 +244,11 @@
     },
     data() {
       return {
-        permission: {
-          view: false,
-          add: false,
-          edit: false,
-          remove: false,
-          export: false
-        },
+        listApi: listRecipetemplatePage,
+        getApi: getRecipetemplateById,
+        deleteApi: deleteRecipetemplate,
+        entityName: 'Recipetemplate',
+        permissionPrefix: 'recipeTemplate',
         queryTypes: {},
         queryModel: {
           recipetemplateName: "",
@@ -254,17 +257,8 @@
           category: "",
           updateDate: "",
         },
-        search: {
-          params: [{columnName: 'company_id', queryType: '=', value: currentUser.company.id}],
-          offset: 0,
-          limit: 20,
-          columnName: '',      // 排序字段名
-          order: ''            // 排序
-        },
-        currentPage: 1,
         recipetemplateTotal: 0,
         recipetemplateList: [],
-
 
         oprColumnWidth: 140,  // 操作列宽
         tableId: '1186832625065336477',
@@ -274,57 +268,42 @@
       }
     },
     methods: {
-      indexMethod(index) {
-        return (this.currentPage - 1) * this.search.limit + index + 1;
-      },
       reset() {
         this.queryModel = {
           recipetemplateName: "",
+          code: "",
           type: {},
           category: "",
           updateDate: "",
-
         }
-        this.getRecipetemplateList()
+        this.onSearch()
       },
       add(item, index) {
         // if(index==0){
-        this.$refs.recipetemplateForm.$emit('openAddRecipetemplateDialog', item, index, currentUser.company)
+        this.$refs.recipetemplateForm.openAddRecipetemplateDialog(item, index, currentUser.company)
         this.templateDialogVisible = false
         //}
       },
       onCreateTemplate() {
         // this.$refs.recipetemplateForm.$emit('openAddRecipetemplateDialog')
-        let type_search = {
-          params: [{'columnName': 'dict_type_id', 'queryType': '=', 'value': '1014474470772899974'}]
-        }
-        // 字段对应表上filter条件
-        type_search.params.push.apply(type_search.params, [])
-        // 数据权限: 字典项sys_dict_item
-        this.pushDataPermissions(type_search.params, this.$route.meta.routerId, '4005')
-        this.type_List.splice(0, this.type_List.length)
-        listDictItemAll(type_search).then(responseData => {
-          this.type_List = responseData.data
-          this.type_List = this.type_List.filter((item) => item.name != "零售处方")
-          this.type_List = this.type_List.filter((item) => item.name != '附加费')
+        getDictItemsByCode(DICT_CODE.RECIPEL_TYPE).then((data) => {
+          this.type_List = data
+          this.type_List = this.type_List.filter((item) => item.name !== "零售处方")
+          this.type_List = this.type_List.filter((item) => item.name !== '附加费')
           this.templateDialogVisible = true
         })
       },
 
-      getRecipetemplateList() {
-        this.setLoad()
-        /* 查询参数 和数据权限 */
-        this.search.params = [{columnName: 'company_id', queryType: '=', value: currentUser.company.id}]
+      appendSearchParams() {
+        this.search.params.push({columnName: 'company_id', queryType: '=', value: currentUser.company.id})
         if (this.moreCodition) {
           this.search.params = this.search.params.concat(this.compositeCondition())
         } else {
-
           this.search.params.push({
             columnName: 'recipetemplate_name',
             queryType: 'like',
             value: this.queryModel.recipetemplateName
           })
-
           this.search.params.push({
             columnName: 'code',
             queryType: 'like',
@@ -335,34 +314,25 @@
             queryType: '=',
             value: validatenull(this.queryModel.type.value) ? '' : this.queryModel.type.value
           })
-          if (this.queryModel.category != "" && this.queryModel.category == 0) {
+          if (this.queryModel.category !== "" && this.queryModel.category === 0) {
             this.search.params.push({
               columnName: "category",
-
               queryType: '=',
               value: "0",
             })
-            this.search.params.push(
-              {
-                columnName: "create_id",
-                logic: 'and',
-                queryType: '=',
-                value: currentUser.id,
-              }
-            )
-          } else if (this.queryModel.category != "" && this.queryModel.category == 1) {
+            this.search.params.push({
+              columnName: "create_id",
+              logic: 'and',
+              queryType: '=',
+              value: currentUser.id,
+            })
+          } else if (this.queryModel.category !== "" && this.queryModel.category === 1) {
             this.search.params.push({
               columnName: "category",
               queryType: '=',
               value: "1",
-
             })
           }
-          //   this.search.params.push({
-          //   columnName: 'update_date',
-          //   queryType: 'like',
-          //   value: this.queryModel.updateDate
-          //  })
           if (this.queryModel.updateDate && this.queryModel.updateDate.length) {
             this.search.params.push({
               logic: "AND",
@@ -377,131 +347,19 @@
               queryType: ")"
             })
           }
-
         }
         // 数据权限: 模板处方表recipetemplate
         this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-        listRecipetemplatePage(this.search).then(responseData => {
-          if (responseData.code == 100) {
-            this.recipetemplateTotal = responseData.data.total
-            this.recipetemplateList = responseData.data.rows
-          } else {
-            this.showMessage(responseData)
-          }
-          this.resetLoad()
-        }).catch(error => {
-          this.outputError(error)
-        })
       },
-      onSearch() {
-        if (this.moreCodition) {
-          this.search.offset = 0
-          this.currentPage = 1
-          this.getRecipetemplateList()
-        } else {
-          this.$refs['queryForm'].validate(valid => {
-            if (valid) {
-              this.search.offset = 0
-              this.currentPage = 1
-              this.getRecipetemplateList()
-            } else {
-              return false
-            }
-          })
-        }
-      },
-      onSizeChange(val) {
-        this.currentPage = 1
-        this.search.limit = val;
-        this.search.offset = (this.currentPage - 1) * val
-        this.getRecipetemplateList()
-      },
-      onCurrentChange(val) {
-        this.search.offset = (val - 1) * this.search.limit
-        this.currentPage = val
-        this.getRecipetemplateList()
-      },
-      async pageInit() {
-        this.setLoad()
-        try {
-          this.initOptions(this.queryModel)
-          this.search.params = [{columnName: 'company_id', queryType: '=', value: currentUser.company.id}]
-          this.search.params.push({
-              logic: "AND",
-              queryType: "("
-            }, {
-              columnName: "category",
-              logic: "",
-              queryType: '=',
-              value: 0,
-            },
-            {
-              columnName: "create_id",
-              logic: "and",
-              queryType: '=',
-              value: currentUser.id,
-            },
-            {
-              columnName: "category",
-              logic: "or",
-              queryType: '=',
-              value: 1,
-            },
-            {
-              logic: "",
-              queryType: ")"
-            })
-          // 数据权限: 模板处方表recipetemplate
-          this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-          let [listRecipetemplateRespData, listPermissionRespData] = await Promise.all([
-            listRecipetemplatePage(this.search),
-            listResourcePermission(this.$route.meta.routerId)
-          ])
-          if (listRecipetemplateRespData.code == 100 && listPermissionRespData.code == 100) {
-            this.recipetemplateTotal = listRecipetemplateRespData.data.total
-            this.recipetemplateList = listRecipetemplateRespData.data.rows
-            console.log(listPermissionRespData.data, '这是个什么');
-            this.permission.view = listPermissionRespData.data.find(item => {
-              return item.permission === 'recipeTemplate:read'
-            })
-            this.permission.export = listPermissionRespData.data.find(item => {
-              return item.permission === 'recipeTemplate:export'
-            })
-            this.permission.add = listPermissionRespData.data.find(item => {
-              return item.permission === 'recipeTemplate:create'
-            })
-            this.permission.edit = listPermissionRespData.data.find(item => {
-              return item.permission === 'recipeTemplate:update'
-            })
-            this.permission.remove = listPermissionRespData.data.find(item => {
-              return item.permission === 'recipeTemplate:delete'
-            })
-          } else {
-            this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listRecipetemplateRespData)
-          }
-          this.resetLoad()
-        } catch (error) {
-          this.outputError(error)
-        }
-        let type_search = {
-          params: [{'columnName': 'dict_type_id', 'queryType': '=', 'value': '1014474470772899974'}]
-        }
-        //   // 字段对应表上filter条件
-        //   type_search.params.push.apply(type_search.params, [])
-        // // 数据权限: 字典项sys_dict_item
-        // this.pushDataPermissions(type_search.params, this.$route.meta.routerId, '4005')
-        // this.type_List.splice(0, this.type_List.length)
-        listDictItemAll(type_search).then(responseData => {
-          this.type_List = responseData.data
-          this.type_List = this.type_List.filter((item) => item.name != "零售处方")
-          this.type_List = this.type_List.filter((item) => item.name != '附加费')
-        })
+      handleListResponse(responseData) {
+        this.recipetemplateTotal = responseData.data.total
+        this.recipetemplateList = responseData.data.rows
       },
       onViewRecipetemplate(index, row) {
         this.setLoad()
         getRecipetemplateById(row.id).then(responseData => {
-          if (responseData.code == 100) {
-            this.$refs.recipetemplateForm.$emit('openViewRecipetemplateDialog', responseData.data, currentUser.company)
+          if (responseData.code === 100) {
+            this.$refs.recipetemplateForm.openViewRecipetemplateDialog(responseData.data, currentUser.company)
           } else {
             this.showMessage(responseData)
           }
@@ -511,13 +369,13 @@
         })
       },
       onCreateRecipetemplate() {
-        this.$refs.recipetemplateForm.$emit('openAddRecipetemplateDialog', currentUser.company)
+        this.$refs.recipetemplateForm.openAddRecipetemplateDialog(currentUser.company)
       },
       onEditRecipetemplate(index, row) {
         this.setLoad()
         getRecipetemplateById(row.id).then(responseData => {
-          if (responseData.code == 100) {
-            this.$refs.recipetemplateForm.$emit('openEditRecipetemplateDialog', responseData.data, currentUser.company)
+          if (responseData.code === 100) {
+            this.$refs.recipetemplateForm.openEditRecipetemplateDialog(responseData.data, currentUser.company)
           } else {
             this.showMessage(responseData)
           }
@@ -529,8 +387,8 @@
       onCopyRecipetemplate(index, row) {
         this.setLoad()
         getRecipetemplateById(row.id).then(responseData => {
-          if (responseData.code == 100) {
-            this.$refs.recipetemplateForm.$emit('openCopyRecipetemplateDialog', responseData.data)
+          if (responseData.code === 100) {
+            this.$refs.recipetemplateForm.openCopyRecipetemplateDialog(responseData.data)
           } else {
             this.showMessage(responseData)
           }
@@ -547,8 +405,8 @@
         }).then(() => {
           this.setLoad()
           deleteRecipetemplate(row).then(responseData => {
-            if (responseData.code == 100) {
-              this.getRecipetemplateList()
+            if (responseData.code === 100) {
+              this.loadData()
               this.showMessage({type: 'success', msg: '删除成功'})
             } else {
               this.showMessage(responseData)
@@ -560,20 +418,40 @@
         }).catch(() => {
         })
       },
-      onSortChange(orderby) {
-        if (validatenull(orderby.prop)) {
-          this.search.columnName = ''
-          this.search.order = ''
-        } else {
-          this.search.columnName = orderby.prop
-          this.search.order = orderby.order === 'descending' ? 'desc' : 'asc'
+      async pageInit() {
+        this.setLoad()
+        try {
+          if (this.initOptions) {
+            this.initOptions(this.queryModel)
+          }
+          this.search.params = []
+          if (this.appendSearchParams) {
+            this.appendSearchParams()
+          }
+          const prefix = this.permissionPrefix || this.entityName
+          const [listRespData, permissionRespData] = await Promise.all([
+            this.listApi(this.search),
+            listResourcePermission(this.$route.meta.routerId)
+          ])
+          if (listRespData.code === 100 && permissionRespData.code === 100) {
+            this.handleListResponse(listRespData)
+            this.permission = mapPermissions(permissionRespData.data, prefix)
+          } else {
+            this.showMessage(permissionRespData.code !== 100 ? permissionRespData : listRespData)
+          }
+          this.resetLoad()
+        } catch (error) {
+          this.outputError(error)
         }
-
-        this.getRecipetemplateList()
+        // Load prescription type options after page init
+        getDictItemsByCode(DICT_CODE.RECIPEL_TYPE).then((data) => {
+          this.type_List = data
+          this.type_List = this.type_List.filter((item) => item.name !== "零售处方")
+          this.type_List = this.type_List.filter((item) => item.name !== '附加费')
+        })
       },
       initOptions(This) {
-        let company = JSON.parse(sessionStorage.getItem("currentUser")).company;
-
+        let company = getCurrentUser().company;
       }
     },
     watch: {
@@ -611,40 +489,15 @@
     height: 40px;
     padding: 0;
     //控制图标icon大小
-    /deep/ i {
+    ::v-deep i {
       font-size: 20px;
     }
 
     //控制字大小
-    /deep/ {
+    ::v-deep {
       font-size: 20px;
     }
   }
 
 
-</style>
-<style lang="scss" scoped>
-  .drag_table {
-    // 设置表格header的高度
-    /deep/ th {
-      height: 44px;
-    }
-
-    /deep/ th.gutter:last-of-type {
-      height: 0 !important;
-    }
-
-    // 设置表格body的高度
-    /deep/ .el-table__body-wrapper {
-      //解决数据展示超出body高度不滚动bug
-      overflow-y: auto;
-      // 减去的是表格header的高度
-      height: calc(100vh - 44px) !important;
-    }
-  }
-</style>
-<style scoped>
-  /deep/ .el-table__body-wrapper {
-    height: calc(100% - 44px) !important;
-  }
 </style>

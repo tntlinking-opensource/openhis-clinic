@@ -12,7 +12,7 @@
         </div>
 
          <!-- 药品预警 -->
-     <div v-if="activeName=='0'">
+     <div v-if="activeName==='0'">
          <drug-warning :drugActiveName="drugType" @changeCurrentPage="changeCurrentPage" @changeTotal="changeTotal" :getCurrentPage="currentPage" :getSizeChange="pageSize"></drug-warning>
      </div>
 
@@ -76,7 +76,6 @@ export default {
 
     //修改总数
     changeTotal(total){
-        console.log(total,'fsafaf');
         this.dispensingTotal = total
     },
 
@@ -118,11 +117,11 @@ export default {
     //  }
   },
   mounted() {
-      if(this.$route.query&&this.$route.query.type==1){
+      if(this.$route.query&&this.$route.query.type===1){
           this.drugType =1
-      }else if(this.$route.query && this.$route.query.activeName=='1'&&this.$route.query.stuffType==0){
+      }else if(this.$route.query && this.$route.query.activeName==='1'&&this.$route.query.stuffType===0){
           this.activeName = '1'
-      }else if(this.$route.query && this.$route.query.activeName=='1'&&this.$route.query.stuffType==1){
+      }else if(this.$route.query && this.$route.query.activeName==='1'&&this.$route.query.stuffType===1){
           this.activeName = '1'
           this.stuffType = 1
       }
@@ -137,7 +136,7 @@ export default {
   padding: 0px 0px 10px 0px;
 }
 .typeClass{
-  /deep/ .el-input{
+  ::v-deep .el-input{
     width: 90% !important;
     input{
       width: 90% !important;
@@ -146,7 +145,7 @@ export default {
   }
 }
 .el-col{
-  /deep/ .el-range-separator{
+  ::v-deep .el-range-separator{
     width: 10%;
   }
 }
@@ -157,7 +156,7 @@ export default {
     text-align: right;
   }
 }
-/deep/ .el-table__footer-wrapper{
+::v-deep .el-table__footer-wrapper{
   td:not(:nth-of-type(1)){
     .cell{
       display: inline-block;
@@ -170,10 +169,10 @@ export default {
 .el-table::before{
   height: 0;
 }
-/deep/ .el-table colgroup col[name='gutter']{
+::v-deep .el-table colgroup col[name='gutter']{
   width:5px !important
 }
-/deep/ .el-table__body{
+::v-deep .el-table__body{
   width:100% !important
 }
 </style>

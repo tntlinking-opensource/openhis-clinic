@@ -10,7 +10,7 @@
     <div slot="title" class="dialog-header">
       {{ dialogProps.title }}
       <OperationIcon
-        v-show="dialogProps.action == 'view' && permission.edit"
+        v-show="dialogProps.action === 'view' && permission.edit"
         type="primary"
         text="编辑"
         placement="top-start"
@@ -28,18 +28,18 @@
       label-position="right"
       class="edit-form"
     >
-      <div class="tab-item" v-show="tabIndex == '1'">
+      <div class="tab-item" v-show="tabIndex === '1'">
         <!-- 主表单  开始-->
 
         <el-row>
           <el-col :span="24 / 2">
             <el-form-item label="姓名" prop="name">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.name"
                 :maxlength="128"
                 :placeholder="
-                  dialogProps.action == 'view' ? '' : '请输入用户名'
+                  dialogProps.action === 'view' ? '' : '请输入用户名'
                 "
               ></el-input>
             </el-form-item>
@@ -72,7 +72,7 @@
                 v-model="bizFormModel.phone"
                 :maxlength="11"
                 :placeholder="
-                  dialogProps.action == 'view' ? '' : '请输入手机号'
+                  dialogProps.action === 'view' ? '' : '请输入手机号'
                 "
               ></el-input>
             </el-form-item>
@@ -91,11 +91,11 @@
           <el-col :span="24 / 2">
             <el-form-item label="执业编码" prop="pracPsnCode">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.userExt.pracPsnCode"
                 :maxlength="11"
                 :placeholder="
-                  dialogProps.action == 'view' ? '' : '请输入执业编码'
+                  dialogProps.action === 'view' ? '' : '请输入执业编码'
                 "
               ></el-input>
             </el-form-item>
@@ -221,7 +221,7 @@
           <el-col>
             <el-form-item label="用户角色" prop="userRoleList">
               <el-select
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.userRoleList"
                 value-key="role.id"
                 multiple
@@ -277,7 +277,7 @@
                 disabled='false'
                 v-model="bizFormModel.phone"
                 :maxlength="10"
-                :placeholder="dialogProps.action == 'view' ? '' : ''"
+                :placeholder="dialogProps.action === 'view' ? '' : ''"
               ></el-input>
             </el-form-item>
           </el-col>
@@ -285,7 +285,7 @@
             <el-form-item
               label="修改密码"
               prop="loginPasswordUpdate"
-              v-if="dialogProps.action == 'edit'"
+              v-if="dialogProps.action === 'edit'"
             >
               <el-checkbox v-model="bizFormModel.loginPasswordUpdate"
                 >修改密码</el-checkbox
@@ -299,18 +299,18 @@
               label="密码"
               prop="loginPassword"
               v-if="
-                dialogProps.action != 'view' &&
-                dialogProps.action != 'add' &&
-                bizFormModel.loginPasswordUpdate == true
+                dialogProps.action !== 'view' &&
+                dialogProps.action !== 'add' &&
+                bizFormModel.loginPasswordUpdate === true
               "
             >
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.loginPassword"
                 type="password"
                 auto-complete="new-password"
                 :maxlength="64"
-                :placeholder="dialogProps.action == 'view' ? '' : '请输入密码'"
+                :placeholder="dialogProps.action === 'view' ? '' : '请输入密码'"
               ></el-input>
             </el-form-item>
           </el-col>
@@ -319,18 +319,18 @@
               label="确认密码"
               prop="loginPasswordConfirm"
               v-if="
-                dialogProps.action != 'view' &&
-                dialogProps.action != 'add' &&
-                bizFormModel.loginPasswordUpdate == true
+                dialogProps.action !== 'view' &&
+                dialogProps.action !== 'add' &&
+                bizFormModel.loginPasswordUpdate === true
               "
             >
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.loginPasswordConfirm"
                 type="password"
                 :maxlength="64"
                 :placeholder="
-                  dialogProps.action == 'view' ? '' : '请输入确认密码'
+                  dialogProps.action === 'view' ? '' : '请输入确认密码'
                 "
               ></el-input>
             </el-form-item>
@@ -340,7 +340,7 @@
           <el-col :span="24 / 2">
             <el-form-item label="是否启用" prop="isLocked">
               <el-switch
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.isLocked"
                 active-color="#13ce66"
                 inactive-color="#dbdfe6"
@@ -354,10 +354,10 @@
           <el-col :span="24 / 2">
             <el-form-item label="邮箱" prop="email">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.email"
                 :maxlength="100"
-                :placeholder="dialogProps.action == 'view' ? '' : '请输入邮箱'"
+                :placeholder="dialogProps.action === 'view' ? '' : '请输入邮箱'"
               ></el-input>
             </el-form-item>
           </el-col>
@@ -376,12 +376,12 @@
           <el-col>
             <el-form-item label="介绍" prop="userExt.description">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.userExt.description"
                 type="textarea"
                 :maxlength="255"
                 :placeholder="
-                  dialogProps.action == 'view' ? '' : '请输入介绍信息'
+                  dialogProps.action === 'view' ? '' : '请输入介绍信息'
                 "
                 clearable
               ></el-input>
@@ -396,21 +396,21 @@
     <!-- 按钮  开始-->
     <span slot="footer" class="dialog-footer">
       <el-button
-        v-if="dialogProps.action != 'view'"
+        v-if="dialogProps.action !== 'view'"
         type="primary"
-        :disabled="flage"
+        :disabled="flag"
         :plain="true"
         @click="onSubmit('userForm')"
         >保 存</el-button
       >
       <el-button
-        v-if="dialogProps.action != 'view'"
+        v-if="dialogProps.action !== 'view'"
         :plain="true"
         @click="onDialogClose()"
         >取 消</el-button
       >
       <el-button
-        v-if="dialogProps.action == 'view'"
+        v-if="dialogProps.action === 'view'"
         :plain="true"
         @click="onDialogClose()"
         >关 闭</el-button
@@ -441,7 +441,7 @@ export default {
       photoId: null, // 头像id 查看或修改会给它赋值
       bizFormModel: this.initFormModel(),
       tabIndex: "1",
-      flage:false,
+      flag:false,
       key_department: 1, // el-cascader key
       department_List: [], // 部门
 
@@ -520,7 +520,6 @@ export default {
           { required: true, message: "请输入确认密码", trigger: "blur" },
           {
             validator: (rule, value, callback) => {
-              console.log(this.bizFormModel.loginPassword);
               if (value !== this.bizFormModel.loginPassword) {
                 callback(new Error("两次输入密码不一致!"));
               } else {
@@ -585,8 +584,6 @@ export default {
         // 存储图片，点击确认按钮时统一上传
 
         this.bizFormModel.userHeader = URL.createObjectURL(file.raw);
-        console.log(this.bizFormModel.userHeader);
-        console.log(file.raw);
         this.bizFormModel.fileIdFile = file.raw;
       }
     },
@@ -608,16 +605,16 @@ export default {
     },
 
     onSubmit(formName) {
-      this.flage=true
+      this.flag=true
       this.$refs[formName].validate((valid, object) => {
         if (valid) {
-          if (this.dialogProps.action == "edit") {
+          if (this.dialogProps.action === "edit") {
             this.doUpdate();
           } else {
             this.doSave();
           }
         } else {
-          this.flage=false
+          this.flag=false
           // 处理校验定位
           let arr = [];
           let numArr = [];
@@ -644,7 +641,7 @@ export default {
     createForme() {
       this.bizFormModel.loginName = this.bizFormModel.phone;
       //如果是新增，密码默认手机号最后6位
-      if(this.dialogProps.action == "add"){
+      if(this.dialogProps.action === "add"){
         this.bizFormModel.loginPassword = this.bizFormModel.phone.substring((this.bizFormModel.phone.length-6),this.bizFormModel.phone.length)
       }
       let userHeaderFile = new FormData();
@@ -664,8 +661,8 @@ export default {
       // })
       saveUser(this.createForme())
         .then((responseData) => {
-          this.flage=false
-          if (responseData.code == 100) {
+          this.flag=false
+          if (responseData.code === 100) {
             this.dialogProps.visible = false;
             this.$emit("save-finished");
           } else {
@@ -674,7 +671,7 @@ export default {
           this.resetLoad();
         })
         .catch((error) => {
-          this.flage=false
+          this.flag=false
           this.outputError(error);
         });
     },
@@ -684,8 +681,8 @@ export default {
       this.setLoad();
       updateUser(this.createForme())
         .then((responseData) => {
-          this.flage=false
-          if (responseData.code == 100) {
+          this.flag=false
+          if (responseData.code === 100) {
             this.dialogProps.visible = false;
             this.$emit("save-finished");
           } else {
@@ -694,7 +691,7 @@ export default {
           this.resetLoad();
         })
         .catch((error) => {
-          this.flage=false
+          this.flag=false
           this.outputError(error);
         });
     },
@@ -790,8 +787,8 @@ export default {
         loginPassword: "", // 密码
         loginPasswordUpdate:
           this.dialogProps &&
-          (this.dialogProps.action == "add" ||
-            this.dialogProps.action == "copy")
+          (this.dialogProps.action === "add" ||
+            this.dialogProps.action === "copy")
             ? true
             : false, // 是否修改密码
         isLocked: 0, // 启用
@@ -825,9 +822,11 @@ export default {
       this.department_List.splice(0, this.department_List.length);
       listClinicOfficeAll(company_search).then((responseData) => {
         this.department_List = responseData.data;
+      }).catch((error) => {
+        this.outputError(error);
       });
 
-      var company_id = This.company.id;
+      const company_id = This.company.id;
       this.key_department++;
       let department_search = {
         params: [
@@ -868,12 +867,14 @@ export default {
       this.role_UserRole_List.splice(0, this.role_UserRole_List.length);
       listRoleAll(role_UserRole_search).then((responseData) => {
         this.role_UserRole_List = responseData.data;
+      }).catch((error) => {
+        this.outputError(error);
       });
     },
     //根据手机号获取表单信息
     async byPhoneGetList(phone) {
       const res = await changemylist(phone);
-      if (res.code === "100" && res.data) {
+      if (res.code === 100 && res.data) {
         this.bizFormModel = { ...res.data, userHeader: "" };
         await this.getPhoto(res.data.userExt.photoId);
         this.bizFormModel.userExt.jobType = "";
@@ -883,7 +884,7 @@ export default {
         this.bizFormModel.userExt.description = "";
         this.bizFormModel.userExt.post = "";
         this.bizFormModel.userExt.office = "";
-      } else if (res.code === "100" && !res.data) {
+      } else if (res.code === 100 && !res.data) {
         return;
       } else {
         this.$message({
@@ -897,28 +898,28 @@ export default {
         this.bizFormModel.userHeader = ''
       }else{
         getPhotoById(id).then((res) => {
-          console.log(res,'怪该i怪');
         const src = `data:image/png;base64,${res}`;
         this.bizFormModel.userHeader = src;
-        console.log(src, ".......");
         return src;
+      }).catch((error) => {
+        this.outputError(error);
       });
       }
     },
   },
   watch: {
     //监听输入框手机号位数
-    "bizFormModel.phone": function (newValue, oldValue) {
+    "bizFormModel.phone"(newValue, oldValue) {
       //  if( this.dialogProps.action == 'edit' ){
       if (newValue.length === 11 && this.dialogProps.action === "add") {
         this.byPhoneGetList(newValue);
       }
     },
   },
-  mounted: function () {
+  mounted() {
     this.$nextTick(() => {
       this.$on("openViewUserDialog", async function (user) {
-        if(user.userExt!=undefined){
+        if(user.userExt!==undefined){
           this.photoId = user.userExt.photoId;
           await this.getPhoto(user.userExt.photoId);
         }else{
@@ -933,7 +934,7 @@ export default {
         this.dialogProps.visible = true;
       });
       this.$on("openEditUserDialog", async function (user) {
-        if(user.userExt!=undefined){
+        if(user.userExt!==undefined){
           this.photoId = user.userExt.photoId;
           await this.getPhoto(user.userExt.photoId);
         }else{
@@ -962,7 +963,7 @@ export default {
         this.initOptions(this.bizFormModel);
         this.tabIndex = "1";
         this.bizFormModel.id = null; //把id设置为空，添加一个新的
-        for (var i = 0; i <= this.bizFormModel.userRoleList.length - 1; i++) {
+        for (let i = 0; i <= this.bizFormModel.userRoleList.length - 1; i++) {
           this.bizFormModel.userRoleList[i].id = null;
         }
         this.bizFormModel.loginPasswordUpdate = true; // 允许修改密码

@@ -1,13 +1,14 @@
 package com.geeke.config.exception;
 
 /**
- * service异常类
- * @author Lining
+ * 服务层异常类
+ *
+ * @author hxy
  * @date 2017/11/15
  */
 public class ServiceException extends RuntimeException {
 
-	private static final long serialVersionUID = -8271985452908151156L;
+	private static final long serialVersionUID = 1L;
 
 	public ServiceException() {
 	}
@@ -23,4 +24,5 @@ public class ServiceException extends RuntimeException {
 	public ServiceException(Throwable cause) {
 		super(cause);
 	}
+
 }

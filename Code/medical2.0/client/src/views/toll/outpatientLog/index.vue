@@ -453,13 +453,11 @@
       async showEditDialog(id) {
         const res = await get(id);
         this.editUserForm = res.data;
-        console.log("res------------" + this.editUserForm.address)
         this.editDialogVisible = true;
       },
       //展示编辑用户的对话框
       /*showEditDialog(id) {
         this.editDialogVisible = true;
-        console.log("id=====" + id);
       },*/
       stateFormat(row, column) {
         if (row.sex === "gender_0") {
@@ -564,7 +562,7 @@
         this.StuffsalessummaryRc.patientName = this.formInline.patientName;
         this.StuffsalessummaryRc.certificate = this.formInline.certificate;
         list(this.StuffsalessummaryRc).then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.patientTotal = responseData.data.total;
             if (responseData.data.total > 0) {
               responseData.data.rows.forEach((item) => {

@@ -3,10 +3,9 @@ package com.geeke.outpatient.service;
 import com.bstek.ureport.exception.ReportException;
 import com.bstek.ureport.provider.report.ReportFile;
 import com.bstek.ureport.provider.report.ReportProvider;
-import com.geeke.common.data.Parameter;
-import com.geeke.outpatient.entity.Patient;
 import com.geeke.outpatient.entity.UReportFile;
-import com.geeke.outpatient.service.ReportFileService;
+import com.geeke.org.entity.Company;
+import com.geeke.utils.SessionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -104,6 +103,10 @@ public class MySQLProvider implements ReportProvider {
             reportFile.setContent(content);
             reportFile.setCreateBy("测试");
             reportFile.setUpdateBy("测试");
+            // 设置租户
+            Company company = new Company();
+            company.setId(SessionUtils.getLoginTenantId());
+            reportFile.setCompany(company);
             reportFileService.save(reportFile);
         }else{
             reportFile.setContent(content);

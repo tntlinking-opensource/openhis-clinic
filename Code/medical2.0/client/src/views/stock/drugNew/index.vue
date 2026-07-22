@@ -6,7 +6,7 @@
     <drug-form
       ref="drugForm"
       :permission="permission"
-      v-on:save-finished="getDrugList"
+      v-on:save-finished="loadData"
     ></drug-form>
     <DrugListSynchronization
       ref="drugListSynchronization"
@@ -118,7 +118,7 @@
                       <el-button type="text" @click="onSynchronousDrug()">同步</el-button>
                     </el-dropdown-item>
                     <el-dropdown-item>
-                      <el-button type="text" @click="onCreateDrug()">自建</el-button>
+                      <el-button type="text" @click="onCreateEntity('drugForm')">自建</el-button>
                     </el-dropdown-item>
                   </el-dropdown-menu>
                 </el-dropdown>
@@ -184,7 +184,7 @@
                 v-for="(cv, index) in columnViews"
                 v-if="cv.display"
                 :prop="cv.prop"
-                :key="`columnViews_${index}`+Math.random()"
+                :key="cv.prop"
                 :label="cv.label"
                 sortable="custom"
                 :align="cv.align"
@@ -197,13 +197,13 @@
                 <template slot-scope="{ row, $index }">
                   <span
                     v-if="
-                      columnViews[index].showType == 'Switch' ||
-                      columnViews[index].showType == 'Checkbox' ||
-                      columnViews[index].showType == 'Radio'
+                      columnViews[index].showType === 'Switch' ||
+                      columnViews[index].showType === 'Checkbox' ||
+                      columnViews[index].showType === 'Radio'
                     "
                   >
                     <li
-                      v-if="getAttrValue(row, columnViews[index].prop) == '1'"
+                      v-if="getAttrValue(row, columnViews[index].prop) === '1'"
                       class="el-icon-check"
                       style="color: #f56c6c"
                     ></li>
@@ -224,9 +224,9 @@
                 width="80px"
               >
                 <template slot-scope="scope">
-                  <span v-if="scope.row.stock.surplusStock != null">
+                  <span v-if="scope.row.stock && scope.row.stock.surplusStock != null">
                     {{
-                      Math.floor(scope.row.stock.surplusStock / scope.row.stock.surplusStock) >= 0 ?
+                      Math.floor(scope.row.stock.surplusStock / scope.row.preparation) >= 0 ?
                         Math.floor(scope.row.stock.surplusStock / scope.row.preparation) + scope.row.pack.name +
                         ((scope.row.stock.surplusStock % scope.row.preparation > 0) ? (scope.row.stock.surplusStock % scope.row.preparation) +
                           scope.row.preparationUnit.name : "") : scope.row.stock.surplusStock + scope.row.preparationUnit.name
@@ -299,7 +299,7 @@
                     content="查看"
                     placement="top-start"
                     icon-name="el-icon-view"
-                    @click="onViewDrug(scope.$index, scope.row)"
+                    @click="onViewEntity(scope.$index, scope.row, 'drugForm')"
                   ></OperationIcon>
                   <OperationIcon
                     v-show="permission.edit"
@@ -307,7 +307,7 @@
                     content="编辑"
                     placement="top-start"
                     icon-name="el-icon-edit"
-                    @click="onEditDrug(scope.$index, scope.row)"
+                    @click="onEditEntity(scope.$index, scope.row, 'drugForm')"
                   ></OperationIcon>
                   <OperationIcon
                     v-show="permission.add"
@@ -315,7 +315,7 @@
                     content="复制"
                     placement="top-start"
                     icon-name="el-icon-document"
-                    @click="onCopyDrug(scope.$index, scope.row)"
+                    @click="onCopyEntity(scope.$index, scope.row, 'drugForm')"
                   ></OperationIcon>
                   <!-- <OperationIcon
                     v-show="permission.remove"
@@ -441,9 +441,10 @@
     inventory,
     uploadExcel
   } from "@/api/stock/drug";
-  import {listResourcePermission} from "@/api/admin/common/permission";
+  import listViewMixin from '@/mixins/listViewMixin'
   import DrugForm from "./drugForm";
   import {listDictItemAll} from "@/api/sys/dictItem";
+  import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
   import ExportExcelButton from "@/components/ExportExcelButton";
   import ViewColumnsSelect from "@/views/components/ViewColumnsSelect";
   import QueryForm from "@/views/components/queryForm";
@@ -457,6 +458,7 @@
 
   export default {
     extends: MainUI,
+    mixins: [listViewMixin],
     components: {
       DrugForm,
       ExportExcelButton,
@@ -476,13 +478,11 @@
         systemParamConfigSearch: {
           params: []
         },
-        permission: {
-          view: false,
-          add: false,
-          edit: false,
-          remove: false,
-          export: false,
-        },
+        listApi: listByCompanyDrugPage,
+        getApi: getDrugById,
+        deleteApi: deleteDrug,
+        entityName: 'Drug',
+        permissionPrefix: 'drugNew',
         queryTypes: {
           goods_name: "like",
           type: "=",
@@ -510,20 +510,6 @@
         ],//是否启用
 
 
-        search: {
-          params: [
-            {
-              columnName: "company_id",
-              queryType: "=",
-              value: currentUser.company.id,
-            },
-          ],
-          offset: 0,
-          limit: 20,
-          columnName: "", // 排序字段名
-          order: "", // 排序
-        },
-        currentPage: 1,
         drugTotal: 0,
         drugList: [],
 
@@ -542,7 +528,7 @@
   methods: {
       // 同步药品信息
       handleSync() {
-        this.getDrugList();
+        this.loadData();
         this.$message.success("同步成功")
       },
       handleClose() {
@@ -553,20 +539,19 @@
       },
       //批量设置有效期保存
       indateSave(index) {
-        if (index == 0) {
+        if (index === 0) {
           this.indateDialogVisible = false
           this.indate = ""
         } else {
-          console.log(this.indate);
           let drug = {
             indate: this.indate,
             company: currentUser.company
           }
           updateAllIndate(drug).then((res) => {
-            if (res.code == 100) {
+            if (res.code === 100) {
               this.indateDialogVisible = false
               this.indate = ""
-              this.getDrugList();
+              this.loadData();
               this.$message.success("修改成功")
             }
           }).catch((error) => {
@@ -577,7 +562,7 @@
 
       //批量设置库存预警保存
       inventorySave(index) {
-        if (index == 0) {
+        if (index === 0) {
           this.inventoryDialogVisible = false
           this.inventoryFloor = ""
         } else {
@@ -586,10 +571,10 @@
             company: currentUser.company
           }
           updateAllInventory(drug).then((res) => {
-            if (res.code == 100) {
+            if (res.code === 100) {
               this.inventoryDialogVisible = false
               this.inventoryFloor = ""
-              this.getDrugList();
+              this.loadData();
               this.$message.success("修改成功")
             }
           }).catch((error) => {
@@ -622,7 +607,6 @@
       // 批量导入按钮点击事件
       importStudentExcel() {
         this.importDialogVisible = true;
-        console.log(this.importDialogVisible)
       },
 
       // 选择文件事件
@@ -633,17 +617,14 @@
       // 上传文件
       async uploadFile() {
         const file = this.$refs.file.files
-        var extName = file[0].name.substring(file[0].name.lastIndexOf('.')).toLowerCase()
+        const extName = file[0].name.substring(file[0].name.lastIndexOf('.')).toLowerCase()
         if (extName === '.xlsx' || extName === '.xls') {
-          var formData = new FormData()
+          const formData = new FormData()
           let id = currentUser.company.id;
-          console.log("看看这里呀呀呀" + id)
           formData.append('file', file[0])
           this.$message.success('正在导入中，请耐心等待')
           uploadExcel(formData).then((res) => {
-            console.log("到这里了吗extName === " + formData)
-            console.log("看看报错什么", res.data[0])
-            if (res.code === '100') {
+            if (res.code === 100) {
               if (res.data[2] === ""){
                 this.$message({
                   type: 'success',
@@ -655,7 +636,6 @@
                 this.shiBai = res.data[1]
                 this.mistake = res.data[2]
                 this.dialogVisible = true
-                console.log("导入报错"+this.mistake)
                 this.cancellation();
               }
 
@@ -690,183 +670,26 @@
         this.indateDialogVisible = true
       },
 
-      indexMethod(index) {
-        return (this.currentPage - 1) * this.search.limit + index + 1;
-      },
-      reset() {
-        this.$refs.queryForm.resetFields()
-        this.onSearch()
-      },
-      getDrugList(val) {
-        this.setLoad();
-        /* 查询参数 和数据权限 */
+      appendSearchParams() {
         this.search.params = [
-          {
-            columnName: "company_id",
-            queryType: "=",
-            value: currentUser.company.id,
-          },
-        ];
-
-        if (val == "1") {
-          this.search.params = this.search.params.concat(
-            this.compositeCondition()
-          );
-        } else {
-          // 查询参数: 药品名称
-          this.search.params.push({
-            columnName: "goods_name",
-            queryType: "like",
-            value: this.queryModel.goodsName,
-          });
-          // 查询参数: 药品类型
-          this.search.params.push({
-            columnName: "type",
-            queryType: "=",
-            value: validatenull(this.queryModel.type.value)
-              ? ""
-              : this.queryModel.type.value,
-          });
-          // 查询参数: 条形码
-          this.search.params.push({
-            columnName: "bar_code",
-            queryType: "like",
-            value: this.queryModel.barCode,
-          });
-          // 查询参数: 状态
-          this.search.params.push({
-            columnName: "status",
-            queryType: "=",
-            value: this.queryModel.status,
-          });
-        }
-        // 数据权限: 药品信息drug
-        this.pushDataPermissions(
-          this.search.params,
-          this.$route.meta.routerId,
-          this.tableId
-        );
-        listByCompanyDrugPage(this.search)
-          .then((responseData) => {
-            if (responseData.code == 100) {
-              this.drugTotal = responseData.data.total;
-              this.drugList = responseData.data.rows;
-            } else {
-              this.showMessage(responseData);
-            }
-            this.resetLoad();
-          })
-          .catch((error) => {
-            this.outputError(error);
-          });
-      },
-      onSearch() {
+          { columnName: 'company_id', queryType: '=', value: currentUser.company.id }
+        ]
         if (this.moreCodition) {
-          this.search.offset = 0;
-          this.currentPage = 1;
-          this.getDrugList();
+          this.search.params = this.search.params.concat(this.compositeCondition())
         } else {
-          this.$refs["queryForm"].validate((valid) => {
-            if (valid) {
-              this.search.offset = 0;
-              this.currentPage = 1;
-              this.getDrugList();
-            } else {
-              return false;
-            }
-          });
+          this.search.params.push({ columnName: 'goods_name', queryType: 'like', value: this.queryModel.goodsName })
+          this.search.params.push({ columnName: 'type', queryType: '=', value: validatenull(this.queryModel.type.value) ? '' : this.queryModel.type.value })
+          this.search.params.push({ columnName: 'bar_code', queryType: 'like', value: this.queryModel.barCode })
+          this.search.params.push({ columnName: 'status', queryType: '=', value: this.queryModel.status })
         }
+        this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
       },
-      onSizeChange(val) {
-
-        this.currentPage = 1;
-        this.search.limit = val;
-        this.search.offset = (this.currentPage - 1) * val;
-        this.getDrugList();
-      },
-      onCurrentChange(val) {
-
-        this.search.offset = (val - 1) * this.search.limit;
-        this.currentPage = val;
-        this.getDrugList();
-      },
-      async pageInit() {
-        this.setLoad();
-        console.log(currentUser, "///");
-        try {
-          this.initOptions(this.queryModel);
-          this.search.params = [
-            {
-              columnName: "company_id",
-              queryType: "=",
-              value: currentUser.company.id,
-            },
-          ];
-          // 数据权限: 药品信息drug
-          this.pushDataPermissions(
-            this.search.params,
-            this.$route.meta.routerId,
-            this.tableId
-          );
-          let [listDrugRespData, listPermissionRespData] = await Promise.all([
-            listByCompanyDrugPage(this.search),
-            listResourcePermission(this.$route.meta.routerId),
-          ]);
-          if (
-            listDrugRespData.code == 100 &&
-            listPermissionRespData.code == 100
-          ) {
-            this.drugTotal = listDrugRespData.data.total;
-            this.drugList = listDrugRespData.data.rows;
-            console.log(this.drugList, 'drugNew');
-            this.permission.view = listPermissionRespData.data.find((item) => {
-              return item.permission === "drugNew:read";
-            });
-            this.permission.export = listPermissionRespData.data.find((item) => {
-              return item.permission === "drugNew:export";
-            });
-            this.permission.add = listPermissionRespData.data.find((item) => {
-              return item.permission === "drugNew:create";
-            });
-            this.permission.edit = listPermissionRespData.data.find((item) => {
-              return item.permission === "drugNew:update";
-            });
-            this.permission.remove = listPermissionRespData.data.find((item) => {
-              return item.permission === "drugNew:delete";
-            });
-          } else {
-            this.showMessage(
-              listPermissionRespData.code != 100
-                ? listPermissionRespData
-                : listDrugRespData
-            );
-          }
-          this.resetLoad();
-        } catch (error) {
-          this.outputError(error);
-        }
-      },
-      onViewDrug(index, row) {
-        this.setLoad();
-        getDrugById(row.id)
-          .then((responseData) => {
-            if (responseData.code == 100) {
-              console.log(responseData.data, 'meiyou');
-              this.$refs.drugForm.$emit("openViewDrugDialog", responseData.data);
-            } else {
-              this.showMessage(responseData);
-            }
-            this.resetLoad();
-          })
-          .catch((error) => {
-            this.outputError(error);
-          });
-      },
-      onCreateDrug() {
-        this.$refs.drugForm.$emit("openAddDrugDialog");
+      handleListResponse(responseData) {
+        this.drugTotal = responseData.data.total
+        this.drugList = responseData.data.rows
       },
       onSynchronousDrug() {
-        this.$refs.drugListSynchronization.$emit("openMigratingDrugDialog");
+        this.$refs.drugListSynchronization.openMigratingDrugDialog();
       },
       SurplusStock(row) {
         this.systemParamConfigSearch.params = [
@@ -881,10 +704,9 @@
             value: row.id
           }
         ]
-        console.log(row.id)
         inventory(this.systemParamConfigSearch).then(responseData => {
-          if (responseData.code == 100) {
-            if (responseData.data.length >= 1) {
+          if (responseData.code === 100) {
+            if (Array.isArray(responseData.data) && responseData.data.length >= 1) {
               responseData.data.forEach(data => {
                 this.inventory = data.stock.surplusStock
               })
@@ -899,7 +721,6 @@
       },
       OpenEdit(index, row) {
         if (this.inventory !== 0) {
-          console.log(this.inventory, "有库存")
           this.$message({
             message: "物品存在库存，不能修改",
             type: 'warning'
@@ -908,8 +729,8 @@
           this.setLoad();
           getDrugById(row.id)
             .then((responseData) => {
-              if (responseData.code == 100) {
-                this.$refs.drugForm.$emit("openEditDrugDialog", responseData.data);
+              if (responseData.code === 100) {
+                this.$refs.drugForm.openEditDrugDialog(responseData.data);
               } else {
                 this.showMessage(responseData);
               }
@@ -927,84 +748,9 @@
           this.OpenEdit(index, row)
         }, 1000);
       },
-      onCopyDrug(index, row) {
-        this.setLoad();
-        getDrugById(row.id)
-          .then((responseData) => {
-            if (responseData.code == 100) {
-              this.$refs.drugForm.$emit("openCopyDrugDialog", responseData.data);
-            } else {
-              this.showMessage(responseData);
-            }
-            this.resetLoad();
-          })
-          .catch((error) => {
-            this.outputError(error);
-          });
-      },
-      onDeleteDrug(index, row) {
-        this.$confirm("确定删除吗？", "确认", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning",
-        })
-          .then(() => {
-            this.setLoad();
-            deleteDrug(row)
-              .then((responseData) => {
-                if (responseData.code == 100) {
-                  this.getDrugList();
-                  this.showMessage({type: "success", msg: "删除成功"});
-                } else {
-                  this.showMessage(responseData);
-                }
-                this.resetLoad();
-              })
-              .catch((error) => {
-                this.outputError(error);
-              });
-          })
-          .catch(() => {
-          });
-      },
-      onSortChange(orderby) {
-        if (validatenull(orderby.prop)) {
-          this.search.columnName = "";
-          this.search.order = "";
-        } else {
-          this.search.columnName = orderby.prop;
-          this.search.order = orderby.order === "descending" ? "desc" : "asc";
-        }
-
-        this.getDrugList();
-      },
       initOptions(This) {
-        let type_search = {
-          params: [
-            {
-              columnName: "dict_type_id",
-              queryType: "=",
-              value: "1004078055755374603",
-            },
-          ],
-        };
-        // 响应字段的条件操作符，替换成触发字段的操作符
-        type_search.params.forEach((item) => {
-          if (this.queryTypes[item.columnName]) {
-            item.queryType = this.queryTypes[item.columnName];
-          }
-        });
-        // 字段对应表上filter条件
-        type_search.params.push.apply(type_search.params, []);
-        // 数据权限: 字典项sys_dict_item
-        this.pushDataPermissions(
-          type_search.params,
-          this.$route.meta.routerId,
-          "4005"
-        );
-        this.type_List.splice(0, this.type_List.length);
-        listDictItemAll(type_search).then((responseData) => {
-          this.type_List = responseData.data;
+        getDictItemsByCode(DICT_CODE.MEDICAL_TYPE).then((data) => {
+          this.type_List = data;
         });
       },
     },
@@ -1030,7 +776,6 @@
     },
   mounted() {
       this.pageInit();
-      this.onSearch();
     },
   };
 </script>
@@ -1042,30 +787,8 @@
       color: crimson;
    }
 
-  .drag_table {
-    // 设置表格header的高度
-    /deep/ th {
-      height: 44px;
-    }
 
-    /deep/ th.gutter:last-of-type {
-      height: 0 !important;
-    }
-
-    // 设置表格body的高度
-    /deep/ .el-table__body-wrapper {
-      //解决数据展示超出body高度不滚动bug
-      overflow-y: auto;
-      // 减去的是表格header的高度
-      height: calc(100% - 44px) !important;
-    }
-
-    .el-table__fixed-right {
-      height: 100% !important;
-    }
-  }
-
-  .indate /deep/ .el-dialog__header {
+  .indate ::v-deep .el-dialog__header {
     border-bottom: 1px solid rgb(214, 214, 214) !important;
   }
 </style>

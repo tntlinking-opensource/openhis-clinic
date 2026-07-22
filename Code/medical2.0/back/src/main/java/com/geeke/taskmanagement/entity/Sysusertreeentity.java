@@ -12,5 +12,5 @@ public class Sysusertreeentity {
     private String name;
     private String patid;
     private String patname;
-    List chirldren = new ArrayList<>();
+    List<Sysusertreeentity> children = new ArrayList<>();
 }

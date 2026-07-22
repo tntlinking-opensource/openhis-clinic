@@ -104,70 +104,70 @@
               <el-table-column prop="norms" label="规格" width="80"></el-table-column>
               <el-table-column prop="number" label="数量" width="50">
                 <template slot-scope="scope">
-                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell == 0">
+                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell === 0">
                     {{ scope.row.number / scope.row.preparation }}
                   </span>
-                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell == 1">
+                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell === 1">
                     {{ scope.row.number }}
                   </span>
                 </template>
               </el-table-column>
               <el-table-column prop="unit" label="单位" width="50">
                 <template slot-scope="scope">
-                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell == 0">
+                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell === 0">
                     {{ scope.row.pack }}
                   </span>
-                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell == 1">
+                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell === 1">
                     {{ scope.row.unit }}
                   </span>
                 </template>
               </el-table-column>
               <el-table-column prop="bid" label="进价单价(元)" width="90">
                 <template slot-scope="scope">
-                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell == 0">
+                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell === 0">
                     {{ (scope.row.packageBid).toFixed(4) }}
                   </span>
-                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell == 1">
+                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell === 1">
                     {{ (scope.row.bid).toFixed(4) }}
                   </span>
                 </template>
               </el-table-column>
               <el-table-column prop="bidTotal" label="进价总价(元)" width="90">
                 <template slot-scope="scope">
-                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell == 0">
+                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell === 0">
                     {{ bigNum(scope.row.packageBid * (scope.row.number / scope.row.preparation)) }}
                   </span>
-                    <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell == 1">
+                    <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell === 1">
                     {{ bigNum(scope.row.bid * scope.row.number) }}
                   </span>
                 </template>
               </el-table-column>
               <el-table-column prop="price" label="销售单价(元)" width="90">
                 <template slot-scope="scope">
-                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell == 0">
+                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell === 0">
                     {{ (scope.row.packagePrice).toFixed(4) }}
                   </span>
-                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell == 1">
+                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell === 1">
                     {{ (scope.row.price).toFixed(4) }}
                   </span>
                 </template>
               </el-table-column>
               <el-table-column prop="priceTotal" label="销售总价(元)" width="90">
                 <template slot-scope="scope">
-                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell == 0">
+                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell === 0">
                     {{ bigNum(scope.row.packagePrice * (scope.row.number / scope.row.preparation)) }}
                   </span>
-                    <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell == 1">
+                    <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell === 1">
                     {{ bigNum(scope.row.price * scope.row.number) }}
                   </span>
                 </template>
               </el-table-column>
               <el-table-column prop="profit" label="利润(元)" width="90">
                 <template slot-scope="scope">
-                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell == 0">
+                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell === 0">
                     {{ bigNum(scope.row.packagePrice * (scope.row.number / scope.row.preparation)) - bigNum(scope.row.packageBid * (scope.row.number / scope.row.preparation)) }}
                   </span>
-                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell == 1">
+                  <span style="display:inline-block;width:100%;text-align:right" v-if="scope.row.isUnpackSell === 1">
                     {{ bigNum(scope.row.price * scope.row.number) - bigNum(scope.row.bid * scope.row.number)}}
                   </span>
                 </template>
@@ -207,14 +207,12 @@
 <script>
   import {validatenull} from "@/utils/validate";
   import DispensingForm from "./dispensingForm";
-  import ExportExcelButton from "@/components/ExportExcelButton";
-  import ViewColumnsSelect from "@/views/components/ViewColumnsSelect";
-  import QueryForm from "@/views/components/queryForm";
   import MainUI from "@/views/components/mainUI";
-  import OperationIcon from "@/components/OperationIcon";
   import {listDictItemAll} from "@/api/sys/dictItem";
+  import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
   import {getList, getAmount} from "@/api/stock/dispensing";
   import {BigNumber} from "bignumber.js";
+  import { getCurrentUser } from "@/utils/userCache";
   import * as XLSX from 'xlsx'
   import XLSXD from 'xlsx-style'
 
@@ -222,10 +220,6 @@
     extends: MainUI,
     components: {
       DispensingForm,
-      ExportExcelButton,
-      ViewColumnsSelect,
-      QueryForm,
-      OperationIcon,
     },
     data() {
       return {
@@ -292,7 +286,6 @@
       addCreateDate() {
         let myDate = new Date();
         let lw = new Date(myDate.getTime() - 1000 * 60 * 60 * 24 * 30); //最后一个数字30可改，30天的意思
-        console.log(lw.getDate());
         let lastY = lw.getFullYear();
         let lastM = lw.getMonth() + 1;
         let lastD = lw.getDate();
@@ -314,7 +307,6 @@
         return (this.currentPage - 1) * this.search.limit + index + 1;
       },
       getTotal(param) {
-        console.log(this.allTotal, 'fafsaf');
         let {columns, data} = param;
         let arr = []
         columns.forEach((column, index) => {
@@ -328,7 +320,6 @@
         // arr[4] = this.allTotal.numberAmount
         arr[10] = new BigNumber(Number(this.allTotal.priceTotalAmount)).toFormat(2) + "元"
         arr[11] = new BigNumber(Number(this.allTotal.profitAmount)).toFormat(2) + "元"
-        console.log(arr)
         return arr
       },
       init() {
@@ -382,14 +373,14 @@
             queryType: ")"
           })
         }
-        if (this.queryModel.name && this.queryModel.name != '') {
+        if (this.queryModel.name && this.queryModel.name !== '') {
           this.search.params.push({
             columnName: "drug.goods_name",
             queryType: "like",
             value: this.queryModel.name,
           },)
         }
-        if (this.queryModel.recipelCode && this.queryModel.recipelCode != '') {
+        if (this.queryModel.recipelCode && this.queryModel.recipelCode !== '') {
           this.search.params.push({
             columnName: "recipelInfo.code",
             queryType: "=",
@@ -454,32 +445,8 @@
         this.init();
       },
       initOptions(This) {
-        let type_search = {
-          params: [
-            {
-              columnName: "dict_type_id",
-              queryType: "=",
-              value: "1004078055755374603",
-            },
-          ],
-        };
-        // 响应字段的条件操作符，替换成触发字段的操作符
-        type_search.params.forEach((item) => {
-          if (this.queryTypes[item.columnName]) {
-            item.queryType = this.queryTypes[item.columnName];
-          }
-        });
-        // 字段对应表上filter条件
-        type_search.params.push.apply(type_search.params, []);
-        // 数据权限: 字典项sys_dict_item
-        this.pushDataPermissions(
-          type_search.params,
-          this.$route.meta.routerId,
-          "4005"
-        );
-        this.type_List.splice(0, this.type_List.length);
-        listDictItemAll(type_search).then((responseData) => {
-          this.type_List = responseData.data;
+        getDictItemsByCode(DICT_CODE.MEDICAL_TYPE).then((data) => {
+          this.type_List = data;
         });
       },
       bigNum(num) {
@@ -882,13 +849,13 @@
         if (typeof ArrayBuffer !== "undefined") {
           const buf = new ArrayBuffer(s.length);
           const view = new Uint8Array(buf);
-          for (let i = 0; i != s.length; ++i) {
+          for (let i = 0; i !== s.length; ++i) {
             view[i] = s.charCodeAt(i) & 0xff
           }
           return buf;
         } else {
           const buf = new Array(s.length);
-          for (let i = 0; i != s.length; ++i) {
+          for (let i = 0; i !== s.length; ++i) {
             buf[i] = s.charCodeAt(i) & 0xff;
           }
           return buf;
@@ -902,7 +869,7 @@
     },
     computed: {
       Company() {
-        let company = JSON.parse(sessionStorage.getItem("currentUser")).company;
+        let company = getCurrentUser().company;
         return {
           id: company.id,
           label: company.label,
@@ -922,7 +889,7 @@
   }
 
   .typeClass {
-    /deep/ .el-input {
+    ::v-deep .el-input {
       width: 100% !important;
 
       input {
@@ -933,7 +900,7 @@
   }
 
   .el-col {
-    /deep/ .el-range-separator {
+    ::v-deep .el-range-separator {
       width: 10%;
     }
   }
@@ -946,7 +913,7 @@
     }
   }
 
-  /deep/ .el-table__footer-wrapper {
+  ::v-deep .el-table__footer-wrapper {
     td:not(:nth-of-type(1)) {
       .cell {
         display: inline-block;
@@ -961,11 +928,11 @@
     height: 0;
   }
 
-  /deep/ .el-table colgroup col[name='gutter'] {
+  ::v-deep .el-table colgroup col[name='gutter'] {
     width: 5px !important
   }
 
-  /deep/ .el-table__body {
+  ::v-deep .el-table__body {
     width: 100% !important
   }
 </style>

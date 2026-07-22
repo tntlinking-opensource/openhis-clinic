@@ -55,7 +55,7 @@
               </el-table-column>
               <!-- <el-table-column prop="occupyStock" label="占用库存"></el-table-column>-->
 
-              <el-table-column prop="surplusStock" label="可用库存" v-if="thisType==1">
+              <el-table-column prop="surplusStock" label="可用库存" v-if="thisType===1">
                 <template slot-scope="scope">
                   {{parseInt(scope.row.surplusStock/scope.row.drug.preparation)}}
                   <DictItemView type="medicalPackUnit" :dictValue="scope.row.packValue" style="width: 80px;">
@@ -65,7 +65,7 @@
                     style="width: 80px;"></DictItemView>
                 </template>
               </el-table-column>
-              <el-table-column label="数量" width="250" v-if="thisType==1">
+              <el-table-column label="数量" width="250" v-if="thisType===1">
                 <template slot-scope="scope">
                   <div class="quantity-box">
                     <el-input v-model="scope.row.packAmount" :disabled="true" type="number" min="0" required="true" placeholder="数量">
@@ -81,7 +81,7 @@
                 </template>
               </el-table-column>
 
-              <el-table-column prop="surplusStock" label="可用库存" v-if="thisType==2">
+              <el-table-column prop="surplusStock" label="可用库存" v-if="thisType===2">
                 <template slot-scope="scope">
                   {{parseInt(scope.row.surplusStock/scope.row.stuff.packNumber)}}
                   <DictItemView type="medicalPackUnit" :dictValue="scope.row.packUnitValue" style="width: 80px;">
@@ -91,7 +91,7 @@
                   </DictItemView>
                 </template>
               </el-table-column>
-              <el-table-column label="数量" width="250" prop="specification" v-if="thisType==2">
+              <el-table-column label="数量" width="250" prop="specification" v-if="thisType===2">
                 <template slot-scope="scope">
                   <div class="quantity-box">
                     <el-input v-model="scope.row.packAmount" :disabled="true" type="number" min="0" required="true" placeholder="数量">
@@ -242,7 +242,7 @@
       loadSupplierOutbound() {
         let that = this;
         getSupplierOutbound(this.outboundId).then((res) => {
-          if (res.code == 100) {
+          if (res.code === 100) {
             let data = res.data;
             this.outbound = data;
             /* that.otherInfo = {
@@ -263,7 +263,7 @@
       loadSupplierOutboundDetail() {
         let that = this;
         listByBoutbound(this.outboundId).then((res) => {
-          if (res.code == 100) {
+          if (res.code === 100) {
             let arr = [];
             let data = res.data;
             for (let i in data) {
@@ -286,7 +286,6 @@
                 let packNumber = parseInt(row.drug.preparation);
                 obj.packAmount = parseInt(row.number / packNumber);
                 obj.preparationAmount = row.number % packNumber;
-                console.log('drug amount', obj, row);
               } else if (row.stuff && row.stuff.id) {
                 obj.factoryName = row.stuff.factory.name;
                 obj.packUnitValue = row.stuff.packUnit.value;
@@ -308,7 +307,6 @@
               obj.surplusStock = row.medicinalStorage.surplusStock;
               arr.push(obj);
             }
-            console.log('storageDetailTable', arr);
             that.storageDetailTable = arr;
           }
         });
@@ -323,20 +321,20 @@
         this.outbound = {};
       },
       calcTotalInPrice(row) {
-        var number = this.getNumber(row);
+        const number = this.getNumber(row);
         if (isNaN(number)) return;
-        var inPrice = Number(row.bid);
+        const inPrice = Number(row.bid);
         if (isNaN(inPrice)) return;
-        var result = number * inPrice;
+        const result = number * inPrice;
         row.totalInPrice = result;
         return result;
       },
       calcTotalOutPrice(row) {
-        var number = this.getNumber(row);
+        const number = this.getNumber(row);
         if (isNaN(number)) return;
-        var outPrice = Number(row.retailPrice);
+        const outPrice = Number(row.retailPrice);
         if (isNaN(outPrice)) return;
-        var result = number * outPrice;
+        let result = number * outPrice;
         result = result.toFixed(2)
         row.totalOutPrice = result;
         return result;
@@ -349,10 +347,10 @@
         return 0;
       },
       calcTotalNumber() {
-        var totalNumber = 0;
+        let totalNumber = 0;
         if (this.storageDetailTable) {
           this.storageDetailTable.forEach((element) => {
-            var number = this.getNumber(element); // Number(element.packAmount);
+            const number = this.getNumber(element); // Number(element.packAmount);
             if (isNaN(number)) totalNumber += 0;
             else totalNumber += number;
           });
@@ -370,14 +368,13 @@
         }
 
         let n = parseInt(row.packAmount) * packNumber + parseInt(row.preparationAmount);
-        //console.log('calculate number:',n,row);
         return n;
       },
       calcAllBid() {
-        var allBid = 0;
+        let allBid = 0;
         if (this.storageDetailTable) {
           this.storageDetailTable.forEach((element) => {
-            var number = Number(element.bid);
+            const number = Number(element.bid);
             if (isNaN(number)) allBid += 0;
             else allBid += number;
           });
@@ -386,10 +383,10 @@
         return allBid;
       },
       calcAllRetailPrice() {
-        var allRetailPrice = 0;
+        let allRetailPrice = 0;
         if (this.storageDetailTable) {
           this.storageDetailTable.forEach((element) => {
-            var number = Number(element.retailPrice);
+            const number = Number(element.retailPrice);
             if (isNaN(number)) allRetailPrice += 0;
             else allRetailPrice += number;
           });

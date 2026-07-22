@@ -69,7 +69,7 @@
                        disabled
                        v-model="bizFormModel.recipelInfoReview.recipelInfo.chronicDisease"  >是否慢病</el-checkbox>-->
           <el-switch
-            v-if="bizFormModel.recipelInfoReview.recipelInfo.recipelType.value == 'recipelType_0'"
+            v-if="bizFormModel.recipelInfoReview.recipelInfo.recipelType.value === 'recipelType_0'"
             style="margin-left: 20px;"
             v-model="bizFormModel.recipelInfoReview.recipelInfo.chronicDisease"
             active-text="是否慢病"
@@ -88,7 +88,7 @@
               width="width">
               <template slot-scope="scope">
                 {{ scope.row.drugStuffId.name }}
-                <div v-if="bizFormModel.recipelInfoReview.recipelInfo.recipelType.value=='recipelType_0'">
+                <div v-if="bizFormModel.recipelInfoReview.recipelInfo.recipelType.value==='recipelType_0'">
                         <span class="nameStyle"
                         >{{ scope.row.drugStuffId.drug.dosis
                           }}{{ scope.row.drugStuffId.drug.dosisUnit.name }} *
@@ -111,14 +111,14 @@
               prop="westernMedicineUse.name"
               label="用法"
               width="width"
-              v-if="bizFormModel.recipelInfoReview.recipelInfo.recipelType.value == 'recipelType_0'"
+              v-if="bizFormModel.recipelInfoReview.recipelInfo.recipelType.value === 'recipelType_0'"
             >
             </el-table-column>
             <el-table-column
               prop="singleDosage"
               label="单次用量"
               width="width"
-              v-if="bizFormModel.recipelInfoReview.recipelInfo.recipelType.value == 'recipelType_0'"
+              v-if="bizFormModel.recipelInfoReview.recipelInfo.recipelType.value === 'recipelType_0'"
             >
               <template slot-scope="scope">
                 <template>{{scope.row.singleDosage?scope.row.singleDosage+''+scope.row.drugStuffId.dosisUnit.name:"" }}</template>
@@ -128,7 +128,7 @@
               prop="frequency"
               label="频次"
               align="center"
-              v-if="bizFormModel.recipelInfoReview.recipelInfo.recipelType.value == 'recipelType_0'"
+              v-if="bizFormModel.recipelInfoReview.recipelInfo.recipelType.value === 'recipelType_0'"
               width="width"
             >
               <template slot-scope="scope"
@@ -137,7 +137,7 @@
               >
             </el-table-column>
             <el-table-column prop="days.name" label="天数" width="width" align="center"
-                             v-if="bizFormModel.recipelInfoReview.recipelInfo.recipelType.value == 'recipelType_0'">
+                             v-if="bizFormModel.recipelInfoReview.recipelInfo.recipelType.value === 'recipelType_0'">
               <template slot-scope="scope">
                 {{scope.row.days.name}}天
               </template>
@@ -186,7 +186,7 @@
               <template slot-scope="scope">
                       <span
                       >{{ scope.row.unitPrice }}元/{{
-                          scope.row.isUnpackSell == 1
+                          scope.row.isUnpackSell === 1
                             ? scope.row.drugStuffId.preparationUnit.name
                             : scope.row.drugStuffId.pack.name
                         }}</span
@@ -201,7 +201,7 @@
           </el-table>
         </el-col>
       </el-row>
-      <el-row v-if="bizFormModel.recipelInfoReview.recipelInfo.recipelType.value  =='recipelType_1'">
+      <el-row v-if="bizFormModel.recipelInfoReview.recipelInfo.recipelType.value  ==='recipelType_1'">
         <el-input disabled v-model="bizFormModel.recipelInfoReview.recipelInfo.dosage" oninput="value=value.replace(/[^\d.]/g,'')" style="width: 60px"></el-input>
         &nbsp;剂 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;用法：
         <el-select disabled v-model="bizFormModel.recipelInfoReview.recipelInfo.recipelUse" placeholder="请选择" style="width: 110px">
@@ -258,7 +258,7 @@
               <template slot-scope="scope">
                       <span
                       >{{ scope.row.unitPrice }}元/{{
-                          scope.row.isUnpackSell == 1
+                          scope.row.isUnpackSell === 1
                             ? scope.row.drugStuffId.preparationUnit.name
                             : scope.row.drugStuffId.pack.name
                         }}</span
@@ -347,19 +347,19 @@
       <el-row>
         <el-col :span="24/3">
           <el-form-item label='是否合理' >
-            <el-radio-group :disabled="dialogProps.action == 'view'" v-model="bizFormModel.recipelInfoReview.reviewResult">
+            <el-radio-group :disabled="dialogProps.action === 'view'" v-model="bizFormModel.recipelInfoReview.reviewResult">
               <el-radio :label="1">合理</el-radio>
               <el-radio :label="0">不合理</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-col>
         <el-col :span="24/3">
-          <el-form-item label='审查人'  v-if='bizFormModel.recipelInfoReview.reviewStatus == "1"'>
+          <el-form-item label='审查人'  v-if='bizFormModel.recipelInfoReview.reviewStatus === "1"'>
             <el-input :disabled='true'  v-model='bizFormModel.recipelInfoReview.reviewerName' :placeholder='""'></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="24/3">
-          <el-form-item label='审查时间'  v-if='bizFormModel.recipelInfoReview.reviewStatus == "1"'>
+          <el-form-item label='审查时间'  v-if='bizFormModel.recipelInfoReview.reviewStatus === "1"'>
             <el-input :disabled='true'  v-model='bizFormModel.recipelInfoReview.createDate' :placeholder='""'></el-input>
           </el-form-item>
         </el-col>
@@ -370,17 +370,17 @@
             type="textarea"
             :rows="2"
             :placeholder='"请输入内容"'
-            :disabled="dialogProps.action == 'view'"
+            :disabled="dialogProps.action === 'view'"
             v-model="bizFormModel.recipelInfoReview.reviewContent">
           </el-input>
         </el-col>
       </el-row>
     </el-form>
     <span slot='footer' class='dialog-footer'>
-      <el-button v-if='dialogProps.action != "view"' :disabled="flage" type='primary' :plain='true' @click='onSubmit("reviewForm")'>保 存</el-button>
-      <el-button v-if='dialogProps.action != "view"' :disabled="flage" type='primary' :plain='true' @click='onSubmitAndContinue("reviewForm")'>保存并继续</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :disabled="flag" type='primary' :plain='true' @click='onSubmit("reviewForm")'>保 存</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :disabled="flag" type='primary' :plain='true' @click='onSubmitAndContinue("reviewForm")'>保存并继续</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span>
   </el-dialog>
 </template>
@@ -388,20 +388,17 @@
   import { saveRecipelInfoReview } from '@/api/outpatient/recipelInfoReview'
   import {listDictItemAll} from "@/api/sys/dictItem"
   import BaseUI from '@/views/components/baseUI'
-  import OperationIcon from '@/components/OperationIcon'
-
   export default {
   extends: BaseUI,
   name: 'review-form-pre',
   components: {
-    OperationIcon
   },
     computed: {
     },
   data() {
     return {
       bizFormModel: this.initFormModel(),
-      flage: false,
+      flag: false,
       dialogProps: {
         visible: false,
         action: '',
@@ -434,23 +431,23 @@
   },
   methods: {
     onSubmit(formName) {
-      this.flage=true
+      this.flag=true
       this.$refs[formName].validate(valid => {
         if (valid) {
           this.doSave(false)
         } else {
-          this.flage=false
+          this.flag=false
           return false
         }
       });
     },
     onSubmitAndContinue(formName){
-      this.flage=true
+      this.flag=true
       this.$refs[formName].validate(valid => {
         if (valid) {
           this.doSave(true)
         } else {
-          this.flage=false
+          this.flag=false
           return false
         }
       });
@@ -460,8 +457,8 @@
       this.bizFormModel.recipelInfoReview.reviewerName = this.currentUser.name
       this.bizFormModel.recipelInfoReview.reviewStatus = 1
       saveRecipelInfoReview(this.bizFormModel.recipelInfoReview).then(responseData => {
-        this.flage=false
-        if(responseData.code == 100) {
+        this.flag=false
+        if(responseData.code === 100) {
           if (visible) {
             this.$emit('save-and-continue');
           }else {
@@ -473,7 +470,7 @@
         }
         this.resetLoad()
       }).catch(error => {
-        this.flage=false
+        this.flag=false
         this.outputError(error)
       })
     },
@@ -522,62 +519,57 @@
         },],
       };
       listDictItemAll(model).then((responseData) => {
-        if (optionId == "1014474470772899981") {
+        if (optionId === "1014474470772899981") {
           this.ChineseUseOption = responseData.data;
           if (this.isSpecial) {
             this.ChineseUseOption = this.ChineseUseOption.filter(
-              (item) => item.name == "水冲"
+              (item) => item.name === "水冲"
             );
           }
-        }else if (optionId == "1014474470772899985")
+        }else if (optionId === "1014474470772899985")
           this.ChineseTimeOption = responseData.data;
-        else if (optionId == "1014474470772899990")
+        else if (optionId === "1014474470772899990")
           this.FrequencyOption = responseData.data;
-        else if (optionId == "1014474470772900058")
+        else if (optionId === "1014474470772900058")
           this.ChineseUseTimeOption = responseData.data;
       });
+    },
+    openViewReviewDialog(review) {
+      this.dialogProps.action = 'view'
+      this.dialogProps.title = '电子处方审核'
+      this.bizFormModel = review
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+      this.dialogProps.dataLoaded = true
+    },
+    openEditReviewDialog(review) {
+      this.dialogProps.action = 'edit'
+      this.dialogProps.title = '电子处方审核'
+      this.bizFormModel = review
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+      this.dialogProps.dataLoaded = true
+    },
+    openAddReviewDialog(review) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加处方审查'
+      this.bizFormModel = this.initFormModel()
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+      this.dialogProps.dataLoaded = true
+    },
+    openCopyReviewDialog(review) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加处方审查'
+      this.bizFormModel = review
+      this.initOptions(this.bizFormModel)
+      this.bizFormModel.id = null   //把id设置为空，添加一个新的
+      this.dialogProps.visible = true
+      this.dialogProps.dataLoaded = true
     },
   },
   watch: {
   },
-  mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openViewReviewDialog', function(review) {
-        this.dialogProps.action = 'view'
-        this.dialogProps.title = '电子处方审核'
-        this.bizFormModel = review
-        this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-        this.dialogProps.dataLoaded = true
-      })
-      this.$on('openEditReviewDialog', function(review) {
-        this.dialogProps.action = 'edit'
-        this.dialogProps.title = '电子处方审核'
-        this.bizFormModel = review
-        this.initOptions(this.bizFormModel)
-        console.log(this.bizFormModel,"明细页面")
-        this.dialogProps.visible = true
-        this.dialogProps.dataLoaded = true
-      })
-      this.$on('openAddReviewDialog', function(review) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加处方审查'
-        this.bizFormModel = this.initFormModel()
-        this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-        this.dialogProps.dataLoaded = true
-      })
-      this.$on('openCopyReviewDialog', function(review) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加处方审查'
-        this.bizFormModel = review
-        this.initOptions(this.bizFormModel)
-        this.bizFormModel.id = null   //把id设置为空，添加一个新的
-        this.dialogProps.visible = true
-        this.dialogProps.dataLoaded = true
-      })
-    })
-  }
 }
 </script>
 <style scoped>

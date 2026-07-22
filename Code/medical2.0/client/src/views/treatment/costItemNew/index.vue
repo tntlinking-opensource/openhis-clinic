@@ -3,9 +3,9 @@
     <!-- 历史记录  -->
     <History :bussObject="curentRow"></History>
     <!-- 编辑窗口  -->
-    <costItem-form ref="costItemForm" :permission="permission" v-on:save-finished="pageInit"></costItem-form>
+    <costItem-form ref="costItemForm" :permission="permission" v-on:save-finished="loadData"></costItem-form>
     <!-- 同步 -->
-    <syncCostItemForm ref="synchronousRef" v-on:save-finished="pageInit"></syncCostItemForm>
+    <syncCostItemForm ref="synchronousRef" v-on:save-finished="loadData"></syncCostItemForm>
     <el-card class="page-container">
       <!--  搜索栏  开始 -->
       <div class="query-form-container">
@@ -70,11 +70,11 @@
                 :min-width="cv.miniWidth + 'px'" :width="cv.width + 'px'" header-align="center"
                 :column-key="index.toString()" :render-header="renderHeader">
                 <template slot-scope="{ row, $index }">
-                  <span v-if="columnViews[index].showType == 'Switch' ||
-    columnViews[index].showType == 'Checkbox' ||
-    columnViews[index].showType == 'Radio'
+                  <span v-if="columnViews[index].showType === 'Switch' ||
+    columnViews[index].showType === 'Checkbox' ||
+    columnViews[index].showType === 'Radio'
     ">
-                    <li v-if="getAttrValue(row, columnViews[index].prop) == '1'" class="el-icon-check"
+                    <li v-if="getAttrValue(row, columnViews[index].prop) === '1'" class="el-icon-check"
                       style="color: #f56c6c"></li>
                   </span>
                   <span v-else>{{
@@ -127,16 +127,15 @@
 </template>
 
 <script>
-import { validatenull } from "@/utils/validate";
 import {
   listCostItemPage,
   getCostItemById,
-  deleteCostItem,
+  listCostItemAll,
 } from "@/api/treatment/costItem";
-import { listResourcePermission } from "@/api/admin/common/permission";
+import listViewMixin from "@/mixins/listViewMixin";
 import CostItemForm from "./costItemForm";
 import { listDictItemAll } from "@/api/sys/dictItem";
-import { listCostItemAll } from "@/api/treatment/costItem";
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 import ExportExcelButton from "@/components/ExportExcelButton";
 import ViewColumnsSelect from "@/views/components/ViewColumnsSelect";
 import QueryForm from "@/views/components/queryForm";
@@ -146,6 +145,7 @@ import History from "@/views/components/history";
 import syncCostItemForm from "./syncCostItemForm.vue";
 export default {
   extends: MainUI,
+  mixins: [listViewMixin],
   components: {
     CostItemForm,
     ExportExcelButton,
@@ -157,19 +157,15 @@ export default {
   },
 
   data() {
-
     return {
-      permission: {
-        view: false,
-        add: false,
-        edit: false,
-        remove: false,
-        export: false,
-      },
+      listApi: listCostItemPage,
+      getApi: getCostItemById,
+      entityName: 'CostItem',
+      permissionPrefix: 'costItemNew',
       costItemDTO: {
         response: {},
         res: {}
-      },//修改操作对象封装
+      },
       queryTypes: {
         item_name: "like",
         item_type: "=",
@@ -184,7 +180,7 @@ export default {
         },
         isUse: "", // 状态
       },
-      tableHeight: "",//表格高度
+      tableHeight: "", //表格高度
       isUse: [
         {
           value: '0',
@@ -194,32 +190,7 @@ export default {
           value: '1',
           label: '是'
         },
-      ],//是否启用
-      search: {
-        params: [
-          {
-            columnName: "company_id",
-            queryType: "=",
-            value: (function () {
-              var user = JSON.parse(sessionStorage.getItem("currentUser"));
-              return user.company.id;
-            })(),
-          },
-        ],
-        offset: 0,
-        limit: 20,
-        columnName: "", // 排序字段名
-        order: "", // 排序
-      },
-      subproject: [],//子项目封装
-      costltemSearch: {
-        params: [{ columnName: "company_id", queryType: "=", value: "" }],
-        offset: 0,
-        limit: 100,
-        columnName: "", // 排序字段名
-        order: "", // 排序
-      },
-      currentPage: 1,
+      ],
       costItemTotal: 0,
       costItemList: [],
 
@@ -231,12 +202,46 @@ export default {
     };
   },
   methods: {
-    onSynchronous() {
-      this.$refs.synchronousRef.$emit('openSyncCostItemDialog')
+    appendSearchParams() {
+      // 查询参数: 项目名称
+      this.search.params.push({
+        columnName: "item_name",
+        queryType: "like",
+        value: this.queryModel.itemName,
+      });
+      if (this.queryModel.itemType.value !== "") {
+        // 查询参数: 项目类别
+        this.search.params.push({
+          columnName: "item_type",
+          queryType: "=",
+          value: this.queryModel.itemType.value || "",
+        });
+      }
+      // 查询参数: 状态
+      this.search.params.push({
+        columnName: "is_use",
+        queryType: "=",
+        value: this.queryModel.isUse,
+      });
+      // 数据权限: 费用项目cost_item
+      this.pushDataPermissions(
+        this.search.params,
+        this.$route.meta.routerId,
+        this.tableId
+      );
+    },
+    handleListResponse(responseData) {
+      this.costItemTotal = responseData.data.total;
+      this.costItemList = responseData.data.rows;
+    },
+    initOptions(This) {
+      getDictItemsByCode(DICT_CODE.TREATMENT_ITEM_TYPE).then((data) => {
+        this.itemType_List = data;
+      });
     },
     //计算table高度(动态设置table高度)
     getTableHeight() {
-      let tableH = 240; //距离页面下方的高度
+      let tableH = 240;
       let tableHeightDetil = window.innerHeight - tableH;
       if (tableHeightDetil <= 300) {
         this.tableHeight = 300;
@@ -244,241 +249,63 @@ export default {
         this.tableHeight = window.innerHeight - tableH;
       }
     },
-
-
-    indexMethod(index) {
-      return (this.currentPage - 1) * this.search.limit + index + 1;
-    },
-    reset() {
-      this.$refs.queryForm.resetFields()
-      this.onSearch()
-    },
-    getCostItemList() {
-      this.setLoad();
-      /* 查询参数 和数据权限 */
-      this.search.params = [
-        {
-          columnName: "company_id",
-          queryType: "=",
-          value: (function () {
-            var user = JSON.parse(sessionStorage.getItem("currentUser"));
-            return user.company.id;
-          })(),
-        },
-      ];
-      if (this.moreCodition) {
-        console.log(this.moreCodition, "---=====");
-        this.search.params = this.search.params.concat(
-          this.compositeCondition()
-        );
-      } else {
-        console.log(this.search, "---+++++");
-        // 查询参数: 项目名称
-        this.search.params.push({
-          columnName: "item_name",
-          queryType: "like",
-          value: this.queryModel.itemName,
-        });
-        if (this.queryModel.itemType.value != "") {
-          // 查询参数: 项目类别
-          this.search.params.push({
-            columnName: "item_type",
-            queryType: "=",
-            value: validatenull(this.queryModel.itemType.value)
-              ? ""
-              : this.queryModel.itemType.value,
-          });
-        }
-
-        // 查询参数: 状态
-        this.search.params.push({
-          columnName: "is_use",
-          queryType: "=",
-          value: this.queryModel.isUse,
-        });
-      }
-      console.log(this.search, "---+++++");
-      // 数据权限: 费用项目cost_item
-      this.pushDataPermissions(
-        this.search.params,
-        this.$route.meta.routerId,
-        this.tableId
-      );
-      listCostItemPage(this.search)
-        .then((responseData) => {
-          if (responseData.code == 100) {
-            this.costItemTotal = responseData.data.total;
-            this.costItemList = responseData.data.rows;
-          } else {
-            this.showMessage(responseData);
-          }
-          this.resetLoad();
-        })
-        .catch((error) => {
-          this.outputError(error);
-        });
-    },
-    onSearch() {
-      if (this.moreCodition) {
-        this.search.offset = 0;
-        this.currentPage = 1;
-        this.getCostItemList();
-      } else {
-        this.$refs["queryForm"].validate((valid) => {
-          if (valid) {
-            this.search.offset = 0;
-            this.currentPage = 1;
-            this.getCostItemList();
-          } else {
-            return false;
-          }
-        });
-      }
-    },
-    onSizeChange(val) {
-      this.currentPage = 1;
-      this.search.limit = val;
-      this.search.offset = (this.currentPage - 1) * val;
-      this.getCostItemList();
-    },
-    onCurrentChange(val) {
-      this.search.offset = (val - 1) * this.search.limit;
-      this.currentPage = val;
-      this.getCostItemList();
-    },
-    async pageInit() {
-
-      this.setLoad();
-      try {
-        this.initOptions(this.queryModel);
-        this.search.params = [
-          {
-            columnName: "company_id",
-            queryType: "=",
-            value: (function () {
-              var user = JSON.parse(sessionStorage.getItem("currentUser"));
-              return user.company.id;
-            })(),
-          },
-        ];
-        // 数据权限: 费用项目cost_item
-        this.pushDataPermissions(
-          this.search.params,
-          this.$route.meta.routerId,
-          this.tableId
-        );
-        let [listCostItemRespData, listPermissionRespData] = await Promise.all([
-          listCostItemPage(this.search),
-          listResourcePermission(this.$route.meta.routerId),
-        ]);
-        if (
-          listCostItemRespData.code == 100 &&
-          listPermissionRespData.code == 100
-        ) {
-          this.costItemTotal = listCostItemRespData.data.total;
-          this.costItemList = listCostItemRespData.data.rows;
-          this.permission.view = listPermissionRespData.data.find((item) => {
-            return item.permission === "costItemNew:read";
-          });
-          this.permission.export = listPermissionRespData.data.find((item) => {
-            return item.permission === "costItemNew:export";
-          });
-          this.permission.add = listPermissionRespData.data.find((item) => {
-            return item.permission === "costItemNew:create";
-          });
-          this.permission.edit = listPermissionRespData.data.find((item) => {
-            return item.permission === "costItemNew:update";
-          });
-          this.permission.remove = listPermissionRespData.data.find((item) => {
-            return item.permission === "costItemNew:delete";
-          });
-        } else {
-          this.showMessage(
-            listPermissionRespData.code != 100
-              ? listPermissionRespData
-              : listCostItemRespData
-          );
-        }
-        this.resetLoad();
-      } catch (error) {
-        this.outputError(error);
-      }
-    },
-    onViewCostItem(index, row) {
-      this.setLoad();
-      getCostItemById(row.id)
-        .then((responseData) => {
-          console.log(responseData);
-          if (responseData.code == 100) {
-            console.log(responseData.data);
-            this.$refs.costItemForm.$emit(
-              "openViewCostItemDialog",
-              responseData.data
-            );
-          } else {
-            this.showMessage(responseData);
-          }
-          this.resetLoad();
-        })
-        .catch((error) => {
-          this.outputError(error);
-        });
+    onSynchronous() {
+      this.$refs.synchronousRef.$emit('openSyncCostItemDialog')
     },
     onCreateCostItem() {
-      //  this.costltemSearch.params = [
-      //   {
-      //     columnName: "company_id",
-      //     queryType: "=",
-      //     value: this.company_id,
-      //   },
-      // ];
       this.search.params = [
         {
           columnName: "company_id",
           queryType: "=",
           value: (function () {
-            var user = JSON.parse(sessionStorage.getItem("currentUser"));
+            const user = JSON.parse(sessionStorage.getItem("currentUser"));
             return user.company.id;
           })(),
         },
       ];
       listCostItemAll(this.search).then((res) => {
-        if (res.code == 100) {
-          // this.subproject=res.data
+        if (res.code === 100) {
           this.$refs.costItemForm.$emit("openAddCostItemDialog", res.data);
         }
       }).catch(() => { })
-
+    },
+    onViewCostItem(index, row) {
+      this.setLoad();
+      getCostItemById(row.id)
+        .then((responseData) => {
+          if (responseData.code === 100) {
+            this.$refs.costItemForm.$emit("openViewCostItemDialog", responseData.data);
+          } else {
+            this.showMessage(responseData);
+          }
+          this.resetLoad();
+        })
+        .catch((error) => {
+          this.outputError(error);
+        });
     },
     onEditCostItem(index, row) {
       this.setLoad();
       getCostItemById(row.id)
         .then((responseData) => {
-          if (responseData.code == 100) {
-
+          if (responseData.code === 100) {
             this.search.params = [
               {
                 columnName: "company_id",
                 queryType: "=",
                 value: (function () {
-                  var user = JSON.parse(sessionStorage.getItem("currentUser"));
+                  const user = JSON.parse(sessionStorage.getItem("currentUser"));
                   return user.company.id;
                 })(),
               },
             ];
             listCostItemAll(this.search).then((res) => {
-              if (res.code == 100) {
-                // this.subproject=res.data
+              if (res.code === 100) {
                 this.costItemDTO.response = responseData.data
                 this.costItemDTO.res = res.data
-
-                this.$refs.costItemForm.$emit(
-                  "openEditCostItemDialog",
-                  this.costItemDTO
-                );
+                this.$refs.costItemForm.$emit("openEditCostItemDialog", this.costItemDTO);
               }
             }).catch(() => { })
-
           } else {
             this.showMessage(responseData);
           }
@@ -490,48 +317,26 @@ export default {
     },
     onCopyCostItem(index, row) {
       this.setLoad();
-      // getCostItemById(row.id)
-      //   .then((responseData) => {
-      //     if (responseData.code == 100) {
-      //       this.$refs.costItemForm.$emit(
-      //         "openCopyCostItemDialog",
-      //         responseData.data
-      //       );
-      //     } else {
-      //       this.showMessage(responseData);
-      //     }
-      //     this.resetLoad();
-      //   })
-      //   .catch((error) => {
-      //     this.outputError(error);
-      //   });
       getCostItemById(row.id)
         .then((responseData) => {
-          if (responseData.code == 100) {
-
+          if (responseData.code === 100) {
             this.search.params = [
               {
                 columnName: "company_id",
                 queryType: "=",
                 value: (function () {
-                  var user = JSON.parse(sessionStorage.getItem("currentUser"));
+                  const user = JSON.parse(sessionStorage.getItem("currentUser"));
                   return user.company.id;
                 })(),
               },
             ];
             listCostItemAll(this.search).then((res) => {
-              if (res.code == 100) {
-                // this.subproject=res.data
+              if (res.code === 100) {
                 this.costItemDTO.response = responseData.data
                 this.costItemDTO.res = res.data
-
-                this.$refs.costItemForm.$emit(
-                  "openCopyCostItemDialog",
-                  this.costItemDTO
-                );
+                this.$refs.costItemForm.$emit("openCopyCostItemDialog", this.costItemDTO);
               }
             }).catch(() => { })
-
           } else {
             this.showMessage(responseData);
           }
@@ -540,70 +345,6 @@ export default {
         .catch((error) => {
           this.outputError(error);
         });
-    },
-    onDeleteCostItem(index, row) {
-      this.$confirm("确定删除吗？", "确认", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      })
-        .then(() => {
-          this.setLoad();
-          deleteCostItem(row)
-            .then((responseData) => {
-              if (responseData.code == 100) {
-                this.getCostItemList();
-                this.showMessage({ type: "success", msg: "删除成功" });
-              } else {
-                this.showMessage(responseData);
-              }
-              this.resetLoad();
-            })
-            .catch((error) => {
-              this.outputError(error);
-            });
-        })
-        .catch(() => { });
-    },
-    onSortChange(orderby) {
-      if (validatenull(orderby.prop)) {
-        this.search.columnName = "";
-        this.search.order = "";
-      } else {
-        this.search.columnName = orderby.prop;
-        this.search.order = orderby.order === "descending" ? "desc" : "asc";
-      }
-
-      this.getCostItemList();
-    },
-    initOptions(This) {
-      let itemType_search = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "998465736089977631",
-          },
-        ],
-      };
-      // 响应字段的条件操作符，替换成触发字段的操作符
-      itemType_search.params.forEach((item) => {
-        if (this.queryTypes[item.columnName]) {
-          item.queryType = this.queryTypes[item.columnName];
-        }
-      });
-      // 字段对应表上filter条件
-      itemType_search.params.push.apply(itemType_search.params, []);
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(
-        itemType_search.params,
-        this.$route.meta.routerId,
-        "4005"
-      );
-      this.itemType_List.splice(0, this.itemType_List.length);
-      listDictItemAll(itemType_search).then((responseData) => {
-        this.itemType_List = responseData.data;
-      });
     },
   },
   watch: {
@@ -630,16 +371,22 @@ export default {
   mounted() {
     this.pageInit();
     //挂载window.onresize事件(动态设置table高度)
-    let _this = this;
-    window.onresize = () => {
-      if (_this.resizeFlag) {
-        clearTimeout(_this.resizeFlag);
+    this._resizeHandler = () => {
+      if (this.resizeFlag) {
+        clearTimeout(this.resizeFlag);
       }
-      _this.resizeFlag = setTimeout(() => {
-        _this.getTableHeight();
-        _this.resizeFlag = null;
+      this.resizeFlag = setTimeout(() => {
+        this.getTableHeight();
+        this.resizeFlag = null;
       }, 100);
     };
+    window.addEventListener('resize', this._resizeHandler);
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this._resizeHandler);
+    if (this.resizeFlag) {
+      clearTimeout(this.resizeFlag);
+    }
   },
   created() {
     this.getTableHeight();
@@ -654,16 +401,16 @@ export default {
 .drag_table {
 
   // 设置表格header的高度
-  /deep/ th {
+  ::v-deep th {
     height: 44px;
   }
 
-  /deep/ th.gutter:last-of-type {
+  ::v-deep th.gutter:last-of-type {
     height: 0 !important;
   }
 
   // 设置表格body的高度
-  /deep/.el-table__body-wrapper {
+  ::v-deep.el-table__body-wrapper {
     //解决数据展示超出body高度不滚动bug
     overflow-y: auto;
     // 减去的是表格header的高度
@@ -676,7 +423,7 @@ export default {
 }
 </style>
 <style scoped>
-/deep/ .el-table__body-wrapper {
+::v-deep .el-table__body-wrapper {
   height: calc(100% - 44px) !important;
 }
 </style>

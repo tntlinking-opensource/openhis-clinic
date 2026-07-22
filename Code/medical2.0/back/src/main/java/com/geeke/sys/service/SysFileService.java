@@ -15,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.geeke.common.constants.ActionConstants;
 import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
+import com.geeke.common.data.SearchParamsBuilder;
 import com.geeke.common.service.CrudService;
-import com.geeke.config.exception.CommonJsonException;
 import com.geeke.sys.entity.Action;
 import com.geeke.sys.entity.ActionRecycle;
 import com.geeke.sys.entity.SysFile;
@@ -24,9 +24,7 @@ import com.geeke.sys.dao.SysFileDao;
 import com.geeke.sys.entity.SysFileContent;
 import com.geeke.sys.dao.SysFileContentDao;
 import com.geeke.utils.Reflections;
-import com.geeke.utils.ResultUtil;
 import com.geeke.utils.StringUtils;
-import com.geeke.utils.constants.ErrorEnum;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,12 +46,9 @@ public class SysFileService extends CrudService<SysFileDao, SysFile>{
     public SysFile get(String id) {
         SysFile sysFile = super.get(id);
 
-        List<Parameter> params = null;
-        PageRequest pageRequest;
         /*获取子表列表   附件字节表*/
-        params = Lists.newArrayList();
-        params.add(new Parameter("id", "=", sysFile.getId()));
-        pageRequest = new PageRequest(params);
+        List<Parameter> params = SearchParamsBuilder.create().eq("id", sysFile.getId()).build();
+        PageRequest pageRequest = new PageRequest(params);
         sysFile.setSysFileContentList(sysFileContentDao.listAll(pageRequest));        
         return sysFile;
     }
@@ -65,12 +60,9 @@ public class SysFileService extends CrudService<SysFileDao, SysFile>{
         SysFile sysFileTemp = super.save(sysFile);
         if (StringUtils.isNoneBlank(sysFileTemp.getId())) {
 
-            List<Parameter> params = null;
-            PageRequest pageRequest;
             /* 处理子表     附件字节表 */
-            params = Lists.newArrayList();
-            params.add(new Parameter("id", "=", sysFile.getId()));
-            pageRequest = new PageRequest(params);
+            List<Parameter> params = SearchParamsBuilder.create().eq("id", sysFile.getId()).build();
+            PageRequest pageRequest = new PageRequest(params);
             List<SysFileContent> list_SysFileContent = sysFileContentDao.listAll(pageRequest);            
             List<SysFileContent> deleteSysFileContents = Lists.newArrayList(); // 删除列表
             List<SysFileContent> insertSysFileContents = Lists.newArrayList(); // 添加列表
@@ -156,11 +148,8 @@ public class SysFileService extends CrudService<SysFileDao, SysFile>{
      */
     @Transactional(readOnly = false)
     public void deleteByObjectId(String objectId) {
-        List<Parameter> params = null;
-        PageRequest pageRequest;
-        params = Lists.newArrayList();
-        params.add(new Parameter("object_id", "=", objectId));
-        pageRequest = new PageRequest(params);
+        List<Parameter> params = SearchParamsBuilder.create().eq("object_id", objectId).build();
+        PageRequest pageRequest = new PageRequest(params);
         List<SysFile> sysFiles = dao.listAll(pageRequest);
         for (SysFile file : sysFiles) {
             delete(file); // 删除附件包含存储表信息
@@ -193,12 +182,9 @@ public class SysFileService extends CrudService<SysFileDao, SysFile>{
     @Override
     @Transactional(readOnly = false)
     public int delete(SysFile sysFile) {
-        List<Parameter> params = null;
-        PageRequest pageRequest;
         /* 处理子表     附件字节表 */
-        params = Lists.newArrayList();
-        params.add(new Parameter("id", "=", sysFile.getId()));
-        pageRequest = new PageRequest(params);
+        List<Parameter> params = SearchParamsBuilder.create().eq("id", sysFile.getId()).build();
+        PageRequest pageRequest = new PageRequest(params);
         sysFile.setSysFileContentList(sysFileContentDao.listAll(pageRequest));        
 
         if(sysFile.getSysFileContentList() != null && sysFile.getSysFileContentList().size() > 0) {

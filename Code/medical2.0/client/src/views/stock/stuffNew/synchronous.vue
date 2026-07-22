@@ -80,8 +80,8 @@
                   :column-key='index.toString()' :render-header="renderHeader">
                   <template slot-scope='{row,$index}'>
                     <span
-                      v-if='columnViews[index].showType == "Switch" || columnViews[index].showType == "Checkbox" || columnViews[index].showType == "Radio"'>
-                      <li v-if='getAttrValue(row, columnViews[index].prop) == "1"' class='el-icon-check'
+                      v-if='columnViews[index].showType === "Switch" || columnViews[index].showType === "Checkbox" || columnViews[index].showType === "Radio"'>
+                      <li v-if='getAttrValue(row, columnViews[index].prop) === "1"' class='el-icon-check'
                         style='color:#F56C6C;'></li>
                     </span>
 
@@ -89,7 +89,7 @@
                   </template>
 </el-table-column> -->
                 <el-table-column v-for="item in columnList" :label="item.label" :prop="item.prop"></el-table-column>
-                <el-table-column prop="inventory" label="可用库存" sortable="custom" width="100px" v-if="source == 1">
+                <el-table-column prop="inventory" label="可用库存" sortable="custom" width="100px" v-if="source === 1">
                   <template slot-scope="scope">
                     <span v-if="scope.row.stock.surplusStock != null">
                       {{
@@ -190,8 +190,8 @@
       </div>
     </el-row>
     <span slot='footer' class='dialog-footer'>
-      <el-button :disabled="flage" type='primary' :plain='true' @click='onSubmit()'>同 步</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button :disabled="flag" type='primary' :plain='true' @click='onSubmit()'>同 步</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
     </span>
   </el-dialog>
 </template>
@@ -201,11 +201,8 @@ import { listParentStuffPage, listInstitutionStuffPage, syncStuff, syncInstituti
 import { listResourcePermission } from '@/api/admin/common/permission'
 import synchronousStuffForm from './synchronousStuffForm'
 import { listDictItemAll } from '@/api/sys/dictItem'
-import ExportExcelButton from '@/components/ExportExcelButton'
-import ViewColumnsSelect from '@/views/components/ViewColumnsSelect'
-import QueryForm from '@/views/components/queryForm'
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 import MainUI from '@/views/components/mainUI'
-import OperationIcon from '@/components/OperationIcon'
 import History from '@/views/components/history'
 import { getLocalCurrentCompany } from "@/utils/auth";
 import fileurl from "@/assets/file/stuff.xlsx";
@@ -217,10 +214,6 @@ export default {
   name: "stuff-form",
   components: {
     synchronousStuffForm,
-    ExportExcelButton,
-    ViewColumnsSelect,
-    QueryForm,
-    OperationIcon,
     History,
   },
   data() {
@@ -396,7 +389,7 @@ export default {
     },
     handleSource(val) {
       this.source = val
-      if (this.source == 1) {
+      if (this.source === 1) {
         this.columnList = this.columnListOne
       } else {
         this.columnList = this.columnListTwo
@@ -408,7 +401,7 @@ export default {
       this.pageInit()
     },
     selectable(row, index) {
-      if (row.syncNum == 1) {
+      if (row.syncNum === 1) {
         return false
       } else {
         return true
@@ -418,16 +411,16 @@ export default {
       this.currentData = val;
     },
     async onSubmit() {
-      if (this.currentData.length == 0) {
+      if (this.currentData.length === 0) {
         this.$message({
           message: '请选择要同步的数据',
           type: 'warning'
         });
         return;
       }
-      const functionSync = this.source == '1' ? syncStuff : syncInstitutionStuff
+      const functionSync = this.source === '1' ? syncStuff : syncInstitutionStuff
       const res = await functionSync(this.currentData);
-      if (res.code == 100) {
+      if (res.code === 100) {
         this.$message({
           message: '同步成功',
           type: 'success'
@@ -452,17 +445,16 @@ export default {
     },
     //批量设置有效期保存
     indateSave(index) {
-      if (index == 0) {
+      if (index === 0) {
         this.indateDialogVisible = false
         this.indate = ""
       } else {
-        console.log(this.indate);
         let stuff = {
           indate: this.indate,
           company: currentUser.company
         }
         updateAllIndate(stuff).then((res) => {
-          if (res.code == 100) {
+          if (res.code === 100) {
             this.indateDialogVisible = false
             this.indate = ""
             this.getStuffList();
@@ -476,7 +468,7 @@ export default {
 
     //批量设置库存预警保存
     inventorySave(index) {
-      if (index == 0) {
+      if (index === 0) {
         this.inventoryDialogVisible = false
         this.inventoryFloor = ""
       } else {
@@ -485,7 +477,7 @@ export default {
           company: currentUser.company
         }
         updateAllInventory(stuff).then((res) => {
-          if (res.code == 100) {
+          if (res.code === 100) {
             this.inventoryDialogVisible = false
             this.inventoryFloor = ""
             this.getStuffList();
@@ -521,7 +513,6 @@ export default {
     // 批量导入按钮点击事件
     importStudentExcel() {
       this.importDialogVisible = true;
-      console.log(this.importDialogVisible)
     },
 
     // 选择文件事件
@@ -532,16 +523,14 @@ export default {
     // 上传文件
     async uploadFile() {
       const file = this.$refs.file.files
-      var extName = file[0].name.substring(file[0].name.lastIndexOf('.')).toLowerCase()
+      const extName = file[0].name.substring(file[0].name.lastIndexOf('.')).toLowerCase()
       if (extName === '.xlsx' || extName === '.xls') {
-        var formData = new FormData()
+        const formData = new FormData()
         let id = currentUser.company.id;
-        console.log("看看这里呀呀呀" + id)
         formData.append('file', file[0])
         this.$message.success('正在导入中，请耐心等待')
         uploadExcel(formData).then((res) => {
-          console.log("到这里了吗extName === " + formData)
-          if (res.code === '100') {
+          if (res.code === 100) {
             if (res.data[2] === "") {
               this.$message({
                 type: 'success',
@@ -549,7 +538,6 @@ export default {
               })
               this.cancellation();
             } else {
-              console.log("导入报错" + this.mistake)
               this.chengGong = res.data[0]
               this.shiBai = res.data[1]
               this.mistake = res.data[2]
@@ -602,12 +590,12 @@ export default {
       this.setLoad()
       /* 查询参数 和数据权限 */
       this.search.params = [{ columnName: 'company_id', queryType: '=', value: currentUser.company.id }]
-      if (val == "1") {
+      if (val === "1") {
         this.search.params = this.search.params.concat(this.compositeCondition())
       } else {
         // 查询参数: 材料名称
         this.search.params.push({
-          columnName: this.source == 1 ? 'name' : 'keyword',
+          columnName: this.source === 1 ? 'name' : 'keyword',
           queryType: 'like',
           value: this.queryModel.name
         })
@@ -638,9 +626,9 @@ export default {
       }
       // 数据权限: 材料stuff
       this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-      const functionList = this.source == '1' ? listParentStuffPage : listInstitutionStuffPage
+      const functionList = this.source === '1' ? listParentStuffPage : listInstitutionStuffPage
       functionList(this.search).then(responseData => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           this.stuffList = responseData.data.rows
           this.stuffTotal = responseData.data.total
         } else {
@@ -684,31 +672,30 @@ export default {
       try {
         this.initOptions(this.queryModel)
         this.search.params = [{ columnName: 'company_id', queryType: '=', value: currentUser.company.id }]
-        const functionList = this.source == '1' ? listParentStuffPage : listInstitutionStuffPage
+        const functionList = this.source === '1' ? listParentStuffPage : listInstitutionStuffPage
         // 数据权限: 材料stuff
         this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
         let [listStuffRespData, listPermissionRespData] = await Promise.all([
           functionList(this.search),
           listResourcePermission(this.$route.meta.routerId)
         ])
-        if (listStuffRespData.code == 100 && listPermissionRespData.code == 100) {
+        if (listStuffRespData.code === 100 && listPermissionRespData.code === 100) {
           this.stuffTotal = listStuffRespData.data.total
-          if (this.source == 1) {
+          if (this.source === 1) {
             this.stuffList = listStuffRespData.data.rows.map((item) => {
               item.typeName = item.type.name
               item.natureName = item.nature.name
               item.factoryName = item.factory.name
-              item.syncNumName = item.syncNum == 1 ? '是' : '否'
+              item.syncNumName = item.syncNum === 1 ? '是' : '否'
               return item
             })
           } else {
             this.stuffList = listStuffRespData.data.rows.map((item) => {
-              item.syncNumName = item.syncNum == 1 ? '是' : '否'
+              item.syncNumName = item.syncNum === 1 ? '是' : '否'
               return item
             })
           }
 
-          console.log(this.stuffList[0], '库存');
           this.permission.view = listPermissionRespData.data.find(item => {
             return item.permission === 'stuffNew:read'
           })
@@ -725,7 +712,7 @@ export default {
             return item.permission === 'stuffNew:delete'
           })
         } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listStuffRespData)
+          this.showMessage(listPermissionRespData.code !== 100 ? listPermissionRespData : listStuffRespData)
         }
         this.resetLoad()
       } catch (error) {
@@ -735,8 +722,8 @@ export default {
     onViewStuff(index, row) {
       this.setLoad()
       getStuffById(row.id).then(responseData => {
-        if (responseData.code == 100) {
-          this.$refs.synchronousStuffFormRef.$emit('openViewStuffDialog', responseData.data)
+        if (responseData.code === 100) {
+          this.$refs.synchronousStuffFormRef.openViewStuffDialog(responseData.data)
         } else {
           this.showMessage(responseData)
         }
@@ -746,8 +733,7 @@ export default {
       })
     },
     onCreateStuff() {
-      console.log('添加', this.$refs.synchronousStuffFormRef)
-      this.$refs.synchronousStuffFormRef.$emit('openAddStuffDialog')
+      this.$refs.synchronousStuffFormRef.openAddStuffDialog()
       // this.$refs.synchronousStuffFormRef.dialogProps.visible = true
     },
     onEditStuff(index, row) {
@@ -763,13 +749,11 @@ export default {
           value: row.id
         }
       ]
-      console.log(row.id)
       inventory(this.systemParamConfigSearch).then(responseData => {
-        if (responseData.code == 100) {
+        if (responseData.code === 100) {
           if (responseData.data.length >= 1) {
             responseData.data.forEach(data => {
               this.inventory = data.stock.surplusStock
-              console.log(this.inventory, '可以');
             })
 
           }
@@ -780,17 +764,16 @@ export default {
         this.outputError(error)
       })
       setTimeout(() => {
-        if (this.inventory != 0) {
+        if (this.inventory !== 0) {
           this.$message({
             message: "物品存在库存，不能修改",
             type: 'warning',
           })
-          console.log(this.inventory, '不可以修改')
-        } else if (this.inventory == 0) {
+        } else if (this.inventory === 0) {
           this.setLoad()
           getStuffById(row.id).then(responseData => {
-            if (responseData.code == 100) {
-              this.$refs.synchronousStuffFormRef.$emit('openEditStuffDialog', responseData.data)
+            if (responseData.code === 100) {
+              this.$refs.synchronousStuffFormRef.openEditStuffDialog(responseData.data)
             } else {
               this.showMessage(responseData)
             }
@@ -806,8 +789,8 @@ export default {
     onCopyStuff(index, row) {
       this.setLoad()
       getStuffById(row.id).then(responseData => {
-        if (responseData.code == 100) {
-          this.$refs.synchronousStuffFormRef.$emit('openCopyStuffDialog', responseData.data)
+        if (responseData.code === 100) {
+          this.$refs.synchronousStuffFormRef.openCopyStuffDialog(responseData.data)
         } else {
           this.showMessage(responseData)
         }
@@ -825,7 +808,7 @@ export default {
       }).then(() => {
         this.setLoad()
         deleteStuff(row).then(responseData => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.getStuffList()
             this.showMessage({ type: 'success', msg: '删除成功' })
           } else {
@@ -852,24 +835,15 @@ export default {
     }
     ,
     initOptions(This) {
-      let type_search = {
-        params: [{ 'columnName': 'dict_type_id', 'queryType': '=', 'value': '1004462867645374476' }]
-      }
-      // 响应字段的条件操作符，替换成触发字段的操作符
-      type_search.params.forEach(item => {
-        if (this.queryTypes[item.columnName]) {
-          item.queryType = this.queryTypes[item.columnName]
-        }
+      getDictItemsByCode(DICT_CODE.STUFF_TYPE).then((data) => {
+        this.typeList = data
       })
-      // 字段对应表上filter条件
-      type_search.params.push.apply(type_search.params, [])
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(type_search.params, this.$route.meta.routerId, '4005')
-      this.typeList.splice(0, this.typeList.length)
-      listDictItemAll(type_search).then(responseData => {
-        this.typeList = responseData.data
-      })
-    }
+    },
+    openSyncStuffDialog() {
+      this.dialogProps.title = "同步材料信息";
+      this.dialogProps.visible = true;
+      this.pageInit()
+    },
   },
   watch: {
     // tableData是el-table绑定的数据
@@ -892,19 +866,12 @@ export default {
     }
   },
   mounted() {
-    if (this.source == 1) {
+    if (this.source === 1) {
       this.columnList = this.columnListOne
     } else {
       this.columnList = this.columnListTwo
     }
-    this.$nextTick(() => {
-      this.$on("openSyncStuffDialog", () => {
-        this.dialogProps.title = "同步材料信息";
-        this.dialogProps.visible = true;
-        this.pageInit()
-      });
-    });
-  }
+  },
 };
 </script>
 <style scoped lang="scss">
@@ -925,38 +892,11 @@ export default {
   padding: 0;
 }
 
-.drag_table {
 
-  // 设置表格header的高度
-  /deep/ th {
-    height: 44px;
-  }
-
-  /deep/ th.gutter:last-of-type {
-    height: 0 !important;
-  }
-
-  // 设置表格body的高度
-  /deep/ .el-table__body-wrapper {
-    //解决数据展示超出body高度不滚动bug
-    overflow-y: auto;
-    // 减去的是表格header的高度
-    height: calc(100% - 44px) !important;
-  }
-
-  .el-table__fixed-right {
-    height: 100% !important;
-  }
-}
 </style>
 
 <style>
 .stuff_indate .el-dialog__header {
   border-bottom: 1px solid rgb(214, 214, 214) !important;
-}
-</style>
-<style scoped>
-/deep/ .el-table__body-wrapper {
-  height: calc(100% - 44px) !important;
 }
 </style>

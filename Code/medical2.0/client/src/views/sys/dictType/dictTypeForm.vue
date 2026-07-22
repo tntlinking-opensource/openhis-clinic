@@ -3,7 +3,7 @@
     @open='onDialogOpen()' v-loading='loading'>
     <div slot='title' class='dialog-header'>
       {{ dialogProps.title }}
-      <OperationIcon v-show='dialogProps.action == "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
+      <OperationIcon v-show='dialogProps.action === "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
     </div>
 
     <el-form :model='bizFormModel' :rules='formRules' 
@@ -16,35 +16,44 @@
           </el-radio-group>
         </el-row>
         <!--tabs切换  结束-->
-      <div class="tab-item" v-show='tabIndex=="1"'>
+      <div class="tab-item" v-show='tabIndex==="1"'>
         <!-- 主表单  开始-->
 
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='字典类型编码' prop='code' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.code' :maxlength='64' :placeholder='dialogProps.action == "view"? "" : "请输入字典类型编码"' autofocus></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.code' :maxlength='64' :placeholder='dialogProps.action === "view"? "" : "请输入字典类型编码"' autofocus></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='字典类型名' prop='name' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.name' :maxlength='128' :placeholder='dialogProps.action == "view"? "" : "请输入字典类型名"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.name' :maxlength='128' :placeholder='dialogProps.action === "view"? "" : "请输入字典类型名"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
                     <el-row>
                 <el-col>
                     <el-form-item label='备注信息' prop='remarks' >
-                        <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.remarks' type='textarea'
-                                  :maxlength='255' :placeholder='dialogProps.action == "view"? "" : "请输入备注信息"'  clearable></el-input>
+                        <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.remarks' type='textarea'
+                                  :maxlength='255' :placeholder='dialogProps.action === "view"? "" : "请输入备注信息"'  clearable></el-input>
                     </el-form-item>
                 </el-col>
             </el-row>
               <el-row>
-        <el-col :span='24/1' v-if="currentUser.id == 1000">
+        <el-col :span='24/1' v-if="currentUser.id === 1000">
           <el-form-item label='系统级' prop='isSystem' >
-            <el-switch :disabled='dialogProps.action == "view"' v-model='bizFormModel.isSystem' active-color='#13ce66' inactive-color='#dbdfe6' active-value='1' inactive-value='0'></el-switch>
+            <el-switch :disabled='dialogProps.action === "view"' v-model='bizFormModel.isSystem' active-color='#13ce66' inactive-color='#dbdfe6' active-value='1' inactive-value='0' @change='onSystemChange'></el-switch>
+          </el-form-item>
+        </el-col>
+      </el-row>
+              <el-row>
+        <el-col :span='24/1' v-if="currentUser.id === 1000 && bizFormModel.isSystem === '0'">
+          <el-form-item label='所属租户' prop='company.id' :rules="[{ required: true, message: '请选择所属租户', trigger: 'change' }]">
+            <el-select :disabled='dialogProps.action === "view"' v-model='bizFormModel.company.id' filterable placeholder='请选择所属租户' style='width: 100%;'>
+              <el-option v-for='item in companyList' :key='item.id' :label='item.name' :value='item.id'></el-option>
+            </el-select>
           </el-form-item>
         </el-col>
       </el-row>
@@ -53,18 +62,18 @@
       </div>
 
     <!--子表：   字典项 开始-->
-    <div class="tab-item" v-show='tabIndex=="2"'>
+    <div class="tab-item" v-show='tabIndex==="2"'>
       <el-row>
         <el-col>
             <div class="tab-option" :style="{top: tabOptionBtnTop}">
-              <el-button v-if='dialogProps.action != "view"' type='primary' :plain='true' icon='el-icon-plus'
+              <el-button v-if='dialogProps.action !== "view"' type='primary' :plain='true' icon='el-icon-plus'
                          @click='onAddDictItemRow(bizFormModel.dictItemList)'></el-button>
             </div>
           <el-table ref='dictType' :data='bizFormModel.dictItemList' border @current-change='(currentRow, oldCurrentRow) => {dictItemCurrentRow = currentRow}'>
             <el-table-column prop='name' label='名称' min-width='120px' header-align='center'>
               <template slot='header' slot-scope='{row,$index}'><span style="color:#F56C6C;margin-right: 4px">*</span>名称</template>
               <template slot-scope='{row,$index}'>
-                <el-form-item data-num='2' :ref="`dictItemList.${$index}.name`" v-if='dialogProps.action != "view" && row === dictItemCurrentRow' :prop="`dictItemList.${$index}.name`" :rules='formRules.dictItem_name' label-width=0>
+                <el-form-item data-num='2' :ref="`dictItemList.${$index}.name`" v-if='dialogProps.action !== "view" && row === dictItemCurrentRow' :prop="`dictItemList.${$index}.name`" :rules='formRules.dictItem_name' label-width=0>
                   <el-input v-model='row.name'  :maxlength='64' clearable placeholder='请输入名称'></el-input>
                 </el-form-item>
                 <span v-else>{{row.name}}</span>
@@ -73,7 +82,7 @@
             <el-table-column prop='value' label='值' min-width='160px' header-align='center'>
               <template slot='header' slot-scope='{row,$index}'><span style="color:#F56C6C;margin-right: 4px">*</span>值</template>
               <template slot-scope='{row,$index}'>
-                <el-form-item data-num='2' :ref="`dictItemList.${$index}.value`" v-if='dialogProps.action != "view" && row === dictItemCurrentRow' :prop="`dictItemList.${$index}.value`" :rules='formRules.dictItem_value' label-width=0>
+                <el-form-item data-num='2' :ref="`dictItemList.${$index}.value`" v-if='dialogProps.action !== "view" && row === dictItemCurrentRow' :prop="`dictItemList.${$index}.value`" :rules='formRules.dictItem_value' label-width=0>
                   <el-input v-model='row.value'  :maxlength='128' clearable placeholder='请输入值'></el-input>
                 </el-form-item>
                 <span v-else>{{row.value}}</span>
@@ -82,13 +91,13 @@
             <el-table-column prop='remarks' label='备注信息' min-width='200px' header-align='center'>
               <template slot='header' slot-scope='{row,$index}'>备注信息</template>
               <template slot-scope='{row,$index}'>
-                <el-form-item data-num='2' :ref="`dictItemList.${$index}.remarks`" v-if='dialogProps.action != "view" && row === dictItemCurrentRow' :prop="`dictItemList.${$index}.remarks`" :rules='formRules.dictItem_remarks' label-width=0>
+                <el-form-item data-num='2' :ref="`dictItemList.${$index}.remarks`" v-if='dialogProps.action !== "view" && row === dictItemCurrentRow' :prop="`dictItemList.${$index}.remarks`" :rules='formRules.dictItem_remarks' label-width=0>
                   <el-input v-model='row.remarks'  :maxlength='255' clearable placeholder='请输入备注信息'></el-input>
                 </el-form-item>
                 <span v-else>{{row.remarks}}</span>
                   </template>
                 </el-table-column>
-            <el-table-column v-if='dialogProps.action != "view"' label='操作' header-align='center' align='center' width='60px'>
+            <el-table-column v-if='dialogProps.action !== "view"' label='操作' header-align='center' align='center' width='60px'>
               <template slot-scope='scope'>
                 <el-tooltip class='item' effect='light' content='删除' placement='top-start'>
                   <i class='el-icon-delete' style='color:#F56C6C;cursor:pointer;'
@@ -105,9 +114,9 @@
 
     <!-- 按钮  开始-->
     <span slot='footer' class='dialog-footer'>
-      <el-button v-if='dialogProps.action != "view"' :disabled="flage" type='primary' :plain='true' @click='onSubmit("dictTypeForm")'>保 存</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :disabled="flag" type='primary' :plain='true' @click='onSubmit("dictTypeForm")'>保 存</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span>
     <!-- 按钮 结束-->
   </el-dialog>
@@ -117,6 +126,7 @@
 import { validatenull } from '@/utils/validate'
 
 import { saveDictType } from '@/api/sys/dictType'
+import { listCompanyAll } from '@/api/org/company'
 import BaseUI from '@/views/components/baseUI'
 import OperationIcon from '@/components/OperationIcon'
 export default {
@@ -128,13 +138,14 @@ export default {
   data() {
     return {
       bizFormModel: this.initFormModel(),
-      flage:false,
+      flag:false,
       tabIndex: '1',
+      companyList: [],  // 租户列表
        dialogProps: {
         visible: false,
         action: '',
         title: '',
-        
+
       },
       formRules: {
         // 主表验证
@@ -183,12 +194,12 @@ export default {
   },
   methods: {
     onSubmit(formName) {
-      this.flage=true
+      this.flag=true
       this.$refs[formName].validate((valid, object) => {
         if (valid) {
           this.doSave()
         } else {
-          this.flage=false
+          this.flag=false
           // 处理校验定位
           let arr = []
           let numArr = []
@@ -215,8 +226,8 @@ export default {
     doSave() {
       this.setLoad()
       saveDictType(this.bizFormModel).then(responseData => {
-        this.flage=false
-        if(responseData.code == 100) {
+        this.flag=false
+        if(responseData.code === 100) {
           this.dialogProps.visible = false
           this.$emit('save-finished')
         } else {
@@ -224,7 +235,7 @@ export default {
         }
         this.resetLoad()
       }).catch(error => {
-        this.flage=false
+        this.flag=false
         this.outputError(error)
       })
     },
@@ -261,61 +272,82 @@ export default {
         'name': '',   // 字典类型名
         'remarks': '',   // 备注信息
         'isSystem': '0',   // 系统级
-
+        'company': {     // 所属租户
+          'id': '',
+          'name': ''
+        },
         dictItemList: [],       // 子表列表
       }
     },
     initOptions() {
-      // 主表
-      let This = this.bizFormModel
-
+      // 主表 - 加载租户列表
+      this.loadCompanyList()
       // 子表  字典项
-      This = this.dictItemCurrentRow
+    },
+    loadCompanyList() {
+      // 只有超级管理员才需要加载租户列表
+      if (currentUser.id === 1000) {
+        listCompanyAll({
+          params: [{ columnName: 'parent_id', queryType: '!=', value: '0' }]
+        }).then(responseData => {
+          if (responseData.code === 100) {
+            this.companyList = responseData.data || []
+          }
+        }).catch(error => {
+          console.error('加载租户列表失败', error)
+        })
+      }
+    },
+    onSystemChange(val) {
+      // 切换系统级时，清空租户选择
+      if (val === '1') {
+        this.bizFormModel.company = null
+      } else {
+        // 切换到业务级时，初始化公司对象
+        this.bizFormModel.company = { id: '', name: '' }
+      }
+    },
+    openViewDictTypeDialog(dictType) {
+      this.dialogProps.action = 'view'
+      this.dialogProps.title = '查看字典类型管理'
+      this.bizFormModel = dictType
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openEditDictTypeDialog(dictType) {
+      this.dialogProps.action = 'edit'
+      this.dialogProps.title = '修改字典类型管理'
+      this.bizFormModel = dictType
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openAddDictTypeDialog() {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加字典类型管理'
+      this.bizFormModel = this.initFormModel()
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openCopyDictTypeDialog(dictType) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加字典类型管理'
+      this.bizFormModel = dictType
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.bizFormModel.id = null
+      for (let i = 0; i <= this.bizFormModel.dictItemList.length - 1; i++) {
+          this.bizFormModel.dictItemList[i].id = null
+      }
+      this.dialogProps.visible = true
     }
   },
   watch: {
   },
   mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openViewDictTypeDialog', function(dictType) {
-        this.dialogProps.action = 'view'
-        this.dialogProps.title = '查看字典类型管理'
-        this.bizFormModel = dictType
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openEditDictTypeDialog', function(dictType) {
-        this.dialogProps.action = 'edit'
-        this.dialogProps.title = '修改字典类型管理'
-        this.bizFormModel = dictType
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openAddDictTypeDialog', function() {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加字典类型管理'
-        this.bizFormModel = this.initFormModel()
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openCopyDictTypeDialog', function(dictType) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加字典类型管理'
-        this.bizFormModel = dictType
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        //把id设置为空，添加一个新的
-        this.bizFormModel.id = null
-        for (var i = 0; i <= this.bizFormModel.dictItemList.length - 1; i++) {
-            this.bizFormModel.dictItemList[i].id = null
-        }        
-        this.dialogProps.visible = true
-      })
-    })
-  }  
+  },
 }
 </script>
 <style lang="scss" scoped>

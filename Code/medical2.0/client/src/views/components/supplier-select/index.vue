@@ -68,8 +68,7 @@
           }
         ];
         listSupplierAll(this.supplierSearch).then((responseData) => {
-          // console.log(responseData);
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.supplierLists = responseData.data
           }
         }).catch(() => {})

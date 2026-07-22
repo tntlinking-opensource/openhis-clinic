@@ -1,6 +1,7 @@
 package com.geeke.utils;
 
 import com.alibaba.fastjson.JSONObject;
+import com.geeke.common.data.R;
 import com.geeke.utils.constants.Constants;
 import com.geeke.utils.constants.ErrorEnum;
 
@@ -122,5 +123,30 @@ public class ResultUtil {
         resultJson.put(Constants.RETURN_CODE, errorEnum.getErrorCode());
         resultJson.put(Constants.RETURN_MSG, msg);
         return resultJson;
-    }    
+    }
+
+    // ==================== R<T> 泛型响应桥接方法 ====================
+    // 新代码建议直接使用 R.ok() / R.warning() / R.error()
+    // 这些方法作为过渡期的兼容桥接
+
+    /**
+     * 成功响应（泛型版）
+     */
+    public static <T> R<T> rOk(T data) {
+        return R.ok(data);
+    }
+
+    /**
+     * 警告响应（泛型版）
+     */
+    public static <T> R<T> rWarning(ErrorEnum errorEnum) {
+        return R.warning(errorEnum);
+    }
+
+    /**
+     * 错误响应（泛型版）
+     */
+    public static <T> R<T> rError(ErrorEnum errorEnum) {
+        return R.error(errorEnum);
+    }
 }

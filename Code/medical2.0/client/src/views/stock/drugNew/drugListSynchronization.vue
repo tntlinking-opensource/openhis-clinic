@@ -120,7 +120,7 @@
                 v-for="(cv, index) in columnViews"
                 v-if="cv.display"
                 :prop="cv.prop"
-                :key="`columnViews_${index}`+Math.random()"
+                :key="cv.prop"
                 :label="cv.label"
                 :align="cv.align"
                 :min-width="cv.miniWidth + 'px'"
@@ -132,13 +132,13 @@
                 <template slot-scope="{ row, $index }">
                   <span
                     v-if="
-                      columnViews[index].showType == 'Switch' ||
-                      columnViews[index].showType == 'Checkbox' ||
-                      columnViews[index].showType == 'Radio'
+                      columnViews[index].showType === 'Switch' ||
+                      columnViews[index].showType === 'Checkbox' ||
+                      columnViews[index].showType === 'Radio'
                     "
                   >
                     <li
-                      v-if="getAttrValue(row, columnViews[index].prop) == '1'"
+                      v-if="getAttrValue(row, columnViews[index].prop) === '1'"
                       class="el-icon-check"
                       style="color: #f56c6c"
                     ></li>
@@ -161,7 +161,7 @@
                 <template slot-scope="scope">
                   <span v-if="scope.row.stock && (scope.row.stock.surplusStock != null)">
                     {{
-                      Math.floor(scope.row.stock.surplusStock / scope.row.stock.surplusStock) >= 0 ?
+                      Math.floor(scope.row.stock.surplusStock / scope.row.preparation) >= 0 ?
                         Math.floor(scope.row.stock.surplusStock / scope.row.preparation) + scope.row.pack.name +
                         ((scope.row.stock.surplusStock % scope.row.preparation > 0) ? (scope.row.stock.surplusStock % scope.row.preparation) +
                           scope.row.preparationUnit.name : "") : scope.row.stock.surplusStock + scope.row.preparationUnit.name
@@ -212,7 +212,7 @@
                 v-for="(cv, index) in versionList"
                 v-if="cv.display"
                 :prop="cv.prop"
-                :key="`columnViews_${index}`+Math.random()"
+                :key="cv.prop"
                 :label="cv.label"
                 :align="cv.align"
                 :min-width="cv.miniWidth + 'px'"
@@ -236,7 +236,7 @@
                   </template>
                   <template v-else-if="cv.prop === 'status'">
                     <li
-                      v-if="getAttrValue(row, cv.prop) == '1'"
+                      v-if="getAttrValue(row, cv.prop) === '1'"
                       class="el-icon-check"
                       style="color: #f56c6c"
                     ></li>
@@ -283,9 +283,7 @@
 <script>
   import {validatenull} from "@/utils/validate";
   import { getDrugById, listByInstitutionPage, saveDrugSyncToClinic, listByHospitalDrug, saveHisDrugsToClinic } from "@/api/stock/drug";
-  import OperationIcon from "@/components/OperationIcon";
   import MainUI from "@/views/components/mainUI";
-  import ViewColumnsSelect from "@/views/components/ViewColumnsSelect";
   import DrugFormNew from "./drugForm";
   import History from "@/views/components/history";
   import { tenantList, versionList } from './metadata'
@@ -294,8 +292,6 @@
     extends: MainUI,
     name: "drug-form",
     components: {
-      OperationIcon,
-      ViewColumnsSelect,
       DrugFormNew,
       History
     },
@@ -348,13 +344,13 @@
   methods: {
     getTypeName(type) {
       let name
-      if (type == '01') {
+      if (type === '01') {
         name = '西药'
       }
-      if (type == '03') {
+      if (type === '03') {
         name = '中药'
       }
-      if (type == '0002000066') {
+      if (type === '0002000066') {
         name = '中成药'
       }
       return name
@@ -364,7 +360,7 @@
         if (valid) {
           this.search.offset = 0;
           this.currentPage = 1;
-          if (this.drugSource == 1) {
+          if (this.drugSource === 1) {
             this.getListByInstitution()
           } else if(this.drugSource === 2) {
             this.getlistByHospitalDrug()
@@ -423,7 +419,7 @@
     handleSelection(selection, row) {
       let name = this.drugSource === 1 ? 'id': 'ypId'
       let index = this.selectDrugList.findIndex(item => item[name] === row[name])
-      if (index != -1) {
+      if (index !== -1) {
         this.selectDrugList.splice(index,1)
       } else {
         this.selectDrugList.push(row)
@@ -435,14 +431,14 @@
       if (selection.length) {
         selection.forEach(item => {
           let index = selectDrugListCopy.findIndex(i => i[name] === item[name])
-          if (index == -1) {
+          if (index === -1) {
             selectDrugListCopy.push(item)
           }
         })
       } else {
         this.drugList.forEach(item => {
           let index = selectDrugListCopy.findIndex(i => i[name] === item[name])
-          if (index != -1) {
+          if (index !== -1) {
             selectDrugListCopy.splice(index,1)
           }
         })
@@ -452,7 +448,7 @@
     // 删除药物
     delectDrug(row) {
       let name = this.drugSource === 1 ? 'id': 'ypId'
-      let index = this.selectDrugList.findIndex(item => item[name] == row[name])
+      let index = this.selectDrugList.findIndex(item => item[name] === row[name])
       if (index !== -1) {
         this.selectDrugList.splice(index,1)
       }
@@ -465,7 +461,7 @@
           this.$refs.mutipleTable.clearSelection();
           this.selectDrugList.forEach(row => {
             this.drugList.find((item) => {
-              if (item[name] == row[name]) {
+              if (item[name] === row[name]) {
                 this.$refs.mutipleTable.toggleRowSelection(item);
               }
             });
@@ -491,7 +487,7 @@
       });
       listByHospitalDrug(this.search)
         .then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.drugTotal = responseData.data.total;
             this.drugList = responseData.data.rows;
             this.handleSelectionDefault()
@@ -523,7 +519,7 @@
 
       listByInstitutionPage(this.search)
         .then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.drugTotal = responseData.data.total;
             this.drugList = responseData.data.rows;
             this.handleSelectionDefault()
@@ -540,7 +536,7 @@
       this.currentPage = 1;
       this.search.limit = val;
       this.search.offset = (this.currentPage - 1) * val;
-      if (this.drugSource == 1) {
+      if (this.drugSource === 1) {
         this.getListByInstitution()
       } else if(this.drugSource === 2) {
         this.getlistByHospitalDrug()
@@ -549,7 +545,7 @@
     onCurrentChange(val) {
       this.search.offset = (val - 1) * this.search.limit;
       this.currentPage = val;
-      if (this.drugSource == 1) {
+      if (this.drugSource === 1) {
         this.getListByInstitution()
       } else if(this.drugSource === 2) {
         this.getlistByHospitalDrug()
@@ -559,8 +555,8 @@
       this.setLoad();
       getDrugById(row.id)
         .then((responseData) => {
-          if (responseData.code == 100) {
-            this.$refs.drugFormNew.$emit("openViewDrugDialog", responseData.data);
+          if (responseData.code === 100) {
+            this.$refs.drugFormNew.openViewDrugDialog(responseData.data);
           } else {
             this.showMessage(responseData);
           }
@@ -574,8 +570,8 @@
       this.setLoad();
       getDrugById(row.id)
         .then((responseData) => {
-          if (responseData.code == 100) {
-            this.$refs.drugFormNew.$emit("openEditDrugDialog", responseData.data);
+          if (responseData.code === 100) {
+            this.$refs.drugFormNew.openEditDrugDialog(responseData.data);
           } else {
             this.showMessage(responseData);
           }
@@ -589,7 +585,7 @@
       if (this.drugSource === 1) {
         saveDrugSyncToClinic(this.selectDrugList)
           .then((responseData) => {
-            if (responseData.code == 100) {
+            if (responseData.code === 100) {
               this.dialogProps.visible = false
               this.$emit('sync-finished')
             }
@@ -600,7 +596,7 @@
       } else if (this.drugSource === 2) {
         saveHisDrugsToClinic(this.selectDrugList)
           .then((responseData) => {
-            if (responseData.code == 100) {
+            if (responseData.code === 100) {
               this.dialogProps.visible = false
               this.$emit('sync-finished')
             }
@@ -617,6 +613,21 @@
       this.$nextTick(() => {
         this.$refs["drugForm"].clearValidate();
       });
+    },
+    openMigratingDrugDialog() {
+      this.drugSource = 1
+      this.dialogProps.action = "add";
+      this.dialogProps.title = "同步药品信息";
+      this.search.offset = 0;
+      this.currentPage = 1;
+      this.drugList = []
+      this.selectDrugList = []
+      if (this.drugSource === 1) {
+        this.getListByInstitution()
+      } else if (this.drugSource === 2) {
+        this.getlistByHospitalDrug()
+      }
+      this.dialogProps.visible = true;
     },
   },
   watch: {
@@ -639,39 +650,22 @@
       }
   },
   mounted: function () {
-    this.$nextTick(() => {
-      this.$on("openMigratingDrugDialog", function (data) {
-          this.drugSource = 1
-          this.dialogProps.action = "add";
-          this.dialogProps.title = "同步药品信息";
-          this.search.offset = 0;
-          this.currentPage = 1;
-          this.drugList = []
-          this.selectDrugList = []
-          if (this.drugSource === 1) {
-            this.getListByInstitution()
-          } else if (this.drugSource === 2) {
-            this.getlistByHospitalDrug()
-          }
-          this.dialogProps.visible = true;
-        });
-      });
-    },
-  };
+  },
+};
 </script>
 <style scoped>
-  /deep/ .el-dialog__body {
+  ::v-deep .el-dialog__body {
     padding: 30px 20px 0;
   }
 
-  /deep/ .info .el-form-item__label {
+  ::v-deep .info .el-form-item__label {
     width: 80px !important;
   }
 
-  /deep/ .info .el-form-item__content {
+  ::v-deep .info .el-form-item__content {
     margin-left: 80px !important;
   }
-  /deep/ .el-dialog__headerbtn {
+  ::v-deep .el-dialog__headerbtn {
     top: 24px;
   }
   .edit-form {
@@ -688,7 +682,7 @@
     color: #333;
   }
 
-  /deep/.title-wrap {
+  ::v-deep.title-wrap {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -702,16 +696,16 @@
 <style lang="scss" scoped>
   .drag_table {
     // 设置表格header的高度
-    /deep/ th {
+    ::v-deep th {
       height: 44px;
     }
 
-    /deep/ th.gutter:last-of-type {
+    ::v-deep th.gutter:last-of-type {
       height: 0 !important;
     }
 
     // 设置表格body的高度
-    /deep/ .el-table__body-wrapper {
+    ::v-deep .el-table__body-wrapper {
       //解决数据展示超出body高度不滚动bug
       overflow-y: auto;
       // 减去的是表格header的高度
@@ -723,7 +717,7 @@
     }
   }
 
-  .indate /deep/ .el-dialog__header {
+  .indate ::v-deep .el-dialog__header {
     border-bottom: 1px solid rgb(214, 214, 214) !important;
   }
 </style>

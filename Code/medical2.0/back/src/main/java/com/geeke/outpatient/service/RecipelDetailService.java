@@ -11,13 +11,14 @@ import com.geeke.utils.SessionUtils;
 
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 处方详情 Service
@@ -34,6 +35,7 @@ public class RecipelDetailService extends CrudService<RecipelDetailDao, RecipelD
     @Autowired
     private RecipelInfoDao recipelInfoDao;
 
+    @Lazy
     @Autowired
     private RegistrationService registrationService;
 
@@ -47,14 +49,13 @@ public class RecipelDetailService extends CrudService<RecipelDetailDao, RecipelD
                 recipelDetail.setCompany(recipelInfo.getCompany());
             }
             DrugStuffEvt drugStuffId = recipelDetail.getDrugStuffId();
-            System.out.println("dddddddddddddd"+ JSONObject.toJSON(drugStuffId));
             super.save(recipelDetail);
         }
 
     }
 
     // 处方id获取处方详情
-    @Transactional
+    @Transactional(readOnly = true)
     public List<RecipelDetail> getRecipelDetail(String id) {
         List<RecipelDetail> recipelDetail = recipelDetailDao.getRecipelDetail(id);
         return recipelDetail;
@@ -84,6 +85,21 @@ public class RecipelDetailService extends CrudService<RecipelDetailDao, RecipelD
     {
 
         return this.dao.getByRecipelInfoId(recipelInfoId);
+    }
+
+    /**
+     * 批量查询多个处方的明细
+     * @param recipelInfoIds 处方ID列表
+     * @return 按处方ID分组的明细Map
+     */
+    public Map<String, List<RecipelDetail>> getByRecipelInfoIds(List<String> recipelInfoIds) {
+        if (CollectionUtils.isEmpty(recipelInfoIds)) {
+            return Collections.emptyMap();
+        }
+        List<RecipelDetail> details = this.dao.getByRecipelInfoIds(recipelInfoIds);
+        return details.stream().collect(Collectors.groupingBy(
+                d -> d.getRecipelInfo().getId()
+        ));
     }
 
     @Transactional(readOnly = false)

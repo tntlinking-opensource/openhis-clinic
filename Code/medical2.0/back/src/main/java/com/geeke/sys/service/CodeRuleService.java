@@ -7,11 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.geeke.common.service.CrudService;
-import com.geeke.config.exception.CommonJsonException;
+import com.geeke.common.service.ServiceException;
 import com.geeke.sys.dao.CodeRuleDao;
 import com.geeke.sys.entity.CodeRule;
-import com.geeke.utils.ResultUtil;
-import com.geeke.utils.constants.ErrorEnum;
+
+
 import com.google.common.collect.Maps;
 
 /**
@@ -33,7 +33,7 @@ public class CodeRuleService extends CrudService<CodeRuleDao, CodeRule>{
         colMaps.put("code", "code");
         
         if(exists(dao, codeRule, colMaps)) {
-            throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "已存在相同编码"));
+            throw new ServiceException("已存在相同编码");
         }
 
         CodeRule codeRuleTemp = super.save(codeRule);

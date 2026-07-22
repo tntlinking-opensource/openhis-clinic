@@ -43,7 +43,7 @@ export default {
   extends: BaseUI,
   name: 'personal-info',
   data() {
-    var validatePassword = (rule, value, callback) => {
+    const validatePassword = (rule, value, callback) => {
       if (this.userModel.loginPasswordUpdate && (value === '' || value === undefined)) {
         callback(new Error('请输入密码'));
       } else {
@@ -53,7 +53,7 @@ export default {
         callback()
       }
     }
-    var validateCheckPassword = (rule, value, callback) => {
+    const validateCheckPassword = (rule, value, callback) => {
       if (this.userModel.loginPasswordUpdate && (value === '' || value === undefined)) {
         callback(new Error('请再次输入密码'))
       } else if (this.userModel.loginPasswordUpdate && (value !== this.userModel.loginPassword)) {
@@ -149,7 +149,7 @@ export default {
           this.userModel.password = ''
       }
       updateCurrentUser(this.userModel).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           let currentUser = window.currentUser
           currentUser.name = this.userModel.name
           currentUser.phone = this.userModel.phone
@@ -183,16 +183,13 @@ export default {
             this.$refs['password'].focus()
         })
       }
-    }
-  },
-  mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openPersonalInfoDialog', function() {
-        this.loading = true
-        this.changePassword = false
-        getCurrentUser()
+    },
+    openPersonalInfoDialog() {
+      this.loading = true
+      this.changePassword = false
+      getCurrentUser()
         .then(responseData => {
-          if(responseData.code == 100) {
+          if (responseData.code === 100) {
             this.userModel = responseData.data
             this.userModel.password = ''
             this.dialogVisible = true
@@ -203,9 +200,10 @@ export default {
         .catch(error => {
           this.outputError(error)
         })
-      })
-    })
-  }
+    },
+  },
+  mounted: function() {
+  },
 }
 </script>
 

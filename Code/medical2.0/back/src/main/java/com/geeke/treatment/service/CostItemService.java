@@ -7,9 +7,8 @@ import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
 import com.geeke.common.sequence.service.SequenceService;
 import com.geeke.common.service.CrudService;
-import com.geeke.config.exception.CommonJsonException;
+import com.geeke.common.service.ServiceException;
 import com.geeke.org.entity.Company;
-import com.geeke.org.service.CompanyService;
 import com.geeke.outpatient.entity.RecipelDetail;
 import com.geeke.outpatient.entity.RecipelInfo;
 import com.geeke.outpatient.service.RecipelDetailService;
@@ -17,10 +16,10 @@ import com.geeke.stock.entity.MedicalProject;
 import com.geeke.sys.utils.SessionUserDto;
 import com.geeke.treatment.dao.CostItemDao;
 import com.geeke.treatment.entity.CostItem;
-import com.geeke.utils.ResultUtil;
 import com.geeke.utils.SessionUtils;
 import com.geeke.utils.StringUtils;
-import com.geeke.utils.constants.ErrorEnum;
+
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +28,6 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * 诊疗项目Service
@@ -44,9 +42,6 @@ public class CostItemService extends CrudService<CostItemDao, CostItem>{
     @Autowired
     RecipelDetailService recipelDetailService;
 
-    @Autowired
-    private CompanyService companyService;
-
     @Override
     @Transactional(readOnly = false)
     public CostItem save(CostItem costItem) {
@@ -58,13 +53,13 @@ public class CostItemService extends CrudService<CostItemDao, CostItem>{
         String id = this.dao.GetIDByName(costItem.getItemName(),SessionUtils.getLoginTenantId());
         if(null!=id && !id.equals(costItem.getId()))
         {
-            throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "已经存在一个相同的项目名，请重新输入！"));
+            throw new ServiceException("已经存在一个相同的项目名，请重新输入！");
         }
         CostItem costItemTemp = super.save(costItem);
         return costItemTemp;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<MedicalProject> listPageForMedical(List<Parameter> parameters, String orderby) {
         PageRequest pageRequest = new PageRequest(parameters, orderby);
         int total = this.dao.count(pageRequest);
@@ -84,7 +79,7 @@ public class CostItemService extends CrudService<CostItemDao, CostItem>{
         }
         return list;
     }
-    @Transactional
+    @Transactional(readOnly = true)
     public List<CostItem> getByRecipelInfo(RecipelInfo recipelInfo) {
         List<RecipelDetail> byRecipelInfoId = recipelDetailService.getByRecipelInfoId(recipelInfo.getId());
         List<CostItem> costItems=new ArrayList<>();
@@ -101,12 +96,7 @@ public class CostItemService extends CrudService<CostItemDao, CostItem>{
     }
 
     public Page<CostItem> listByInstitution(List<Parameter> params, int offset, int limit, String orderby) {
-        Optional<Parameter> cartOptional = params.stream().filter(item -> item.getColumnName().equals("`company_id`")).findFirst();
-        params.remove(0);
-        String id = (String) cartOptional.get().getValue();
-        String institution = companyService.getInstitution(id);
-
-        PageRequest pageRequest = new PageRequest(offset, limit, params, orderby, id, institution);
+        PageRequest pageRequest = buildTenantPageRequest(params, offset, limit, orderby);
         int total = dao.countByInstitution(pageRequest);
         List<CostItem> list = null;
         if (total > 0) {

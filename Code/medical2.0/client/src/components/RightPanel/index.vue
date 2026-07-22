@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="layoutType=='layout'" ref="rightPanel" :class="{panelShow: layoutPanelShow}" class="rightPanel-container">
+    <div v-if="layoutType==='layout'" ref="rightPanel" :class="{panelShow: layoutPanelShow}" class="rightPanel-container">
       <div class="rightPanel-background" @click="panelShadowCLick"/>
       <div class="rightPanel">
         <div v-if="false" ref="handleBtn" class="handle-button" v-drag :style="{'top': buttonTop +'px', 'background-color': theme}" >
@@ -11,7 +11,7 @@
         </div>
       </div>
     </div>
-    <div v-if="sysType=='sys'" ref="rightPanel" :class="{panelShow: sysPanelShow}" class="rightPanel-container">
+    <div v-if="sysType==='sys'" ref="rightPanel" :class="{panelShow: sysPanelShow}" class="rightPanel-container">
       <div class="rightPanel-background" @click="panelShadowCLick"/>
       <div class="rightPanel">
         <div v-if="false" ref="handleBtn" class="handle-button" v-drag :style="{'top': buttonTop +'px', 'background-color': theme}" >

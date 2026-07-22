@@ -84,7 +84,7 @@
               align="center"
             >
             <template slot-scope="scope">
-              <span v-if="scope.row.taskManagement.tasktype=='0'">
+              <span v-if="scope.row.taskManagement.tasktype==='0'">
                 常规任务
               </span>
                <span v-else>
@@ -127,23 +127,23 @@
               align="center"
             >
             <template slot-scope="scope">
-              <span v-if="scope.row.executeschedule=='0'" style="color:red">
+              <span v-if="scope.row.executeschedule==='0'" style="color:red">
                 待执行
               </span>
-               <span v-else-if="scope.row.executeschedule=='1' & scope.row.auditType=='0'" style="color:orange">
+               <span v-else-if="scope.row.executeschedule==='1' & scope.row.auditType==='0'" style="color:orange">
                 待审核
               </span>
-               <span v-else-if="scope.row.executeschedule=='1' & scope.row.auditType=='1'" style="color:lightgreen">
+               <span v-else-if="scope.row.executeschedule==='1' & scope.row.auditType==='1'" style="color:lightgreen">
                  已通过
               </span>
-              <span v-else-if="scope.row.executeschedule=='1' & scope.row.auditType=='2'" style="color:red">
+              <span v-else-if="scope.row.executeschedule==='1' & scope.row.auditType==='2'" style="color:red">
                  未通过
               </span>
             </template>
             </el-table-column>
 
               <!--表行级操作按钮-->
-              <el-table-column label='操作' header-align='center' :width='140 + "px"' :key="Math.random()">
+              <el-table-column label='操作' header-align='center' :width='140 + "px"' :key="'operate'">
                 <template slot='header' slot-scope="scope">
                   <span>操作</span>
                   <view-columns-select v-model='columnViews' v-on:save-column-view='saveColumn' v-on:show-all-column='showAllColumn' v-on:show-default-column='showDefaultColumn'></view-columns-select>
@@ -160,8 +160,8 @@
                   <OperationIcon v-show='permission.view' type='info' content='历史记录' placement='top-start' icon-name='el-icon-info'
                     @click='onShowHistory(scope.$index, scope.row)'></OperationIcon> -->
                   <center>
-                    <el-button type="text" v-if="scope.row.executeschedule=='0'"  @click="execute(scope.row,scope.$index)">立即执行</el-button>
-                  <el-button type="text" v-if="scope.row.executeschedule=='1'||scope.row.executeschedule=='0'"  @click="viewDetails(scope.row,scope.$index)">查看详情</el-button>
+                    <el-button type="text" v-if="scope.row.executeschedule==='0'"  @click="execute(scope.row,scope.$index)">立即执行</el-button>
+                  <el-button type="text" v-if="scope.row.executeschedule==='1'||scope.row.executeschedule==='0'"  @click="viewDetails(scope.row,scope.$index)">查看详情</el-button>
                   </center>
                 </template>
               </el-table-column>
@@ -197,7 +197,7 @@
         <div class="specifications">任务详情</div>
         <div style="width:80%;margin-left:100px">
            <div>
-             任务类型：{{task.taskManagement.tasktype=='0'?"常规任务":"宣传活动"}}
+             任务类型：{{task.taskManagement.tasktype==='0'?"常规任务":"宣传活动"}}
            </div>
            <div>
              任务名称：{{task.taskManagement.taskname}}
@@ -212,7 +212,7 @@
             <div>
              任务截至时间：{{task.taskManagement.taskdeadline}}
            </div>
-            <div v-if="task.auditType=='1' || task.auditType=='2'">
+            <div v-if="task.auditType==='1' || task.auditType==='2'">
              备注：{{task.taskManagement.taskremark}}
            </div>
         </div>
@@ -349,7 +349,7 @@ export default {
   methods: {
     //保存
     save(){
-       if(this.flages){
+       if(this.flags){
        return
      }
      this.task.executeschedule =this.executeschedule
@@ -357,7 +357,6 @@ export default {
 
 
      this.flagsTask=true
-      console.log(this.bizFormModelTask.fileIdFile,'萨拉时间分厘卡');
     //  let userHeaderFile = new FormData();
       //  userHeaderFile.append("entity", JSON.stringify(this.bizFormModel.inspectionCheckInfo));
       // userHeaderFile.append("deleteIds",JSON.stringify([this.photoId]));
@@ -375,7 +374,7 @@ export default {
         // userHeaderFile.fileIdUploads=item;
 
       saveMyTask(userHeaderFile).then((res)=>{
-          if(res.code=="100"){
+          if(res.code==="100"){
             this.$message.success("操作成功!")
             this.uploadFilesTask = ""
             this.getMyTaskList("1")
@@ -398,7 +397,7 @@ export default {
         userHeaderFile.append("fileIdUploads",this.bizFormModelTask.fileIdFile);
 
       saveMyTask(userHeaderFile).then((res)=>{
-          if(res.code=="100"){
+          if(res.code==="100"){
             this.$message.success("操作成功!")
             this.executeDialogVisible=false
             this.flagsTask=false
@@ -418,13 +417,11 @@ export default {
         this.bizFormModel.uploadFile = ''
       }else{
         getFiled(id).then((res) => {
-          console.log(res,'就是看');
          const src = `data:text/plain;base64,${res.base64Str}`;
         // let name = res.name.substring(0,res.name.lastIndexOf("."))
         let name = res.name
         this.fileName=name
         this.bizFormModel.uploadFile = src;
-        console.log(this.fileName, ".......");
         return src;
       });
       }
@@ -434,7 +431,6 @@ export default {
         this.bizFormModelTask.uploadFile = ''
       }else{
         getFiled(id).then((res) => {
-          console.log(res,'就是看');
          const src = `data:text/plain;base64,${res.base64Str}`;
         // let name = res.name.substring(0,res.name.lastIndexOf("."))
         let name = res.name
@@ -446,35 +442,25 @@ export default {
     },
      deleteFile(fileIds){
       this.fileIds.push(fileIds)
-      console.log(this.fileIds,'删除看');
     },
     deleteFileTask(fileIds){
       this.fileIdsTask.push(fileIds)
-      console.log(this.fileIdsTask,'删除看');
     },
      getFileList(fileList){
-      console.log(fileList,'撒娇发生了警方破案就');
       this.bizFormModel.fileIdFile=[]
       this.bizFormModel.uploadFile=[]
       this.bizFormModel.uploadFile=fileList
       for (let i = 0; i < fileList.length; i++) {
        this.bizFormModel.fileIdFile.push(fileList[i].raw)
       }
-
-      console.log(this.bizFormModel.uploadFile,'撒娇发生了警方破案就');
-      console.log(this.bizFormModel.fileIdFile,'按法律框架老咔叽分类');
     },
     getFileListTask(fileList){
-      console.log(fileList,'撒娇发生了警方破案就111');
       this.bizFormModelTask.fileIdFile=[]
       this.bizFormModelTask.uploadFile=[]
       this.bizFormModelTask.uploadFile=fileList
       for (let i = 0; i < fileList.length; i++) {
        this.bizFormModelTask.fileIdFile.push(fileList[i].raw)
       }
-
-      console.log(this.bizFormModelTask.uploadFile,'撒娇发生了警方破案就222');
-      console.log(this.bizFormModelTask.fileIdFile,'按法律框架老咔叽分类333');
     },
     //执行任务
     execute(row,index){
@@ -495,14 +481,12 @@ export default {
       this.flagsTask = false
       this.uploadFiles=this.task.taskManagement.id
       this.uploadFilesTask = this.task.id
-      console.log(this.uploadFilesTask,'1234567');
       this.photoId=this.task.taskManagement.taskaccessory
       this.photoIdTask = this.task.fileId
       this.executeschedule = this.task.executeschedule
       this.remark = this.task.remark
       this.getPhoto(this.task.taskManagement.taskaccessory);
       this.getPhotoTask(this.task.fileId)
-      console.log(this.task);
       this.executeDialogVisible = true
     },
     //查看详情
@@ -530,7 +514,6 @@ export default {
       this.remark = this.task.remark
       this.getPhoto(this.task.taskManagement.taskaccessory);
       this.getPhotoTask(this.task.fileId)
-      console.log(this.task);
       this.executeDialogVisible = true
     },
     indexMethod(index){
@@ -549,8 +532,7 @@ export default {
       	  queryType: '=',
           value: currentUser.company.id
         })
-        console.log(val,'wode');
-      if(val=="1") {
+      if(val==="1") {
         this.search.params = this.search.params.concat(this.compositeCondition())
       }else{
         // 查询参数: 禁用（0：未禁用；1：禁用）
@@ -569,8 +551,7 @@ export default {
       // 数据权限: 科室clinic_office
       this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
       listMyTaskPage(this.search).then(responseData => {
-        if(responseData.code == 100) {
-          console.log(responseData,'qiguai');
+        if(responseData.code === 100) {
           this.clinicOfficeTotal = responseData.data.total
           this.clinicOfficeList = responseData.data.rows
 
@@ -630,8 +611,7 @@ export default {
           listMyTaskPage(this.search),
           listResourcePermission(this.$route.meta.routerId)
         ])
-        if(listClinicOfficeRespData.code == 100 && listPermissionRespData.code == 100) {
-          console.log(listClinicOfficeRespData,'诊所');
+        if(listClinicOfficeRespData.code === 100 && listPermissionRespData.code === 100) {
           this.clinicOfficeTotal = listClinicOfficeRespData.data.total
           this.clinicOfficeList = listClinicOfficeRespData.data.rows
           this.permission.view = listPermissionRespData.data.find(item => {
@@ -650,7 +630,7 @@ export default {
             return item.permission === 'myTask:delete'
           })
         } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listClinicOfficeRespData)
+          this.showMessage(listPermissionRespData.code !== 100 ? listPermissionRespData : listClinicOfficeRespData)
         }
         this.resetLoad()
       } catch(error) {
@@ -660,8 +640,8 @@ export default {
     onViewClinicOffice(index, row) {
       this.setLoad()
       getClinicOfficeById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.myTask.$emit('openViewClinicOfficeDialog', responseData.data)
+        if(responseData.code === 100) {
+          this.$refs.myTask.openViewClinicOfficeDialog(responseData.data)
         } else {
           this.showMessage(responseData)
         }
@@ -671,13 +651,13 @@ export default {
       })
     },
     onCreateClinicOffice() {
-      this.$refs.myTask.$emit('openAddClinicOfficeDialog')
+      this.$refs.myTask.openAddClinicOfficeDialog()
     },
     onEditClinicOffice(index, row) {
       this.setLoad()
       getClinicOfficeById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.myTask.$emit('openEditClinicOfficeDialog', responseData.data)
+        if(responseData.code === 100) {
+          this.$refs.myTask.openEditClinicOfficeDialog(responseData.data)
         }else{
           this.showMessage(responseData)
         }
@@ -689,8 +669,8 @@ export default {
     onCopyClinicOffice(index, row) {
       this.setLoad()
       getClinicOfficeById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.myTask.$emit('openCopyClinicOfficeDialog', responseData.data)
+        if(responseData.code === 100) {
+          this.$refs.myTask.openCopyClinicOfficeDialog(responseData.data)
         } else {
           this.showMessage(responseData)
         }
@@ -707,7 +687,7 @@ export default {
       }).then(() => {
         this.setLoad()
         deleteClinicOffice(row).then(responseData => {
-          if(responseData.code == 100) {
+          if(responseData.code === 100) {
             this.getMyTaskList()
             this.showMessage({type: 'success', msg: '删除成功'})
           } else {
@@ -737,7 +717,9 @@ export default {
     clinicOfficeList(val){
       if(val){
         this.$nextTick(() => {
-            this.$refs.mutipleTable.doLayout();
+            if (this.$refs.mutipleTable) {
+              this.$refs.mutipleTable.doLayout();
+            }
         });
       }
     }
@@ -760,26 +742,6 @@ export default {
   padding: 0;
 }
 
- .drag_table {
- // 设置表格header的高度
- /deep/ th {
-   height: 44px;
- }
-/deep/ th.gutter:last-of-type {
-  height: 0 !important;
-}
- // 设置表格body的高度
- /deep/.el-table__body-wrapper {
-  //解决数据展示超出body高度不滚动bug
-  overflow-y: auto;
-   // 减去的是表格header的高度
-   height: calc(100% - 44px) !important;
- }
-
- .el-table__fixed-right {
-      height: 100% !important;
-  }
-}
 .specifications {
   width: 100%;
   font-weight: bold;
@@ -789,9 +751,4 @@ export default {
   //padding: 20px;
   color: #333;
 }
-</style>
-<style scoped>
-/deep/ .el-table__body-wrapper{
-    height: calc(100% - 44px) !important;
-  }
 </style>

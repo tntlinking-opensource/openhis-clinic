@@ -6,6 +6,7 @@ import App from './App'
 import router from './router'
 import store from './store'
 import moment from "moment"
+import axios from 'axios'
 
 // Element UI 已通过 CDN 在 index.html 中加载，默认 size 为 mini
 
@@ -14,6 +15,7 @@ import Distpicker from 'v-distpicker'
 
 
 Vue.prototype.$moment = moment
+Vue.prototype.$axios = axios
 
 //全局使用省市区三级联动
 Vue.component('v-distpicker', Distpicker)
@@ -46,7 +48,7 @@ Object.keys(filters).forEach(key => {
 
 // 报表
 import i18n from '@/views/report/lang'
-Vue.config.devtools = true;
+Vue.config.devtools = process.env.NODE_ENV !== 'production';
 
 /* eslint-disable no-new */
 let vm = new Vue({

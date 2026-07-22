@@ -11,7 +11,7 @@ import com.geeke.outpatient.entity.PatientMdData;
 import com.geeke.outpatient.entity.Registration;
 import com.geeke.outpatient.service.PatientMdDataService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,8 +24,7 @@ public class MdPsnDataServiceImpl  implements MdPsnDataService {
 
     private final PatientMdDataService patientMdDataService;
 
-    @Autowired
-    private PatientDao patientDao;
+    private final PatientDao patientDao;
 
 
     @Override

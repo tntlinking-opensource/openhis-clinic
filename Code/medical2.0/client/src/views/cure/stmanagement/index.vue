@@ -130,7 +130,7 @@
       label="操作"
       width="100">
       <template slot-scope="scope">
-        <el-button type="text" :disabled="scope.row.intervalTime!='' && scope.row.intervalTime!=null" @click.native="stclick(scope.$index,scope.row)">{{scope.row.stresult!='' && scope.row.stresult!=null ?"重新皮试":"开始皮试"}}</el-button>
+        <el-button type="text" :disabled="scope.row.intervalTime!=='' && scope.row.intervalTime!=null" @click.native="stclick(scope.$index,scope.row)">{{scope.row.stresult!=='' && scope.row.stresult!=null ?"重新皮试":"开始皮试"}}</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -295,8 +295,7 @@ import {stmanagementlist,updatestresult,updatesttime} from '@/api/cure/stmanagem
        //   row.intervalTime =  this.formatDuring(end - new Date());
      //  this.tableData[index].intervalTime = 1
        this.$set(this.tableData[index],'intervalTime',this.formatDuring(end - new Date()));
-          console.log(this.tableData[index].intervalTime,'时间');
-          if(row.intervalTime==""){clearInterval(this.setIntervaltime[index]);}
+          if(row.intervalTime===""){clearInterval(this.setIntervaltime[index]);}
         }, 1000); //这边采取的是1秒调用一次
         //这里采用简单写法，直接在查询的时候调用一次，不用等定时器调用
         //row.intervalTime = this.formatDuring(new Date(row.sttime) - new Date());
@@ -320,7 +319,6 @@ import {stmanagementlist,updatestresult,updatesttime} from '@/api/cure/stmanagem
     },
     //开始皮试
     stclick(index,row){
-      console.log(row,'看');
         this.countDown(row,index);
     },
     //重置
@@ -348,15 +346,15 @@ import {stmanagementlist,updatestresult,updatesttime} from '@/api/cure/stmanagem
         if(this.TimeInterval){
         this.strc.kssj=this.TimeInterval[0];
         this.strc.jssj=this.TimeInterval[1];
-        this.strc.zxzt=this.strc.zxzt=="qb"?"":this.strc.zxzt;
+        this.strc.zxzt=this.strc.zxzt==="qb"?"":this.strc.zxzt;
         this.strc.kdys=this.strc.kdys;
         this.strc.hzxm=this.strc.hzxm;
         stmanagementlist(this.strc).then((responseData)=>{
-            if (responseData.code == 100){
+            if (responseData.code === 100){
                 this.patientTotal=responseData.data.total;
                 if(responseData.data.total>0){
                     responseData.data.rows.forEach((item)=>{
-                        if(item.pszt=='0'){item.pszt="未皮试"}else if(item.pszt=='1'){item.pszt="已皮试"}else{item.pszt=""}
+                        if(item.pszt==='0'){item.pszt="未皮试"}else if(item.pszt==='1'){item.pszt="已皮试"}else{item.pszt=""}
                         this.tableData.push({
                             detailid:item.detailid,
                             pszt:item.pszt,
@@ -372,7 +370,7 @@ import {stmanagementlist,updatestresult,updatesttime} from '@/api/cure/stmanagem
                             pack:item.pack,
                             yf:item.yf,
                             zxsj:item.zxsj,
-                            zxr:item.zxr!='' && item.zxr!=null?item.zxr.substring(0,item.zxr.lastIndexOf("(")):item.zxr,
+                            zxr:item.zxr!=='' && item.zxr!=null?item.zxr.substring(0,item.zxr.lastIndexOf("(")):item.zxr,
                             stresult:item.stresult,
                             sttime:item.sttime,
                         })
@@ -392,7 +390,7 @@ import {stmanagementlist,updatestresult,updatesttime} from '@/api/cure/stmanagem
           this.strc.detailid=value.detailid;
           this.strc.stresult=value.stresult;
           updatestresult(this.strc).then((responseData)=>{
-              if (responseData.code == 100){
+              if (responseData.code === 100){
                   this.Getstmanagementlist();
                   this.$message.success(responseData.msg);
               }
@@ -402,7 +400,7 @@ import {stmanagementlist,updatestresult,updatesttime} from '@/api/cure/stmanagem
           this.strc.sttime=value.sttime;
           this.strc.detailid=value.detailid;
           updatesttime(this.strc).then((responseData)=>{
-              if(responseData.code==100){
+              if(responseData.code===100){
                   this.Getstmanagementlist();
                   this.$message.success(responseData.msg);
               }
@@ -411,6 +409,14 @@ import {stmanagementlist,updatestresult,updatesttime} from '@/api/cure/stmanagem
     },
     mounted(){
       this.Getstmanagementlist();
+    },
+    beforeDestroy() {
+      // 清除所有倒计时定时器，防止内存泄漏
+      if (this.setIntervaltime && this.setIntervaltime.length > 0) {
+        this.setIntervaltime.forEach(timer => {
+          if (timer) clearInterval(timer);
+        });
+      }
     }
   }
 </script>

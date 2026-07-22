@@ -35,5 +35,6 @@ public class MainsiteErrorController implements ErrorController {
     public String getErrorPath() {
         return ERROR_PATH;
     }
+
 }
 

@@ -1,58 +1,12 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getTenantById = (id) =>
-    request({
-        url: '/org/tenant/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/org/tenant')
 
-export const listTenantPage = (search) =>
-    request({
-        url: '/org/tenant/list',
-        method: 'post',
-        data: search
-    })
-
-export const listTenantAll = (search) =>
-    request({
-        url: '/org/tenant/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveTenant = (formData) =>
-    request({
-        url: '/org/tenant/save',
-        method: 'post',
-        data: formData
-    })
-  
-export const deleteTenant = (Tenant) =>
-    request({
-        url: '/org/tenant/delete',
-        method: 'post',
-        data: Tenant
-    })
-    
-export const bulkInsertTenant = (Tenants) =>
-    request({
-        url: '/org/tenant/bulkInsert',
-        method: 'post',
-        data: Tenants
-    })
-    
-export const bulkUpdateTenant = (Tenants) =>
-    request({
-        url: '/org/tenant/bulkUpdate',
-        method: 'post',
-        data: Tenants
-    })
-
-export const bulkDeleteTenant = (Tenants) =>
-    request({
-        url: '/org/tenant/bulkDelete',
-        method: 'post',
-        data: Tenants
-    })
-    
+export const getTenantById = baseApi.getById
+export const listTenantPage = baseApi.listPage
+export const listTenantAll = baseApi.listAll
+export const saveTenant = baseApi.save
+export const deleteTenant = baseApi.delete
+export const bulkInsertTenant = baseApi.bulkInsert
+export const bulkUpdateTenant = baseApi.bulkUpdate
+export const bulkDeleteTenant = baseApi.bulkDelete

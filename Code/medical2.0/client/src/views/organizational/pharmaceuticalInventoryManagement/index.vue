@@ -354,13 +354,13 @@ pickerOptions: {
   },
     methods: {
       stateFormat(row, column) {
-        if (row.fl =="medicalType_0") {
+        if (row.fl ==="medicalType_0") {
           return '西药'
         }
-        else if(row.fl =="medicalType_1"){
+        else if(row.fl ==="medicalType_1"){
           return '中草药'
         }
-        else if(row.fl =="medicalType_2"){
+        else if(row.fl ==="medicalType_2"){
           return '中成药'
         } else  {
           return ''
@@ -472,14 +472,14 @@ this.Getypjxclist();
     this.YpjxcRc.kssj=this.TimeInterval[0];
   this.YpjxcRc.jssj=this.TimeInterval[1]
   }
-  this.YpjxcRc.zt=this.formInline.zt=="qb"?"":this.formInline.zt;
-    this.YpjxcRc.lx=this.formInline.lx=="qb"?"":this.formInline.lx;
-    this.YpjxcRc.jgid=this.formInline.jgid=="qb"?null:this.formInline.jgid;
+  this.YpjxcRc.zt=this.formInline.zt==="qb"?"":this.formInline.zt;
+    this.YpjxcRc.lx=this.formInline.lx==="qb"?"":this.formInline.lx;
+    this.YpjxcRc.jgid=this.formInline.jgid==="qb"?null:this.formInline.jgid;
 this.YpjxcRc.spm=this.formInline.spm;
 this.YpjxcRc.ph=this.formInline.ph;
 this.YpjxcRc.orderby=this.YpjxcRc.orderby;
 getpharmaceuticalInventoryManagement(this.YpjxcRc).then((responseData)=>{
-if (responseData.code == 100){
+if (responseData.code === 100){
   this.patientTotal=responseData.data.total;
   if(responseData.data.total>0){
   responseData.data.rows.forEach((item)=>{
@@ -528,10 +528,10 @@ getpharmaceuticalInventoryManagementsums(this.YpjxcRc).then((ref)=>{
           this.jglist=[];
           getjglist(this.YpjxcRc).then((responseData)=>{
             //  debugger
-              if (responseData.code == 100){
+              if (responseData.code === 100){
                   if(responseData.data.length>0){
                       responseData.data.forEach((item)=>{
-                          if(item.jgid!=currentUser.company.id){
+                          if(item.jgid!==currentUser.company.id){
                           this.jglist.push({
                               jgid:item.jgid,
                               jgmc:item.jgmc,

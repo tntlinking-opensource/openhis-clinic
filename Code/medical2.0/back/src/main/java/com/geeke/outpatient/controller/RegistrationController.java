@@ -3,9 +3,11 @@ package com.geeke.outpatient.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.geeke.admin.entity.User;
 import com.geeke.admin.service.UserService;
+import com.geeke.common.constants.BizConstants;
+import com.geeke.common.controller.CrudController;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
-import com.geeke.config.exception.CommonJsonException;
+import com.geeke.common.service.ServiceException;
 import com.geeke.medicareutils.config.MedicareConfigProperties;
 import com.geeke.medicareutils.domain.respo.Output_2201;
 import com.geeke.medicareutils.service.MdPsnDataService;
@@ -14,16 +16,12 @@ import com.geeke.outpatient.entity.*;
 import com.geeke.common.data.Parameter;
 import com.geeke.outpatient.service.RecipelDetailService;
 import com.geeke.outpatient.service.RegistrationService;
-import com.geeke.sys.controller.BaseController;
 import com.geeke.toll.service.TollInfoService;
 import com.geeke.utils.ResultUtil;
 import com.geeke.utils.SessionUtils;
 import com.geeke.utils.StringUtils;
-import com.geeke.utils.constants.ErrorEnum;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -35,11 +33,10 @@ import java.util.*;
  */
 @RestController
 @RequestMapping(value = "/outpatient/registration")
-@RequiredArgsConstructor
-public class RegistrationController extends BaseController {
+public class RegistrationController extends CrudController<RegistrationService, Registration> {
 
     @Autowired
-    private RegistrationService registrationService;
+    protected RegistrationService registrationService;
 
     @Autowired
     private UserService userService;
@@ -50,17 +47,18 @@ public class RegistrationController extends BaseController {
     @Autowired
     private RecipelDetailService recipelDetailService;
 
-    private final MdRegistrationService mdRegistrationService;
+    @Autowired
+    private MdRegistrationService mdRegistrationService;
 
-    private final MdPsnDataService mdPsnDataService;
+    @Autowired
+    private MdPsnDataService mdPsnDataService;
 
-    private final MedicareConfigProperties medicareConfigProperties;
+    @Autowired
+    private MedicareConfigProperties medicareConfigProperties;
 
-
-    @GetMapping("/{id}")
-    public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
-        Registration entity = registrationService.get(id);
-        return ResponseEntity.ok(ResultUtil.successJson(entity));
+    @Override
+    protected RegistrationService getService() {
+        return registrationService;
     }
 
     /**
@@ -75,7 +73,7 @@ public class RegistrationController extends BaseController {
 
     @GetMapping("/doctornew")
     public ResponseEntity<JSONObject> doctornew() {
-        List<User> doctors = userService.NEWgetUserByCompanyIdAndJob(SessionUtils.getLoginTenantId(), "医生");
+        List<User> doctors = userService.getUserByCompanyIdAndJobV2(SessionUtils.getLoginTenantId(), "医生");
         return ResponseEntity.ok(ResultUtil.successJson(doctors));
     }
 
@@ -98,21 +96,21 @@ public class RegistrationController extends BaseController {
     ) {
         int res;
         Date exitNumberDate = new Date();
-        if ("registrationStatus_2".equals(refundRegistrationRemarks)) {
+        if (BizConstants.REG_STATUS_REFUNDED.equals(refundRegistrationRemarks)) {
             Registration registration = registrationService.get(id);
-            if ("registrationStatus_0".equals(registration.getStatus().getValue())) {
+            if (BizConstants.REG_STATUS_PENDING.equals(registration.getStatus().getValue())) {
                 String message = "你已完成签到，如要退号请到医院进行！";
                 return ResponseEntity.ok(ResultUtil.successJson(message));
             }
-            if ("registrationStatus_1".equals(registration.getStatus().getValue())) {
+            if (BizConstants.REG_STATUS_VISITED.equals(registration.getStatus().getValue())) {
                 String message = "你已完成就诊，如有疑问请到医院了解详情！";
                 return ResponseEntity.ok(ResultUtil.successJson(message));
             }
-            if ("registrationStatus_2".equals(registration.getStatus().getValue())) {
+            if (BizConstants.REG_STATUS_REFUNDED.equals(registration.getStatus().getValue())) {
                 String message = "你已取消预约，不可再次取消！";
                 return ResponseEntity.ok(ResultUtil.successJson(message));
             }
-            if ("registrationStatus_4".equals(registration.getStatus().getValue())) {
+            if (BizConstants.REG_STATUS_FEE_REFUNDED.equals(registration.getStatus().getValue())) {
                 String message = "该预约已失效！";
                 return ResponseEntity.ok(ResultUtil.successJson(message));
             }
@@ -134,21 +132,21 @@ public class RegistrationController extends BaseController {
         int res;
         Date exitNumberDate = new Date();
         Registration registrations = registrationService.get(registration.getId());
-        if ("registrationStatus_0".equals(registrations.getStatus().getValue())) {
+        if (BizConstants.REG_STATUS_PENDING.equals(registrations.getStatus().getValue())) {
             String message = "你已完成签到，如要退号请到医院进行！";
-            throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, message));
+            throw new ServiceException(message);
         }
-        if ("registrationStatus_1".equals(registrations.getStatus().getValue())) {
+        if (BizConstants.REG_STATUS_VISITED.equals(registrations.getStatus().getValue())) {
             String message = "你已完成就诊，如有疑问请到医院了解详情！";
-            throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, message));
+            throw new ServiceException(message);
         }
-        if ("registrationStatus_2".equals(registrations.getStatus().getValue())) {
+        if (BizConstants.REG_STATUS_REFUNDED.equals(registrations.getStatus().getValue())) {
             String message = "你已取消预约，不可再次取消！";
-            throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, message));
+            throw new ServiceException(message);
         }
-        if ("registrationStatus_4".equals(registrations.getStatus().getValue())) {
+        if (BizConstants.REG_STATUS_FEE_REFUNDED.equals(registrations.getStatus().getValue())) {
             String message = "该预约已失效！";
-            throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, message));
+            throw new ServiceException(message);
         }
         registrations.setExitNumberDate(exitNumberDate);
         registrations.setStatus(registration.getStatus());
@@ -159,31 +157,15 @@ public class RegistrationController extends BaseController {
         return ResponseEntity.ok(ResultUtil.successJson(res));
     }
 
+    @Override
     @PostMapping(value = {"list", ""})
     public ResponseEntity<JSONObject> listPage(@RequestBody SearchParams searchParams) {
-
         Page<Registration> result = registrationService.listPage(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
-        String companyId = null;
-        if (result.getTotal() != 0) {
-            if (!result.getRows().isEmpty()) {
-
-                for (Registration row : result.getRows()) {
-                    companyId = row.getCompany().getId();
-                    break;
-                }
-
-                registrationService.updateStatusByCompanyId(companyId);
-            }
-        }
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
-    
-    @PostMapping(value = "listAll")
-    public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
-        List<Registration> result = registrationService.listAll(searchParams.getParams(), searchParams.getOrderby());
+        registrationService.updateExpiredStatusFromPage(result, row -> row.getCompany().getId());
         return ResponseEntity.ok(ResultUtil.successJson(result));
     }
 
+    @Override
     @PostMapping(value = "save")
     public ResponseEntity<JSONObject> save(@RequestBody Registration entity) {
         String id ="";
@@ -207,23 +189,6 @@ public class RegistrationController extends BaseController {
         return ResponseEntity.ok(ResultUtil.successJson(id));
     }
 
-    @PostMapping(value = "delete")
-    public ResponseEntity<JSONObject> delete(@RequestBody Registration entity) {
-        int rows = registrationService.delete(entity);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
-
-    @PostMapping(value = "bulkInsert")
-    public ResponseEntity<JSONObject> bulkInsert(@RequestBody List<Registration> entitys) {
-        List<String> ids = registrationService.bulkInsert(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkUpdate")
-    public ResponseEntity<JSONObject> bulkUpdate(@RequestBody List<Registration> entitys) {
-        List<String> ids = registrationService.bulkUpdate(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
     @PostMapping(value = "registationupdate")
     public ResponseEntity<JSONObject> registationupdate(@RequestBody RegistrationMedicalrecordlist entitys) {
         entitys.getRegistration().setUpdateDate(new Date());
@@ -231,16 +196,10 @@ public class RegistrationController extends BaseController {
         if(entitys.getMedicalRecord()!=null) {
             if (entitys.getMedicalRecord().getPatientTell() != null && entitys.getMedicalRecord().getDoctor() != null) {
                 entitys.getMedicalRecord().setRegistration(entitys.getRegistration());
-                row = registrationService.medicalrecordinserts(entitys.getMedicalRecord());
+                row = registrationService.medicalRecordInserts(entitys.getMedicalRecord());
             }
         }
         return ResponseEntity.ok(ResultUtil.successJson(row));
-    }
-
-    @PostMapping(value = "bulkDelete")
-    public ResponseEntity<JSONObject> bulkDelete(@RequestBody List<Registration> entitys) {
-        int rows = registrationService.bulkDelete(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
     }
 
     @PostMapping(value = {"conditionList", ""})
@@ -260,7 +219,7 @@ public class RegistrationController extends BaseController {
     public ResponseEntity<JSONObject> print(@RequestBody JSONObject inJson) {
         String id = inJson.getString("id");
         if (StringUtils.isNotBlank(id)) {
-            RecipelDetail recipelDetail = recipelDetailService.get("1020982806516041555");
+            RecipelDetail recipelDetail = recipelDetailService.get(id);
             Map<String, Object> map = new HashMap<>();
             map.put("buildReport", recipelDetail);
             DataBean dataBean = new DataBean();
@@ -272,60 +231,24 @@ public class RegistrationController extends BaseController {
     //获取患者登记信息
     @PostMapping("/v2/list")
     public ResponseEntity<JSONObject> listPages(@RequestBody PageRegistration pageRegistration) {
-
         Page<Registration> result = registrationService.listPages(pageRegistration);
-        String companyId = null;
-        if (result.getTotal() != 0) {
-            if (!CollectionUtils.isEmpty(result.getRows())) {
-
-                for (Registration row : result.getRows()) {
-                    companyId = row.getCompany().getId();
-                    break;
-                }
-
-                registrationService.updateStatusByCompanyId(companyId);
-            }
-        }
+        registrationService.updateExpiredStatusFromPage(result, row -> row.getCompany().getId());
         return ResponseEntity.ok(ResultUtil.successJson(result));
     }
 
     //获取费用信息
     @PostMapping("/wx/list")
     public ResponseEntity<JSONObject> wxListPages(@RequestBody PageRegistration pageRegistration) {
-
         Page<ReceptionEvt> result = registrationService.wxListPages(pageRegistration);
-        String companyId = null;
-        if (result.getTotal() != 0) {
-            if (!CollectionUtils.isEmpty(result.getRows())) {
-
-                for (ReceptionEvt row : result.getRows()) {
-                    companyId = row.getRegistration().getCompany().getId();
-                    break;
-                }
-
-                registrationService.updateStatusByCompanyId(companyId);
-            }
-        }
+        registrationService.updateExpiredStatusFromPage(result, row -> row.getRegistration().getCompany().getId());
         return ResponseEntity.ok(ResultUtil.successJson(result));
     }
 
     //获取发药记录
     @PostMapping("/wx/dispensingList")
     public ResponseEntity<JSONObject> wxDispensingListPages(@RequestBody PageRegistration pageRegistration) {
-
         Page<ReceptionEvt> result = registrationService.wxDispensingListPages(pageRegistration);
-        String companyId = null;
-        if (result.getTotal() != 0) {
-            if (!CollectionUtils.isEmpty(result.getRows())) {
-
-                for (ReceptionEvt row : result.getRows()) {
-                    companyId = row.getRegistration().getCompany().getId();
-                    break;
-                }
-
-                registrationService.updateStatusByCompanyId(companyId);
-            }
-        }
+        registrationService.updateExpiredStatusFromPage(result, row -> row.getRegistration().getCompany().getId());
         return ResponseEntity.ok(ResultUtil.successJson(result));
     }
 

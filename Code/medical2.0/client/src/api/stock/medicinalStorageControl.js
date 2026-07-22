@@ -1,8 +1,5 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const listPage = (search) =>
-    request({
-        url: '/stock/medicinalStorageControl/listAll',
-        method: 'post',
-        data:search
-    })
+const baseApi = createCrudApi('/stock/medicinalStorageControl')
+
+export const listPage = baseApi.listAll

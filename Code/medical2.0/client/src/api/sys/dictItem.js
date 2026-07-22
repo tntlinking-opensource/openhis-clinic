@@ -1,37 +1,15 @@
+import { createCrudApi } from '@/utils/apiFactory'
 import request from '@/utils/request'
 
-export const getDictItemById = (id) =>
-    request({
-        url: '/sys/dictItem/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/sys/dictItem')
 
-export const listDictItemPage = (search) =>
-    request({
-        url: '/sys/dictItem/list',
-        method: 'post',
-        data: search
-    })
+// 导出标准CRUD接口（保持向后兼容）
+export const getDictItemById = baseApi.getById
+export const listDictItemPage = baseApi.listPage
+export const listDictItemAll = baseApi.listAll
+export const saveDictItem = baseApi.save
+export const deleteDictItem = baseApi.delete
 
-export const listDictItemAll = (search) =>
-    request({
-        url: '/sys/dictItem/listAll',
-        method: 'post',
-        data: search
-    })    
-
-
-export const saveDictItem = (dictItem) => 
-    request({
-        url: '/sys/dictItem/save',
-        method: 'post',
-        data: dictItem
-    })
-
-export const deleteDictItem = (dictItem) =>
-    request({
-        url: '/sys/dictItem/delete',
-        method: 'post',
-        data: dictItem
-    })
-    
+// 新增：按字典类型 code 获取字典项（推荐使用，替代硬编码雪花 ID）
+export const listDictItemByCode = (code) =>
+  request({ url: '/sys/dictItem/listByCode/' + code, method: 'get' })

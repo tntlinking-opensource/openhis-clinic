@@ -3,12 +3,17 @@ package com.geeke.sys.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.geeke.common.constants.ActionConstants;
+import com.geeke.common.data.Page;
 import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
+import com.geeke.common.data.SearchParamsBuilder;
 import com.geeke.common.service.CrudService;
 import com.geeke.sys.dao.DictItemDao;
 import com.geeke.sys.dao.DictTypeDao;
@@ -32,18 +37,38 @@ public class DictTypeService extends CrudService<DictTypeDao, DictType>{
 
     @Autowired
     private DictItemDao dictItemDao;
-    
+
+    /**
+     * 重写分页查询：系统级字典对所有租户可见，业务级字典按租户隔离
+     */
     @Override
+    public Page<DictType> listPage(List<Parameter> parameters, int offset, int limit, String orderby) {
+        // 字典已优化为全局共享，不再按租户隔离
+        PageRequest pageRequest = new PageRequest(offset, limit, parameters, orderby);
+        int total = dao.count(pageRequest);
+        List<DictType> list = total > 0 ? dao.listPage(pageRequest) : java.util.Collections.emptyList();
+        return new Page<>(total, list);
+    }
+
+    /**
+     * 重写列表查询：字典全局共享，所有租户可见
+     */
+    @Override
+    public List<DictType> listAll(List<Parameter> parameters, String orderby) {
+        PageRequest pageRequest = new PageRequest(parameters, orderby);
+        return dao.listAll(pageRequest);
+    }
+
+    @Override
+    @Cacheable(value = "dict:type", key = "#id")
     public DictType get(String id) {
         DictType dictType = super.get(id);
 
-        List<Parameter> params = null;
-        PageRequest pageRequest;
         /*获取子表列表   字典项*/
-        params = Lists.newArrayList();
-        params.add(new Parameter("dict_type_id", "=", dictType.getId()));
-        pageRequest = new PageRequest(params);
-        dictType.setDictItemList(dictItemDao.listAll(pageRequest));        
+        SearchParamsBuilder builder = SearchParamsBuilder.create()
+                .eq("dict_type_id", dictType.getId());
+        PageRequest pageRequest = new PageRequest(builder.build());
+        dictType.setDictItemList(dictItemDao.listAll(pageRequest));
         return dictType;
     }
 
@@ -55,8 +80,15 @@ public class DictTypeService extends CrudService<DictTypeDao, DictType>{
 
     @Override
     @Transactional(readOnly = false)
+    @Caching(evict = {
+        @CacheEvict(value = "dict:type", key = "#dictType.id"),
+        @CacheEvict(value = "dict:itemsByCode", allEntries = true)
+    })
     public DictType save(DictType dictType) {
-	
+        // 系统级字典的 company_id 应该为 NULL
+        if ("1".equals(dictType.getIsSystem())) {
+            dictType.setCompany(null);
+        }
         DictType dictTypeTemp = super.save(dictType);
         if (StringUtils.isNoneBlank(dictTypeTemp.getId())) {
 
@@ -87,13 +119,16 @@ public class DictTypeService extends CrudService<DictTypeDao, DictType>{
      */
     @Override
     @Transactional(readOnly = false)
+    @Caching(evict = {
+        @CacheEvict(value = "dict:type", key = "#dictType.id"),
+        @CacheEvict(value = "dict:itemsByCode", allEntries = true)
+    })
     public int delete(DictType dictType) {
-        List<Parameter> params = null;
-        PageRequest pageRequest;
         /* 处理子表     字典项 */
-        params = Lists.newArrayList();
-        params.add(new Parameter("dict_type_id", "=", dictType.getId()));
-        pageRequest = new PageRequest(params);
+        List<Parameter> params = SearchParamsBuilder.create()
+                .eq("dict_type_id", dictType.getId())
+                .build();
+        PageRequest pageRequest = new PageRequest(params);
         dictType.setDictItemList(dictItemDao.listAll(pageRequest));        
 
         if(dictType.getDictItemList() != null && dictType.getDictItemList().size() > 0) {
@@ -133,15 +168,15 @@ public class DictTypeService extends CrudService<DictTypeDao, DictType>{
     
     /* 保存子表数据     字典项 */
     private void saveDictItemList(DictType dictType) {
-        List<Parameter> params = Lists.newArrayList();
-        params.add(new Parameter("dict_type_id", "=", dictType.getId()));
-        PageRequest pageRequest = new PageRequest(params);
-        List<DictItem> list_DictItem = dictItemDao.listAll(pageRequest);            
+        SearchParamsBuilder builder = SearchParamsBuilder.create()
+                .eq("dict_type_id", dictType.getId());
+        PageRequest pageRequest = new PageRequest(builder.build());
+        List<DictItem> list_DictItem = dictItemDao.listAll(pageRequest);
         List<DictItem> deletes = Lists.newArrayList(); // 删除列表
         List<DictItem> inserts = Lists.newArrayList(); // 添加列表
         List<DictItem> updates = Lists.newArrayList(); // 更新列表
         for(DictItem dictItemSaved: list_DictItem) {
-            boolean found = false;   
+            boolean found = false;
             for (DictItem dictItem : dictType.getDictItemList()){
                if(dictItemSaved.getId().equals(dictItem.getId())){
                    found = true;
@@ -156,8 +191,6 @@ public class DictTypeService extends CrudService<DictTypeDao, DictType>{
             dictItemDao.bulkDelete(deletes);
         }
         for (DictItem dictItem : dictType.getDictItemList()){
-         
-
             if (StringUtils.isBlank(dictItem.getId())) {
                 dictItem.setDictType(dictType);
                 dictItem.preInsert();
@@ -166,7 +199,6 @@ public class DictTypeService extends CrudService<DictTypeDao, DictType>{
                 dictItem.preUpdate();
                 updates.add(dictItem);
             }
-
         }
         if(updates.size() > 0) {
             dictItemDao.bulkUpdate(updates);

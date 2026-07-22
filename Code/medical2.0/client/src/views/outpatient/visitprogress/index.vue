@@ -153,7 +153,32 @@ import moment from "moment";
           return 'success-row';
         }
         return '';
-      }
+      },
+
+      //重置
+      reset(){
+        this. formInline = {
+          values: '',
+          status: ''
+        };
+        this.TimeInterval='';
+        this. visitprogresspara = {
+        limit: 20,
+        offset: 0,
+        companyId: currentUser.company.id,
+        status: "",
+        values:"",
+        kssj:"",
+        jssj:"",
+        };
+        this.Getvisiprogresslist();
+      },
+
+      onSizeChange(val) {
+      this.currentPage = 1
+      this.visitprogresspara.limit = val;
+      this.visitprogresspara.offset = (this.currentPage - 1) * val
+      this.Getvisiprogresslist();
     },
     data() {
       return {
@@ -219,33 +244,6 @@ pickerOptions: {
 
       }
     },
-    methods: {
-
-      //重置
-      reset(){
-        this. formInline = {
-          values: '',
-          status: ''
-        };
-        this.TimeInterval='';
-        this. visitprogresspara = {
-        limit: 20,
-        offset: 0,
-        companyId: currentUser.company.id,
-        status: "",
-        values:"",
-        kssj:"",
-        jssj:"",
-        };
-        this.Getvisiprogresslist();
-      },
-
-      onSizeChange(val) {
-      this.currentPage = 1
-      this.visitprogresspara.limit = val;
-      this.visitprogresspara.offset = (this.currentPage - 1) * val
-      this.Getvisiprogresslist();
-    },
     onCurrentChange(val) {
       this.visitprogresspara.offset = (val - 1) * this.visitprogresspara.limit
       this.currentPage = val
@@ -265,12 +263,11 @@ pickerOptions: {
     this.visitprogresspara.kssj="";
     this.visitprogresspara.jssj=""
   }
-this.visitprogresspara.status=this.formInline.status=="qb"?"":this.formInline.status;
+this.visitprogresspara.status=this.formInline.status==="qb"?"":this.formInline.status;
 this.visitprogresspara.values=this.formInline.values;
 selectvisiprogresslist(this.visitprogresspara).then((responseData)=>{
-  if (responseData.code == 100){
+  if (responseData.code === 100){
     this.patientTotal=responseData.data.total;
-    console.log(responseData,'看看');
     if( responseData.data.rows!=null){
     responseData.data.rows.forEach((item)=>{
       switch(item.jzzt.trim()){
@@ -320,7 +317,6 @@ selectvisiprogresslist(this.visitprogresspara).then((responseData)=>{
           sr:item.sr,
           phone:item.phone,
       })
-     console.log(this.tableData,'乞丐i');
     })
     }
   }

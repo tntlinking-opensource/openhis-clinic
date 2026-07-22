@@ -3,24 +3,17 @@ package com.geeke.outpatient.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.geeke.common.controller.CrudController;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
 import com.geeke.org.entity.Company;
 import com.geeke.outpatient.entity.*;
 import com.geeke.outpatient.service.*;
-import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.ResultUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
@@ -33,39 +26,35 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/outpatient/medicalRecord")
-@RequiredArgsConstructor
-public class MedicalRecordController extends BaseController {
+public class MedicalRecordController extends CrudController<MedicalRecordService, MedicalRecord> {
+
+    @Autowired
+    protected MedicalRecordService medicalRecordService;
 
     @Autowired
     private RemoteDiagnosisTreatmentService remoteDiagnosisTreatmentService;
-	@Autowired
-	private MedicalRecordService medicalRecordService;
-	@Autowired
+
+    @Autowired
     private PatientService patientService;
-	@Autowired
+
+    @Autowired
     private RegistrationService registrationService;
 
-    private final XtZdService zdService;
+    @Autowired
+    private XtZdService zdService;
 
-    private final  XtZyzhService xtZyzhService;
+    @Autowired
+    private XtZyzhService xtZyzhService;
 
-
-    @GetMapping("/{id}")
-    public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
-        MedicalRecord entity = medicalRecordService.get(id);
-        return ResponseEntity.ok(ResultUtil.successJson(entity));
+    @Override
+    protected MedicalRecordService getService() {
+        return medicalRecordService;
     }
 
     @GetMapping("/instant/{phone}")
     public ResponseEntity<JSONObject> getByPhone(@PathVariable("phone") String phone) {
         Patient patient = patientService.getPatientByPhone(phone);
         return ResponseEntity.ok(ResultUtil.successJson(patient));
-    }
-    
-    @PostMapping(value = {"list", ""})
-    public ResponseEntity<JSONObject> listPage(@RequestBody SearchParams searchParams) {
-        Page<MedicalRecord> result = medicalRecordService.listPage(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
     }
 
     @GetMapping("/medical/{registration}")
@@ -75,15 +64,9 @@ public class MedicalRecordController extends BaseController {
         List<MedicalRecord> result = medicalRecordService.getByOrder(registration);
         return ResponseEntity.ok(ResultUtil.successJson(result));
     }
-    
-    @PostMapping(value = "listAll")
-    public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
-        List<MedicalRecord> result = medicalRecordService.listAll(searchParams.getParams(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
 
-    @PostMapping(value = "save")
-    public ResponseEntity<JSONObject> save(@RequestParam("entity") String strEntity,
+    @PostMapping(value = "saveWithFile")
+    public ResponseEntity<JSONObject> saveWithFile(@RequestParam("entity") String strEntity,
       @RequestParam("fileIdUploads") MultipartFile[] fileIdUploads,  // 文件: 上传附件
       @RequestParam("deleteIds")String strDeleteIds) throws java.io.IOException {
         MedicalRecord entity = JSONObject.parseObject(strEntity, MedicalRecord.class);
@@ -104,30 +87,6 @@ public class MedicalRecordController extends BaseController {
         entity.setCompany(remote.getCompany());
         String id = medicalRecordService.save(entity).getId();
         return ResponseEntity.ok(ResultUtil.successJson(id));
-    }
-
-    @PostMapping(value = "delete")
-    public ResponseEntity<JSONObject> delete(@RequestBody MedicalRecord entity) {
-        int rows = medicalRecordService.delete(entity);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
-
-    @PostMapping(value = "bulkInsert")
-    public ResponseEntity<JSONObject> bulkInsert(@RequestBody List<MedicalRecord> entitys) {
-        List<String> ids = medicalRecordService.bulkInsert(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkUpdate")
-    public ResponseEntity<JSONObject> bulkUpdate(@RequestBody List<MedicalRecord> entitys) {
-        List<String> ids = medicalRecordService.bulkUpdate(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkDelete")
-    public ResponseEntity<JSONObject> bulkDelete(@RequestBody List<MedicalRecord> entitys) {
-        int rows = medicalRecordService.bulkDelete(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
     }
 
     @PostMapping(value = "allSave")

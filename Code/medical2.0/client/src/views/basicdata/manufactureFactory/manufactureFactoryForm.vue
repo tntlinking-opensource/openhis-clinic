@@ -10,7 +10,7 @@
     <div slot="title" class="dialog-header">
       {{ dialogProps.title }}
       <OperationIcon
-        v-show="dialogProps.action == 'view' && permission.edit"
+        v-show="dialogProps.action === 'view' && permission.edit"
         type="primary"
         text="编辑"
         placement="top-start"
@@ -28,16 +28,16 @@
       class="edit-form"
       style="margintop: 10px"
     >
-      <div class="tab-item" v-show="tabIndex == '1'">
+      <div class="tab-item" v-show="tabIndex === '1'">
         <el-row>
           <el-col :span="24 / 2">
             <el-form-item label="厂家名称" prop="name">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.name"
                 :maxlength="128"
                 :placeholder="
-                  dialogProps.action == 'view' ? '' : '请输入厂家名称'
+                  dialogProps.action === 'view' ? '' : '请输入厂家名称'
                 "
                 autofocus
               ></el-input>
@@ -46,11 +46,11 @@
           <el-col :span="24 / 2">
             <el-form-item label="联系人" prop="people">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.people"
                 :maxlength="45"
                 :placeholder="
-                  dialogProps.action == 'view' ? '' : '请输入联系人'
+                  dialogProps.action === 'view' ? '' : '请输入联系人'
                 "
               ></el-input>
             </el-form-item>
@@ -60,17 +60,17 @@
           <el-col :span="24 / 2">
             <el-form-item label="电话" prop="phone">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.phone"
                 :maxlength="45"
-                :placeholder="dialogProps.action == 'view' ? '' : '请输入电话'"
+                :placeholder="dialogProps.action === 'view' ? '' : '请输入电话'"
               ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="24 / 2">
             <el-form-item label="是否启用" prop="status">
               <el-switch
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="value"
                 active-color="#13ce66"
                 inactive-color="#dbdfe6"
@@ -84,7 +84,7 @@
           <el-col :span="24 / 2">
             <el-form-item label="所在地区" prop="">
               <v-distpicker
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 :province="province"
                 :city="city"
                 :area="area"
@@ -98,14 +98,14 @@
             <el-form-item label="厂家分类" prop="type">
               <div>
                 <el-radio
-                  :disabled="dialogProps.action == 'view'"
+                  :disabled="dialogProps.action === 'view'"
                   v-model="bizFormModel.type"
                   label="1"
                   border
                   >药品厂家</el-radio
                 >
                 <el-radio
-                  :disabled="dialogProps.action == 'view'"
+                  :disabled="dialogProps.action === 'view'"
                   v-model="bizFormModel.type"
                   label="2"
                   border
@@ -119,11 +119,11 @@
           <el-col>
             <el-form-item label="地址" prop="address">
               <el-input
-                :disabled="dialogProps.action == 'view'"
+                :disabled="dialogProps.action === 'view'"
                 v-model="bizFormModel.address"
                 type="textarea"
                 :maxlength="128"
-                :placeholder="dialogProps.action == 'view' ? '' : '请输入地址'"
+                :placeholder="dialogProps.action === 'view' ? '' : '请输入地址'"
                 clearable
               ></el-input>
             </el-form-item>
@@ -133,21 +133,21 @@
     </el-form>
     <span slot="footer" class="dialog-footer">
       <el-button
-        v-if="dialogProps.action != 'view'"
-        :disabled="flage"
+        v-if="dialogProps.action !== 'view'"
+        :disabled="flag"
         type="primary"
         :plain="true"
         @click="onSubmit('manufactureFactoryForm')"
         >保 存</el-button
       >
       <el-button
-        v-if="dialogProps.action != 'view'"
+        v-if="dialogProps.action !== 'view'"
         :plain="true"
         @click="onDialogClose()"
         >取 消</el-button
       >
       <el-button
-        v-if="dialogProps.action == 'view'"
+        v-if="dialogProps.action === 'view'"
         :plain="true"
         @click="onDialogClose()"
         >关 闭</el-button
@@ -177,7 +177,7 @@ export default {
       city: "",
       area: "",
       value: "1",
-      flage: false, //防止重复提交
+      flag: false, //防止重复提交
       dialogProps: {
         visible: false,
         action: "",
@@ -199,12 +199,12 @@ export default {
   },
   methods: {
     onSubmit(formName) {
-      this.flage = true;
+      this.flag = true;
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.doSave();
         } else {
-          this.flage = false;
+          this.flag = false;
           return false;
         }
       });
@@ -217,8 +217,8 @@ export default {
       this.bizFormModel.status = this.value;
       saveManufactureFactory(this.bizFormModel)
         .then((responseData) => {
-          this.flage = false;
-          if (responseData.code == 100) {
+          this.flag = false;
+          if (responseData.code === 100) {
             this.dialogProps.visible = false;
             this.$emit("save-finished", "1");
           } else {
@@ -227,7 +227,7 @@ export default {
           this.resetLoad();
         })
         .catch((error) => {
-          this.flage = false;
+          this.flag = false;
           this.outputError(error);
         });
     },
@@ -274,7 +274,7 @@ export default {
     },
   },
   watch: {},
-  mounted: function () {
+  mounted() {
     this.$nextTick(() => {
       this.$on(
         "openViewManufactureFactoryDialog",

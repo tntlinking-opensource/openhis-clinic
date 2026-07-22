@@ -11,10 +11,11 @@ export const getFiled = (id) =>
         url:'/sys/sysSeting/getFiled/'+id,
         method:'get'
     })
-export const getFirmList = (loginName,password) =>
+export const getFirmList = (loginName, password) =>
     request({
-        url: `/auth/getUserTenant?loginName=${loginName}&password=${password}`,
-        method: 'get'
+        url: '/auth/getUserTenant',
+        method: 'post',
+        data: { loginName, password }
     })
 
 
@@ -28,7 +29,7 @@ export const listSysSetingAll = (search) =>
 
 export const saveSysSeting = (sysSeting) =>
     request({
-        url: '/sys/sysSeting/save',
+        url: '/sys/sysSeting/saveWithFile',
         method: 'post',
         data: sysSeting
     })

@@ -155,8 +155,8 @@ export default {
       loginForm: {
         // username: process.env.NODE_ENV == "development" ? "15827280002" : "", //system  1824422426
         // password: process.env.NODE_ENV == "development" ? "280002" : "",
-        username: process.env.NODE_ENV == "development" ? "xzadmin" : "", //system  1824422426
-        password: process.env.NODE_ENV == "development" ? "xzadmin" : "",
+        username: process.env.NODE_ENV === "development" ? "xzadmin" : "", //system  1824422426
+        password: process.env.NODE_ENV === "development" ? "xzadmin" : "",
       },
       rules: {
         username: [
@@ -200,8 +200,7 @@ export default {
       let parmas = {};
       listSysSetingAll(parmas)
         .then((response) => {
-          console.log(1236)
-          if (response.code == 100) {
+          if (response.code === 100) {
             let result = response.data[0];
             this.sysData.sysName = result.sysName;
             this.sysData.sysAbbrname = result.sysAbbrname;
@@ -243,7 +242,7 @@ export default {
       this.$store.dispatch("setLoading", true);
       getToken(this.loginForm.username, this.loginForm.password, id)
         .then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.handleLoginInfo(responseData.data);
           } else {
             this.isError = true;
@@ -263,23 +262,40 @@ export default {
     async doLogin() {
       this.$refs["loginForm"].validate(async (valid) => {
         if (valid) {
-          const res = await getFirmList(this.loginForm.username,this.loginForm.password);
-          setLocalCompanys(res);
-          this.firmList = res;
-          if (res.length > 1) {
-            this.dialogVisible = true;
-          } else {
-            this.login(res[0] ? res[0].id : "");
+          try {
+            const res = await getFirmList(this.loginForm.username, this.loginForm.password);
+            // 检查是否返回了错误响应
+            if (res && res.code && res.code !== 100) {
+              this.isError = true;
+              this.loginError = res.msg || "登录失败";
+              return;
+            }
+            if (!res || !Array.isArray(res) || res.length === 0) {
+              this.isError = true;
+              this.loginError = "未找到关联诊所";
+              return;
+            }
+            setLocalCompanys(res);
+            this.firmList = res;
+            if (res.length > 1) {
+              this.dialogVisible = true;
+            } else {
+              this.login(res[0] ? res[0].id : "");
+            }
+          } catch (error) {
+            this.isError = true;
+            this.loginError = error.msg || "登录失败，请检查网络连接";
           }
         }
       });
     },
     initIndexRouter() {
+      let childRouters = this.generateChildRouters();
       let indexRouter = {
         path: "/",
         name: "/",
         component: _import("home/index"),
-        children: [...this.generateChildRouters()],
+        children: [...childRouters],
       };
       // this.$router.addRoutes([indexRouter])
       this.$router.addRoute("/", indexRouter);
@@ -324,47 +340,54 @@ export default {
       return childRouters;
     },
     handleLoginInfo(userData) {
-      window.sessionStorage.setItem("User_P", this.loginForm.password);
-      setLocalCurrentUser({
-        id: userData.userId,
-        name: userData.username,
-        loginname: userData.loginname,
-        company: userData.company,
-        department: userData.department,
-      });
-      setLocalCurrentCompany({
-        id: userData.company.id,
-        code: userData.company.code,
-        name: userData.company.name,
-      });
-      setLocalToken(userData.token);
-      setLocalRouters(userData.routers);
-      setLocalDataPermisions(userData.dataPermisions);
+      try {
+        window.sessionStorage.setItem("User_P", this.loginForm.password);
+        setLocalCurrentUser({
+          id: userData.userId,
+          name: userData.username,
+          loginname: userData.loginname,
+          company: userData.company,
+          department: userData.department,
+        });
+        setLocalCurrentCompany({
+          id: userData.company.id,
+          code: userData.company.code,
+          name: userData.company.name,
+        });
+        setLocalToken(userData.token);
+        setLocalRouters(userData.routers);
+        setLocalDataPermisions(userData.dataPermisions);
 
-      const personalTheme = userData.personalTheme;
-      personalTheme.theme = JSON.parse(personalTheme.theme);
-      setLocalPersonalTheme(personalTheme);
-      this.changeTheme(personalTheme.theme);
-
-      // 初始化首页路由
-      this.initIndexRouter();
-
-      const routers = userData.routers; // 当前用户的路由
-      if (this.$route.query.redirect) {
-        // 判断有无重定向
-        const url = this.removeBlock(
-          JSON.stringify({ url: this.$route.query.redirect.substring(1) })
-        );
-        if (routers.includes(url)) {
-          // 判断路由是否包含 重定向路径 判断有无权限
-          this.$router.push(this.$route.query.redirect);
+        const personalTheme = userData.personalTheme || {};
+        try {
+          personalTheme.theme = typeof personalTheme.theme === 'string' ? JSON.parse(personalTheme.theme) : (personalTheme.theme || {});
+        } catch (e) {
+          personalTheme.theme = {};
         }
+        setLocalPersonalTheme(personalTheme);
+        this.changeTheme(personalTheme.theme);
+
+        // 初始化首页路由
+        this.initIndexRouter();
+
+        const routers = userData.routers; // 当前用户的路由
+        if (this.$route.query.redirect) {
+          // 判断有无重定向
+          const url = this.removeBlock(
+            JSON.stringify({ url: this.$route.query.redirect.substring(1) })
+          );
+          if (routers.includes(url)) {
+            // 判断路由是否包含 重定向路径 判断有无权限
+            this.$router.push(this.$route.query.redirect);
+          }
+        }
+      } catch (e) {
+        console.error("登录信息处理异常:", e);
       }
-      this.$router.push("/");
-      /*      let redirect = decodeURIComponent(
-        this.$route.query.redirect || '/'
-      )
-      this.$router.push(redirect);*/
+      // 跳转到首页
+      this.$router.push("/").catch(err => {
+        console.error("路由跳转失败:", err);
+      });
     },
     removeBlock(str) {
       if (str) {

@@ -5,24 +5,22 @@ import com.geeke.admin.entity.User;
 import com.geeke.admin.entity.UserExt;
 import com.geeke.admin.service.UserExtService;
 import com.geeke.admin.service.UserService;
+import com.geeke.common.controller.CrudController;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
 import com.geeke.common.data.Parameter;
-import com.geeke.config.exception.CommonJsonException;
+import com.geeke.common.data.SearchParamsBuilder;
+import com.geeke.common.service.ServiceException;
 import com.geeke.medicareutils.config.MedicareConfigProperties;
 import com.geeke.medicareutils.service.MdPsnDataService;
-import com.geeke.medicareutils.util.YbWebApiUtil;
 import com.geeke.org.entity.ClinicOffice;
 import com.geeke.org.entity.Department;
 import com.geeke.org.service.ClinicOfficeService;
-import com.geeke.outpatient.entity.Registration;
 import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.ResultUtil;
 import com.geeke.utils.SessionUtils;
 import com.geeke.utils.StringUtils;
-import com.geeke.utils.constants.ErrorEnum;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,33 +36,37 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/admin/user")
 @RequiredArgsConstructor
-public class UserController extends BaseController {
+public class UserController extends CrudController<UserService, User> {
 
-	@Autowired
-	private UserService userService;
-    @Autowired
-    private UserExtService userExtService;
-    @Autowired
-    private ClinicOfficeService clinicOfficeService;
+    protected final UserService service;
+
+    private final UserExtService userExtService;
+
+    private final ClinicOfficeService clinicOfficeService;
 
     private final MedicareConfigProperties medicareConfigProperties;
 
     private final MdPsnDataService mdPsnDataService;
 
+    @Override
+    protected UserService getService() {
+        return service;
+    }
 
+    @Override
     @GetMapping("/{id}")
     public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
-        User entity = userService.get(id);
+        User entity = service.get(id);
         UserExt extByUserId = userExtService.getExtByUserId(id);
         entity.setUserExt(extByUserId);
         // 不返回密码
-        entity.setLoginPassword("");        
+        entity.setLoginPassword("");
         return ResponseEntity.ok(ResultUtil.successJson(entity));
     }
 
     @GetMapping("/phone/{phone}")
     public ResponseEntity<JSONObject> getByPhone(@PathVariable("phone") String phone) {
-        User entity = userService.CheckNewUserByPhone(phone);
+        User entity = service.CheckNewUserByPhone(phone);
         if(null!=entity)
         {
             UserExt oldExtInfo = userExtService.getOldExtByUserId(entity.getId());
@@ -80,6 +82,7 @@ public class UserController extends BaseController {
         return ResponseEntity.ok(ResultUtil.successJson(entity));
     }
 
+    @Override
     @PostMapping(value = {"list", ""})
     public ResponseEntity<JSONObject> listPage(@RequestBody SearchParams searchParams) {
         User user = SessionUtils.getUser();
@@ -87,7 +90,7 @@ public class UserController extends BaseController {
         Page<User> userPage;
         //供应商人员走旧逻辑
         if("1000".equals(user.getId()) || "1001".equals(user.getId())) {
-            userPage = userService.listPage(searchParams.getParams(),
+            userPage = service.listPage(searchParams.getParams(),
                     searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
         }
         else
@@ -96,7 +99,7 @@ public class UserController extends BaseController {
             //诊所管理员查询全部数据
             List<Parameter> params = searchParams.getParams();
             params.set(0,new Parameter());
-            userPage = userService.listPageForNoAdmin(params,
+            userPage = service.listPageForNoAdmin(params,
             searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
         }
 
@@ -108,37 +111,39 @@ public class UserController extends BaseController {
         }
         return ResponseEntity.ok(ResultUtil.successJson(userPage));
     }
-    
+
+    @Override
     @PostMapping(value = "listAll")
     public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
-        List<User> result = userService.listAll(searchParams.getParams(), searchParams.getOrderby());
+        List<User> result = service.listAll(searchParams.getParams(), searchParams.getOrderby());
         // 不返回密码
         if(result != null) {
             for(User entity: result){
                 entity.setLoginPassword("");
             }
-        }      
+        }
         return ResponseEntity.ok(ResultUtil.successJson(result));
     }
 
-    @PostMapping(value = "save")
-    public ResponseEntity<JSONObject> save(@RequestParam("entity") String strUser,
+    @PostMapping(value = "saveWithFile")
+    public ResponseEntity<JSONObject> saveWithFile(@RequestParam("entity") String strUser,
                                            @RequestParam("fileIdUploads") MultipartFile[] fileIdUploads,  // 文件: 用户图片
                                            @RequestParam(value = "deleteIds",required = false)String strDeleteIds) throws java.io.IOException {
         User user = JSONObject.parseObject(strUser, User.class);
         user.setLoginName(user.getPhone());
         // test
         // 设置部门id
-        List<Parameter> list = new ArrayList<>();
-        list.add(new Parameter("company_id", "=", user.getCompany().getId()));
-        list.add(new Parameter("name", "=", user.getUserExt().getOffice()));
+        List<Parameter> list = SearchParamsBuilder.create()
+                .eq("company_id", user.getCompany().getId())
+                .eq("name", user.getUserExt().getOffice())
+                .build();
         String departmentId = clinicOfficeService.listAll(list, "").get(0).getId();
         Department department = new Department();
         department.setId(departmentId);
         user.setDepartment(department);
         user.getUserExt().setOfficeCode(clinicOfficeService.listAll(list, "").get(0).getCode());
         String[] deleteIds = JSONObject.parseObject(strDeleteIds, String[].class);
-        String id = userService.save(user,fileIdUploads,deleteIds).getId();
+        String id = service.save(user,fileIdUploads,deleteIds).getId();
         return ResponseEntity.ok(ResultUtil.successJson(id));
     }
 
@@ -148,44 +153,29 @@ public class UserController extends BaseController {
                                              @RequestParam("deleteIds")String strDeleteIds) throws java.io.IOException  {
 
         User user = JSONObject.parseObject(strUser, User.class);
-        List<Parameter> list = new ArrayList<>();
-        list.add(new Parameter("company_id", "=", user.getCompany().getId()));
-        list.add(new Parameter("name", "=", user.getUserExt().getOffice()));
+        List<Parameter> list = SearchParamsBuilder.create()
+                .eq("company_id", user.getCompany().getId())
+                .eq("name", user.getUserExt().getOffice())
+                .build();
         ClinicOffice clinicOffice = clinicOfficeService.listAll(list, "").get(0);
         user.getUserExt().setOfficeCode(clinicOffice.getCode());
         //user.setLoginName(user.getPhone());
         String[] deleteIds = JSONObject.parseObject(strDeleteIds, String[].class);
-        String id = userService.update(user,fileIdUploads,deleteIds).getId();
+        String id = service.update(user,fileIdUploads,deleteIds).getId();
         return ResponseEntity.ok(ResultUtil.successJson(id));
     }
-  
+
+    @Override
     @PostMapping(value = "delete")
     public ResponseEntity<JSONObject> delete(@RequestBody User entity) {
         if(medicareConfigProperties.getIsDemo().equals("true")){
-            throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "演示系统请勿删除用户！"));
+            throw new ServiceException("演示系统请勿删除用户！");
         }
-        int all = userService.countClinicIdByPhone(entity.getPhone());
-        userService.delete(entity,all);
+        int all = service.countClinicIdByPhone(entity.getPhone());
+        service.delete(entity,all);
         return ResponseEntity.ok(ResultUtil.successJson(all));
     }
 
-    @PostMapping(value = "bulkInsert")
-    public ResponseEntity<JSONObject> bulkInsert(@RequestBody List<User> entitys) {
-        List<String> ids = userService.bulkInsert(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkUpdate")
-    public ResponseEntity<JSONObject> bulkUpdate(@RequestBody List<User> entitys) {
-        List<String> ids = userService.bulkUpdate(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkDelete")
-    public ResponseEntity<JSONObject> bulkDelete(@RequestBody List<User> entitys) {
-        int rows = userService.bulkDelete(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
 
     /**
      * 修改 密码
@@ -194,27 +184,12 @@ public class UserController extends BaseController {
     public ResponseEntity<JSONObject> changeLoginPassword(@PathVariable("id") String id, String password) {
         int rows = 0;
          if(medicareConfigProperties.getIsDemo().equals("true")){
-             throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "演示系统请勿修改密码！"));
+             throw new ServiceException("演示系统请勿修改密码！");
          }
         if(!StringUtils.isBlank(id)) {
-            rows = userService.changeLoginPassword(id, password);
+            rows = service.changeLoginPassword(id, password);
         }
         return ResponseEntity.ok(ResultUtil.successJson(rows));
     }
-
-
-
-    @PostMapping("/test")
-    public ResponseEntity<JSONObject> test() {
-        Registration registration = new Registration();
-
-        registration.setId("2266033438408286216");
-
-        mdPsnDataService.getAndSetPsnData(registration);
-
-        return null;
-    }
-
-
 
 }

@@ -34,16 +34,12 @@
       onDialogClose() {
         this.dialogProps.visible = false
       },
-    },
-    mounted() {
-		  this.$nextTick(() => {
-        this.$on('openReportView', (report) => {
-          if (report) {
-            this.dialogProps.title = report.name
-          }
-          this.dialogProps.visible = true
-        })
-      })
+      openReportView(report) {
+        if (report) {
+          this.dialogProps.title = report.name
+        }
+        this.dialogProps.visible = true
+      }
     }
   }
 </script>

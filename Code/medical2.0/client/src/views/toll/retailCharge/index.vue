@@ -14,7 +14,7 @@
         </div>
 
         <!-- 零售药品 -->
-        <div v-if="activeName=='0'">
+        <div v-if="activeName==='0'">
         <el-form
         :model="bizFormModel"
         :rules="formRules"
@@ -182,7 +182,7 @@
                 <el-table-column label="零售价" width="80">
                 <template slot-scope="scope">
                     {{
-                    scope.row.drug.isUnpackSell == 1
+                    scope.row.drug.isUnpackSell === 1
                         ? scope.row.drug.retailPrice +
                         "/" +
                         scope.row.drug.preparationUnit.name
@@ -280,7 +280,7 @@
                 <el-table-column label="零售价" >
                 <template slot-scope="scope">
                     {{
-                    scope.row.drug.isUnpackSell == 1
+                    scope.row.drug.isUnpackSell === 1
                         ? scope.row.drug.retailPrice +
                         "/" +
                         scope.row.drug.preparationUnit.name
@@ -340,7 +340,7 @@
                 <template slot-scope="scope">
                     <el-input
                     disabled
-                    v-if="scope.row.drug.isUnpackSell=='0'"
+                    v-if="scope.row.drug.isUnpackSell==='0'"
                     v-model="scope.row.drug.pack.name"
                     >
 
@@ -565,7 +565,7 @@
                 <el-table-column label="零售价" width="80">
                 <template slot-scope="scope">
                     {{
-                    scope.row.stuff.isUnpackSell == "1"
+                    scope.row.stuff.isUnpackSell === "1"
                                   ? scope.row.stuff.retailPrice +
                                     "/" +
                                     scope.row.stuff.minUnit.name
@@ -650,7 +650,7 @@
                 <el-table-column label="零售价" >
                 <template slot-scope="scope">
                     {{
-                    scope.row.stuff.isUnpackSell == "1"
+                    scope.row.stuff.isUnpackSell === "1"
                                   ? scope.row.stuff.retailPrice +
                                     "/" +
                                     scope.row.stuff.minUnit.name
@@ -703,7 +703,7 @@
                 <template slot-scope="scope">
                     <el-input
                     disabled
-                    v-if="scope.row.stuff.isUnpackSell=='0'"
+                    v-if="scope.row.stuff.isUnpackSell==='0'"
                     v-model="scope.row.stuff.packUnit.name"
                     >
 
@@ -828,7 +828,7 @@
               </el-form-item>
             </el-col> -->
           </el-row>
-          <el-row v-if="paymentType=='payType_0'">
+          <el-row v-if="paymentType==='payType_0'">
              <el-col :span="8">
               <el-form-item label="实付金额">
                 <el-input
@@ -891,11 +891,10 @@ import {
   savePatient,
   getPatientById,
 } from "@/api/outpatient/patient";
-import { listDictItemAll } from "@/api/sys/dictItem";
+import { getDictItemsByCode, DICT_CODE } from "@/utils/dictCache";
 import { saveRegistration,listDoctorsAll } from "@/api/outpatient/registration";
 import {listAll} from "@/api/stock/medicinalStockControl";
 import BaseUI from "@/views/components/baseUI";
-import OperationIcon from "@/components/OperationIcon";
 import { saveTollInfo } from "@/api/toll/tollInfo";
 import { BigNumber } from "bignumber.js";
 import { saveTollTollInfo } from "@/api/toll/tollInfo";
@@ -1025,7 +1024,7 @@ export default {
             let tollInfo = this.tollEncapsulation()
             let recipelInfos = this.recipelInfosEncapsulation()
             let count =0;
-            if(this.activeName=='0'){
+            if(this.activeName==='0'){
                  this.DrugList.forEach((item)=>{
                 let recipelDetail = {
                     company:currentUser.company,
@@ -1047,9 +1046,9 @@ export default {
                     isExtra:0,
                     seq:count+=1,
                     isUnpackSell:item.isUnpackSell,
-                    unitPrice:item.isUnpackSell==0?item.drug.price:item.drug.retailPrice,
+                    unitPrice:item.isUnpackSell===0?item.drug.price:item.drug.retailPrice,
                     minTotal:item.total,
-                    stuffType:item.drug.type.value=="medicalType_1"?"1":"0"
+                    stuffType:item.drug.type.value==="medicalType_1"?"1":"0"
                 }
                 recipelInfos[0].recipelDetailEvtList.push(recipelDetail)
             })
@@ -1073,7 +1072,7 @@ export default {
                     isExtra:0,
                     seq:count+=1,
                     isUnpackSell:item.isUnpackSell,
-                    unitPrice:item.isUnpackSell==0?item.stuff.priceOutSell:item.stuff.retailPrice,
+                    unitPrice:item.isUnpackSell===0?item.stuff.priceOutSell:item.stuff.retailPrice,
                     minTotal:item.total,
                     stuffType:'4'
                 }
@@ -1086,10 +1085,9 @@ export default {
                 recipelInfos: recipelInfos,
                 chargeStatus: '2',
             }
-            console.log(model);
            // return
             saveTollTollInfo(model,null).then((res)=>{
-                if (res.code == 100) {
+                if (res.code === 100) {
 
                     this.$message.success("操作成功！");
                     this.chargeDialogVisible = false;
@@ -1102,7 +1100,7 @@ export default {
                     this.amountOfRemission = '0';
                     this.amountPaid = 0
                     this.amountOfChange = 0
-                    if(this.activeName=="0"){
+                    if(this.activeName==="0"){
                           this.DrugList=[]
                           this.$nextTick(() => {
                                this.$refs.bizFormModel.resetFields();
@@ -1149,7 +1147,7 @@ export default {
         tollEncapsulation(){
             return{
                 company:currentUser.company,  //诊所id
-                patient:this.activeName=='0'?this.bizFormModel:this.stuffBizFormModel,    //患者
+                patient:this.activeName==='0'?this.bizFormModel:this.stuffBizFormModel,    //患者
                 amountReceivable:this.totalAllFee,  //应收金额
                 amountReceived:this.practicalTotalAllFee,  //实收金额
                 amountDiscounted:this.amountOfRemission,  //优惠金额
@@ -1162,7 +1160,7 @@ export default {
 
         //根据出生日期计算岁数
         birthdayChanges(){
-           if(this.activeName=='0'){
+           if(this.activeName==='0'){
                 if(!this.bizFormModel.birthday){
                 this.bizFormModel.age="";
                 this.bizFormModel.month=""
@@ -1187,7 +1185,7 @@ export default {
         GetAmountReceived() {
             this.practicalTotalAllFee = this.totalAllFee
             let discount = this.discount;
-            if (this.discount == 0) {
+            if (this.discount === 0) {
             discount = 10;
             }
             this.practicalTotalAllFee =
@@ -1201,11 +1199,11 @@ export default {
 
         //进行收费确认
         notarize(formName){
-             if(this.activeName=='0'){
+             if(this.activeName==='0'){
                  this.$refs[formName].validate((valid) => {
                 if (valid) {
-                    let flage = false
-                    let flage1 =false
+                    let flag = false
+                    let flag1 =false
                     if(!this.DrugList.length>0){
                         this.$message.error("请选择药品")
                         return
@@ -1213,12 +1211,12 @@ export default {
                     //进行表格中的数量校验
                     this.DrugList.forEach((item)=>{
 
-                        if(item.number==null||item.number==0){
+                        if(item.number==null||item.number===0){
                             this.$message.error("请填写"+item.drug.goodsName+"的数量")
-                            flage = true
+                            flag = true
                         }
                     })
-                    if(flage){
+                    if(flag){
 
                         return
                     }
@@ -1231,10 +1229,10 @@ export default {
 
                     //     if(item.number==null||item.number==0){
                     //         this.$message.error("请填写"+item.stuff.name+"的数量")
-                    //         flage = true
+                    //         flag = true
                     //     }
                     // })
-                    // if(flage){
+                    // if(flag){
 
                     //     return
                     // }
@@ -1244,14 +1242,13 @@ export default {
 
                // alert('submit!');
                 } else {
-                console.log('error submit!!');
                 return false;
                 }
             });
              }else{
                  this.$refs[formName].validate((valid) => {
                 if (valid) {
-                    let flage = false
+                    let flag = false
                     if(!this.StuffList.length>0){
                         this.$message.error("请选择材料")
                         return
@@ -1259,12 +1256,12 @@ export default {
                     //进行表格中的数量校验
                     this.StuffList.forEach((item)=>{
 
-                        if(item.number==null||item.number==0){
+                        if(item.number==null||item.number===0){
                             this.$message.error("请填写"+item.stuff.name+"的数量")
-                            flage = true
+                            flag = true
                         }
                     })
-                    if(flage){
+                    if(flag){
 
                         return
                     }
@@ -1272,7 +1269,6 @@ export default {
                      this.chargeDialogVisible=true
                // alert('submit!');
                 } else {
-                console.log('error submit!!');
                 return false;
                 }
             });
@@ -1282,7 +1278,7 @@ export default {
 
         // 进行删除操作
         deleteDrugList(row,index){
-           if(this.activeName=='0'){
+           if(this.activeName==='0'){
             this.DrugList.splice(index,1);
             this.compute(row)
            }else{
@@ -1293,7 +1289,7 @@ export default {
 
         compute(row){
             this.totalAllFee = 0
-           if(this.activeName=='0'){
+           if(this.activeName==='0'){
                this.DrugList.forEach((item)=>{
                 let type = item.type.value.split("_")[0]
 
@@ -1326,7 +1322,6 @@ export default {
            }
            this.totalAllFee = this.totalAllFee.toFixed(2)
            this.practicalTotalAllFee = this.totalAllFee
-           console.log(this.DrugList);
         },
         //获取病人
         getPatient(){
@@ -1391,7 +1386,7 @@ export default {
             },
         // 关于新增患者
         GetPatientInfo(){
-            if(this.activeName == '0'){
+            if(this.activeName === '0'){
                 if(this.bizFormModel.name.id){
                 this.PatientFormModel = this.bizFormModel.name
                 this.bizFormModel = {...this.bizFormModel,...this.PatientFormModel}
@@ -1417,20 +1412,8 @@ export default {
         //初始化获取字典数据
         initOptions(){
              //查询患者性别
-                let gender_search = {
-                    params: [
-                    {
-                        columnName: "dict_type_id",
-                        queryType: "=",
-                        value: "1008489176147648522",
-                    },
-                    ],
-                };
-                // 字段对应表上filter条件
-                gender_search.params.push.apply(gender_search.params, []);
-                this.gender_List.splice(0, this.gender_List.length);
-                listDictItemAll(gender_search).then((responseData) => {
-                    this.gender_List = responseData.data;
+                getDictItemsByCode(DICT_CODE.GENDER).then((data) => {
+                    this.gender_List = data;
                 });
         },
 
@@ -1452,9 +1435,8 @@ export default {
                 ]
             }
               //判断是否输入的是英文
-                var pattern2 = new RegExp("[A-Za-z]+");
+                const pattern2 = new RegExp("[A-Za-z]+");
                 if (pattern2.test(this.SearchDrugInput)) {
-                    // console.log(this.SearchWesternInput,'字符');
                     search.params[1].value =
                     this.SearchDrugInput.toUpperCase();
                     search.params[1].columnName = "drug.pinyin_code";
@@ -1480,7 +1462,7 @@ export default {
                     value:'0',
                     })
                 listAll(search).then((responseData) => {
-                    if (responseData.code == 100) {
+                    if (responseData.code === 100) {
                     this.DrugMedicineTable = responseData.data;
                     }
                 }).catch((error)=>{
@@ -1518,9 +1500,8 @@ export default {
                 },
                 ],
             };
-            var pattern2 = new RegExp("[A-Za-z]+");
+            const pattern2 = new RegExp("[A-Za-z]+");
             if (pattern2.test(this.SearchStuffInput)) {
-                // console.log(this.SearchWesternInput,'字符');
                 SearchModel.params[1].value = this.SearchStuffInput.toUpperCase();
                 SearchModel.params[1].columnName = "stuff.pinyin_code";
             } else {
@@ -1538,8 +1519,7 @@ export default {
                     value: '0',
             })
             listAll(SearchModel).then((responseData) => {
-                if (responseData.code == 100) {
-                    //console.log(responseData.data,'获取材料');
+                if (responseData.code === 100) {
                     this.StuffMedicineTable=responseData.data
                 }
             });
@@ -1547,7 +1527,6 @@ export default {
 
         //药品点击
         RowClickWesternTable(row){
-            console.log(this.DrugList);
             let flag = false
             this.DrugList.forEach((item)=>{
                 if(item.id===row.id){
@@ -1587,7 +1566,7 @@ export default {
     },
     watch:{
         activeName:function(newVal,oldVal){
-            if(newVal=='0'){
+            if(newVal==='0'){
                 this.bizFormModel = this.initPatientModel()
                     this.DrugList=[]
                     this.StuffList = [];

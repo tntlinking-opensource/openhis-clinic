@@ -11,7 +11,7 @@
             </SearchItem>
           </el-col>
           <el-col :span="6">
-            <SearchItem :label="addType == '1'?'药品名称':'材料名称'">
+            <SearchItem :label="addType === '1'?'药品名称':'材料名称'">
               <DrugStuffStorageSelect :type="addType" :supplierId="supplierId"
                 @onMedicinalStorageSelect="onMedicinalStorageSelect"></DrugStuffStorageSelect>
             </SearchItem>
@@ -46,7 +46,7 @@
               </el-table-column>
               <!-- <el-table-column prop="occupyStock" label="占用库存"></el-table-column>-->
 
-              <el-table-column prop="surplusStock" label="可用库存" v-if="thisType==1">
+              <el-table-column prop="surplusStock" label="可用库存" v-if="thisType===1">
                 <template slot-scope="scope">
                   {{parseInt(scope.row.surplusStock/scope.row.drug.preparation)}}
                   <DictItemView type="medicalPackUnit" :dictValue="scope.row.packValue" style="width: 80px;">
@@ -57,7 +57,7 @@
                 </template>
               </el-table-column>
               <el-table-column
-                v-if="addType == 1"
+                v-if="addType === 1"
                 prop="drugTracCodg"
                 label="药品追溯码"
               > <template slot-scope="scope">
@@ -73,10 +73,10 @@
                 </template>
               </el-table-column>
 
-              <el-table-column label="数量" width="250" v-if="thisType==1">
+              <el-table-column label="数量" width="250" v-if="thisType===1">
                 <template slot-scope="scope">
                   <div class="quantity-box  num-color" v-if="parseInt(scope.row.surplusStock/scope.row.drug.preparation) < scope.row.packAmount
-                  || (parseInt(scope.row.surplusStock/scope.row.drug.preparation) == scope.row.packAmount && parseInt(scope.row.surplusStock%scope.row.drug.preparation) < scope.row.preparationAmount)">
+                  || (parseInt(scope.row.surplusStock/scope.row.drug.preparation) === scope.row.packAmount && parseInt(scope.row.surplusStock%scope.row.drug.preparation) < scope.row.preparationAmount)">
                     <el-input v-model="scope.row.packAmount" type="number" @input="onNumInput" min="0" required="true" placeholder="数量">
 
                     </el-input>
@@ -103,7 +103,7 @@
                 </template>
               </el-table-column>
 
-              <el-table-column prop="surplusStock" label="可用库存" v-if="thisType==2">
+              <el-table-column prop="surplusStock" label="可用库存" v-if="thisType===2">
                 <template slot-scope="scope">
                   {{parseInt(scope.row.surplusStock/scope.row.stuff.packNumber)}}
                   <DictItemView type="medicalPackUnit" :dictValue="scope.row.packUnitValue" style="width: 80px;">
@@ -113,7 +113,7 @@
                   </DictItemView>
                 </template>
               </el-table-column>
-              <el-table-column label="数量" width="250" prop="specification" v-if="thisType==2">
+              <el-table-column label="数量" width="250" prop="specification" v-if="thisType===2">
                 <template slot-scope="scope">
                   <div class="quantity-box">
                     <el-input v-model="scope.row.packAmount" type="number" min="0" required="true" placeholder="数量">
@@ -327,7 +327,7 @@
             newVal.forEach((i, ind) => {
               if (
                 parseInt(i.surplusStock/i.drug.preparation) < i.packAmount
-                || (parseInt(i.surplusStock/i.drug.preparation) == i.packAmount && parseInt(i.surplusStock%i.drug.preparation) < i.preparationAmount)
+                || (parseInt(i.surplusStock/i.drug.preparation) === i.packAmount && parseInt(i.surplusStock%i.drug.preparation) < i.preparationAmount)
               ) {
                 i.packAmount = 0
                 i.preparationAmount = 0
@@ -366,7 +366,6 @@
         });
       },
       openDrugDialog(scope) {
-        console.log(scope);
         if ( scope.row.packAmount <= 0 || ! scope.row.packAmount) {
           this.$message.error('请先输入有效的数量与是否拆零！');
           return; // 如果数量无效，停止执行
@@ -425,7 +424,7 @@
       loadSupplierOutbound() {
         let that = this;
         getSupplierOutbound(this.outboundId).then((res) => {
-          if (res.code == 100) {
+          if (res.code === 100) {
             let data = res.data;
             that.otherInfo = {
               id: data.id,
@@ -445,7 +444,7 @@
       loadSupplierOutboundDetail() {
         let that = this;
         listByBoutbound(this.outboundId).then((res) => {
-          if (res.code == 100) {
+          if (res.code === 100) {
             let arr = [];
             let data = res.data;
             for (let i in data) {
@@ -468,7 +467,6 @@
                 let packNumber = parseInt(row.drug.preparation);
                 obj.packAmount = parseInt(row.number / packNumber);
                 obj.preparationAmount = row.number % packNumber;
-                console.log('drug amount',obj,row);
               } else if (row.stuff && row.stuff.id) {
                 obj.factoryName = row.stuff.factory.name;
                 obj.packUnitValue = row.stuff.packUnit.value;
@@ -490,7 +488,6 @@
               obj.surplusStock = row.medicinalStorage.surplusStock;
               arr.push(obj);
             }
-            console.log('storageDetailTable', arr);
             that.storageDetailTable = arr;
           }
         });
@@ -528,7 +525,6 @@
         obj.packName = this.getPackName(row);
         obj.packAmount = 0;
         obj.preparationAmount = 0;
-        console.log('add new', obj,row);
         this.storageDetailTable.push(obj);
       },
 
@@ -549,7 +545,7 @@
           return;
         }
 
-        if (this.storageDetailTable.length == 0) {
+        if (this.storageDetailTable.length === 0) {
           this.$message({
             message: "请录入入库明细信息",
             type: "warning"
@@ -557,8 +553,8 @@
           return;
         }
 
-        var day = new Date();
-        var saveInfo = {
+        const day = new Date();
+        const saveInfo = {
           supplierOutbound: {
             id: this.otherInfo.id,
             method: this.otherInfo.method,
@@ -571,7 +567,7 @@
             },
             code: "",
             breed: this.otherInfo.breed,
-            number: this.stuffPackNum == 0 ? this.otherInfo.totalNumber * this.drugPreparation : this.otherInfo
+            number: this.stuffPackNum === 0 ? this.otherInfo.totalNumber * this.drugPreparation : this.otherInfo
               .totalNumber * this.stuffPackNum,
             allBid: this.otherInfo.allBid,
             allRetailPrice: this.otherInfo.allRetailPrice,
@@ -579,13 +575,12 @@
           },
           supplierOutboundOrderList: [],
         };
-        console.log(this.storageDetailTable, 'lipu');
         this.storageDetailTable.forEach((element) => {
           try {
-            if (element.quantity === "" || element.quantity == 0) {
+            if (element.quantity === "" || element.quantity === 0) {
               throw "数量";
             }
-            var detail = {
+            const detail = {
               company: {
                 // 诊所id
                 id: this.company_id,
@@ -617,7 +612,6 @@
             console.error('格式化出库单明细出错', e);
           }
         });
-        console.log(this.flag, '报错');
         if (this.flag === "数量") {
           this.$message({
             message: "入库数量不可为空",
@@ -626,9 +620,8 @@
           this.flag = "";
           return;
         } else {
-          console.log(saveInfo, '看info');
           saveSupplierOutbound(saveInfo).then((responseData) => {
-            if (responseData.code == 100) {
+            if (responseData.code === 100) {
               this.$message({
                 message: "保存成功",
                 type: "success"
@@ -669,21 +662,21 @@
         this.storageDetailTable.splice(index, 1);
       },
       calcTotalInPrice(row) {
-        var number = this.getNumber(row);
+        const number = this.getNumber(row);
         if (isNaN(number)) return;
-        var inPrice = Number(row.bid);
+        const inPrice = Number(row.bid);
         if (isNaN(inPrice)) return;
-        var result = number * inPrice/row.drug.preparation;
+        const result = number * inPrice/row.drug.preparation;
         row.totalInPrice = result;
         this.calcAllBid()
         return result;
       },
       calcTotalOutPrice(row) {
-        var number = this.getNumber(row);
+        const number = this.getNumber(row);
         if (isNaN(number)) return;
-        var outPrice = Number(row.retailPrice);
+        const outPrice = Number(row.retailPrice);
         if (isNaN(outPrice)) return;
-        var result = number * outPrice/row.drug.preparation;
+        let result = number * outPrice/row.drug.preparation;
         result = result.toFixed(2)
         row.totalOutPrice = result;
         this.calcAllRetailPrice()
@@ -697,10 +690,10 @@
         return 0;
       },
       calcTotalNumber() {
-        var totalNumber = 0;
+        let totalNumber = 0;
         if (this.storageDetailTable) {
           this.storageDetailTable.forEach((element) => {
-            var number = this.getNumber(element); // Number(element.packAmount);
+            const number = this.getNumber(element); // Number(element.packAmount);
             if (isNaN(number)) totalNumber += 0;
             else totalNumber += number;
           });
@@ -718,14 +711,13 @@
         }
 
         let n= parseInt(row.packAmount) * packNumber + parseInt( row.preparationAmount);
-        //console.log('calculate number:',n,row);
         return n;
       },
       calcAllBid() {
-        var allBid = 0;
+        let allBid = 0;
         if (this.storageDetailTable) {
           this.storageDetailTable.forEach((element) => {
-            var number = Number(element.totalInPrice);
+            const number = Number(element.totalInPrice);
             if (isNaN(number)) allBid += 0;
             else allBid += number;
           });
@@ -734,16 +726,14 @@
         return allBid;
       },
       calcAllRetailPrice() {
-        var allRetailPrice = 0;
+        let allRetailPrice = 0;
         if (this.storageDetailTable) {
           this.storageDetailTable.forEach((element) => {
-            var number = Number(element.totalOutPrice);
+            const number = Number(element.totalOutPrice);
             if (isNaN(number)){
               allRetailPrice += 0;
-              console.log("零售价"+allRetailPrice)
             } else {
               allRetailPrice += number;
-              console.log("零售价r"+allRetailPrice)
             }
           });
         }

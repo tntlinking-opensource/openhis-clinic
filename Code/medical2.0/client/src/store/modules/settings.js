@@ -34,29 +34,15 @@ const actions = {
   changeSetting({ commit }, data) {
     commit('CHANGE_SETTING', data)
   },
-  
-  saveSetting({ commit }, personalTheme) {
 
-    return new Promise((resolve, reject) => {
-      savePersonalTheme(personalTheme).then(response => {
-        resolve(response);
-      }).catch(error => {
-        reject(error)
-      })
-    })
+  saveSetting({ commit }, personalTheme) {
+    return savePersonalTheme(personalTheme)
   },
-  
+
   resetSetting({ commit }) {
     const id = getLocalPersonalTheme().id;
     if (id) {
-      return new Promise((resolve, reject) => {
-        let params = { id };
-        deletePersonalTheme(params).then(response => {
-          resolve(response);
-        }).catch(error => {
-          reject(error)
-        })
-      })
+      return deletePersonalTheme({ id })
     }
   }
 }
@@ -74,7 +60,7 @@ const mutations = {
   },
   
   RESET_SETTING(state, data) {
-    state = Object.assign({}, data);
+    Object.assign(state, data);
   },
 }
 

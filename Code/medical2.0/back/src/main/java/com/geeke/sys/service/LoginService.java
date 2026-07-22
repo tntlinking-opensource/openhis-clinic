@@ -33,7 +33,7 @@ public class LoginService extends CrudService<UserDao, User> {
     @Autowired
     private UserDao userDao;
 
-    private Logger logger = LoggerFactory.getLogger(LoginService.class);
+    private static final Logger logger = LoggerFactory.getLogger(LoginService.class);
 
     /*
      * 验证用户名和密码
@@ -109,6 +109,7 @@ public class LoginService extends CrudService<UserDao, User> {
             if(currentUser.isAuthenticated())
             	currentUser.logout();
         } catch (Exception e) {
+            logger.error("退出登录失败", e);
         }
     }
 

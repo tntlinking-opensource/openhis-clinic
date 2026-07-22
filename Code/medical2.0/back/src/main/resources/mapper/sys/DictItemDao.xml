@@ -215,4 +215,16 @@
         WHERE a.name = #{name}
         and a.dict_type_id = #{id}
     </select>
+
+    <!-- 根据字典类型code获取所有字典项 -->
+    <select id="listByDictTypeCode" resultType="com.geeke.sys.entity.DictItem">
+        SELECT
+            <include refid="dictItemColumns"/>
+        FROM sys_dict_item a
+        <include refid="dictItemJoins"/>
+        WHERE dictType.code = #{code}
+          AND a.del_flag = '0'
+          AND dictType.del_flag = '0'
+        ORDER BY a.create_date
+    </select>
 </mapper>

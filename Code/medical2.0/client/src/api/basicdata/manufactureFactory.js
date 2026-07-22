@@ -1,64 +1,21 @@
 import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getManufactureFactoryById = (id) =>
-    request({
-        url: '/basicdata/manufactureFactory/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/basicdata/manufactureFactory')
 
-export const listManufactureFactoryPage = (search) =>
-    request({
-        url: '/basicdata/manufactureFactory/list',
-        method: 'post',
-        data: search
-    })
+// 导出标准CRUD接口（保持向后兼容）
+export const getManufactureFactoryById = baseApi.getById
+export const listManufactureFactoryPage = baseApi.listPage
+export const listManufactureFactoryAll = baseApi.listAll
+export const saveManufactureFactory = baseApi.save
+export const deleteManufactureFactory = baseApi.delete
+export const bulkInsertManufactureFactory = baseApi.bulkInsert
+export const bulkUpdateManufactureFactory = baseApi.bulkUpdate
+export const bulkDeleteManufactureFactory = baseApi.bulkDelete
 
-export const listManufactureFactoryAll = (search) =>
-    request({
-        url: '/basicdata/manufactureFactory/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveManufactureFactory = (manufactureFactory) => 
-    request({
-        url: '/basicdata/manufactureFactory/save',
-        method: 'post',
-        data: manufactureFactory
-    })
-  
-export const deleteManufactureFactory = (manufactureFactory) =>
-    request({
-        url: '/basicdata/manufactureFactory/delete',
-        method: 'post',
-        data: manufactureFactory
-    })
-    
-export const bulkInsertManufactureFactory = (manufactureFactorys) =>
-    request({
-        url: '/basicdata/manufactureFactory/bulkInsert',
-        method: 'post',
-        data: manufactureFactorys
-    })
-    
-export const bulkUpdateManufactureFactory = (manufactureFactorys) =>
-    request({
-        url: '/basicdata/manufactureFactory/bulkUpdate',
-        method: 'post',
-        data: manufactureFactorys
-    })
-
-export const bulkDeleteManufactureFactory = (manufactureFactorys) =>
-    request({
-        url: '/basicdata/manufactureFactory/bulkDelete',
-        method: 'post',
-        data: manufactureFactorys
-    })
-
+// 自定义接口
 export const ureportTest = (id) =>
     request({
         url: '/basicdata/manufactureFactory/bulkDelete',
         method: 'get'
     })
-    

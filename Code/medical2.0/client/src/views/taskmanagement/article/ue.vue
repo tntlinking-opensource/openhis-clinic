@@ -130,7 +130,6 @@ if(editoroption!=null){
 
 }
 this.Quill = new Quill(editor, this.options);
-console.log("富文本组件",this.options);
 
 this.Quill.pasteHTML(this.currentValue)
 this.Quill.on('text-change', (delta, oldDelta, source) => {

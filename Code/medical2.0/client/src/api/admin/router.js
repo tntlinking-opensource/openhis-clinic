@@ -1,25 +1,19 @@
 import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getRouterById = (id) =>
-    request({
-        url: '/admin/router/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/admin/router')
 
-export const listRouterPage = (search) =>
-    request({
-        url: '/admin/router/list',
-        method: 'post',
-        data: search
-    })
+// 导出标准CRUD接口（保持向后兼容）
+export const getRouterById = baseApi.getById
+export const listRouterPage = baseApi.listPage
+export const listRouterAll = baseApi.listAll
+export const saveRouter = baseApi.save
+export const deleteRouter = baseApi.delete
+export const bulkInsertRouter = baseApi.bulkInsert
+export const bulkUpdateRouter = baseApi.bulkUpdate
+export const bulkDeleteRouter = baseApi.bulkDelete
 
-export const listRouterAll = (search) =>
-    request({
-        url: '/admin/router/listAll',
-        method: 'post',
-        data: search
-    })
-
+// 自定义接口
 export const treeRouter = (search) =>
     request({
         url: '/admin/router/tree',
@@ -27,43 +21,8 @@ export const treeRouter = (search) =>
         data: search
     })
 
-export const saveRouter = (router) => 
+export const getUserIndateWarning = (userId) =>
     request({
-        url: '/admin/router/save',
-        method: 'post',
-        data: router
+        url: '/admin/router/getUserIndateWarning/' + userId,
+        method: 'get'
     })
-
-export const deleteRouter = (router) =>
-    request({
-        url: '/admin/router/delete',
-        method: 'post',
-        data: router
-    })
-    
-export const bulkInsertRouter = (routers) =>
-    request({
-        url: '/admin/router/bulkInsert',
-        method: 'post',
-        data: routers
-    })
-    
-export const bulkUpdateRouter = (routers) =>
-    request({
-        url: '/admin/router/bulkUpdate',
-        method: 'post',
-        data: routers
-    })
-
-export const bulkDeleteRouter = (routers) =>
-    request({
-        url: '/admin/router/bulkDelete',
-        method: 'post',
-        data: routers
-    })
-export const getUserIndateWarning = (userId)=>
-    request({
-        url:'/admin/router/getUserIndateWarning/'+userId,
-        method:'get',
-    })
-    

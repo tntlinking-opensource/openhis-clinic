@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 import com.alibaba.fastjson.JSONObject;
 import com.geeke.stock.service.InventoryVerificationDetailService;
+import com.geeke.common.controller.CrudController;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
-import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.ResultUtil;
 import com.geeke.utils.StringUtils;
 
@@ -28,23 +28,22 @@ import javax.servlet.http.HttpServletResponse;
  */
 @RestController
 @RequestMapping(value = "/stock/inventoryVerificationDetail")
-public class InventoryVerificationDetailController extends BaseController {
+public class InventoryVerificationDetailController extends CrudController<InventoryVerificationDetailService, InventoryVerificationDetail> {
 
 	@Autowired
-	private InventoryVerificationDetailService inventoryVerificationDetailService;
+	protected InventoryVerificationDetailService inventoryVerificationDetailService;
 
 	@Autowired
     private DrugService drugService;
 
 	@Autowired
     private StuffService stuffService;
-	
-    @GetMapping("/{id}")
-    public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
-        InventoryVerificationDetail entity = inventoryVerificationDetailService.get(id);
-        return ResponseEntity.ok(ResultUtil.successJson(entity));
-    }
-    
+
+	@Override
+	protected InventoryVerificationDetailService getService() {
+		return inventoryVerificationDetailService;
+	}
+
     @PostMapping(value = "list/{type}")
     public ResponseEntity<JSONObject> listPage(@RequestBody SearchParams searchParams,@PathVariable String type) {
         Page<InventoryVerificationDetail> result = inventoryVerificationDetailService.listPages(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
@@ -63,49 +62,6 @@ public class InventoryVerificationDetailController extends BaseController {
         Page<InventoryVerificationDetail> inventoryVerificationDetailPage = new Page<>(result.getTotal(), rows);
         return ResponseEntity.ok(ResultUtil.successJson(inventoryVerificationDetailPage));
     }
-    
-    @PostMapping(value = "listAll")
-    public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
-        List<InventoryVerificationDetail> result = inventoryVerificationDetailService.listAll(searchParams.getParams(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
-
-    @PostMapping(value = "save")
-    public ResponseEntity<JSONObject> save(@RequestBody InventoryVerificationDetail entity) {
-        String id = inventoryVerificationDetailService.save(entity).getId();
-        return ResponseEntity.ok(ResultUtil.successJson(id));
-    }
-  
-    @PostMapping(value = "delete")
-    public ResponseEntity<JSONObject> delete(@RequestBody InventoryVerificationDetail entity) {
-        int rows = inventoryVerificationDetailService.delete(entity);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
-
-    @PostMapping(value = "bulkInsert")
-    public ResponseEntity<JSONObject> bulkInsert(@RequestBody List<InventoryVerificationDetail> entitys) {
-        List<String> ids = inventoryVerificationDetailService.bulkInsert(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkUpdate")
-    public ResponseEntity<JSONObject> bulkUpdate(@RequestBody List<InventoryVerificationDetail> entitys) {
-        List<String> ids = inventoryVerificationDetailService.bulkUpdate(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkDelete")
-    public ResponseEntity<JSONObject> bulkDelete(@RequestBody List<InventoryVerificationDetail> entitys) {
-        int rows = inventoryVerificationDetailService.bulkDelete(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
-
-
-//    @PostMapping("getInventoryVerificationDetailByInventoryId")
-//    public ResponseEntity<JSONObject> getInventoryVerificationDetailByInventoryId(@RequestBody SearchParams searchParams) {
-//        List<InventoryVerificationDetail> entity = inventoryVerificationDetailService.getInventoryVerificationDetailByInventoryId(searchParams);
-//        return ResponseEntity.ok(ResultUtil.successJson(entity));
-//    }
 
     @PostMapping("saveAll")
     public ResponseEntity<JSONObject> saveAll(@RequestBody List<List<InventoryVerificationDetail>> inventoryVerificationDetailDTOS){

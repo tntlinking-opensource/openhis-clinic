@@ -93,9 +93,9 @@
   
 </div>
 <span slot='footer' class='dialog-footer'>
-      <el-button :disabled="flage" type='primary' :plain='true' @click="save('addtaskForm')">保 存</el-button>
+      <el-button :disabled="flag" type='primary' :plain='true' @click="save('addtaskForm')">保 存</el-button>
   
-      <el-button :disabled="flage" type='primary' :plain='true' @click="submitForm('addtaskForm')">发 布</el-button>
+      <el-button :disabled="flag" type='primary' :plain='true' @click="submitForm('addtaskForm')">发 布</el-button>
       
       <el-button :plain='true' type="primary" @click='onDialogClose()'>取 消</el-button>
     </span> 
@@ -114,8 +114,6 @@
 
 <script>
 import BaseUI from "@/views/components/baseUI";
-import OperationIcon from "@/components/OperationIcon";
-import VDistpicker from 'v-distpicker';
 import {inserttask,getusertree,storageTask} from "@/api/taskmanagement/taskmanagement"
 import UploadFile from '../../components/uploadFile.vue'
 import { getPhotoById,getFiled } from "@/api/sys/sysSeting"
@@ -124,8 +122,6 @@ import { getjglist} from "@/api/toll/tollInfo";
     extends: BaseUI,
   name: "addtask-form",
   components: {
-    OperationIcon,
-    VDistpicker,
     UploadFile
   },  
    props:['closeValue'],
@@ -191,7 +187,7 @@ import { getjglist} from "@/api/toll/tollInfo";
         inspectionCheckInfo:{}
       },     //填写报告封装
       flags:false,
-      flages:false,  //防止重复提交
+      flags:false,  //防止重复提交
       gettaskrcvo: {
           limit: 20,
         offset: 0,
@@ -222,14 +218,13 @@ import { getjglist} from "@/api/toll/tollInfo";
 
       //任务保存
       save(formName){
-           if(this.flages){
+           if(this.flags){
        return
      }
-     this.flages=true
+     this.flags=true
        this.$refs[formName].validate(async (valid) => {
          if(valid){
             let countId ="0"
-      console.log(this.bizFormModel.fileIdFile,'萨拉时间分厘卡');
        if(this.bizFormModel.fileIdFile.length>0){
          for(let item of this.bizFormModel.fileIdFile){
          //this.bizFormModel.fileIdFile.forEach( item=>{
@@ -255,21 +250,19 @@ import { getjglist} from "@/api/toll/tollInfo";
         userHeaderFile.append("countId",countId);
       // this.$refs[formName].validate((valid) => {
          //  if (valid) {
-             console.info("时间"+this.ruleForm.taskdeadline)
            await  storageTask(userHeaderFile).then((responseData)=>{
-               if(responseData.code == 100){
+               if(responseData.code === 100){
                  countId = responseData.data.id
-                 console.info("添加成功")
                }else {
                  this.$message.error("执行失败！")
                   
-                 this.flages=false
+                 this.flags=false
                  return;
                }
              })
           //  }else{
           //    console.log("失败");
-          //    this.flages=false
+          //    this.flags=false
           //  }
          //})
          }
@@ -283,7 +276,7 @@ import { getjglist} from "@/api/toll/tollInfo";
                 taskregion:[],
              };
             this.$message.success("执行成功！")
-            this.flages=false
+            this.flags=false
             this.onDialogClose();
         //})
        }else{
@@ -308,10 +301,9 @@ import { getjglist} from "@/api/toll/tollInfo";
         userHeaderFile.append("countId",countId);
        // this.$refs[formName].validate((valid) => {
          //  if (valid) {
-             console.info("时间"+this.ruleForm.taskdeadline)
             //  this.ruleForm.taskinitiator=currentUser.id;
              storageTask(userHeaderFile).then((responseData)=>{
-               if(responseData.code == 100){
+               if(responseData.code === 100){
                  this.ruleForm= {
                     tasktype:0,
                     taskname:'',
@@ -321,14 +313,13 @@ import { getjglist} from "@/api/toll/tollInfo";
                     taskdeadline:'',
                     taskregion:[],
                           };
-                 this.flages=false
+                 this.flags=false
                  this.onDialogClose();
-                 console.info("添加成功")
                }
              })
           //  }else{
           //    console.log("失败");
-          //    this.flages=false
+          //    this.flags=false
           //  }
         // })
        }
@@ -359,10 +350,8 @@ import { getjglist} from "@/api/toll/tollInfo";
     },
     //附件上传
     handleRemove(file, fileList) {
-        console.log(file, fileList);
       },
       handlePreview(file) {
-        console.log(file);
       },
       handleExceed(files, fileList) {
         this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
@@ -372,14 +361,13 @@ import { getjglist} from "@/api/toll/tollInfo";
       },
       submitForm(formName){
        
-        if(this.flages){
+        if(this.flags){
        return
      }
-     this.flages=true
+     this.flags=true
      this.$refs[formName].validate( async (valid) => {
        if(valid){
          let countId = "0"
-          console.log(this.bizFormModel.fileIdFile,'萨拉时间分厘卡');
        if(this.bizFormModel.fileIdFile.length>0){
          for(let item of this.bizFormModel.fileIdFile){
        // this.bizFormModel.fileIdFile.forEach(item=>{
@@ -405,13 +393,12 @@ import { getjglist} from "@/api/toll/tollInfo";
         userHeaderFile.append("countId",countId);
        // this.$refs[formName].validate((valid) => {
          //  if (valid) {
-             console.info("时间"+this.ruleForm.taskdeadline)
             //  this.ruleForm.taskinitiator=currentUser.id;
             await inserttask(userHeaderFile).then((responseData)=>{
-               if(responseData.code == 100){
+               if(responseData.code === 100){
                  countId = responseData.data.id
                }else{
-                this.flages=false
+                this.flags=false
                 this.$message.error("执行失败！")
                 return;
                }
@@ -419,7 +406,7 @@ import { getjglist} from "@/api/toll/tollInfo";
 
           //  }else{
           //    console.log("失败");
-          //    this.flages=false
+          //    this.flags=false
           //  }
        //  })
        // })
@@ -434,7 +421,7 @@ import { getjglist} from "@/api/toll/tollInfo";
                 taskregion:[],
             };
             this.$message.success("执行成功！")
-            this.flages=false
+            this.flags=false
             this.onDialogClose();
 
        }else{
@@ -459,10 +446,9 @@ import { getjglist} from "@/api/toll/tollInfo";
         userHeaderFile.append("countId",countId);
        // this.$refs[formName].validate((valid) => {
           // if (valid) {
-             console.info("时间"+this.ruleForm.taskdeadline)
             //  this.ruleForm.taskinitiator=currentUser.id;
              inserttask(userHeaderFile).then((responseData)=>{
-               if(responseData.code == 100){
+               if(responseData.code === 100){
                  this.ruleForm= {
           tasktype:'0',
           taskname:'',
@@ -472,14 +458,13 @@ import { getjglist} from "@/api/toll/tollInfo";
           taskdeadline:'',
           taskregion:[],
                  };
-                 this.flages=false
+                 this.flags=false
                  this.onDialogClose();
-                 console.info("添加成功")
                }
              })
           //  }else{
           //    console.log("失败");
-          //    this.flages=false
+          //    this.flags=false
           //  }
          //})
        }
@@ -490,7 +475,6 @@ import { getjglist} from "@/api/toll/tollInfo";
       },
 
        getFileList(fileList){
-      console.log(fileList,'撒娇发生了警方破案就');
       this.bizFormModel.fileIdFile=[]
       this.bizFormModel.uploadFile=[]
       this.bizFormModel.uploadFile=fileList
@@ -498,29 +482,25 @@ import { getjglist} from "@/api/toll/tollInfo";
        this.bizFormModel.fileIdFile.push(fileList[i].raw)
       }
      
-      console.log(this.bizFormModel.uploadFile,'撒娇发生了警方破案就');
-      console.log(this.bizFormModel.fileIdFile,'按法律框架老咔叽分类');
     },
     deleteFile(fileIds){
       this.fileIds.push(fileIds)
-      console.log(this.fileIds,'删除看');
     },
     Getusertreedata(){
       getusertree(this.gettaskrcvo).then((responseData)=>{
-        if(responseData.code == 100 ){
+        if(responseData.code === 100 ){
           this.ruleForm.taskregion=responseData.data;
-          console.info("执行人数据：" + responseData.data);
         }
       })
     },
     Getcliniclist(type){
           this.jglist=[];
           getjglist(this.YpjxcRc).then((responseData)=>{
-              if (responseData.code == 100){
+              if (responseData.code === 100){
                   if(responseData.data.length>0){
                      this.zsids='';
                       responseData.data.forEach((item)=>{
-                          if(item.jgid!=currentUser.company.id){
+                          if(item.jgid!==currentUser.company.id){
                           this.jglist.push({
                               jgid:item.jgid,
                               jgmc:item.jgmc,
@@ -530,10 +510,9 @@ import { getjglist} from "@/api/toll/tollInfo";
                       })
                      
                   }
-                  if(type==2){
+                  if(type===2){
                        this.jgiddatalist = []
-                        console.log(this.jglist);
-                        if(this.jglist.length==this.taskRow.taskexecutors.length){
+                        if(this.jglist.length===this.taskRow.taskexecutors.length){
                           this.jgiddatalist.push("qb")
                         }else{
                           this.taskRow.taskexecutors.forEach((item)=>{
@@ -546,7 +525,6 @@ import { getjglist} from "@/api/toll/tollInfo";
           })
       },
       hideOther() {
-        console.info("of"+this.jgiddatalist.indexOf('qb'))
       // 数组的indexOf方法，会返回当前值在数组中的下标，没有则为-1
       if (this.jgiddatalist.indexOf('qb') === -1 ) {
         this.jglist.map((item) => {
@@ -561,7 +539,7 @@ import { getjglist} from "@/api/toll/tollInfo";
         this.jgiddatalist = ['qb']
        }
       
-      if(this.jgiddatalist=="qb"){
+      if(this.jgiddatalist==="qb"){
 this.ruleForm.taskregion=[];
         this.jglist.forEach((item2)=>{
          this.ruleForm.taskregion.push(item2.jgid)
@@ -571,7 +549,6 @@ this.ruleForm.taskregion=[];
         this.ruleForm.taskregion=[];
         this.ruleForm.taskregion=this.jgiddatalist;
       }
-      console.info("全部"+this.jgiddatalist)
     },
       init(){
         this.ruleForm = {
@@ -586,92 +563,75 @@ this.ruleForm.taskregion=[];
         this.jgiddatalist=[]
         this.taskRow=null
       },
-    },
-     mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openAddworkbenchDialog', function(types) {
-        let titles="";
-         this.uploadFiles = ""
-         this.uploads=[]
-        this.bizFormModel={
-          fileIdFile:[],   //文件
-          uploadFile:[],  //文件
-          inspectionCheckInfo:{}
+      openAddworkbenchDialog(types) {
+        let titles = "";
+        this.uploadFiles = ""
+        this.uploads = []
+        this.bizFormModel = {
+          fileIdFile: [],
+          uploadFile: [],
+          inspectionCheckInfo: {}
         }
         this.init()
         this.flags = false
-        this.flages=false
-        if(types==""){titles="新增"}else if(types!=""){titles="修改"}else{titles=""};
-        if(types!="" && types!=null){
+        this.flags = false
+        if (types === "") { titles = "新增" } else if (types !== "") { titles = "修改" } else { titles = "" };
+        if (types !== "" && types != null) {
           this.Getselectmbbm(types);
-        }
-        else{
-          this.mblx="0",
-          this.bllx="0",
-          this.formLabelAlign= {
-          
-        };
+        } else {
+          this.mblx = "0",
+          this.bllx = "0",
+          this.formLabelAlign = {};
         }
         this.Getcliniclist(1)
         this.dialogProps.action = 'add'
         this.dialogProps.title = '新增任务信息'
         this.tabIndex = '1'
         this.dialogProps.visible = true
-        this.province=''
-        this.city=''
-        this.area=''
-      })
-      this.$on('openUpdateworkbenchDialog',function(row){
+        this.province = ''
+        this.city = ''
+        this.area = ''
+      },
+      openUpdateworkbenchDialog(row) {
         this.uploadFiles = ""
-         let titles="";
-         this.taskRow = row
-          this.fileIds=[]
-          this.bizFormModel={
-          fileIdFile:[],   //文件
-          uploadFile:[],  //文件
-          inspectionCheckInfo:{}
+        let titles = "";
+        this.taskRow = row
+        this.fileIds = []
+        this.bizFormModel = {
+          fileIdFile: [],
+          uploadFile: [],
+          inspectionCheckInfo: {}
         }
-        this.uploads=[]
+        this.uploads = []
         this.flags = false
-        this.flages = false
-        
-        if(row==""){titles="新增"}else if(row!=""){titles="修改"}else{titles=""};
-        if(row!="" && row!=null){
-          //this.Getselectmbbm(row);
-        }
-        else{
-          this.mblx="0",
-          this.bllx="0",
-          this.formLabelAlign= {
-          
-        };
+        this.flags = false
+        if (row === "") { titles = "新增" } else if (row !== "") { titles = "修改" } else { titles = "" };
+        if (row !== "" && row != null) {
+        } else {
+          this.mblx = "0",
+          this.bllx = "0",
+          this.formLabelAlign = {};
         }
         this.Getcliniclist(2)
         let arr = []
-        row.taskexecutors.forEach((item)=>{
-            arr.push(item.id)
+        row.taskexecutors.forEach((item) => {
+          arr.push(item.id)
         })
-        console.log(row.taskexecutors);
         this.ruleForm = {
-          tasktype:row.tasktype,
-          taskname:row.taskname,
-          taskdescribe:row.taskdescribe,
-          taskaccessory:row.taskaccessory,
-          taskinitiator:row.taskinitiatorname,
-          taskdeadline:row.taskdeadline,
-          taskregion:arr,
+          tasktype: row.tasktype,
+          taskname: row.taskname,
+          taskdescribe: row.taskdescribe,
+          taskaccessory: row.taskaccessory,
+          taskinitiator: row.taskinitiatorname,
+          taskdeadline: row.taskdeadline,
+          taskregion: arr,
         }
-       
-        //this.jgiddatalist.push("qb")
-       
         this.dialogProps.action = 'update'
         this.dialogProps.title = '修改任务信息'
         this.tabIndex = '1'
         this.dialogProps.visible = true
-       
-      })
-    });
-    ;
+      },
+    },
   }
-  }
+</script>
 </script>

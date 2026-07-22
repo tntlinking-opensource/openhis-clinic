@@ -12,7 +12,7 @@
     },
     watch: {
       existDataView(val, oldValue) {
-        if( val != oldValue && val ) {
+        if( val !== oldValue && val ) {
           this.reportView = () => import('./Report')
         }
       }

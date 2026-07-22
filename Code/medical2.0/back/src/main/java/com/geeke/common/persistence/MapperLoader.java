@@ -25,6 +25,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.util.ClassUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 /**
@@ -34,6 +36,8 @@ import org.springframework.util.StringUtils;
 //@Service
 //@Lazy(false)
 public class MapperLoader implements DisposableBean, InitializingBean, ApplicationContextAware {
+
+	private static final Logger logger = LoggerFactory.getLogger(MapperLoader.class);
 
 	private ConfigurableApplicationContext context = null;
 	private transient String basePackage = null;
@@ -65,7 +69,7 @@ public class MapperLoader implements DisposableBean, InitializingBean, Applicati
 			service.scheduleAtFixedRate(new Task(), 5, 5, TimeUnit.SECONDS);
 
 		} catch (Exception e1) {
-			e1.printStackTrace();
+			logger.error("MapperLoader初始化失败", e1);
 		}
 
 	}
@@ -75,12 +79,12 @@ public class MapperLoader implements DisposableBean, InitializingBean, Applicati
 		public void run() {
 			try {
 				if (scanner.isChanged()) {
-					System.out.println("*Mapper.xml文件改变,重新加载.");
+					logger.info("*Mapper.xml文件改变,重新加载.");
 					scanner.reloadXML();
-					System.out.println("加载完毕.");
+					logger.info("加载完毕.");
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("Mapper.xml重新加载失败", e);
 			}
 		}
 

@@ -2,6 +2,7 @@ package com.geeke.hosdata.service;
 
 
 import com.alibaba.fastjson.JSONObject;
+import com.geeke.common.constants.BizConstants;
 import com.geeke.common.service.CrudService;
 import com.geeke.hosdata.dao.HisDrugDao;
 import com.geeke.hosdata.entity.DistDto;
@@ -12,7 +13,6 @@ import com.geeke.stock.service.MedicinalStockControlService;
 import com.geeke.sys.utils.SessionUtils;
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -33,10 +33,10 @@ public class HisDrugService  extends CrudService<HisDrugDao, HisDrugs> {
     @Override
     public List<String> bulkInsert(List<HisDrugs> entitys) {
         //院版诊所对应关系/
-        Map<String, String> typeMap = getTypeMap("1004078055755374603");
-        Map<String, String> dosMap = getTypeMap("1004406758192578588");
-        Map<String, String> preMap = getTypeMap("1004406758192578593");
-        Map<String, String> packMap = getTypeMap("1004406758192578597");
+        Map<String, String> typeMap = getTypeMap(BizConstants.DICT_TYPE_DRUG_TYPE);
+        Map<String, String> dosMap = getTypeMap(BizConstants.DICT_TYPE_DOSAGE_UNIT);
+        Map<String, String> preMap = getTypeMap(BizConstants.DICT_TYPE_PREPARATION_UNIT);
+        Map<String, String> packMap = getTypeMap(BizConstants.DICT_TYPE_PACK_SPEC);
         JSONObject userObj = SessionUtils.getUserJson();
         List<String> ids = Lists.newArrayList();
         for(HisDrugs entity: entitys) {

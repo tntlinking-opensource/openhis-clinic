@@ -1,7 +1,7 @@
 package com.geeke.sys.controller;
 
 import com.alibaba.fastjson.JSONObject;
-import com.geeke.common.controller.SearchParams;
+import com.geeke.common.controller.CrudController;
 import com.geeke.sys.entity.SysFile;
 import com.geeke.sys.entity.SysFileContent;
 import com.geeke.sys.entity.SysSeting;
@@ -22,7 +22,6 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -33,10 +32,10 @@ import java.util.Locale;
  */
 @RestController
 @RequestMapping(value = "/sys/sysSeting")
-public class SysSetingController extends BaseController {
+public class SysSetingController extends CrudController<SysSetingService, SysSeting> {
 
     @Autowired
-    private SysSetingService sysSetingService;
+    protected SysSetingService sysSetingService;
 
     @Autowired
     private SysFileService sysFileService;
@@ -44,23 +43,16 @@ public class SysSetingController extends BaseController {
     @Autowired
     private SysFileContentService sysFileContentService;
 
-    @PostMapping(value = "listAll")
-    public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
-        List<SysSeting> result = sysSetingService.listAll(searchParams.getParams(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
+    @Override
+    protected SysSetingService getService() {
+        return sysSetingService;
     }
 
-    @PostMapping(value = "save")
-    public ResponseEntity<JSONObject> save(@RequestParam("sysSeting") String sysSeting, @RequestParam("attachments") MultipartFile[] files) {
+    @PostMapping(value = "saveWithFile")
+    public ResponseEntity<JSONObject> saveWithFile(@RequestParam("sysSeting") String sysSeting, @RequestParam("attachments") MultipartFile[] files) {
         SysSeting entity = JSONObject.parseObject(sysSeting, SysSeting.class);
         String id = sysSetingService.save(entity, files).getId();
         return ResponseEntity.ok(ResultUtil.successJson(id));
-    }
-
-    @PostMapping(value = "delete")
-    public ResponseEntity<JSONObject> delete(@RequestBody SysSeting entity) {
-        int rows = sysSetingService.delete(entity);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
     }
 
     /**
@@ -136,7 +128,7 @@ public class SysSetingController extends BaseController {
 
                 os.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("文件输出失败", e);
             }
         }
     }
@@ -176,7 +168,7 @@ public class SysSetingController extends BaseController {
 
             os.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("文件输出失败", e);
         }
 
     }

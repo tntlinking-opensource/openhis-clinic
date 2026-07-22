@@ -1,58 +1,12 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getPatientById = (id) =>
-    request({
-        url: '/outpatient/patient/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/outpatient/patient')
 
-export const listPatientPage = (search) =>
-    request({
-        url: '/outpatient/patient/list',
-        method: 'post',
-        data: search
-    })
-
-export const listPatientAll = (search) =>
-    request({
-        url: '/outpatient/patient/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const savePatient = (patient) => 
-    request({
-        url: '/outpatient/patient/save',
-        method: 'post',
-        data: patient
-    })
-  
-export const deletePatient = (patient) =>
-    request({
-        url: '/outpatient/patient/delete',
-        method: 'post',
-        data: patient
-    })
-    
-export const bulkInsertPatient = (patients) =>
-    request({
-        url: '/outpatient/patient/bulkInsert',
-        method: 'post',
-        data: patients
-    })
-    
-export const bulkUpdatePatient = (patients) =>
-    request({
-        url: '/outpatient/patient/bulkUpdate',
-        method: 'post',
-        data: patients
-    })
-
-export const bulkDeletePatient = (patients) =>
-    request({
-        url: '/outpatient/patient/bulkDelete',
-        method: 'post',
-        data: patients
-    })
-    
+export const getPatientById = baseApi.getById
+export const listPatientPage = baseApi.listPage
+export const listPatientAll = baseApi.listAll
+export const savePatient = baseApi.save
+export const deletePatient = baseApi.delete
+export const bulkInsertPatient = baseApi.bulkInsert
+export const bulkUpdatePatient = baseApi.bulkUpdate
+export const bulkDeletePatient = baseApi.bulkDelete

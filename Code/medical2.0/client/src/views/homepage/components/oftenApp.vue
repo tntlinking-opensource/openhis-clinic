@@ -108,7 +108,7 @@ export default {
       this.routers().then(result => {
         this.isCardLoading = false
         result.forEach((item, index) => {
-          if (!item.code && item.parentId == 0) {
+          if (!item.code && (item.parentId === '0' || item.parentId === '')) {
             this.appLists.push(item)
           }
         })
@@ -126,7 +126,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .index-module-card.el-card /deep/ .el-card__header {
+  .index-module-card.el-card ::v-deep .el-card__header {
     padding: 10px 16px!important;
     .card-close, .card-setting {
       float: right;
@@ -159,28 +159,28 @@ export default {
       .app-name {
         color: var(--active-color)!important;
       }
-      /deep/ .icon {
+      ::v-deep .icon {
         font-size: 18px;
       }
-      /deep/ .l-t {
+      ::v-deep .l-t {
         left: -6px!important;
         top: -6px!important;
       }
-      /deep/ .r-t {
+      ::v-deep .r-t {
         right: -6px!important;
         top: -6px!important;
       }
-      /deep/ .l-b {
+      ::v-deep .l-b {
         left: -6px!important;
         bottom: -6px!important;
       }
-      /deep/ .r-b {
+      ::v-deep .r-b {
         right: -6px!important;
         bottom: -6px!important;
       }
     }
   }
-  /deep/ .el-carousel__indicators--outside button {
+  ::v-deep .el-carousel__indicators--outside button {
     background-color: var(--active-color)!important;
   }
   .no-data {

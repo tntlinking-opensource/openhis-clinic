@@ -5,11 +5,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.geeke.common.service.CrudService;
-import com.geeke.config.exception.CommonJsonException;
+import com.geeke.common.service.ServiceException;
 import com.geeke.sys.dao.CompanyCodeRuleDao;
 import com.geeke.sys.entity.CompanyCodeRule;
-import com.geeke.utils.ResultUtil;
-import com.geeke.utils.constants.ErrorEnum;
+
+
 import com.google.common.collect.Maps;
 
 /**
@@ -32,7 +32,7 @@ public class CompanyCodeRuleService extends CrudService<CompanyCodeRuleDao, Comp
         colMaps.put("code", "code");
         
         if(exists(dao, companyCodeRule, colMaps)) {
-            throw new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, "已存在相同的数据(公司,编码)"));
+            throw new ServiceException("已存在相同的数据(公司,编码)");
         }
 
         CompanyCodeRule companyCodeRuleTemp = super.save(companyCodeRule);

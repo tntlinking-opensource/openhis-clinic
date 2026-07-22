@@ -1,58 +1,13 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getGenSchemeById = (id) =>
-    request({
-        url: '/gen/genScheme/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/gen/genScheme')
 
-export const listGenSchemePage = (search) =>
-    request({
-        url: '/gen/genScheme/list',
-        method: 'post',
-        data: search
-    })
-
-export const listGenSchemeAll = (search) =>
-    request({
-        url: '/gen/genScheme/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveGenScheme = (genScheme) => 
-    request({
-        url: '/gen/genScheme/save',
-        method: 'post',
-        data: genScheme
-    })
-
-export const deleteGenScheme = (genScheme) =>
-    request({
-        url: '/gen/genScheme/delete',
-        method: 'post',
-        data: genScheme
-    })
-    
-export const bulkInsertGenScheme = (genSchemes) =>
-    request({
-        url: '/gen/genScheme/bulkInsert',
-        method: 'post',
-        data: genSchemes
-    })
-    
-export const bulkUpdateGenScheme = (genSchemes) =>
-    request({
-        url: '/gen/genScheme/bulkUpdate',
-        method: 'post',
-        data: genSchemes
-    })
-
-export const bulkDeleteGenScheme = (genSchemes) =>
-    request({
-        url: '/gen/genScheme/bulkDelete',
-        method: 'post',
-        data: genSchemes
-    })
-    
+// 导出标准CRUD接口（保持向后兼容）
+export const getGenSchemeById = baseApi.getById
+export const listGenSchemePage = baseApi.listPage
+export const listGenSchemeAll = baseApi.listAll
+export const saveGenScheme = baseApi.save
+export const deleteGenScheme = baseApi.delete
+export const bulkInsertGenScheme = baseApi.bulkInsert
+export const bulkUpdateGenScheme = baseApi.bulkUpdate
+export const bulkDeleteGenScheme = baseApi.bulkDelete

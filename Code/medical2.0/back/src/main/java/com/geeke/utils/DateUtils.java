@@ -253,7 +253,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static double getDistanceMonths(Date before, Date after) {
-		// TODO
         double month = 0;
 		// 获取开始时间当月的最后一天
 		Date endDay = getEndDayOfMonth(before);
@@ -296,7 +295,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static double getDistanceMonths(Calendar before, Calendar after) {
-		// TODO
 		return getDistanceMonths(before.getTime(), after.getTime());
 	}
 
@@ -308,7 +306,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static double getDistanceYears(Date before, Date after) {
-		// TODO
 		double year = 0;
 		// 获取开始时间当年的最后一天
 		Date endDay = getEndDayOfYear(before);
@@ -356,7 +353,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static double getDistanceYears(Calendar before, Calendar after) {
-		// TODO
 		return getDistanceYears(before.getTime(), after.getTime());
 	}
 
@@ -397,7 +393,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static Date getZeroTimeOfDate(Date date) {
-		// TODO
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		setMinTimeOfDay(calendar);
@@ -411,7 +406,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static Date getZeroTimeOfDate(Calendar calendar) {
-		// TODO
 		return getZeroTimeOfDate(calendar.getTime());
 	}
 	
@@ -422,7 +416,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static Date getEndTimeOfDate(Date date) {
-		// TODO
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		setMaxTimeOfDay(calendar);
@@ -436,7 +429,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static Date getEndTimeOfDate(Calendar calendar) {
-		// TODO
 		return getEndTimeOfDate(calendar.getTime());
 	}
 	
@@ -447,7 +439,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static Date getStartDayOfMonth(Date date) {
-		// TODO
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		calendar.set(calendar.get(Calendar.YEAR),calendar.get(Calendar.MONTH),1);
@@ -462,7 +453,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static Date getStartDayOfMonth(Calendar calendar) {
-		// TODO
 		return getStartDayOfMonth(calendar.getTime());
 	}
 
@@ -473,7 +463,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static Date getEndDayOfMonth(Date date) {
-		// TODO
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		int maxMonthDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
@@ -489,7 +478,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static Date getEndDayOfMonth(Calendar calendar) {
-		// TODO
 		return getEndDayOfMonth(calendar.getTime());
 	}
 
@@ -500,7 +488,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static Date getStartDayOfNextMonth(Date date) {
-		// TODO
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		calendar.set(Calendar.DAY_OF_MONTH,1);
@@ -516,7 +503,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static Date getStartDayOfNextMonth(Calendar calendar) {
-		// TODO
 		return getStartDayOfNextMonth(calendar.getTime());
 	}
 
@@ -543,7 +529,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static Date getEndDayOfPreviousMonth(Calendar calendar) {
-		// TODO
 		return getEndDayOfPreviousMonth(calendar.getTime());
 	}
 
@@ -597,7 +582,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static Date getStartDayOfYear(Date date) {
-		// TODO
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		// 注意月份要减1
@@ -612,7 +596,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static Date getStartDayOfYear(Calendar calendar) {
-		// TODO
 		return getStartDayOfYear(calendar.getTime());
 	}
 	
@@ -623,7 +606,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static Date getEndDayOfYear(Date date) {
-		// TODO
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 		// 注意月份要减1
@@ -639,7 +621,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * @return
 	 */
 	public static Date getEndDayOfYear(Calendar calendar) {
-		// TODO
 		return getEndDayOfYear(calendar.getTime());
 	}
 	
@@ -757,26 +738,4 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 		calendar.set(Calendar.MILLISECOND, 999);
 	}
 		
-	/**
-	 * @param args
-	 * @throws ParseException
-	 */
-	public static void main(String[] args) throws ParseException {
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-		String time1 = "2012-12-28 00:00:00.000";
-		String time2 = "2013-01-01 23:59:59.999";
-		Date date = format.parse(time1);
-		Date date2 = format.parse(time2);
-		Calendar cal1 = Calendar.getInstance();
-		cal1.setTime(date);
-		Calendar cal2 = Calendar.getInstance();
-		cal2.setTime(date2);
-		// double distanceDays = getDistanceDays(date, date2);
-		//getDistanceMonths(date, date2);
-		//getDistanceYears(cal1, cal2);
-//		System.out.println(formatDate(parseDate("2010/3/6")));
-//		System.out.println(getDate("yyyy年MM月dd日 E"));
-//		long time = new Date().getTime()-parseDate("2012-11-19").getTime();
-//		System.out.println(time/(24*60*60*1000));
-	}
 }

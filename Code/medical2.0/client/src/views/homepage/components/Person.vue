@@ -47,7 +47,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .index-module-card.el-card /deep/ .el-card__header {
+  .index-module-card.el-card ::v-deep .el-card__header {
     padding: 10px 16px!important;
     .card-close, .card-setting {
       float: right;

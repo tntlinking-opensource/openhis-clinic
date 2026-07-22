@@ -3,7 +3,7 @@
     <!-- 历史记录  -->
     <History :bussObject='curentRow' ></History>
     <!-- 编辑窗口  -->
-    <genTable-form ref='genTableForm' :permission='permission' v-on:save-finished='getGenTableList()'></genTable-form>
+    <genTable-form ref='genTableForm' :permission='permission' @save-finished='loadData'></genTable-form>
     <div class="page-container">
       <!--  搜索栏  开始 -->
       <div class='query-form-container'>
@@ -36,7 +36,7 @@
       <div class="page-container-header-end">
         <div>
           <el-button type='primary'   :plain='true' @click='checkFile'>导入</el-button>
-          <el-button v-show='permission.add' type='primary' icon='el-icon-plus'  @click='onCreateGenTable()'>添加</el-button>
+          <el-button v-show='permission.add' type='primary' icon='el-icon-plus'  @click='onCreateEntity("genTableForm")'>添加</el-button>
           <input type="file" id="fileinput" style="display: none;" @change="uploadExcel"/>
         </div>
       </div>
@@ -48,8 +48,8 @@
             <el-table class='drag_table' :data='genTableList' border @sort-change='onSortChange' @header-dragend='onChangeWidth' :cell-class-name='cellClassName' :header-cell-class-name='headerCellClassName' highlight-current-row>
               <el-table-column v-for="(cv, index) in columnViews" v-if='cv.display' :prop='cv.prop' :key="`columnViews_${index}`" :label='cv.label' sortable='custom' :align='cv.align' :min-width='cv.miniWidth+"px"' :width='cv.width+"px"' header-align='center' :column-key='index.toString()' :render-header="renderHeader">
                 <template slot-scope='{row,$index}'>
-                  <span v-if='columnViews[index].showType == "Switch" || columnViews[index].showType == "Checkbox" || columnViews[index].showType == "Radio"'>
-                    <li v-if='getAttrValue(row, columnViews[index].prop) == "1"' class='el-icon-check' style='color:#F56C6C;'></li>
+                  <span v-if='columnViews[index].showType === "Switch" || columnViews[index].showType === "Checkbox" || columnViews[index].showType === "Radio"'>
+                    <li v-if='getAttrValue(row, columnViews[index].prop) === "1"' class='el-icon-check' style='color:#F56C6C;'></li>
                   </span>
                   <span v-else>{{ getAttrValue(row, columnViews[index].prop, columnViews[index].javaType)}}</span>
                 </template>
@@ -63,13 +63,13 @@
                 </template>
                 <template slot-scope='scope'>
                   <OperationIcon v-show='permission.view' type='info' content='查看' placement='top-start' icon-name='el-icon-view'
-                    @click='onViewGenTable(scope.$index, scope.row)'></OperationIcon>
+                    @click='onViewEntity(scope.$index, scope.row, "genTableForm")'></OperationIcon>
                   <OperationIcon v-show='permission.edit' type='primary' content='编辑' placement='top-start' icon-name='el-icon-edit'
-                    @click='onEditGenTable(scope.$index, scope.row)'></OperationIcon>
+                    @click='onEditEntity(scope.$index, scope.row, "genTableForm")'></OperationIcon>
                   <OperationIcon v-show='permission.add' type='primary' content='复制' placement='top-start' icon-name='el-icon-document'
-                    @click='onCopyGenTable(scope.$index, scope.row)'></OperationIcon>
+                    @click='onCopyEntity(scope.$index, scope.row, "genTableForm")'></OperationIcon>
                   <OperationIcon v-show='permission.remove' type='danger' content='删除' placement='top-start' icon-name='el-icon-delete'
-                    @click='onDeleteGenTable(scope.$index, scope.row)'></OperationIcon>
+                    @click='onDeleteEntity(scope.$index, scope.row, deleteApi)'></OperationIcon>
                   <OperationIcon v-show='permission.view' type='info' content='历史记录' placement='top-start' icon-name='el-icon-info'
                     @click='onShowHistory(scope.$index, scope.row)'></OperationIcon>
                   <OperationIcon type='info' content='导出' placement='top-start' icon-name='el-icon-download'
@@ -102,10 +102,9 @@
 </template>
 
 <script>
-  import FileSaver from 'file-saver'
-import { validatenull } from '@/utils/validate'
-import { listGenTablePage, getGenTableById, deleteGenTable,exportExcelById ,saveGenTable, importGenTable} from '@/api/gen/genTable'
-import { listResourcePermission } from '@/api/admin/common/permission'
+import FileSaver from 'file-saver'
+import { listGenTablePage, getGenTableById, deleteGenTable, importGenTable } from '@/api/gen/genTable'
+import listViewMixin from '@/mixins/listViewMixin'
 import GenTableForm from './genTableForm'
 import ExportExcelButton from '@/components/ExportExcelButton'
 import ViewColumnsSelect from '@/views/components/ViewColumnsSelect'
@@ -115,6 +114,7 @@ import OperationIcon from '@/components/OperationIcon'
 import History from '@/views/components/history'
 export default {
   extends: MainUI,
+  mixins: [listViewMixin],
   components: {
     GenTableForm,
     ExportExcelButton,
@@ -125,30 +125,19 @@ export default {
   },
   data() {
     return {
-      permission: {
-        view: false,
-        add: false,
-        edit: false,
-        remove: false,
-        export: false
-      },
+      listApi: listGenTablePage,
+      getApi: getGenTableById,
+      deleteApi: deleteGenTable,
+      entityName: 'GenTable',
+      permissionPrefix: 'genTable',
       queryTypes: {
         'name': 'like',
       },
       queryModel: {
         'name': '',   // 名称
       },
-      search: {
-        params: [],
-        offset: 0,
-        limit: 10,
-        columnName: '',       // 排序字段名
-        order: ''             // 排序
-      },
-      currentPage: 1,
       genTableTotal: 0,
       genTableList: [],
-
 
       oprColumnWidth: 165,  // 操作列宽
       tableId: '4001',
@@ -156,155 +145,56 @@ export default {
     }
   },
   methods: {
-    checkFile() {
-      document.querySelector('#fileinput').click()
-    },
-
-    uploadExcel(evt){
-      const files = evt.target.files;
-      if(files==null || files.length==0){
-        alert("No files wait for import");
-        return;
-      }
-
-      let name = files[0].name;
-      let suffixArr = name.split("."), suffix = suffixArr[suffixArr.length-1];
-      if(suffix!="json"){
-        alert("Currently only supports the import of json files");
-        return;
-      }
-
-      const reader = new FileReader()
-      reader.readAsText(files[0])
-
-      const _this = this
-      reader.onload = function () {
-        _this.ImportJSON = JSON.parse(this.result)
-        // 检测是否导入成功
-        console.log(_this.ImportJSON)
-        _this.ImportJson(_this.ImportJSON)
-        document.getElementById("fileinput").value = "";
-
-      }
-    },
-
-    ImportJson(row) {
-      this.setLoad()
-      importGenTable(row).then(responseData => {
-        if(responseData.code == 100) {
-          this.$message({
-              message: '导入成功',
-              type: 'info'
-            });
-          this.getGenTableList()
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-
-    },
-
-    getGenTableList() {
-      this.setLoad()
-      /* 查询参数 和数据权限 */
-      this.search.params = []
+    appendSearchParams() {
       if(this.moreCodition) {
         this.search.params = this.search.params.concat(this.compositeCondition())
-      }else{
+      } else {
         // 查询参数: 名称
         this.search.params.push({
-      	  columnName: 'name',
-      	  queryType: 'like',
+          columnName: 'name',
+          queryType: 'like',
           value: this.queryModel.name
         })
       }
       // 数据权限: 业务表gen_table
       this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-      listGenTablePage(this.search).then(responseData => {
-        if(responseData.code == 100) {
-          this.genTableTotal = responseData.data.total
-          this.genTableList = responseData.data.rows
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
     },
-    onSearch() {
-      if(this.moreCodition) {
-        this.search.offset = 0
-        this.currentPage = 1
-        this.getGenTableList()
-      } else {
-        this.$refs['queryForm'].validate(valid => {
-          if (valid) {
-            this.search.offset = 0
-            this.currentPage = 1
-            this.getGenTableList()
-          } else {
-            return false
-          }
-        })
+    handleListResponse(responseData) {
+      this.genTableTotal = responseData.data.total
+      this.genTableList = responseData.data.rows
+    },
+    initOptions(This) {
+    },
+    checkFile() {
+      document.querySelector('#fileinput').click()
+    },
+    uploadExcel(evt) {
+      const files = evt.target.files;
+      if(files == null || files.length === 0) {
+        alert("No files wait for import");
+        return;
+      }
+      let name = files[0].name;
+      let suffixArr = name.split("."), suffix = suffixArr[suffixArr.length-1];
+      if(suffix !== "json") {
+        alert("Currently only supports the import of json files");
+        return;
+      }
+      const reader = new FileReader()
+      reader.readAsText(files[0])
+      const _this = this
+      reader.onload = function () {
+        _this.ImportJSON = JSON.parse(this.result)
+        _this.ImportJson(_this.ImportJSON)
+        document.getElementById("fileinput").value = "";
       }
     },
-    onSizeChange(val) {
-      this.currentPage = 1
-      this.search.limit = val;
-      this.search.offset = (this.currentPage - 1) * val
-      this.getGenTableList()
-    },
-    onCurrentChange(val) {
-      this.search.offset = (val - 1) * this.search.limit
-      this.currentPage = val
-      this.getGenTableList()
-    },
-    async pageInit() {
+    ImportJson(row) {
       this.setLoad()
-      try {
-        this.initOptions(this.queryModel)
-        this.search.params = []
-        // 数据权限: 业务表gen_table
-        this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-        let [listGenTableRespData, listPermissionRespData] = await Promise.all([
-          listGenTablePage(this.search),
-          listResourcePermission(this.$route.meta.routerId)
-        ])
-        if(listGenTableRespData.code == 100 && listPermissionRespData.code == 100) {
-          this.genTableTotal = listGenTableRespData.data.total
-          this.genTableList = listGenTableRespData.data.rows
-          this.permission.view = listPermissionRespData.data.find(item => {
-            return item.permission === 'genTable:read'
-          })
-          this.permission.export = listPermissionRespData.data.find(item => {
-            return item.permission === 'genTable:export'
-          })
-          this.permission.add = listPermissionRespData.data.find(item => {
-            return item.permission === 'genTable:create'
-          })
-          this.permission.edit = listPermissionRespData.data.find(item => {
-            return item.permission === 'genTable:update'
-          })
-          this.permission.remove = listPermissionRespData.data.find(item => {
-            return item.permission === 'genTable:delete'
-          })
-        } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listGenTableRespData)
-        }
-        this.resetLoad()
-      } catch(error) {
-        this.outputError(error)
-      }
-    },
-    onViewGenTable(index, row) {
-      this.setLoad()
-      getGenTableById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.genTableForm.$emit('openViewGenTableDialog', responseData.data)
+      importGenTable(row).then(responseData => {
+        if(responseData.code === 100) {
+          this.$message({ message: '导入成功', type: 'info' });
+          this.loadData()
         } else {
           this.showMessage(responseData)
         }
@@ -312,60 +202,11 @@ export default {
       }).catch(error => {
         this.outputError(error)
       })
-    },
-    onCreateGenTable() {
-      this.$refs.genTableForm.$emit('openAddGenTableDialog')
-    },
-    onEditGenTable(index, row) {
-      this.setLoad()
-      getGenTableById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.genTableForm.$emit('openEditGenTableDialog', responseData.data)
-        }else{
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onCopyGenTable(index, row) {
-      this.setLoad()
-      getGenTableById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.genTableForm.$emit('openCopyGenTableDialog', responseData.data)
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onDeleteGenTable(index, row) {
-      this.$confirm('确定删除吗？', '确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.setLoad()
-        deleteGenTable(row).then(responseData => {
-          if(responseData.code == 100) {
-            this.getGenTableList()
-            this.showMessage({type: 'success', msg: '删除成功'})
-          } else {
-            this.showMessage(responseData)
-          }
-          this.resetLoad()
-        }).catch(error => {
-          this.outputError(error)
-        })
-      }).catch(() => {})
     },
     onExportExcel(index, row) {
       this.setLoad()
-      getGenTableById(row.id).then(responseData => {
-        if(responseData.code == 100) {
+      this.getApi(row.id).then(responseData => {
+        if(responseData.code === 100) {
           const data = JSON.stringify(responseData.data)
           const blob = new Blob([data], {type: ''})
           FileSaver.saveAs(blob, 'genTable.json')
@@ -377,19 +218,6 @@ export default {
         this.outputError(error)
       })
     },
-    onSortChange( orderby ) {
-      if(validatenull(orderby.prop)) {
-        this.search.columnName = ''
-        this.search.order = ''
-      } else  {
-        this.search.columnName = orderby.prop
-        this.search.order = orderby.order === 'descending' ? 'desc' : 'asc'
-      }
-
-      this.getGenTableList()
-    },
-    initOptions(This) {
-    }
   },
   watch: {
   },

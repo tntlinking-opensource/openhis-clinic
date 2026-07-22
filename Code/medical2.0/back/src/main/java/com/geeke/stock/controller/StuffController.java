@@ -1,13 +1,12 @@
 package com.geeke.stock.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.geeke.common.controller.CrudController;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
-import com.geeke.config.exception.CommonJsonException;
 import com.geeke.stock.entity.MedicalProject;
 import com.geeke.stock.entity.Stuff;
 import com.geeke.stock.service.StuffService;
-import com.geeke.sys.controller.BaseController;
 import com.geeke.utils.ResultUtil;
 import com.geeke.utils.constants.ErrorEnum;
 import io.swagger.annotations.ApiOperation;
@@ -25,17 +24,16 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/stock/stuff")
-public class StuffController extends BaseController {
+public class StuffController extends CrudController<StuffService, Stuff> {
 
 	@Autowired
-	private StuffService stuffService;
-	
-    @GetMapping("/{id}")
-    public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
-        Stuff entity = stuffService.get(id);
-        return ResponseEntity.ok(ResultUtil.successJson(entity));
-    }
-    
+	protected StuffService stuffService;
+
+	@Override
+	protected StuffService getService() {
+		return stuffService;
+	}
+
     @PostMapping(value = {"list", ""})
     public ResponseEntity<JSONObject> listPage(@RequestBody SearchParams searchParams) {
         Page<Stuff> result = stuffService.listPages(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
@@ -47,7 +45,7 @@ public class StuffController extends BaseController {
         List<MedicalProject> result = stuffService.listPageForMedical(searchParams.getParams(),searchParams.getOrderby());
         return ResponseEntity.ok(ResultUtil.successJson(result));
     }
-    
+
     @PostMapping(value = "listAll")
     public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
         List<Stuff> result = stuffService.listAlls(searchParams.getParams(), searchParams.getOrderby());
@@ -57,38 +55,12 @@ public class StuffController extends BaseController {
     @PostMapping(value = "save")
     public ResponseEntity<JSONObject> save(@RequestBody Stuff entity) {
         String id = null;
-        System.out.println(entity.getPriceOutSell());
-        System.out.println(entity.getRetailPrice());
         try {
             id = stuffService.save(entity).getId();
         } catch (Exception e) {
             return ResponseEntity.ok(ResultUtil.errorJson(ErrorEnum.E_50001, "材料信息重复"));
         }
         return ResponseEntity.ok(ResultUtil.successJson(id));
-    }
-  
-    @PostMapping(value = "delete")
-    public ResponseEntity<JSONObject> delete(@RequestBody Stuff entity) {
-        int rows = stuffService.delete(entity);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
-
-    @PostMapping(value = "bulkInsert")
-    public ResponseEntity<JSONObject> bulkInsert(@RequestBody List<Stuff> entitys) {
-        List<String> ids = stuffService.bulkInsert(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkUpdate")
-    public ResponseEntity<JSONObject> bulkUpdate(@RequestBody List<Stuff> entitys) {
-        List<String> ids = stuffService.bulkUpdate(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkDelete")
-    public ResponseEntity<JSONObject> bulkDelete(@RequestBody List<Stuff> entitys) {
-        int rows = stuffService.bulkDelete(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
     }
 
     @PostMapping(value = "updateAllIndate")
@@ -112,11 +84,11 @@ public class StuffController extends BaseController {
     @PostMapping("/uploadExcel")
     @ApiOperation("excel")
     public ResponseEntity taskUploadExcel(@RequestParam(value = "file") MultipartFile file) {
-        List excel = null;
+        List<?> excel = null;
         try {
             excel = stuffService.excel(file);
         } catch (Exception e) {
-            return ResponseEntity.ok(new CommonJsonException(ResultUtil.warningJson(ErrorEnum.E_50001, e.getMessage())));
+            return ResponseEntity.ok(ResultUtil.warningJson(ErrorEnum.E_50001, e.getMessage()));
         }
         return ResponseEntity.ok(ResultUtil.successJson(excel));
     }

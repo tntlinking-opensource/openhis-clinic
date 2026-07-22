@@ -1,4 +1,5 @@
 const path = require('path')
+const TerserPlugin = require('terser-webpack-plugin')
 
 module.exports = {
   publicPath: './',
@@ -83,6 +84,17 @@ module.exports = {
       }
     },
     optimization: {
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            compress: {
+              drop_console: true,
+              drop_debugger: true,
+              pure_funcs: ['console.log']
+            }
+          }
+        })
+      ],
       runtimeChunk: { name: 'manifest' },
       splitChunks: {
         cacheGroups: {
@@ -92,6 +104,19 @@ module.exports = {
             name: 'vendor',
             chunks: 'all',
             enforce: true
+          },
+          // 将大型库拆分为独立 chunk
+          xlsx: {
+            test: /[\\/]node_modules[\\/](exceljs|file-saver)/,
+            name: 'xlsx',
+            chunks: 'all',
+            priority: 10
+          },
+          moment: {
+            test: /[\\/]node_modules[\\/]moment/,
+            name: 'moment',
+            chunks: 'all',
+            priority: 10
           }
         }
       }

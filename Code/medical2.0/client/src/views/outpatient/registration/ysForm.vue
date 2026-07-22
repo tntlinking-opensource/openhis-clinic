@@ -50,6 +50,7 @@
 <script>
 import BaseUI from "@/views/components/baseUI";
 import { listDictItemAll } from "@/api/sys/dictItem";
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 import { saveRegistration,listDoctorsAll,listDoctorsAllnew,registationupdatenew } from "@/api/outpatient/registration";
 export default {
   extends: BaseUI,
@@ -127,26 +128,8 @@ export default {
     },
     initys() {
       //挂号状态
-      let status_search = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "1008898177293385773",
-          },
-        ],
-      };
-      // 字段对应表上filter条件
-      status_search.params.push.apply(status_search.params, []);
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(
-        status_search.params,
-        this.$route.meta.routerId,
-        "4005"
-      );
-      this.status_List.splice(0, this.status_List.length);
-      listDictItemAll(status_search).then((responseData) => {
-        this.status_List = responseData.data;
+      getDictItemsByCode(DICT_CODE.REGISTRATION_STATUS).then((data) => {
+        this.status_List = data;
       });
       let doctor_search = {
         params: [
@@ -171,12 +154,11 @@ export default {
       //   this.doctor_List = responseData.data;
       // });
       listDoctorsAllnew().then((responseData) => {
-        //console.log(responseData,'医生');
         this.doctor_List = responseData.data;
       })
     },
     buttoninser(){
-      if(this.queryModel.doctor.id==null&&this.queryModel.doctor.name==""){
+      if(this.queryModel.doctor.id==null&&this.queryModel.doctor.name===""){
          this.$message({
                 showClose: true,
                 message:'请选择医生',
@@ -188,7 +170,7 @@ export default {
       this.insetModel.registration.doctor.name=this.queryModel.doctor.name;
       registationupdatenew(this.insetModel)
         .then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.$emit('typeclick',"");
             this.arrlistcreat();
             this.dialogProps.visible = false;
@@ -204,23 +186,17 @@ export default {
         }); 
 
     },
-  },
-  mounted: async function () {
-    this.$nextTick(() => {
-      this.$on("openViewysDialog", function (item,types) {
-        //debugger;
-        this.arrlistcreat();
-        this.dialogProps.action = "view";
-        this.dialogProps.title = "分诊";
+    openViewysDialog(item, types) {
+      this.arrlistcreat();
+      this.dialogProps.action = "view";
+      this.dialogProps.title = "分诊";
 
-        this.insetModel.registration.id=item.id;
-        this.insetModel.registration.patientId.id=item.patientId.id;
-        this.insetModel.registration.patientId.name=item.patientId.name;
-        this.initys();
-        console.log(this.queryModel);
-        this.dialogProps.visible = true;
-      });
-    });
+      this.insetModel.registration.id = item.id;
+      this.insetModel.registration.patientId.id = item.patientId.id;
+      this.insetModel.registration.patientId.name = item.patientId.name;
+      this.initys();
+      this.dialogProps.visible = true;
+    },
   },
 };
 </script>

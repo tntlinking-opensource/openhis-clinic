@@ -286,20 +286,20 @@ export default {
     handleClick(tab, event) {
       //this.$message.success(this.tabPosition);
 
-      if (tab.name == "tzxx") {
+      if (tab.name === "tzxx") {
 
-      } else if (tab.name == "schedulingmx") {
+      } else if (tab.name === "schedulingmx") {
 
 
-      } else if (tab.name == "schedulingzl") {
+      } else if (tab.name === "schedulingzl") {
 
       }
 
     },
     buttoninser(){
-        if(this.activeName=="tzxx" || this.activeName=="blxx"){
-            if(this.bizFormModel.medicalRecord.patientTell!='' && this.bizFormModel.medicalRecord.patientTell!=null){
-                if(this.bizFormModel.medicalRecord.doctor!='' && this.bizFormModel.medicalRecord.doctor!=null){
+        if(this.activeName==="tzxx" || this.activeName==="blxx"){
+            if(this.bizFormModel.medicalRecord.patientTell!=='' && this.bizFormModel.medicalRecord.patientTell!=null){
+                if(this.bizFormModel.medicalRecord.doctor!=='' && this.bizFormModel.medicalRecord.doctor!=null){
                     this.bizFormModel.registration.doctor=this.bizFormModel.medicalRecord.doctor;
                     this.bizFormModel.registration.status={name:"待就诊",value:"registrationStatus_0"};
                 }
@@ -315,7 +315,7 @@ export default {
 
             registationupdatenew(this.bizFormModel)
         .then((responseData) => {
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.$emit('typeclick',"1");
             this.arrlistcreat();
             this.dialogProps.visible = false;
@@ -363,7 +363,6 @@ export default {
       });
       // listDoctorsAllnew().then((responseData) => {
       //    // debugger
-      //   //console.log(responseData,'医生');
       //   this.doctor_List = responseData.data;
       // })
     },
@@ -406,26 +405,17 @@ export default {
       this.dialogProps.visible = false;
       this.arrlistcreat();
     },
-  },
-  mounted: async function () {
-    this.$nextTick(() => {
-      this.$on("openViewbeforehandDialog", function (item) {
-        //debugger;
-        this.arrlistcreat();
-        this.dialogProps.action = "view";
-        this.dialogProps.title = "预诊";
+    openViewbeforehandDialog(item) {
+      this.arrlistcreat();
+      this.dialogProps.action = "view";
+      this.dialogProps.title = "预诊";
 
-        this.bizFormModel.registration.id = item.id;
-        console.log("this.bizFormModel.registration.id=="+this.bizFormModel.registration.id)
-        this.bizFormModel.registration.patientId.id = item.patientId.id;
-        console.log("this.bizFormModel.registration.patientId.id=="+this.bizFormModel.registration.patientId.id)
-        this.bizFormModel.registration.patientId.name = item.patientId.name;
-        console.log("this.bizFormModel.registration.patientId.name"+this.bizFormModel.registration.patientId.name)
-        this.initys();
-        console.log(this.bizFormModel);
-        this.dialogProps.visible = true;
-      });
-    });
+      this.bizFormModel.registration.id = item.id;
+      this.bizFormModel.registration.patientId.id = item.patientId.id;
+      this.bizFormModel.registration.patientId.name = item.patientId.name;
+      this.initys();
+      this.dialogProps.visible = true;
+    },
   },
 };
 </script>

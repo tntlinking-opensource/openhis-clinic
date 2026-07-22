@@ -1,64 +1,21 @@
 import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getNoticeSendById = (id) =>
+const baseApi = createCrudApi('/noticesend/noticeSend')
+
+// 导出标准CRUD接口（保持向后兼容）
+export const getNoticeSendById = baseApi.getById
+export const listNoticeSendPage = baseApi.listPage
+export const listNoticeSendAll = baseApi.listAll
+export const saveNoticeSend = baseApi.save
+export const deleteNoticeSend = baseApi.delete
+export const bulkInsertNoticeSend = baseApi.bulkInsert
+export const bulkUpdateNoticeSend = baseApi.bulkUpdate
+export const bulkDeleteNoticeSend = baseApi.bulkDelete
+
+// 自定义接口
+export const getCompanyTree = (code) =>
     request({
-        url: '/noticesend/noticeSend/' + id,
+        url: '/noticesend/noticeSend/tree/' + code,
         method: 'get'
     })
-
-export const listNoticeSendPage = (search) =>
-    request({
-        url: '/noticesend/noticeSend/list',
-        method: 'post',
-        data: search
-    })
-
-export const listNoticeSendAll = (search) =>
-    request({
-        url: '/noticesend/noticeSend/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveNoticeSend = (noticeSend) =>
-    request({
-        url: '/noticesend/noticeSend/save',
-        method: 'post',
-        data: noticeSend
-    })
-
-export const deleteNoticeSend = (noticeSend) =>
-    request({
-        url: '/noticesend/noticeSend/delete',
-        method: 'post',
-        data: noticeSend
-    })
-
-export const bulkInsertNoticeSend = (noticeSends) =>
-    request({
-        url: '/noticesend/noticeSend/bulkInsert',
-        method: 'post',
-        data: noticeSends
-    })
-
-export const bulkUpdateNoticeSend = (noticeSends) =>
-    request({
-        url: '/noticesend/noticeSend/bulkUpdate',
-        method: 'post',
-        data: noticeSends
-    })
-
-export const bulkDeleteNoticeSend = (noticeSends) =>
-    request({
-        url: '/noticesend/noticeSend/bulkDelete',
-        method: 'post',
-        data: noticeSends
-    })
-
-
-export const getCompanyTree = (code) =>
-  request({
-    url: '/noticesend/noticeSend/tree/' + code,
-    method: 'get'
-  });

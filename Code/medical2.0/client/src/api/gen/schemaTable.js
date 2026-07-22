@@ -1,37 +1,10 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getSchemaTableById = (id) =>
-    request({
-        url: '/gen/schemaTable/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/gen/schemaTable')
 
-export const listSchemaTablePage = (search) =>
-    request({
-        url: '/gen/schemaTable/list',
-        method: 'post',
-        data: search
-    })
-
-export const listSchemaTableAll = (search) =>
-    request({
-        url: '/gen/schemaTable/listAll',
-        method: 'post',
-        data: search
-    })    
-
-
-export const saveSchemaTable = (schemaTable) => 
-    request({
-        url: '/gen/schemaTable/save',
-        method: 'post',
-        data: schemaTable
-    })
-
-export const deleteSchemaTable = (schemaTable) =>
-    request({
-        url: '/gen/schemaTable/delete',
-        method: 'post',
-        data: schemaTable
-    })
-    
+// 导出标准CRUD接口（保持向后兼容）
+export const getSchemaTableById = baseApi.getById
+export const listSchemaTablePage = baseApi.listPage
+export const listSchemaTableAll = baseApi.listAll
+export const saveSchemaTable = baseApi.save
+export const deleteSchemaTable = baseApi.delete

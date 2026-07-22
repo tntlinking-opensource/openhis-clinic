@@ -3,16 +3,16 @@
     @open='onDialogOpen()' v-loading='loading'>
     <div slot='title' class='dialog-header'>
       {{ dialogProps.title }}
-      <OperationIcon v-show='dialogProps.action == "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
+      <OperationIcon v-show='dialogProps.action === "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
     </div>
 
     <el-form :model='bizFormModel' :rules='formRules' 
       ref='recipelDetailForm' label-width='120px' label-position='right' class='edit-form'>  
-      <div class="tab-item" v-show='tabIndex=="1"'>  
+      <div class="tab-item" v-show='tabIndex==="1"'>  
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='处方' prop='recipelInfo.id' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.recipelInfo.remarks'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.recipelInfo.remarks'></el-input>
             <el-select v-else v-model='bizFormModel.recipelInfo' value-key='id' filterable clearable placeholder='请选择处方' 
               @clear='bizFormModel.recipelInfo={
                 "id": null,
@@ -24,20 +24,20 @@
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='药品材料id' prop='drugStuffId' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.drugStuffId' :maxlength='21' :placeholder='dialogProps.action == "view"? "" : "请输入药品材料id"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.drugStuffId' :maxlength='21' :placeholder='dialogProps.action === "view"? "" : "请输入药品材料id"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='单次用量' prop='singleDosage' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.singleDosage'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.singleDosage'></el-input>
             <number-input v-else v-model="bizFormModel.singleDosage"  :precision="0"></number-input>
           </el-form-item>
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='总量' prop='total' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.total'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.total'></el-input>
             <number-input v-else v-model="bizFormModel.total"  :precision="0"></number-input>
           </el-form-item>
         </el-col>
@@ -45,13 +45,13 @@
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='总价' prop='allFee' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.allFee'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.allFee'></el-input>
             <number-input v-else v-model="bizFormModel.allFee" currency='CNY' :precision="2"></number-input>
           </el-form-item>
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='西药用法' prop='westernMedicineUse.value' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.westernMedicineUse.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.westernMedicineUse.name'></el-input>
             <el-select v-else v-model='bizFormModel.westernMedicineUse' value-key='value' filterable clearable placeholder='请选择西药用法' 
               @clear='bizFormModel.westernMedicineUse={
                 "value": null,
@@ -65,7 +65,7 @@
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='频次用量' prop='frequency.value' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.frequency.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.frequency.name'></el-input>
             <el-select v-else v-model='bizFormModel.frequency' value-key='value' filterable clearable placeholder='请选择频次用量' 
               @clear='bizFormModel.frequency={
                 "value": null,
@@ -77,7 +77,7 @@
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='天数' prop='days.value' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.days.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.days.name'></el-input>
             <el-select v-else v-model='bizFormModel.days' value-key='value' filterable clearable placeholder='请选择天数' 
               @clear='bizFormModel.days={
                 "value": null,
@@ -91,7 +91,7 @@
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='中药用法' prop='chineseMedicineUse.value' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.chineseMedicineUse.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.chineseMedicineUse.name'></el-input>
             <el-select v-else v-model='bizFormModel.chineseMedicineUse' value-key='value' filterable clearable placeholder='请选择中药用法' 
               @clear='bizFormModel.chineseMedicineUse={
                 "value": null,
@@ -103,7 +103,7 @@
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='输液用法' prop='infuseUse.value' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.infuseUse.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.infuseUse.name'></el-input>
             <el-select v-else v-model='bizFormModel.infuseUse' value-key='value' filterable clearable placeholder='请选择输液用法' 
               @clear='bizFormModel.infuseUse={
                 "value": null,
@@ -117,12 +117,12 @@
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='滴速' prop='drippingSpeed' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.drippingSpeed' :maxlength='45' :placeholder='dialogProps.action == "view"? "" : "请输入滴速"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.drippingSpeed' :maxlength='45' :placeholder='dialogProps.action === "view"? "" : "请输入滴速"' ></el-input>
           </el-form-item>
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='皮试' prop='skinTest.value' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.skinTest.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.skinTest.name'></el-input>
             <el-select v-else v-model='bizFormModel.skinTest' value-key='value' filterable clearable placeholder='请选择皮试' 
               @clear='bizFormModel.skinTest={
                 "value": null,
@@ -136,7 +136,7 @@
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='组数' prop='infuseGroup' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.infuseGroup'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.infuseGroup'></el-input>
             <number-input v-else v-model="bizFormModel.infuseGroup"  :precision="0"></number-input>
           </el-form-item>
         </el-col>
@@ -144,16 +144,16 @@
       </div>
     </el-form>
     <span slot='footer' class='dialog-footer'>
-      <el-button v-if='dialogProps.action != "view"' :disabled="flage" type='primary' :plain='true' @click='onSubmit("recipelDetailForm")'>保 存</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :disabled="flag" type='primary' :plain='true' @click='onSubmit("recipelDetailForm")'>保 存</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span>    
   </el-dialog>
 </template>
 <script>
 import { validatenull } from '@/utils/validate'
 import { listRecipelInfoAll } from '@/api/outpatient/recipelInfo'
-import { listDictItemAll } from '@/api/sys/dictItem'
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 import { saveRecipelDetail } from '@/api/outpatient/recipelDetail'
 import BaseUI from '@/views/components/baseUI'
 import OperationIcon from '@/components/OperationIcon'
@@ -174,7 +174,7 @@ export default {
           chineseMedicineUse_List: [],  // 中药用法
           infuseUse_List: [],  // 输液用法
           skinTest_List: [],  // 皮试
-          flage:false,
+          flag:false,
        dialogProps: {
         visible: false,
         action: '',
@@ -193,12 +193,12 @@ export default {
   },  
   methods: {
     onSubmit(formName) {
-      this.flage=true
+      this.flag=true
       this.$refs[formName].validate(valid => {
         if (valid) {
           this.doSave()
         } else {
-          this.flage=false
+          this.flag=false
           return false
         }
       });
@@ -206,8 +206,8 @@ export default {
     doSave() {
       this.setLoad()
       saveRecipelDetail(this.bizFormModel).then(responseData => {
-        this.flage=false
-        if(responseData.code == 100) {
+        this.flag=false
+        if(responseData.code === 100) {
           this.dialogProps.visible = false
           this.$emit('save-finished')
         } else {
@@ -215,7 +215,7 @@ export default {
         }
         this.resetLoad()
       }).catch(error => {
-        this.flage=false
+        this.flag=false
         this.outputError(error)
       })
     },
@@ -288,112 +288,62 @@ export default {
       listRecipelInfoAll(recipelInfo_search).then(responseData => {
         this.recipelInfo_List = responseData.data
       })
-      let westernMedicineUse_search = {
-        params: [{'columnName':'dict_type_id', 'queryType': '=', 'value': '1014474470772900028'}]
-      }
-        // 字段对应表上filter条件
-        westernMedicineUse_search.params.push.apply(westernMedicineUse_search.params, [])
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(westernMedicineUse_search.params, this.$route.meta.routerId, '4005')
-      this.westernMedicineUse_List.splice(0, this.westernMedicineUse_List.length)
-      listDictItemAll(westernMedicineUse_search).then(responseData => {
-        this.westernMedicineUse_List = responseData.data
-      })
-      let frequency_search = {
-        params: [{'columnName':'dict_type_id', 'queryType': '=', 'value': '1014474470772900037'}]
-      }
-        // 字段对应表上filter条件
-        frequency_search.params.push.apply(frequency_search.params, [])
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(frequency_search.params, this.$route.meta.routerId, '4005')
-      this.frequency_List.splice(0, this.frequency_List.length)
-      listDictItemAll(frequency_search).then(responseData => {
-        this.frequency_List = responseData.data
-      })
-      let days_search = {
-        params: [{'columnName':'dict_type_id', 'queryType': '=', 'value': '1014474470772900052'}]
-      }
-        // 字段对应表上filter条件
-        days_search.params.push.apply(days_search.params, [])
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(days_search.params, this.$route.meta.routerId, '4005')
-      this.days_List.splice(0, this.days_List.length)
-      listDictItemAll(days_search).then(responseData => {
-        this.days_List = responseData.data
-      })
-      let chineseMedicineUse_search = {
-        params: [{'columnName':'dict_type_id', 'queryType': '=', 'value': '1014474470772900058'}]
-      }
-        // 字段对应表上filter条件
-        chineseMedicineUse_search.params.push.apply(chineseMedicineUse_search.params, [])
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(chineseMedicineUse_search.params, this.$route.meta.routerId, '4005')
-      this.chineseMedicineUse_List.splice(0, this.chineseMedicineUse_List.length)
-      listDictItemAll(chineseMedicineUse_search).then(responseData => {
-        this.chineseMedicineUse_List = responseData.data
-      })
-      let infuseUse_search = {
-        params: [{'columnName':'dict_type_id', 'queryType': '=', 'value': '1014474470772900062'}]
-      }
-        // 字段对应表上filter条件
-        infuseUse_search.params.push.apply(infuseUse_search.params, [])
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(infuseUse_search.params, this.$route.meta.routerId, '4005')
-      this.infuseUse_List.splice(0, this.infuseUse_List.length)
-      listDictItemAll(infuseUse_search).then(responseData => {
-        this.infuseUse_List = responseData.data
-      })
-      let skinTest_search = {
-        params: [{'columnName':'dict_type_id', 'queryType': '=', 'value': '1014474470772900068'}]
-      }
-        // 字段对应表上filter条件
-        skinTest_search.params.push.apply(skinTest_search.params, [])
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(skinTest_search.params, this.$route.meta.routerId, '4005')
-      this.skinTest_List.splice(0, this.skinTest_List.length)
-      listDictItemAll(skinTest_search).then(responseData => {
-        this.skinTest_List = responseData.data
-      })
-    }
+      getDictItemsByCode(DICT_CODE.WESTERN_MEDICINE_USE).then((data) => {
+        this.westernMedicineUse_List = data;
+      });
+      getDictItemsByCode(DICT_CODE.RECIPEL_DETAIL_FREQUENCY).then((data) => {
+        this.frequency_List = data;
+      });
+      getDictItemsByCode(DICT_CODE.RECIPEL_DETAIL_DAYS).then((data) => {
+        this.days_List = data;
+      });
+      getDictItemsByCode(DICT_CODE.CHINESE_MEDICINE_USE).then((data) => {
+        this.chineseMedicineUse_List = data;
+      });
+      getDictItemsByCode(DICT_CODE.INFUSE_USE).then((data) => {
+        this.infuseUse_List = data;
+      });
+      getDictItemsByCode(DICT_CODE.SKIN_TEST).then((data) => {
+        this.skinTest_List = data;
+      });
+    },
+    openViewRecipelDetailDialog(recipelDetail) {
+      this.dialogProps.action = 'view'
+      this.dialogProps.title = '查看处方详情'
+      this.bizFormModel = {...this.initFormModel(), ...recipelDetail}
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openEditRecipelDetailDialog(recipelDetail) {
+      this.dialogProps.action = 'edit'
+      this.dialogProps.title = '修改处方详情'
+      this.bizFormModel = {...this.initFormModel(), ...recipelDetail}
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openAddRecipelDetailDialog() {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加处方详情'
+      this.bizFormModel = this.initFormModel()
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openCopyRecipelDetailDialog(recipelDetail) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加处方详情'
+      this.bizFormModel = {...this.initFormModel(), ...recipelDetail}
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.bizFormModel.id = null
+      this.dialogProps.visible = true
+    },
   },
   watch: {
   },
   mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openViewRecipelDetailDialog', function(recipelDetail) {
-        this.dialogProps.action = 'view'
-        this.dialogProps.title = '查看处方详情'
-        this.bizFormModel = {...this.initFormModel(), ...recipelDetail}
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openEditRecipelDetailDialog', function(recipelDetail) {
-        this.dialogProps.action = 'edit'
-        this.dialogProps.title = '修改处方详情'
-        this.bizFormModel = {...this.initFormModel(), ...recipelDetail}
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openAddRecipelDetailDialog', function() {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加处方详情'
-        this.bizFormModel = this.initFormModel()
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openCopyRecipelDetailDialog', function(recipelDetail) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加处方详情'
-        this.bizFormModel = {...this.initFormModel(), ...recipelDetail}
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.bizFormModel.id = null   //把id设置为空，添加一个新的
-        this.dialogProps.visible = true
-      })
-    })
-  }  
+  },
 }
 </script>

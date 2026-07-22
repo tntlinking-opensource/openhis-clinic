@@ -2,14 +2,10 @@ package com.geeke.sys.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.geeke.common.controller.SearchParams;
-import com.geeke.common.data.Page;
-import com.geeke.sys.entity.PersonalTheme;
+import com.geeke.common.controller.CrudController;
 import com.geeke.sys.entity.SysParamConfig;
-import com.geeke.sys.service.PersonalThemeService;
 import com.geeke.sys.service.SysParamConfigService;
 import com.geeke.utils.ResultUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,33 +18,14 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/sys/paramConfig")
-public class SysParamConfigController extends BaseController {
+public class SysParamConfigController extends CrudController<SysParamConfigService, SysParamConfig> {
 
     @Resource
-    private SysParamConfigService sysParamConfigService;
+    protected SysParamConfigService sysParamConfigService;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
-        SysParamConfig entity = sysParamConfigService.get(id);
-        return ResponseEntity.ok(ResultUtil.successJson(entity));
-    }
-    
-    @PostMapping(value = {"list", ""})
-    public ResponseEntity<JSONObject> listPage(@RequestBody SearchParams searchParams) {
-        Page<SysParamConfig> result = sysParamConfigService.listPage(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
-    
-    @PostMapping(value = "listAll")
-    public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
-        List<SysParamConfig> result = sysParamConfigService.listAll(searchParams.getParams(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
-
-    @PostMapping(value = "save")
-    public ResponseEntity<JSONObject> save(@RequestBody SysParamConfig entity) {
-    	String id = sysParamConfigService.save(entity).getId();
-        return ResponseEntity.ok(ResultUtil.successJson(id));
+    @Override
+    protected SysParamConfigService getService() {
+        return sysParamConfigService;
     }
 
     @PostMapping(value = "save/list")
@@ -58,7 +35,6 @@ public class SysParamConfigController extends BaseController {
         }
         return ResponseEntity.ok(ResultUtil.successJson("操作成功"));
     }
-
 
     @DeleteMapping(value = "delete")
     public ResponseEntity<JSONObject> delete(@RequestBody SysParamConfig entity) {

@@ -1,6 +1,8 @@
 package com.geeke.hosdata.config;
 
 import com.alibaba.fastjson.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -12,6 +14,7 @@ import java.io.InputStream;
 
 // 读取 XML 配置文件，解析字段映射，并将其应用到代码中
 public class FieldMappingConfig {
+    private static final Logger logger = LoggerFactory.getLogger(FieldMappingConfig.class);
     public static JSONObject readFieldMappingFromXML() {
         JSONObject fieldMapping = new JSONObject();
         String filePath = "HisDataCollect.fxml";
@@ -30,7 +33,7 @@ public class FieldMappingConfig {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("读取字段映射配置失败", e);
         }
         return fieldMapping;
     }

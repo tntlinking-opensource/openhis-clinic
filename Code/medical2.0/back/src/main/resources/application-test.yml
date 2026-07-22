@@ -6,46 +6,39 @@ spring:
 #    url: jdbc:mysql://127.0.0.1:3306/medical_test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
 #    username: root
 #    password: Ntc<om02wPk
-    url: jdbc:mysql://192.168.0.4:3306/medical2.0?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
-    username: root
-    password: aTze0ubeJisUbDKB
-  cache:
-    type: redis  # 可选 redis、none、ehcache
-  redis:
-    host: 192.168.0.31 # server host
-    password: 001e4E29a09e05b73b
-    port: 6379
-    database: 0
+    url: ${DB_URL:jdbc:mysql://192.168.0.4:3306/medical2.0?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:aTze0ubeJisUbDKB}
   rabbitmq:
-    host: 192.168.0.31
-    port: 5672
-    username: wisdompark
-    password: eTcQBz7eNBXjwvAVlE
+    host: ${RABBITMQ_HOST:192.168.0.31}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:wisdompark}
+    password: ${RABBITMQ_PASSWORD:eTcQBz7eNBXjwvAVlE}
 
 jwtUtils:
   id: jwt
-  secret: 6686df7fc3a34e26a61c034d5ec82488
+  secret: ${JWT_SECRET:6686df7fc3a34e26a61c034d5ec82488}
   ttlMillis: 3600000
 
 #启信宝
 qixin:
-  appkey: 266b93724-e6d3f-48397-ab308-a003d9554c2fd
-  secretKey: a11377eb8-1326b-4033c-a3cbd-026ff9ec3eb5d
+  appkey: ${QIXIN_APPKEY:266b93724-e6d3f-48397-ab308-a003d9554c2fd}
+  secretKey: ${QIXIN_SECRET_KEY:a11377eb8-1326b-4033c-a3cbd-026ff9ec3eb5d}
   host: https://api.qixin.com/
   profile: APIService
 
 
 #企业微信
 weChat:
-  corpid: ww21ecf19d6c519f83
-  corpsecret: G3rf94sZqkZJ90duduA-TCIaou-QUeA9qNe7ANtjR9Y
-  agentid: 1000006
+  corpid: ${WECHAT_CORPID:ww21ecf19d6c519f83}
+  corpsecret: ${WECHAT_CORPSECRET:G3rf94sZqkZJ90duduA-TCIaou-QUeA9qNe7ANtjR9Y}
+  agentid: ${WECHAT_AGENTID:1000006}
 
 # 报表集成
 report:
   dataease:
-    username: wdmpk
-    password: kjuuIYcARhyk+R5Q1s8QLwmZzfeoRgoYGHaIFzsoKD10nNbEukHG2hxieAqrHD/tN0IpsBOTEIFbnn5uIwM+tw==
+    username: ${REPORT_USERNAME:wdmpk}
+    password: ${REPORT_PASSWORD:kjuuIYcARhyk+R5Q1s8QLwmZzfeoRgoYGHaIFzsoKD10nNbEukHG2hxieAqrHD/tN0IpsBOTEIFbnn5uIwM+tw==}
     frontend:
       host: 127.0.0.1
       port: 9528
@@ -54,4 +47,4 @@ report:
       host: 127.0.0.1
       port: 8081
       useSSLLink: 0
-    rsa_public_key: MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANL378k3RiZHWx5AfJqdH9xRNBmD9wGD2iRe41HdTNF8RUhNnHit5NpMNtGL0NPTSSpPjjI1kJfVorRvaQerUgkCAwEAAQ==
+    rsa_public_key: ${REPORT_RSA_PUBLIC_KEY:MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANL378k3RiZHWx5AfJqdH9xRNBmD9wGD2iRe41HdTNF8RUhNnHit5NpMNtGL0NPTSSpPjjI1kJfVorRvaQerUgkCAwEAAQ==}

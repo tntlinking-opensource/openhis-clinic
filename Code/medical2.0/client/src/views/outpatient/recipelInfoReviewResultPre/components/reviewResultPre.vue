@@ -189,7 +189,7 @@
               align="center">
             </el-table-column>
             <!--表行级操作按钮-->
-            <el-table-column label='操作' header-align='center' :width='60 + "px"' :key="Math.random()">
+            <el-table-column label='操作' header-align='center' :width='60 + "px"' :key="'operate'">
               <!--<template slot='header' slot-scope="scope">
                 <span>操作</span>
               </template>-->
@@ -272,11 +272,10 @@ import { listRecipelInfoReviewPage, getRecipelInfoReviewById,
   from '@/api/outpatient/recipelInfoReview'
 import { listResourcePermission } from '@/api/admin/common/permission'
 import { listDictItemAll } from '@/api/sys/dictItem'
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 import { getCompanyById } from '@/api/org/company'
 import { listUserAll } from "@/api/admin/user";
 import { listCompanyAll } from "@/api/org/company";
-import ExportExcelButton from '@/components/ExportExcelButton'
-import QueryForm from '@/views/components/queryForm'
 import MainUI from '@/views/components/mainUI'
 import OperationIcon from '@/components/OperationIcon'
 import DataRangePicker from '@/components/DataRangePicker'
@@ -284,6 +283,7 @@ import MedicineDialog from "./MedicineDialog.vue";
 import AuditDialog from "./AuditDialog.vue";
 import PrescriptionDialog from "./PrescriptionDialog.vue";
 import ReviewFormPre from "../../recipelInfoReviewPre/components/reviewFormPre.vue";
+import { getCurrentUser } from "@/utils/userCache";
 export default {
   name: "review-result-pre",
   extends: MainUI,
@@ -292,14 +292,12 @@ export default {
     AuditDialog,
     MedicineDialog,
     ReviewFormPre,
-    ExportExcelButton,
-    QueryForm,
     OperationIcon,
     DataRangePicker,
   },
   computed: {
     Company() {
-      let company = JSON.parse(sessionStorage.getItem("currentUser")).company;
+      let company = getCurrentUser().company;
       return {
         id: company.id,
         label: company.label,
@@ -307,7 +305,7 @@ export default {
       };
     },
     Department() {
-      let department = JSON.parse(sessionStorage.getItem("currentUser")).department;
+      let department = getCurrentUser().department;
       return {
         id: department.id,
         label: department.label,
@@ -428,7 +426,6 @@ export default {
         this.$message.warning('请先选择一条处方记录');
         return;
       }
-      console.log("处方查询", row);
       this.prescriptionFormData = true;
 
       // 在这里编写处方查询的逻辑
@@ -439,7 +436,7 @@ export default {
       if (!this.selectedRow) {
         this.$message.warning('请先选择一条处方记录');
         return;
-      }else if(this.selectedRow.reviewStatus == 2){
+      }else if(this.selectedRow.reviewStatus === 2){
         this.$message.warning('已撤销处方！');
         return;
       }
@@ -452,8 +449,6 @@ export default {
     submitCancel() {
       // 校验撤销原因
       this.$refs.cancelForm.validate(valid => {
-        console.log(valid,)
-        console.log('撤销原因:', this.cancelForm.reason); // 查看撤销原因的当前值
         if (valid) {
           this.cancelPrescription();
         } else {
@@ -464,8 +459,6 @@ export default {
     cancelPrescription() {
       // 处理撤销
       const recipelInfoReview =  this.selectedRow;  // 假设选中行有 id
-      console.log(recipelInfoReview, undoRea);
-
       const undoRea = this.cancelForm.reason;
       //cancelElectronicPrescription( recipelInfoReview, undoRea);
       this.dialogVisible = false;
@@ -545,7 +538,7 @@ export default {
       // 数据权限
       this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
       listRecipelInfoReviewPage(this.search).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           this.reviewTotal = responseData.data.total
           this.reviewList = responseData.data.rows
         } else {
@@ -619,7 +612,7 @@ export default {
           listRecipelInfoReviewPage(this.search),
           listResourcePermission(this.$route.meta.routerId)
         ])
-        if(listReviewRespData.code == 100 && listPermissionRespData.code == 100) {
+        if(listReviewRespData.code === 100 && listPermissionRespData.code === 100) {
           this.reviewTotal = listReviewRespData.data.total
           this.reviewList = listReviewRespData.data.rows
           this.permission.view = listPermissionRespData.data.find(item => {
@@ -638,7 +631,7 @@ export default {
             return item.permission === 'recipelInfoReviewResult:delete'
           })
         } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listReviewRespData)
+          this.showMessage(listPermissionRespData.code !== 100 ? listPermissionRespData : listReviewRespData)
         }
         this.resetLoad()
       } catch(error) {
@@ -648,8 +641,8 @@ export default {
     onViewTheme(index, row) {
       this.setLoad()
       getRecipelInfoReviewById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.reviewPreForm.$emit('openViewThemeDialog', responseData.data)
+        if(responseData.code === 100) {
+          this.$refs.reviewPreForm.openViewThemeDialog(responseData.data)
         } else {
           this.showMessage(responseData)
         }
@@ -661,8 +654,8 @@ export default {
     onViewReviewResult(index, row) {
       this.setLoad()
       getReviewFormByRecipelInfoId(row.recipelInfo.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.reviewPreForm.$emit('openViewReviewDialog', responseData.data)
+        if(responseData.code === 100) {
+          this.$refs.reviewPreForm.openViewReviewDialog(responseData.data)
         }else{
           this.showMessage(responseData)
         }
@@ -672,16 +665,8 @@ export default {
       })
     },
     async initOptions(This) {
-      let recipelType_search = {
-        params: [{'columnName': 'dict_type_id', 'queryType': '=', 'value': '1014474470772899974'}]
-      }
-      // 字段对应表上filter条件
-      recipelType_search.params.push.apply(recipelType_search.params, [])
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(recipelType_search.params, this.$route.meta.routerId, '1014474470772899974')
-      this.recipelType_List = []
-      listDictItemAll(recipelType_search).then(responseData => {
-        this.recipelType_List = responseData.data
+      getDictItemsByCode(DICT_CODE.RECIPEL_TYPE).then((data) => {
+        this.recipelType_List = data
         this.recipelType_List.unshift({name: "全部", value: ""})
       })
       //初始化开单医生
@@ -788,28 +773,6 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-  .drag_table {
-    // 设置表格header的高度
-    /deep/ th {
-      height: 44px;
-    }
-    /deep/ th.gutter:last-of-type {
-      height: 0 !important;
-    }
-    // 设置表格body的高度
-    /deep/.el-table__body-wrapper {
-      //解决数据展示超出body高度不滚动bug
-      overflow-y: auto;
-      // 减去的是表格header的高度
-      height: calc(100% - 44px) !important;
-    }
-
-    .el-table__fixed-right {
-      height: 100% !important;
-    }
-  }
-</style>
 <style>
   .review-container{
     margin-top: 8px;

@@ -40,6 +40,7 @@ public class SchedulesController extends BaseController {
     private MedicalRecordService medicalRecordService;
     @Autowired
     private MemberManagementService memberManagementService;
+
     /**
      * 获取待就诊信息
      * @param searchParams
@@ -66,7 +67,7 @@ public class SchedulesController extends BaseController {
                 registrations.add(medicalRecordService.allNewQuery(item.getId(), recipelInfoIds));
             }
         }
-        Page<ReceptionEvt>  data= new Page((long)result.getTotal(), registrations);
+        Page<ReceptionEvt> data = new Page<>((long)result.getTotal(), registrations);
         return ResponseEntity.ok(ResultUtil.successJson(data));
     }
 
@@ -91,13 +92,6 @@ public class SchedulesController extends BaseController {
         return ResponseEntity.ok(ResultUtil.successJson(data));
     }
 
-//    @PostMapping("/updateoverlookidlist")
-//    public ResponseEntity<JSONObject> updateoverlookidlist(@RequestBody List<String> idlist){
-//        for(String item:idlist){
-//            schedulesService.updateoverlookid(item);
-//        }
-//        return ResponseEntity.ok(ResultUtil.successJson(""));
-//    }
         @PostMapping("/updateoverlookidlist")
     public ResponseEntity<JSONObject> updateoverlookidlist(@RequestBody PageRegistration pageRegistration){
         if(pageRegistration.getStatus().equals("0")){
@@ -115,12 +109,6 @@ public class SchedulesController extends BaseController {
         return ResponseEntity.ok(ResultUtil.successJson(""));
     }
 
-
-//    @PostMapping("/schedulelists")
-//    public ResponseEntity<JSONObject> visitprogresslist(@RequestBody Visitprogresspara visitprogresspara){
-//        Page<VisitProgress> result=schedulesService.visitProgressPage(visitprogresspara);
-//        return ResponseEntity.ok(ResultUtil.successJson(result));
-//    }
 
     @PostMapping("/schedulelists")
     public ResponseEntity<JSONObject> visitprogresslist(@RequestBody Visitprogresspara visitprogresspara){

@@ -55,7 +55,7 @@ export default {
           // 移除元数据的权限
           this.metaFormModel.metaDatas.forEach((item)=>{
             dataRules = dataRules.filter((ruel) => {
-              return !(ruel.metaId == item.id && ruel.routerId == routerId)
+              return !(ruel.metaId === item.id && ruel.routerId === routerId)
             })
           })
           // 添加新的数据权限
@@ -78,58 +78,54 @@ export default {
     },
     onDialogClose() {
       this.visible = false
-    }
-  },
-  mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openDataPermission', function(code, roleId, routerId) {
-        this.roleId = roleId
-        this.routerId = routerId
-        let metas = require('@/views/' + code + '/metadata').metadata
-        // 合并角色配置的数据权限, 并去除metadata.js已经删除的元数据
-        this.metaFormModel.metaDatas = []
-        metas.forEach((item, idx) => {
-          let noFound = true
-          this.value.forEach((rule) => {
-            if(item.id == rule.metaId && rule.routerId == routerId) {
-              this.metaFormModel.metaDatas.push({
-                id: item.id,
-                name: item.name,
-                schemeId: item.schemeId,
-                dataRules: JSON.parse(rule.conditions)
-              })
-              noFound = false
-            }
-          })
-          // 配置后，新添加的元数据
-          if(noFound) {
+    },
+    openDataPermission(code, roleId, routerId) {
+      this.roleId = roleId
+      this.routerId = routerId
+      let metas = require('@/views/' + code + '/metadata').metadata
+      // 合并角色配置的数据权限, 并去除metadata.js已经删除的元数据
+      this.metaFormModel.metaDatas = []
+      metas.forEach((item, idx) => {
+        let noFound = true
+        this.value.forEach((rule) => {
+          if(item.id === rule.metaId && rule.routerId === routerId) {
             this.metaFormModel.metaDatas.push({
               id: item.id,
               name: item.name,
               schemeId: item.schemeId,
-              dataRules: {
-                groupOne: [
-                  {logic: 'AND', column: null, queryType: '', value: null, operations: []},
-                  {logic: 'AND', column: null, queryType: '', value: null, operations: []},
-                  {logic: 'AND', column: null, queryType: '', value: null, operations: []}      
-                ],
-                groupTwo: [
-                  {logic: 'AND', column: null, queryType: '', value: null, operations: []},
-                  {logic: 'AND', column: null, queryType: '', value: null, operations: []},
-                  {logic: 'AND', column: null, queryType: '', value: null, operations: []}
-                ],
-                groupLogic: 'OR'
-              }
+              dataRules: JSON.parse(rule.conditions)
             })
+            noFound = false
           }
-
-          this.$nextTick(() => {
-            this.$refs.conditionPanel[idx].$emit('init')
-          })
         })
-        this.visible = true
+        // 配置后，新添加的元数据
+        if(noFound) {
+          this.metaFormModel.metaDatas.push({
+            id: item.id,
+            name: item.name,
+            schemeId: item.schemeId,
+            dataRules: {
+              groupOne: [
+                {logic: 'AND', column: null, queryType: '', value: null, operations: []},
+                {logic: 'AND', column: null, queryType: '', value: null, operations: []},
+                {logic: 'AND', column: null, queryType: '', value: null, operations: []}
+              ],
+              groupTwo: [
+                {logic: 'AND', column: null, queryType: '', value: null, operations: []},
+                {logic: 'AND', column: null, queryType: '', value: null, operations: []},
+                {logic: 'AND', column: null, queryType: '', value: null, operations: []}
+              ],
+              groupLogic: 'OR'
+            }
+          })
+        }
+
+        this.$nextTick(() => {
+          this.$refs.conditionPanel[idx].init()
+        })
       })
-    }) 
-  }  
+      this.visible = true
+    },
+  },
 }
 </script>

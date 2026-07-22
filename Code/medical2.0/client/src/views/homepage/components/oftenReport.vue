@@ -80,13 +80,13 @@
   .el-card {
     height: 100%;
   }
-  .index-module-card.el-card /deep/ .el-card__header {
+  .index-module-card.el-card ::v-deep .el-card__header {
     padding: 10px 16px!important;
     .card-close, .card-setting {
       float: right;
       padding: 3px 0
     }
-    /deep/ .often-body {
+    ::v-deep .often-body {
       position: relative;
       min-height: 210px;
     }
@@ -96,7 +96,7 @@
   }
   .card-radio-group {
     float: right;
-    /deep/ .el-radio-button--mini .el-radio-button__inner {
+    ::v-deep .el-radio-button--mini .el-radio-button__inner {
       padding: 5px 15px;
     }
   }

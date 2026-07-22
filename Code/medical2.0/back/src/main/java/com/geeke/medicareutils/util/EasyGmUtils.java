@@ -2,6 +2,8 @@ package com.geeke.medicareutils.util;
 
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Integer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.gm.GMNamedCurves;
@@ -34,6 +36,7 @@ import java.util.Arrays;
  * @Date 2024/10/31
  */
 public class EasyGmUtils {
+    private static final Logger logger = LoggerFactory.getLogger(EasyGmUtils.class);
     static {
         Security.addProvider(new BouncyCastleProvider());
     }
@@ -66,7 +69,7 @@ public class EasyGmUtils {
             // 生成签名
             return signer.generateSignature();
         } catch (Exception e) {
-            e.printStackTrace(); // 打印异常信息
+            logger.error("国密运算异常", e);
             return null;
         }
     }
@@ -107,7 +110,7 @@ public class EasyGmUtils {
             // 验证签名
             return signer.verifySignature(sign);
         } catch (Exception e) {
-            e.printStackTrace(); // 打印异常信息
+            logger.error("国密运算异常", e);
             return false; // 验证失败
         }
     }
@@ -146,7 +149,7 @@ public class EasyGmUtils {
             sm2Engine.init(true, new ParametersWithRandom(pubkey, new SecureRandom()));
             return sm2Engine.processBlock(data, 0, data.length);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("国密运算异常", e);
             return null;
         }
     }
@@ -157,7 +160,7 @@ public class EasyGmUtils {
             sm2Engine.init(false, key);
             return sm2Engine.processBlock(data, 0, data.length);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("国密运算异常", e);
             return null;
         }
     }
@@ -189,7 +192,7 @@ public class EasyGmUtils {
             length += cipherInstance.doFinal(output, length);
             return Arrays.copyOf(output, length);
         } catch (CryptoException e) {
-            // Log the error (use your logging framework)
+            logger.error("SM4 CBC decryption failed", e);
             return null;
         }
     }
@@ -209,7 +212,7 @@ public class EasyGmUtils {
             length += cipherInstance.doFinal(output, length);
             return Arrays.copyOf(output, length);
         } catch (CryptoException e) {
-            // Log the error (use your logging framework)
+            logger.error("SM4 CBC encryption failed", e);
             return null;
         }
     }
@@ -225,7 +228,7 @@ public class EasyGmUtils {
             cipher.init(Cipher.ENCRYPT_MODE, keySpec);
             return cipher.doFinal(plain);
         } catch (Exception e) {
-            // Log the error (use your logging framework)
+            logger.error("SM4 ECB encryption failed", e);
             return null;
         }
     }
@@ -240,7 +243,7 @@ public class EasyGmUtils {
             cipher1.init(Cipher.DECRYPT_MODE, keySpec);
             return cipher1.doFinal(cipher);
         } catch (Exception e) {
-            // Log the error (use your logging framework)
+            logger.error("SM4 ECB decryption failed", e);
             return null;
         }
     }
@@ -369,8 +372,7 @@ public class EasyGmUtils {
         try {
             return new DERSequence(v).getEncoded();
         } catch (IOException e) {
-            // Handle error accordingly
-            e.printStackTrace();
+            logger.error("ASN1编码异常", e);
             return null;
         }
     }
@@ -394,8 +396,7 @@ public class EasyGmUtils {
             Arrays.fill(iv, (byte) 0);
             return iv;
         } catch (Exception e) {
-            // 处理异常，例如记录错误
-            e.printStackTrace(); // 可以替换为日志记录
+            logger.error("SM4加密异常", e);
             return null;
         }
     }

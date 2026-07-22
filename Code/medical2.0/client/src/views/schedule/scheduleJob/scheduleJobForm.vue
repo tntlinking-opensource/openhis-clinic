@@ -3,7 +3,7 @@
     @open='onDialogOpen()' v-loading='loading'>
     <div slot='title' class='dialog-header'>
       {{ dialogProps.title }}
-      <OperationIcon v-show='dialogProps.action == "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
+      <OperationIcon v-show='dialogProps.action === "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
     </div>
     <el-form :model='bizFormModel' :rules='formRules' 
       ref='scheduleJobForm' label-width='120px' label-position='right' class='edit-form'>    
@@ -11,21 +11,21 @@
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='任务名称' prop='name' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.name' :maxlength='100' :placeholder='dialogProps.action == "view"? "" : "请输入任务名称"' autofocus></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.name' :maxlength='100' :placeholder='dialogProps.action === "view"? "" : "请输入任务名称"' autofocus></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='任务编号' prop='code' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.code' :maxlength='100' :placeholder='dialogProps.action == "view"? "" : "请输入任务编号"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.code' :maxlength='100' :placeholder='dialogProps.action === "view"? "" : "请输入任务编号"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='任务表达式' prop='cron' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.cron' :maxlength='30' :placeholder='dialogProps.action == "view"? "" : "请输入任务表达式"' >
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.cron' :maxlength='30' :placeholder='dialogProps.action === "view"? "" : "请输入任务表达式"' >
               <template slot="append">
                 <el-button type="primary" @click="handleShowCron">
                   生成表达式
@@ -39,37 +39,37 @@
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='任务状态' prop='status' >
-            <el-input disabled  v-model='bizFormModel.status' :maxlength='100' :placeholder='dialogProps.action == "view"? "" : "请输入任务状态"' ></el-input>
+            <el-input disabled  v-model='bizFormModel.status' :maxlength='100' :placeholder='dialogProps.action === "view"? "" : "请输入任务状态"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/1'>
           <el-form-item label='是否禁用' prop='isLock' >
-            <el-switch :disabled='dialogProps.action == "view"' v-model='bizFormModel.isLock' active-color='#13ce66' inactive-color='#dbdfe6' active-value='1' inactive-value='0'></el-switch>
+            <el-switch :disabled='dialogProps.action === "view"' v-model='bizFormModel.isLock' active-color='#13ce66' inactive-color='#dbdfe6' active-value='1' inactive-value='0'></el-switch>
           </el-form-item>
         </el-col>
       </el-row>
                     <el-row>
                 <el-col>
                     <el-form-item label='备注' prop='remarks' >
-                        <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.remarks' type='textarea'
-                                  :maxlength='100' :placeholder='dialogProps.action == "view"? "" : "请输入备注"'  clearable></el-input>
+                        <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.remarks' type='textarea'
+                                  :maxlength='100' :placeholder='dialogProps.action === "view"? "" : "请输入备注"'  clearable></el-input>
                     </el-form-item>
                 </el-col>
             </el-row>
     </el-form>
     <span slot='footer' class='dialog-footer'>
-      <el-dropdown v-if='dialogProps.action == "edit"' split-button type='warning' @click='startTask("scheduleJobForm")'>
+      <el-dropdown v-if='dialogProps.action === "edit"' split-button type='warning' @click='startTask("scheduleJobForm")'>
         启动任务
         <el-dropdown-menu slot="dropdown">
           <el-dropdown-item><el-button  type='text' :plain='true' @click='restartTask("scheduleJobForm")'>保存并启动</el-button></el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
-       <el-button v-if='dialogProps.action == "edit"' type='primary' :plain='true' @click='endTask("scheduleJobForm")'>暂 停</el-button>
-      <el-button v-if='dialogProps.action != "view"' :disabled="flage" type='primary' :plain='true' @click='onSubmit("scheduleJobForm")'>保 存</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+       <el-button v-if='dialogProps.action === "edit"' type='primary' :plain='true' @click='endTask("scheduleJobForm")'>暂 停</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :disabled="flag" type='primary' :plain='true' @click='onSubmit("scheduleJobForm")'>保 存</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span>
     <el-dialog title="Cron表达式生成器" width="80%" :visible.sync="openCron" append-to-body destroy-on-close class="scrollbar">
       <crontab @hide="openCron=false" @fill="crontabFill" :expression="expression"></crontab>
@@ -92,7 +92,7 @@ export default {
   data() {
     return {
       bizFormModel: this.initFormModel(),
-      flage:false,
+      flag:false,
        dialogProps: {
         visible: false,
         action: '',
@@ -136,13 +136,13 @@ export default {
     endTask(formName){
       this.$refs[formName].validate(valid => {
         if (valid) {
-          if (this.bizFormModel.status=='已暂停') {
+          if (this.bizFormModel.status==='已暂停') {
             this.$message.warning("当前任务暂停状态不可重复暂停");
             return  false;
           }
           this.setLoad()
           endTask(this.bizFormModel).then(responseData => {
-            if(responseData.code == 100) {
+            if(responseData.code === 100) {
               this.dialogProps.visible = false
               this.$emit('save-finished')
               this.$message.success(responseData.data)
@@ -162,13 +162,13 @@ export default {
     startTask(formName){
       this.$refs[formName].validate(valid => {
         if (valid) {
-          if (this.bizFormModel.status=='执行中') {
+          if (this.bizFormModel.status==='执行中') {
               this.$message.warning("当前任务执行状态不可重复启动");
               return  false;
           }
           this.setLoad()
              startTask(this.bizFormModel).then(responseData => {
-              if(responseData.code == 100) {
+              if(responseData.code === 100) {
                 this.dialogProps.visible = false
                 this.$emit('save-finished')
                 this.$message.success(responseData.data)
@@ -191,10 +191,10 @@ export default {
         if (valid) {
           this.setLoad()
           saveScheduleJob(this.bizFormModel).then(responseData => {
-              if(responseData.code == 100) {
+              if(responseData.code === 100) {
                 //任务重启
                   restartTask(this.bizFormModel).then(responseData => {
-                    if(responseData.code == 100) {
+                    if(responseData.code === 100) {
                       this.dialogProps.visible = false
                       this.$emit('save-finished')
                       this.$message.success(responseData.data)
@@ -220,12 +220,12 @@ export default {
 
 
     onSubmit(formName) {
-      this.flage=true
+      this.flag=true
       this.$refs[formName].validate(valid => {
         if (valid) {
           this.doSave()
         } else {
-          this.flage=false
+          this.flag=false
           return false
         }
       });
@@ -233,8 +233,8 @@ export default {
     doSave() {
       this.setLoad()
       saveScheduleJob(this.bizFormModel).then(responseData => {
-        this.flage=false
-        if(responseData.code == 100) {
+        this.flag=false
+        if(responseData.code === 100) {
           this.dialogProps.visible = false
           this.$emit('save-finished')
         } else {
@@ -242,7 +242,7 @@ export default {
         }
         this.resetLoad()
       }).catch(error => {
-        this.flage=false
+        this.flag=false
         this.outputError(error)
       })
     },
@@ -271,42 +271,40 @@ export default {
       }
     },
     initOptions(This) {
-    }
+    },
+    openViewScheduleJobDialog(scheduleJob) {
+      this.dialogProps.action = 'view'
+      this.dialogProps.title = '查看定时任务管理'
+      this.bizFormModel = scheduleJob
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+    },
+    openEditScheduleJobDialog(scheduleJob) {
+      this.dialogProps.action = 'edit'
+      this.dialogProps.title = '修改定时任务管理'
+      this.bizFormModel = scheduleJob
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+    },
+    openAddScheduleJobDialog() {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加定时任务管理'
+      this.bizFormModel = this.initFormModel()
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+    },
+    openCopyScheduleJobDialog(scheduleJob) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加定时任务管理'
+      this.bizFormModel = scheduleJob
+      this.initOptions(this.bizFormModel)
+      this.bizFormModel.id = null
+      this.dialogProps.visible = true
+    },
   },
   watch: {
   },
   mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openViewScheduleJobDialog', function(scheduleJob) {
-        this.dialogProps.action = 'view'
-        this.dialogProps.title = '查看定时任务管理'
-        this.bizFormModel = scheduleJob
-        this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openEditScheduleJobDialog', function(scheduleJob) {
-        this.dialogProps.action = 'edit'
-        this.dialogProps.title = '修改定时任务管理'
-        this.bizFormModel = scheduleJob
-        this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openAddScheduleJobDialog', function() {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加定时任务管理'
-        this.bizFormModel = this.initFormModel()
-        this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openCopyScheduleJobDialog', function(scheduleJob) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加定时任务管理'
-        this.bizFormModel = scheduleJob
-        this.initOptions(this.bizFormModel)
-        this.bizFormModel.id = null   //把id设置为空，添加一个新的
-        this.dialogProps.visible = true
-      })
-    })
-  }  
+  },
 }
 </script>

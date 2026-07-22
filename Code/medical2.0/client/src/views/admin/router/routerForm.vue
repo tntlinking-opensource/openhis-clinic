@@ -3,7 +3,7 @@
     @open='onDialogOpen()' v-loading='loading'>
     <div slot='title' class='dialog-header'>
       {{ dialogProps.title }}
-      <OperationIcon v-show='dialogProps.action == "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
+      <OperationIcon v-show='dialogProps.action === "view" && permission.edit' type='primary' text='编辑' placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
     </div>
     <el-form :model='bizFormModel' :rules='formRules' 
       ref='routerForm' label-width='120px' label-position='right' class='edit-form'>    
@@ -11,44 +11,44 @@
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='父级' prop='parent.id' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.parent.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.parent.name'></el-input>
             <el-cascader v-else v-model='bizFormModel.parent.id' :options='parent_List' :key='key_parent' ref='parentCascader' @change='onParentChange' :props='{value: "id", label: "name", checkStrictly: true, emitPath: false}' filterable clearable placeholder='请选择父级' />
           </el-form-item>
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='名称' prop='name' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.name' :maxlength='128' :placeholder='dialogProps.action == "view"? "" : "请输入名称"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.name' :maxlength='128' :placeholder='dialogProps.action === "view"? "" : "请输入名称"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='代码' prop='code' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.code' :maxlength='64' :placeholder='dialogProps.action == "view"? "" : "请输入代码"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.code' :maxlength='64' :placeholder='dialogProps.action === "view"? "" : "请输入代码"' ></el-input>
           </el-form-item>
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='URL' prop='url' >
-            <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.url' :maxlength='128' :placeholder='dialogProps.action == "view"? "" : "请输入URL"' ></el-input>
+            <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.url' :maxlength='128' :placeholder='dialogProps.action === "view"? "" : "请输入URL"' ></el-input>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='可授权' prop='canPermission' >
-            <el-switch :disabled='dialogProps.action == "view"' v-model='bizFormModel.canPermission' active-color='#13ce66' inactive-color='#dbdfe6' active-value='1' inactive-value='0'></el-switch>
+            <el-switch :disabled='dialogProps.action === "view"' v-model='bizFormModel.canPermission' active-color='#13ce66' inactive-color='#dbdfe6' active-value='1' inactive-value='0'></el-switch>
           </el-form-item>
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='禁用' prop='isLocked' >
-            <el-switch :disabled='dialogProps.action == "view"' v-model='bizFormModel.isLocked' active-color='#13ce66' inactive-color='#dbdfe6' :active-value='1' :inactive-value='0'></el-switch>
+            <el-switch :disabled='dialogProps.action === "view"' v-model='bizFormModel.isLocked' active-color='#13ce66' inactive-color='#dbdfe6' :active-value='1' :inactive-value='0'></el-switch>
           </el-form-item>
         </el-col>
       </el-row>
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='显示序号' prop='sort' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.sort'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.sort'></el-input>
             <el-input-number v-else v-model='bizFormModel.sort' controls-position='right'></el-input-number>
           </el-form-item>
         </el-col>
@@ -56,16 +56,16 @@
             <el-row>
                 <el-col>
                     <el-form-item label='扩展属性' prop='properties' >
-                        <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.properties' type='textarea'
-                                  :maxlength='1024' :placeholder='dialogProps.action == "view"? "" : "请输入扩展属性"'  clearable></el-input>
+                        <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.properties' type='textarea'
+                                  :maxlength='1024' :placeholder='dialogProps.action === "view"? "" : "请输入扩展属性"'  clearable></el-input>
                     </el-form-item>
                 </el-col>
             </el-row>
     </el-form>
     <span slot='footer' class='dialog-footer'>
-      <el-button v-if='dialogProps.action != "view"' :disabled="flage" type='primary' :plain='true' @click='onSubmit("routerForm")'>保 存</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :disabled="flag" type='primary' :plain='true' @click='onSubmit("routerForm")'>保 存</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span>    
   </el-dialog>
 </template>
@@ -86,7 +86,7 @@ export default {
       bizFormModel: this.initFormModel(),
           key_parent: 1,    // el-cascader key
           parent_List: [],  // 父级
-          flage:false,
+          flag:false,
        dialogProps: {
         visible: false,
         action: '',
@@ -111,12 +111,12 @@ export default {
   },  
   methods: {
     onSubmit(formName) {
-      this.flage=true
+      this.flag=true
       this.$refs[formName].validate(valid => {
         if (valid) {
           this.doSave()
         } else {
-          this.flage=false
+          this.flag=false
           return false
         }
       });
@@ -124,8 +124,8 @@ export default {
     doSave() {
       this.setLoad()
       saveRouter(this.bizFormModel).then(responseData => {
-        this.flage=false
-        if(responseData.code == 100) {
+        this.flag=false
+        if(responseData.code === 100) {
           this.dialogProps.visible = false
           this.$emit('save-finished')
         } else {
@@ -133,7 +133,7 @@ export default {
         }
         this.resetLoad()
       }).catch(error => {
-        this.flage=false
+        this.flag=false
         this.outputError(error)
       })
     },
@@ -194,12 +194,43 @@ export default {
       this.parent_List.splice(0, this.parent_List.length)
       treeRouter(parent_search).then(responseData => {
         this.parent_List = responseData.data
+      }).catch(error => {
+        this.outputError(error)
       })
-    }
+    },
+    openViewRouterDialog(router) {
+      this.dialogProps.action = 'view'
+      this.dialogProps.title = '查看路由'
+      this.bizFormModel = router
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+    },
+    openEditRouterDialog(router) {
+      this.dialogProps.action = 'edit'
+      this.dialogProps.title = '修改路由'
+      this.bizFormModel = router
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+    },
+    openAddRouterDialog(parent) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加路由'
+      this.bizFormModel = this.initFormModel(parent)
+      this.initOptions(this.bizFormModel)
+      this.dialogProps.visible = true
+    },
+    openCopyRouterDialog(router) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加路由'
+      this.bizFormModel = router
+      this.initOptions(this.bizFormModel)
+      this.bizFormModel.id = null
+      this.dialogProps.visible = true
+    },
   },
   watch: {
     parent_List(newVal, oldVal) {
-      if(newVal != oldVal && this.dialogProps.action == 'add' ) {
+      if(newVal !== oldVal && this.dialogProps.action === 'add' ) {
         this.$nextTick(() => {
           this.onParentChange()
         })
@@ -207,37 +238,6 @@ export default {
     },
   },
   mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openViewRouterDialog', function(router) {
-        this.dialogProps.action = 'view'
-        this.dialogProps.title = '查看路由'
-        this.bizFormModel = router
-        this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openEditRouterDialog', function(router) {
-        this.dialogProps.action = 'edit'
-        this.dialogProps.title = '修改路由'
-        this.bizFormModel = router
-        this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openAddRouterDialog', function(parent) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加路由'
-        this.bizFormModel = this.initFormModel(parent)
-        this.initOptions(this.bizFormModel)
-        this.dialogProps.visible = true
-      })
-      this.$on('openCopyRouterDialog', function(router) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加路由'
-        this.bizFormModel = router
-        this.initOptions(this.bizFormModel)
-        this.bizFormModel.id = null   //把id设置为空，添加一个新的
-        this.dialogProps.visible = true
-      })
-    })
-  }  
+  },
 }
 </script>

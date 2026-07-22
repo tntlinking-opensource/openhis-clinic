@@ -1,36 +1,23 @@
 package com.geeke.config.shiro;
 
-import com.geeke.config.cache.RedisConfig;
-import com.geeke.utils.JwtUtils;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
-import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.session.mgt.SessionManager;
+import org.apache.shiro.session.mgt.eis.MemorySessionDAO;
 import org.apache.shiro.session.mgt.eis.SessionDAO;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.apache.shiro.web.util.WebUtils;
-import org.crazycake.shiro.IRedisManager;
-import org.crazycake.shiro.RedisCacheManager;
-import org.crazycake.shiro.RedisManager;
-import org.crazycake.shiro.RedisSessionDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.servlet.Filter;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-
-import javax.servlet.ServletResponse;
-
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author: lys
@@ -45,12 +32,12 @@ public class ShiroConfiguration {
 	 * Shiro的Web过滤器Factory 命名:shiroFilter
 	 */
     @Bean(name = "shiroFilter")
-    public ShiroFilterFactoryBean shiroFilterFactoryBean(SecurityManager securityManager, JwtUtils jwtUtils) {
+    public ShiroFilterFactoryBean shiroFilterFactoryBean(SecurityManager securityManager, AjaxPermissionsAuthorizationFilter ajaxFilter) {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         //Shiro的核心安全接口,这个属性是必须的
         shiroFilterFactoryBean.setSecurityManager(securityManager);
         Map<String, Filter> filterMap = new LinkedHashMap<>();
-        filterMap.put("authc", new AjaxPermissionsAuthorizationFilter(jwtUtils));
+        filterMap.put("authc", ajaxFilter);
         shiroFilterFactoryBean.setFilters(filterMap);
         
         /*定义shiro过滤链  Map结构
@@ -67,38 +54,20 @@ public class ShiroConfiguration {
 
         filterChainDefinitionMap.put("/websocket/**", "anon");
 
+        // 认证相关接口（登录、获取Token等）
         filterChainDefinitionMap.put("/auth/token", "anon");
         filterChainDefinitionMap.put("/auth/getToken", "anon");
         filterChainDefinitionMap.put("/auth/getUserTenant", "anon");
         filterChainDefinitionMap.put("/auth/loginedtocken", "anon");
         filterChainDefinitionMap.put("/auth/wxToken", "anon");
-        filterChainDefinitionMap.put("/auth/allActiveUsers", "anon");
 
         //院版获取诊所信息放行
         filterChainDefinitionMap.put("/hosdata/HosCollectData/listAll", "anon");
-
-        filterChainDefinitionMap.put("/admin/user/test", "anon");
-
-
-//        //测试放行
-//        filterChainDefinitionMap.put("/hosdata/HosCollectData/listAll", "anon");
-//        filterChainDefinitionMap.put("/hosdata/HosCollectData/getHosDrugs", "anon");
-//        filterChainDefinitionMap.put("/hosdata/HosCollectData/test", "anon");
-//        filterChainDefinitionMap.put("/hosdata/HosCollectData/HisDrugsToClinic", "anon");
-//        filterChainDefinitionMap.put("/hosdata/HosCollectData/getHosMaterials", "anon");
-//        filterChainDefinitionMap.put("/hosdata/HosCollectData/HisMaterialsToClinic", "anon");
-//        filterChainDefinitionMap.put("/hosdata/HosCollectData/getHosInstitutions", "anon");
-//          filterChainDefinitionMap.put("/hosdata/HosDepartmentStorage/getHosDrugsStorage", "anon");
 
 //        关于微信用户登陆
         filterChainDefinitionMap.put("/wxUser/initLogin","anon");
         filterChainDefinitionMap.put("/wxUser/getCode","anon");
         filterChainDefinitionMap.put("/wxUser/getPhone","anon");
-
-        // 大屏排班放行
-        filterChainDefinitionMap.put("/auth/userLoginStatus","anon");
-
-        filterChainDefinitionMap.put("/toll/outpatientLog/list","anon");
 
 
         filterChainDefinitionMap.put("/", "anon");
@@ -118,7 +87,9 @@ public class ShiroConfiguration {
         filterChainDefinitionMap.put("/ureport/**", "anon");
        // filterChainDefinitionMap.put("/outpatient/patient/**", "anon");
         filterChainDefinitionMap.put("/swagger-ui.html","anon");
+        filterChainDefinitionMap.put("/swagger-ui/**","anon");
         filterChainDefinitionMap.put("/webjars/**","anon");
+        filterChainDefinitionMap.put("/v3/api-docs/**","anon");
         filterChainDefinitionMap.put("/v2/**","anon");
         filterChainDefinitionMap.put("/swagger-resources/**","anon");
         filterChainDefinitionMap.put("/**", "authc");
@@ -126,66 +97,20 @@ public class ShiroConfiguration {
         return shiroFilterFactoryBean;
     }
 
-	// ************************** redis管理用户会话 开始*******************
-    /**
-     * Redis Manager
-     * @param redisConfig  redis 服务配置
-     * @return
-     */
     @Bean
-    public IRedisManager redisManager(RedisConfig redisConfig) { 
-    	RedisManager redisManager = new RedisManager();  	
-    	redisManager.setHost(redisConfig.getRedisProperties().getHost() + ":" + redisConfig.getRedisProperties().getPort());
-    	redisManager.setDatabase(redisConfig.getRedisProperties().getDatabase());
-    	redisManager.setPassword(redisConfig.getRedisProperties().getPassword());
-    	redisManager.setTimeout(redisConfig.getRedisProperties().getTimeout());
-    	return redisManager;
+    public SessionDAO sessionDAO() {
+        // 使用内存SessionDAO替代RedisSessionDAO
+        return new MemorySessionDAO();
     }
-    
-    /**
-     * redis SessionDAO
-     * @param redisManager  Redis Manager
-     * @return
-     */
-    @Bean
-    public SessionDAO redisSessionDAO(IRedisManager redisManager) {
-    	RedisSessionDAO redisSessionDAO = new RedisSessionDAO();
-    	redisSessionDAO.setRedisManager(redisManager);
-    	return redisSessionDAO;
-    }
-    
-    /**
-     * Redis Cache Manager
-     * @param redisManager  Redis Manager
-     * @return
-     */
-	@Bean
-    public RedisCacheManager redisCacheManager(IRedisManager redisManager) {
-    	RedisCacheManager redisCacheManager = new RedisCacheManager();
-    	redisCacheManager.setRedisManager(redisManager);
-    	return redisCacheManager;
-    }
-	
+
     @Bean
     public StatelessSessionManager sessionManager(SessionDAO sessionDAO) {
-//    	StatelessSessionManager sessionManager = new StatelessSessionManager();
-//    	sessionManager.setSessionDAO(sessionDAO);
-//        // 会话验证器调度时间
-//        // sessionManager.setSessionValidationInterval(1800000);
-//        // 定时检查失效的session
-//        sessionManager.setSessionValidationSchedulerEnabled(true);
-//        // 是否在会话过期后会调用SessionDAO的delete方法删除会话 默认true
-//        sessionManager.setDeleteInvalidSessions(true);
-//        sessionManager.setSessionIdUrlRewritingEnabled(false);
-//        // sessionManager.setSessionIdCookie(wapsession());
-//        sessionManager.setSessionIdCookieEnabled(true);
-
         StatelessSessionManager sessionManager = new StatelessSessionManager();
         sessionManager.setSessionDAO(sessionDAO);
 // 禁用会话验证器调度时间
         sessionManager.setSessionValidationSchedulerEnabled(false);
-// 禁用会话超时设置，这样会话永不过期
-        sessionManager.setGlobalSessionTimeout(1000000000); // -1表示永不过期
+// 会话超时设置为24小时（86400000毫秒），防止Redis内存泄漏
+        sessionManager.setGlobalSessionTimeout(86400000);
 // 是否在会话过期后调用 SessionDAO 的删除方法，保持为 true 不会影响过期
         sessionManager.setDeleteInvalidSessions(true);
 // 禁用 URL 重写
@@ -195,8 +120,6 @@ public class ShiroConfiguration {
         return sessionManager;
 
     }
-    
-    // ************************** redis管理用户会话 结束*******************
     
 	
 	/**
@@ -212,21 +135,15 @@ public class ShiroConfiguration {
      * 不指定名字的话，自动创建一个方法名第一个字母小写的bean
      * @param realm
      * @param sessionManager
-     * @param cacheManager
+     * @param
      * @return
      */
     @Bean
-    public SecurityManager securityManager(Realm realm, SessionManager sessionManager, CacheManager redisCacheManager, RedisConfig redisConfig) {
+    public SecurityManager securityManager(Realm realm, SessionManager sessionManager) {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setRealm(realm);
-        
-        /* 采用redis进行会话管理 */
-        if(redisConfig.isRedisCache()) {
-	        securityManager.setSessionManager(sessionManager);
-	        logger.info("Use the customer StatelessSessionManager in SecurityManager");
-	        securityManager.setCacheManager(redisCacheManager);
-	        logger.info("Use the RedisCacheManager in SecurityManager");
-        }
+        securityManager.setSessionManager(sessionManager);
+        logger.info("Use the StatelessSessionManager in SecurityManager");
         return securityManager;
     }
 
@@ -243,7 +160,7 @@ public class ShiroConfiguration {
         HashedCredentialsMatcher hashedCredentialsMatcher = new HashedCredentialsMatcher();
         //散列算法:这里使用MD5算法;
         hashedCredentialsMatcher.setHashAlgorithmName("md5");
-        //散列的次数，比如散列两次，相当于 md5(md5(""));
+        //散列的次数，默认2次
         hashedCredentialsMatcher.setHashIterations(2);
         //storedCredentialsHexEncoded默认是true，此时用的是密码加密用的是Hex编码；false时用Base64编码
         hashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
@@ -263,19 +180,15 @@ public class ShiroConfiguration {
      * 开启Shiro的注解(如@RequiresRoles,@RequiresPermissions),需借助SpringAOP扫描使用Shiro注解的类,并在必要时进行安全逻辑验证
      * 配置以下两个bean(DefaultAdvisorAutoProxyCreator(可选)和AuthorizationAttributeSourceAdvisor)即可实现此功能
      */
-/*    @Bean
-    @DependsOn({"lifecycleBeanPostProcessor"})
-    public DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator() {
-        DefaultAdvisorAutoProxyCreator advisorAutoProxyCreator = new DefaultAdvisorAutoProxyCreator();
-        advisorAutoProxyCreator.setProxyTargetClass(true);
-        return advisorAutoProxyCreator;
-    }
+
+    /**
+     * 禁用 Shiro Filter 的 Servlet Filter 注册，由 ShiroFilterFactoryBean 管理
+     */
     @Bean
-    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(SecurityManager securityManager) {
-        AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor = new AuthorizationAttributeSourceAdvisor();
-        authorizationAttributeSourceAdvisor.setSecurityManager(securityManager);
-        return authorizationAttributeSourceAdvisor;
+    public FilterRegistrationBean<AjaxPermissionsAuthorizationFilter> ajaxFilterRegistration(AjaxPermissionsAuthorizationFilter filter) {
+        FilterRegistrationBean<AjaxPermissionsAuthorizationFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
     }
-*/
 
 }

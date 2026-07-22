@@ -374,32 +374,32 @@ pickerOptions: {
 
 
       stateFormat(row, column) {
-        if (row.lx =="stuffType_0") {
+        if (row.lx ==="stuffType_0") {
           return '医用材料'
         }
-        else if(row.lx =="stuffType_1"){
+        else if(row.lx ==="stuffType_1"){
           return '非医用材料'
         }
-        else if (row.lx =="medicalType_0") {
+        else if (row.lx ==="medicalType_0") {
           return '西药'
         }
-        else if(row.lx =="medicalType_1"){
+        else if(row.lx ==="medicalType_1"){
           return '中草药'
         }
-        else if(row.lx =="medicalType_2"){
+        else if(row.lx ==="medicalType_2"){
           return '中成药'
         } else  {
           return ''
         }
       },
       shztFormat(row, column) {
-        if (row.shzt =="supplierStorageExamineStatus_0") {
+        if (row.shzt ==="supplierStorageExamineStatus_0") {
           return '通过'
         }
-        else if(row.shzt =="supplierStorageExamineStatus_1"){
+        else if(row.shzt ==="supplierStorageExamineStatus_1"){
           return '不通过'
         }
-        else if (row.shzt =="supplierStorageExamineStatus_2") {
+        else if (row.shzt ==="supplierStorageExamineStatus_2") {
           return '已作废'
         } else  {
           return ''
@@ -541,7 +541,7 @@ pickerOptions: {
         let options = this.formInline.option
         let res = []
         for (let i = 0; i < options.length; i++) {
-          if(params == options[i].type){
+          if(params === options[i].type){
             res.push(options[i])
           }
         }
@@ -549,7 +549,7 @@ pickerOptions: {
         this.formInline.options = res
       },
 orderbyChange(){
-  var txt = this.YpjxcRc.ypcltype;
+  const txt = this.YpjxcRc.ypcltype;
         this.optionsdata(txt);
 this.Getypjxclist();
 },
@@ -559,13 +559,13 @@ this.Getypjxclist();
     this.YpjxcRc.kssj=this.TimeInterval[0];
   this.YpjxcRc.jssj=this.TimeInterval[1]
   }
-  this.YpjxcRc.zt=this.formInline.zt=="qb"?"":this.formInline.zt;
-    this.YpjxcRc.lx=this.formInline.lx=="qb"?"":this.formInline.lx;
+  this.YpjxcRc.zt=this.formInline.zt==="qb"?"":this.formInline.zt;
+    this.YpjxcRc.lx=this.formInline.lx==="qb"?"":this.formInline.lx;
 this.YpjxcRc.spm=this.formInline.spm;
 this.YpjxcRc.ph=this.formInline.ph;
 this.YpjxcRc.ypcltype=this.YpjxcRc.ypcltype;
 getypclrkcxlist(this.YpjxcRc).then((responseData)=>{
-if (responseData.code == 100){
+if (responseData.code === 100){
   this.patientTotal=responseData.data.total;
   if(responseData.data.total>0){
   responseData.data.rows.forEach((item)=>{

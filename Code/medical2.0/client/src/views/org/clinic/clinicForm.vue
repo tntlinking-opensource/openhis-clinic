@@ -3,25 +3,25 @@
              @open='onDialogOpen()' v-loading='loading'>
     <div slot='title' class='dialog-header'>
       {{ dialogProps.title }}
-      <OperationIcon v-show='dialogProps.action == "view" && permission.edit' type='primary' text='编辑'
+      <OperationIcon v-show='dialogProps.action === "view" && permission.edit' type='primary' text='编辑'
                      placement='top-start' icon-name='el-icon-edit' @click='switchEdit'></OperationIcon>
     </div>
 
     <el-form :model='bizFormModel' :rules='formRules'
              ref='clinicForm' label-width='120px' label-position='right' class='edit-form'>
-      <div class="tab-item" v-show='tabIndex=="1"'>
+      <div class="tab-item" v-show='tabIndex==="1"'>
         <el-row>
           <el-col :span='24/1'>
             <el-form-item label='诊所名称' prop='name'>
-              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.name' :maxlength='100'
-                        :placeholder='dialogProps.action == "view"? "" : "请输入诊所名称"' autofocus></el-input>
+              <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.name' :maxlength='100'
+                        :placeholder='dialogProps.action === "view"? "" : "请输入诊所名称"' autofocus></el-input>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span='24/1'>
             <el-form-item label='租户' prop='lesseeId.id'>
-              <el-input v-if='dialogProps.action == "view"' :disabled='true'
+              <el-input v-if='dialogProps.action === "view"' :disabled='true'
                         v-model='bizFormModel.lesseeId.userName'></el-input>
               <el-select v-else v-model='bizFormModel.lesseeId' value-key='id' filterable clearable placeholder='请选择租户'
                          @clear='bizFormModel.lesseeId={
@@ -37,48 +37,48 @@
         <el-row>
           <el-col :span='24/1'>
             <el-form-item label='地址(省)' prop='addressProvince'>
-              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.addressProvince' :maxlength='10'
-                        :placeholder='dialogProps.action == "view"? "" : "请输入地址(省)"'></el-input>
+              <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.addressProvince' :maxlength='10'
+                        :placeholder='dialogProps.action === "view"? "" : "请输入地址(省)"'></el-input>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span='24/1'>
             <el-form-item label='地址(市)' prop='addressCity'>
-              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.addressCity' :maxlength='10'
-                        :placeholder='dialogProps.action == "view"? "" : "请输入地址(市)"'></el-input>
+              <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.addressCity' :maxlength='10'
+                        :placeholder='dialogProps.action === "view"? "" : "请输入地址(市)"'></el-input>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span='24/1'>
             <el-form-item label='地址(区)' prop='addressRegion'>
-              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.addressRegion' :maxlength='10'
-                        :placeholder='dialogProps.action == "view"? "" : "请输入地址(区)"'></el-input>
+              <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.addressRegion' :maxlength='10'
+                        :placeholder='dialogProps.action === "view"? "" : "请输入地址(区)"'></el-input>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span='24/1'>
             <el-form-item label='地址' prop='address'>
-              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.address' :maxlength='100'
-                        :placeholder='dialogProps.action == "view"? "" : "请输入地址"'></el-input>
+              <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.address' :maxlength='100'
+                        :placeholder='dialogProps.action === "view"? "" : "请输入地址"'></el-input>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span='24/1'>
             <el-form-item label='手机号' prop='phoneNumber'>
-              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.phoneNumber' :maxlength='20'
-                        :placeholder='dialogProps.action == "view"? "" : "请输入手机号"'></el-input>
+              <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.phoneNumber' :maxlength='20'
+                        :placeholder='dialogProps.action === "view"? "" : "请输入手机号"'></el-input>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span='24/1'>
             <el-form-item label='执业许可科目' prop='licenseSubject'>
-              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.licenseSubject' :maxlength='100'
-                        :placeholder='dialogProps.action == "view"? "" : "请输入执业许可科目"'></el-input>
+              <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.licenseSubject' :maxlength='100'
+                        :placeholder='dialogProps.action === "view"? "" : "请输入执业许可科目"'></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -88,7 +88,7 @@
         <el-row>
           <el-col :span='24/1'>
             <el-form-item label='医疗机构编码' prop='fixmedinsCode'>
-              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.fixmedinsCode' :maxlength='100'
+              <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.fixmedinsCode' :maxlength='100'
                         autofocus></el-input>
             </el-form-item>
           </el-col>
@@ -97,7 +97,7 @@
           <!-- 定点医疗机构名称 -->
           <el-col :span='24/1'>
             <el-form-item label='医疗机构名称' prop='fixmedinsName'>
-              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.fixmedinsName' :maxlength='100'></el-input>
+              <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.fixmedinsName' :maxlength='100'></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -106,7 +106,7 @@
           <!-- 就医地区编码 -->
           <el-col :span='24/1'>
             <el-form-item label='就医地区编码' prop='mdtrtareaAdmvs'>
-              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.mdtrtareaAdmvs' :maxlength='100'></el-input>
+              <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.mdtrtareaAdmvs' :maxlength='100'></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -115,7 +115,7 @@
           <!-- appId -->
           <el-col :span='24/1'>
             <el-form-item label='密钥Id' prop='appId'>
-              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.appId' :maxlength='100'></el-input>
+              <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.appId' :maxlength='100'></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -124,7 +124,7 @@
           <!-- appSecret -->
           <el-col :span='24/1'>
             <el-form-item label='密钥Key' prop='appSecret'>
-              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.appSecret' :maxlength='100'></el-input>
+              <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.appSecret' :maxlength='100'></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -133,7 +133,7 @@
           <!-- privateKey -->
           <el-col :span='24/1'>
             <el-form-item label='机构私钥' prop='privateKey'>
-              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.privateKey' :maxlength='100'></el-input>
+              <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.privateKey' :maxlength='100'></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -142,7 +142,7 @@
           <!-- publicKey -->
           <el-col :span='24/1'>
             <el-form-item label='医保中心公钥' prop='publicKey'>
-              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.publicKey' :maxlength='100'></el-input>
+              <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.publicKey' :maxlength='100'></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -154,7 +154,7 @@
         <el-row>
           <el-col :span='24/1'>
             <el-form-item label='产品版本' prop='version.id'>
-              <el-input v-if='dialogProps.action == "view"' :disabled='true'
+              <el-input v-if='dialogProps.action === "view"' :disabled='true'
                         v-model='bizFormModel.version.name'></el-input>
               <el-select v-else v-model='bizFormModel.version' value-key='id' filterable clearable placeholder='请选择产品版本'
                          @clear='bizFormModel.version={
@@ -171,7 +171,7 @@
         <el-row>
           <el-col :span='24/1'>
             <el-form-item label='状态' prop='status'>
-              <el-switch :disabled='dialogProps.action == "view"' v-model='bizFormModel.status' active-color='#13ce66'
+              <el-switch :disabled='dialogProps.action === "view"' v-model='bizFormModel.status' active-color='#13ce66'
                          inactive-color='#dbdfe6' :active-value='1' :inactive-value='0'></el-switch>
             </el-form-item>
           </el-col>
@@ -179,7 +179,7 @@
         <el-row>
           <el-col :span='24/1'>
             <el-form-item label='是否为机构' prop='isInstitution'>
-              <el-switch :disabled='dialogProps.action == "view"' v-model='bizFormModel.isInstitution' active-color='#13ce66'
+              <el-switch :disabled='dialogProps.action === "view"' v-model='bizFormModel.isInstitution' active-color='#13ce66'
                          inactive-color='#dbdfe6' :active-value='1' :inactive-value='0'></el-switch>
             </el-form-item>
           </el-col>
@@ -187,26 +187,26 @@
         <el-row>
           <el-col :span='24/1'>
             <el-form-item label='诊所开始时间' prop='startUseDate'>
-              <el-date-picker :disabled='dialogProps.action == "view"' v-model='bizFormModel.startUseDate'
+              <el-date-picker :disabled='dialogProps.action === "view"' v-model='bizFormModel.startUseDate'
                               type='datetime' value-format='yyyy-MM-dd HH:mm:ss'
-                              :placeholder='dialogProps.action == "view"? "" : "请输入诊所开始时间"'></el-date-picker>
+                              :placeholder='dialogProps.action === "view"? "" : "请输入诊所开始时间"'></el-date-picker>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span='24/1'>
             <el-form-item label='诊所到期时间' prop='expireDate'>
-              <el-date-picker :disabled='dialogProps.action == "view"' v-model='bizFormModel.expireDate' type='datetime'
+              <el-date-picker :disabled='dialogProps.action === "view"' v-model='bizFormModel.expireDate' type='datetime'
                               value-format='yyyy-MM-dd HH:mm:ss'
-                              :placeholder='dialogProps.action == "view"? "" : "请输入诊所到期时间"'></el-date-picker>
+                              :placeholder='dialogProps.action === "view"? "" : "请输入诊所到期时间"'></el-date-picker>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col>
             <el-form-item label='备注信息' prop='remarks'>
-              <el-input :disabled='dialogProps.action == "view"' v-model='bizFormModel.remarks' type='textarea'
-                        :maxlength='255' :placeholder='dialogProps.action == "view"? "" : "请输入备注信息"'
+              <el-input :disabled='dialogProps.action === "view"' v-model='bizFormModel.remarks' type='textarea'
+                        :maxlength='255' :placeholder='dialogProps.action === "view"? "" : "请输入备注信息"'
                         clearable></el-input>
             </el-form-item>
           </el-col>
@@ -214,10 +214,10 @@
       </div>
     </el-form>
     <span slot='footer' class='dialog-footer'>
-      <el-button v-if='dialogProps.action != "view"' :disabled="flage" type='primary' :plain='true'
+      <el-button v-if='dialogProps.action !== "view"' :disabled="flag" type='primary' :plain='true'
                  @click='onSubmit("clinicForm")'>保 存</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span>
   </el-dialog>
 </template>
@@ -243,7 +243,7 @@
         tabIndex: '1',
         lesseeId_List: [],  // 租户
         version_List: [],  // 产品版本
-        flage: false,
+        flag: false,
         dialogProps: {
           visible: false,
           action: '',
@@ -277,12 +277,12 @@
     },
     methods: {
       onSubmit(formName) {
-        this.flage = true
+        this.flag = true
         this.$refs[formName].validate(valid => {
           if (valid) {
             this.doSave()
           } else {
-            this.flage = false
+            this.flag = false
             return false
           }
         });
@@ -291,8 +291,8 @@
         this.setLoad()
         let formData = this.createFormData(this.bizFormModel)
         saveClinic(formData).then(responseData => {
-          this.flage = false
-          if (responseData.code == 100) {
+          this.flag = false
+          if (responseData.code === 100) {
             this.dialogProps.visible = false
             this.$emit('save-finished')
           } else {
@@ -300,7 +300,7 @@
           }
           this.resetLoad()
         }).catch(error => {
-          this.flage = false
+          this.flag = false
           this.outputError(error)
         })
       },
@@ -387,45 +387,43 @@
         listClinicVersionAll(version_search).then(responseData => {
           this.version_List = responseData.data
         })
-      }
+      },
+      openViewClinicDialog(clinic) {
+        this.dialogProps.action = 'view'
+        this.dialogProps.title = '查看诊所'
+        this.bizFormModel = {...this.initFormModel(), ...clinic}
+        this.initOptions(this.bizFormModel)
+        this.tabIndex = '1'
+        this.dialogProps.visible = true
+      },
+      openEditClinicDialog(clinic) {
+        this.dialogProps.action = 'edit'
+        this.dialogProps.title = '修改诊所'
+        this.bizFormModel = {...this.initFormModel(), ...clinic}
+        this.initOptions(this.bizFormModel)
+        this.tabIndex = '1'
+        this.dialogProps.visible = true
+      },
+      openAddClinicDialog() {
+        this.dialogProps.action = 'add'
+        this.dialogProps.title = '添加诊所'
+        this.bizFormModel = this.initFormModel()
+        this.initOptions(this.bizFormModel)
+        this.tabIndex = '1'
+        this.dialogProps.visible = true
+      },
+      openCopyClinicDialog(clinic) {
+        this.dialogProps.action = 'add'
+        this.dialogProps.title = '添加诊所'
+        this.bizFormModel = {...this.initFormModel(), ...clinic}
+        this.initOptions(this.bizFormModel)
+        this.tabIndex = '1'
+        this.bizFormModel.id = null
+        this.dialogProps.visible = true
+      },
     },
     watch: {},
     mounted: function () {
-      this.$nextTick(() => {
-        this.$on('openViewClinicDialog', function (clinic) {
-          this.dialogProps.action = 'view'
-          this.dialogProps.title = '查看诊所'
-          this.bizFormModel = {...this.initFormModel(), ...clinic}
-          this.initOptions(this.bizFormModel)
-          this.tabIndex = '1'
-          this.dialogProps.visible = true
-        })
-        this.$on('openEditClinicDialog', function (clinic) {
-          this.dialogProps.action = 'edit'
-          this.dialogProps.title = '修改诊所'
-          this.bizFormModel = {...this.initFormModel(), ...clinic}
-          this.initOptions(this.bizFormModel)
-          this.tabIndex = '1'
-          this.dialogProps.visible = true
-        })
-        this.$on('openAddClinicDialog', function () {
-          this.dialogProps.action = 'add'
-          this.dialogProps.title = '添加诊所'
-          this.bizFormModel = this.initFormModel()
-          this.initOptions(this.bizFormModel)
-          this.tabIndex = '1'
-          this.dialogProps.visible = true
-        })
-        this.$on('openCopyClinicDialog', function (clinic) {
-          this.dialogProps.action = 'add'
-          this.dialogProps.title = '添加诊所'
-          this.bizFormModel = {...this.initFormModel(), ...clinic}
-          this.initOptions(this.bizFormModel)
-          this.tabIndex = '1'
-          this.bizFormModel.id = null   //把id设置为空，添加一个新的
-          this.dialogProps.visible = true
-        })
-      })
-    }
+    },
   }
 </script>

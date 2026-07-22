@@ -177,24 +177,24 @@ import {getblmblist,deletembbm} from '@/api/outpatient/blmb'
         
       },
       onCreatePatient(types) {
-      this.$refs.blmbForm.$emit('openAddworkbenchDialog',types);
+      this.$refs.blmbForm.openAddworkbenchDialog(types);
     },
     typeclickload(){
       this. Getblmbtable();
     },
     Getblmbtable(){
       this.tableData=[];
-      this.blmbcxrc.mblx=this.blmbcxrc.mblx=="qb"?"":this.blmbcxrc.mblx;
-    this.blmbcxrc.bllx=this.blmbcxrc.bllx=="qb"?"":this.blmbcxrc.bllx;
+      this.blmbcxrc.mblx=this.blmbcxrc.mblx==="qb"?"":this.blmbcxrc.mblx;
+    this.blmbcxrc.bllx=this.blmbcxrc.bllx==="qb"?"":this.blmbcxrc.bllx;
     this.blmbcxrc.mbmc=this.blmbcxrc.mbmc;
     this.blmbcxrc.cjr=this.blmbcxrc.cjr;
       getblmblist(this.blmbcxrc).then((responseData)=>{
-         if (responseData.code == 100) {
+         if (responseData.code === 100) {
            this.patientTotal=responseData.data.total;
            if(responseData.data.total>0){
              responseData.data.rows.forEach(item => {
-               if(item.mblx=="0"){item.mblx="通用"}else if(item.mblx=="1"){item.mblx="个人"}else{{item.mblx=""}}
-               if(item.bllx=="0"){item.bllx="西医病历"}else if(item.bllx=="1"){item.bllx="中医病历"}else{{item.bllx=""}}
+               if(item.mblx==="0"){item.mblx="通用"}else if(item.mblx==="1"){item.mblx="个人"}else{{item.mblx=""}}
+               if(item.bllx==="0"){item.bllx="西医病历"}else if(item.bllx==="1"){item.bllx="中医病历"}else{{item.bllx=""}}
                this.tableData.push({
                     mbbm:item.mbbm,
                     mbmc: item.mbmc,
@@ -224,7 +224,7 @@ import {getblmblist,deletembbm} from '@/api/outpatient/blmb'
         type: 'warning'
       }).then(() => {
         deletembbm(this.blmbcxrc).then(responseData => {
-          if(responseData.code == 100) {
+          if(responseData.code === 100) {
             this.showMessage({type: 'success', msg: '删除成功'})
           } else {
             this.showMessage(responseData)

@@ -1,58 +1,12 @@
-import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getClinicVersionById = (id) =>
-    request({
-        url: '/clinic/clinicVersion/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/clinic/clinicVersion')
 
-export const listClinicVersionPage = (search) =>
-    request({
-        url: '/clinic/clinicVersion/list',
-        method: 'post',
-        data: search
-    })
-
-export const listClinicVersionAll = (search) =>
-    request({
-        url: '/clinic/clinicVersion/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveClinicVersion = (clinicVersion) => 
-    request({
-        url: '/clinic/clinicVersion/save',
-        method: 'post',
-        data: clinicVersion
-    })
-  
-export const deleteClinicVersion = (clinicVersion) =>
-    request({
-        url: '/clinic/clinicVersion/delete',
-        method: 'post',
-        data: clinicVersion
-    })
-    
-export const bulkInsertClinicVersion = (clinicVersions) =>
-    request({
-        url: '/clinic/clinicVersion/bulkInsert',
-        method: 'post',
-        data: clinicVersions
-    })
-    
-export const bulkUpdateClinicVersion = (clinicVersions) =>
-    request({
-        url: '/clinic/clinicVersion/bulkUpdate',
-        method: 'post',
-        data: clinicVersions
-    })
-
-export const bulkDeleteClinicVersion = (clinicVersions) =>
-    request({
-        url: '/clinic/clinicVersion/bulkDelete',
-        method: 'post',
-        data: clinicVersions
-    })
-    
+export const getClinicVersionById = baseApi.getById
+export const listClinicVersionPage = baseApi.listPage
+export const listClinicVersionAll = baseApi.listAll
+export const saveClinicVersion = baseApi.save
+export const deleteClinicVersion = baseApi.delete
+export const bulkInsertClinicVersion = baseApi.bulkInsert
+export const bulkUpdateClinicVersion = baseApi.bulkUpdate
+export const bulkDeleteClinicVersion = baseApi.bulkDelete

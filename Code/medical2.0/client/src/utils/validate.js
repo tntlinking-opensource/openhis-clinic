@@ -40,7 +40,7 @@ export function validatenull(val) {
   if (val instanceof Array) {
     if (val.length === 0) return true
   } else if (val instanceof Object) {
-    for(var key in val){
+    for(const key in val){
       return false
     }
     return true;
@@ -58,7 +58,7 @@ export function isvalidatemobile(phone) {
   const list = []
   let result = true
   let msg = ''
-  var isPhone = /^0\d{2,3}-?\d{7,8}$/
+  const isPhone = /^0\d{2,3}-?\d{7,8}$/
   // 增加134 减少|1349[0-9]{7}，增加181,增加145，增加17[678]
   // const isMob = /^((\+?86)|(\(\+86\)))?(13[0123456789][0-9]{8}|15[012356789][0-9]{8}|18[012356789][0-9]{8}|14[57][0-9]{8}|17[3678][0-9]{8})$/
   if (!validatenull(phone)) {
@@ -124,14 +124,14 @@ export function validaChinese(str) {
  */
  export function isLatitudeAndlongitude (rule, value, callback) {
     let LatitudeAndlongitude = ''
-    if(value.indexOf("，") != -1){  //寻找每一个中文逗号，并替换
+    if(value.indexOf("，") !== -1){  //寻找每一个中文逗号，并替换
       value = value.replace(/，/ig,',');
     }
     LatitudeAndlongitude = value.split(",") 
     // 经度,整数部分为0-180小数部分为0到15位
-    var longreg = /^(\-|\+)?(((\d|[1-9]\d|1[0-7]\d|0{1,3})\.\d{0,15})|(\d|[1-9]\d|1[0-7]\d|0{1,3})|180\.0{0,15}|180)$/
+    const longreg = /^(\-|\+)?(((\d|[1-9]\d|1[0-7]\d|0{1,3})\.\d{0,15})|(\d|[1-9]\d|1[0-7]\d|0{1,3})|180\.0{0,15}|180)$/
     // 纬度,整数部分为0-90小数部分为0到15位
-    var latreg = /^(\-|\+)?([1-8]?\d{1}\.\d{0,15}|90\.0{0,15}|[1-8]?\d{1}|90)$/
+    const latreg = /^(\-|\+)?([1-8]?\d{1}\.\d{0,15}|90\.0{0,15}|[1-8]?\d{1}|90)$/
     if (LatitudeAndlongitude[0] && !longreg.test(LatitudeAndlongitude[0])) {
       callback(new Error('经度整数范围正负0-180,小数0到15位!东经正,西经负。'))
     } else if (LatitudeAndlongitude[1] && !latreg.test(LatitudeAndlongitude[1])){

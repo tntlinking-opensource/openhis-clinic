@@ -246,16 +246,6 @@
       }
     },
     watch: {},
-    mounted() {
-      this.$nextTick(() => {
-        this.$on('openSys', function() {
-          if(this.isFirstOpen) {
-            this.isFirstOpen = false
-            this.getSysList()
-          }
-        })
-      })
-    },
     computed: {
       ...Vuex.mapGetters(['settings', 'sys']),
       styleObject() {
@@ -269,7 +259,7 @@
         this.drawerLoading = true
         let parmas = {}
         listSysSetingAll(parmas).then(response => {
-          if (response.code == 100) {
+          if (response.code === 100) {
             this.drawerLoading = false
             this.sysData = response.data[0];
             this.getFilesById('fileList1', 1, this.sysData.projectLogo.name)
@@ -348,7 +338,7 @@
 
         let formData = this.createFormData(sysData, this.tempList)
         saveSysSeting(formData).then(response => {
-          if (response.code == 100) {
+          if (response.code === 100) {
             this.$message({
               type: 'success',
               message: '保存成功'
@@ -384,6 +374,12 @@
       },
       handleLayout(code) {
         this.sysData.loginLayout = code
+      },
+      openSys() {
+        if(this.isFirstOpen) {
+          this.isFirstOpen = false
+          this.getSysList()
+        }
       }
     }
   }

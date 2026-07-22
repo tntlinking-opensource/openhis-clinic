@@ -5,6 +5,7 @@ import com.geeke.basicdata.entity.ManufactureFactory;
 import com.geeke.common.persistence.DataEntity;
 import com.geeke.org.entity.Company;
 import com.geeke.sys.entity.DictItem;
+import com.geeke.utils.excel.ExcelImportField;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
@@ -90,6 +91,7 @@ public class Stuff extends DataEntity<Stuff> {
         this.company = company;
     }
     
+	@ExcelImportField(columnIndex = 1, label = "通用名", maxLength = 45)
 	@Length(min=0, max=45, message="常用名长度必须介于 0 和 45 之间")
 	public String getCommonName() {
 		return commonName;
@@ -108,6 +110,7 @@ public class Stuff extends DataEntity<Stuff> {
 	}
 	
 	
+    @ExcelImportField(columnIndex = 3, label = "材料类型", dictTypeId = "1004462867645374476")
     public DictItem getType() {
         return type;
     }
@@ -124,6 +127,7 @@ public class Stuff extends DataEntity<Stuff> {
         this.factory = factory;
     }
     
+    @ExcelImportField(columnIndex = 5, label = "材料性质", dictTypeId = "1004078055755374607")
     public DictItem getNature() {
         return nature;
     }
@@ -132,6 +136,7 @@ public class Stuff extends DataEntity<Stuff> {
         this.nature = nature;
     }
     
+	@ExcelImportField(columnIndex = 6, label = "条码", maxLength = 64)
 	@Length(min=0, max=64, message="条形码长度必须介于 0 和 64 之间")
 	public String getBarCode() {
 		return barCode;
@@ -141,6 +146,7 @@ public class Stuff extends DataEntity<Stuff> {
 	}
 	
 	
+	@ExcelImportField(columnIndex = 7, label = "注册名称", maxLength = 64)
 	@Length(min=0, max=64, message="注册证名称长度必须介于 0 和 64 之间")
 	public String getRegistrationName() {
 		return registrationName;
@@ -150,6 +156,7 @@ public class Stuff extends DataEntity<Stuff> {
 	}
 	
 	
+	@ExcelImportField(columnIndex = 8, label = "注册证号", maxLength = 64)
 	@Length(min=0, max=64, message="注册证号长度必须介于 0 和 64 之间")
 	public String getRegistrationCode() {
 		return registrationCode;
@@ -159,6 +166,7 @@ public class Stuff extends DataEntity<Stuff> {
 	}
 	
 	
+	@ExcelImportField(columnIndex = 9, label = "规格", maxLength = 45)
 	@Length(min=0, max=45, message="规格长度必须介于 0 和 45 之间")
 	public String getSpecifications() {
 		return specifications;
@@ -168,6 +176,7 @@ public class Stuff extends DataEntity<Stuff> {
 	}
 	
 	
+	@ExcelImportField(columnIndex = 10, label = "包装数量")
 	@NotNull(message="包装数量不能为空")
 	public Integer getPackNumber() {
 		return packNumber;
@@ -177,6 +186,7 @@ public class Stuff extends DataEntity<Stuff> {
 	}
 	
 	
+	@ExcelImportField(columnIndex = 11, label = "制剂单位", dictTypeId = "1004406758192578593")
 	@NotNull(message="最小单位不能为空")
     public DictItem getMinUnit() {
         return minUnit;
@@ -186,6 +196,7 @@ public class Stuff extends DataEntity<Stuff> {
         this.minUnit = minUnit;
     }
     
+	@ExcelImportField(columnIndex = 12, label = "包装单位", dictTypeId = "1004406758192578597")
 	@NotNull(message="包装单位不能为空")
     public DictItem getPackUnit() {
         return packUnit;
@@ -195,6 +206,7 @@ public class Stuff extends DataEntity<Stuff> {
         this.packUnit = packUnit;
     }
     
+	@ExcelImportField(columnIndex = 13, label = "是否外销", maxLength = 2)
 	@Length(min=0, max=2, message="允许对外销售长度必须介于 0 和 2 之间")
 	public String getIsOutSell() {
 		return isOutSell;
@@ -204,6 +216,7 @@ public class Stuff extends DataEntity<Stuff> {
 	}
 	
 	
+	@ExcelImportField(columnIndex = 14, label = "外销价格")
 	public BigDecimal getPriceOutSell() {
 		return priceOutSell;
 	}
@@ -212,6 +225,7 @@ public class Stuff extends DataEntity<Stuff> {
 	}
 	
 	
+	@ExcelImportField(columnIndex = 15, label = "是否拆零销售", maxLength = 2)
 	@Length(min=0, max=2, message="允许拆零销售长度必须介于 0 和 2 之间")
 	public String getIsUnpackSell() {
 		return isUnpackSell;
@@ -221,6 +235,7 @@ public class Stuff extends DataEntity<Stuff> {
 	}
 	
 	
+	@ExcelImportField(columnIndex = 16, label = "零售价")
 	public BigDecimal getRetailPrice() {
 		return retailPrice;
 	}
@@ -229,6 +244,7 @@ public class Stuff extends DataEntity<Stuff> {
 	}
 
 
+	@ExcelImportField(columnIndex = 19, label = "状态", maxLength = 1)
 	@Length(min=1, max=1, message="启用标志长度必须介于 1 和 1 之间")
 	public String getStatus() {
 		return status;
@@ -238,6 +254,7 @@ public class Stuff extends DataEntity<Stuff> {
 	}
 
 
+	@ExcelImportField(columnIndex = 2, label = "拼音码", maxLength = 100)
 	@Length(min=0, max=100, message="拼音码长度必须介于 0 和 100 之间")
 	public String getPinyinCode() {
 		return pinyinCode;

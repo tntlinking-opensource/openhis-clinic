@@ -1,64 +1,28 @@
 import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getInventoryVerificationById = (id) =>
-    request({
-        url: '/stock/inventoryVerification/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/stock/inventoryVerification')
 
-export const listInventoryVerificationPage = (search) =>
+// 导出标准CRUD接口（保持向后兼容）
+export const getInventoryVerificationById = baseApi.getById
+export const listInventoryVerificationPage = baseApi.listPage
+export const listInventoryVerificationAll = baseApi.listAll
+export const deleteInventoryVerification = baseApi.delete
+export const bulkInsertInventoryVerification = baseApi.bulkInsert
+export const bulkUpdateInventoryVerification = baseApi.bulkUpdate
+export const bulkDeleteInventoryVerification = baseApi.bulkDelete
+
+// 自定义接口
+export const saveInventoryVerification = (type, variety) =>
     request({
-        url: '/stock/inventoryVerification/list',
+        url: '/stock/inventoryVerification/save',
         method: 'post',
-        data: search
+        params: { type, variety }
     })
 
-export const listInventoryVerificationAll = (search) =>
-    request({
-        url: '/stock/inventoryVerification/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveInventoryVerification = (type,variety) => 
-    request({
-        url: '/stock/inventoryVerification/save/'+type+"/"+variety,
-        method: 'get',
-
-    })
-export const accomplishInventoryVerification = (inventoryVerifications) => 
+export const accomplishInventoryVerification = (inventoryVerifications) =>
     request({
         url: '/stock/inventoryVerification/accomplishInventoryVerification',
         method: 'post',
-        data:inventoryVerifications
-    })
-  
-export const deleteInventoryVerification = (inventoryVerification) =>
-    request({
-        url: '/stock/inventoryVerification/delete',
-        method: 'post',
-        data: inventoryVerification
-    })
-    
-export const bulkInsertInventoryVerification = (inventoryVerifications) =>
-    request({
-        url: '/stock/inventoryVerification/bulkInsert',
-        method: 'post',
         data: inventoryVerifications
     })
-    
-export const bulkUpdateInventoryVerification = (inventoryVerifications) =>
-    request({
-        url: '/stock/inventoryVerification/bulkUpdate',
-        method: 'post',
-        data: inventoryVerifications
-    })
-
-export const bulkDeleteInventoryVerification = (inventoryVerifications) =>
-    request({
-        url: '/stock/inventoryVerification/bulkDelete',
-        method: 'post',
-        data: inventoryVerifications
-    })
-    

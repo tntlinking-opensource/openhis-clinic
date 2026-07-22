@@ -165,8 +165,7 @@ export default {
         inventoryInit(){
                 this.setLoad()
                 getDrugInventoryWarning(this.inventorySearch).then((res)=>{
-                    if(res.code==100){
-                    console.log(res.data,'获取库存');
+                    if(res.code===100){
                     if(res.data.rows){
                         this.inventoryList = res.data.rows
                     }else{
@@ -187,7 +186,7 @@ export default {
         init(){
            this.setLoad()
             getDrugIndateWarning(this.search).then((res)=>{
-                if(res.code==100){
+                if(res.code===100){
                 this.total = res.data.total;
 
                 if(res.data.rows){
@@ -195,7 +194,6 @@ export default {
                 }else{
                     this.drugIndateList = []
                 }
-                console.log(this.drugIndateList);
                 this.$store.dispatch('notices/SetDrugIndateWarningTotal',res.data.total)
                 this.resetLoad();
                 }

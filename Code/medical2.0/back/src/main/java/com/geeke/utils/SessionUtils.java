@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.geeke.admin.entity.User;
 import com.geeke.org.entity.Company;
 import org.apache.shiro.SecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -12,6 +14,8 @@ import org.apache.shiro.SecurityUtils;
  * @version 2018-12-05
  */
 public class SessionUtils extends com.geeke.sys.utils.SessionUtils {
+	private static final Logger logger = LoggerFactory.getLogger(SessionUtils.class);
+
 	/**
 	 * 获取当前用户
 	 * @return 取不到返回 new User()
@@ -41,7 +45,7 @@ public class SessionUtils extends com.geeke.sys.utils.SessionUtils {
 		try {
 			SecurityUtils.getSubject().getSession().setAttribute("tenantID", tenantId);
 		} catch (Exception e) {
-			// Session 已过期或不存在
+			logger.debug("Session 已过期或不存在", e);
 		}
 	}
 
@@ -54,7 +58,7 @@ public class SessionUtils extends com.geeke.sys.utils.SessionUtils {
 			JSONObject com = (JSONObject) JSONObject.toJSON(company);
 			SecurityUtils.getSubject().getSession().setAttribute("tenant", com);
 		} catch (Exception e) {
-			// Session 已过期或不存在
+			logger.debug("Session 已过期或不存在", e);
 		}
 	}
 
@@ -64,7 +68,8 @@ public class SessionUtils extends com.geeke.sys.utils.SessionUtils {
 	 */
 	public static String getLoginTenantId(){
 		try {
-			return String.valueOf(SecurityUtils.getSubject().getSession().getAttribute("tenantID"));
+			Object attr = SecurityUtils.getSubject().getSession().getAttribute("tenantID");
+			return attr == null ? null : String.valueOf(attr);
 		} catch (Exception e) {
 			return null;
 		}

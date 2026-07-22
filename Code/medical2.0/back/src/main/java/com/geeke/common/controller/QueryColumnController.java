@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSONObject;
 import com.geeke.gen.entity.GenTableColumn;
-import com.geeke.gen.service.GenTableColumnService;
+
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
 import com.geeke.common.service.QueryColumnViewService;

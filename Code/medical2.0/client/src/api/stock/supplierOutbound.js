@@ -1,35 +1,27 @@
 import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getSupplierOutbound = (id) =>
-    request({
-        url: '/stock/supplierOutbound/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/stock/supplierOutbound')
 
-export const listSupplierOutbound = (search) =>
+// 导出标准CRUD接口（保持向后兼容）
+export const getSupplierOutbound = baseApi.getById
+export const listSupplierOutbound = baseApi.listPage
+export const saveSupplierOutbound = (data) =>
     request({
-        url: '/stock/supplierOutbound/list',
+        url: '/stock/supplierOutbound/saveEvt',
         method: 'post',
-        data: search
+        data
     })
 
-
-export const saveSupplierOutbound = (entity) =>
-    request({
-        url: '/stock/supplierOutbound/save' ,
-        method: 'post',
-        data:entity
-
-    })
-
+// 自定义接口
 export const cancelSupplierOutbound = (id) =>
     request({
-        url: '/stock/supplierOutbound/cancel/'+id,
+        url: '/stock/supplierOutbound/cancel/' + id,
         method: 'get'
     })
 
 export const examineSupplierOutbound = (id) =>
     request({
-        url: '/stock/supplierOutbound/examine/'+id,
+        url: '/stock/supplierOutbound/examine/' + id,
         method: 'get'
     })

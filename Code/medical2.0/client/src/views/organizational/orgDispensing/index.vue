@@ -184,14 +184,14 @@
 <script>
 import { validatenull } from "@/utils/validate";
 import DispensingForm from "./dispensingForm";
-import ExportExcelButton from "@/components/ExportExcelButton";
-import ViewColumnsSelect from "@/views/components/ViewColumnsSelect";
 import QueryForm from "@/views/components/queryForm";
 import MainUI from "@/views/components/mainUI";
 import OperationIcon from "@/components/OperationIcon";
 import { listDictItemAll } from "@/api/sys/dictItem";
+import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
 import { getOrganizationList,getAmount } from "@/api/stock/dispensing";
 import { BigNumber } from "bignumber.js";
+import { getCurrentUser } from "@/utils/userCache";
  import * as XLSX from 'xlsx'
 import XLSXD from 'xlsx-style'
 import { getjglist} from "@/api/toll/tollInfo";
@@ -199,8 +199,6 @@ export default {
   extends: MainUI,
   components: {
     DispensingForm,
-    ExportExcelButton,
-    ViewColumnsSelect,
     QueryForm,
     OperationIcon,
   },
@@ -278,7 +276,6 @@ export default {
     addCreateDate(){
        let myDate = new Date();
         let lw = new Date(myDate.getTime() - 1000 * 60 * 60 * 24 * 30); //最后一个数字30可改，30天的意思
-        console.log(lw.getDate());
         let lastY = lw.getFullYear();
         let lastM = lw.getMonth() + 1;
         let lastD = lw.getDate();
@@ -300,7 +297,6 @@ export default {
        return (this.currentPage-1)*this.search.limit+index +1;
     },
     getTotal(param){
-    //  console.log(this.allTotal.bidTotalAmount?this.allTotal.bidTotalAmount:0,'fafsaf');
       let { columns, data } = param;
       let arr = []
       columns.forEach((column, index) => {
@@ -319,7 +315,6 @@ export default {
       arr[9] = new BigNumber(Number(bidTotalAmount)).toFormat(2)+"元"
       arr[11] = new BigNumber(Number(priceTotalAmount)).toFormat(2)+"元"
       arr[12] = new BigNumber(Number(profitAmount)).toFormat(2)+"元"
-      console.log(arr)
       return arr
     },
     init() {
@@ -334,7 +329,6 @@ export default {
         this.search.params[2].value=this.queryModel.dateRange
         
       }
-      console.log(this.jglist,'看看');
       let arrId = []
       this.jglist.forEach((item)=>{
         arrId.push(item.jgid)
@@ -387,14 +381,14 @@ export default {
             queryType: ")"
           })
       }
-      if(this.queryModel.name&&this.queryModel.name!=''){
+      if(this.queryModel.name&&this.queryModel.name!==''){
           this.search.params.push({
               columnName: "drug.goods_name",
               queryType: "like",
               value: this.queryModel.name,
             },)
       }
-      if(this.queryModel.recipelCode&&this.queryModel.recipelCode!=''){
+      if(this.queryModel.recipelCode&&this.queryModel.recipelCode!==''){
         this.search.params.push({
               columnName: "recipelInfo.code",
               queryType: "=",
@@ -419,7 +413,7 @@ export default {
               this.search.params[2].value=this.queryModel.dateRange
               
             }
-          if(this.queryModel.organizationId&&this.queryModel.organizationId!=""){
+          if(this.queryModel.organizationId&&this.queryModel.organizationId!==""){
               this.search.params[0].columnName = "company.id"
               this.search.params[0].queryType = "="
               this.search.params[0].value = this.queryModel.organizationId
@@ -491,36 +485,12 @@ export default {
       this.init();
     },
     initOptions(This) {
-      let type_search = {
-        params: [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "1004078055755374603",
-          },
-        ],
-      };
-      // 响应字段的条件操作符，替换成触发字段的操作符
-      type_search.params.forEach((item) => {
-        if (this.queryTypes[item.columnName]) {
-          item.queryType = this.queryTypes[item.columnName];
-        }
-      });
-      // 字段对应表上filter条件
-      type_search.params.push.apply(type_search.params, []);
-      // 数据权限: 字典项sys_dict_item
-      this.pushDataPermissions(
-        type_search.params,
-        this.$route.meta.routerId,
-        "4005"
-      );
-      this.type_List.splice(0, this.type_List.length);
-      listDictItemAll(type_search).then((responseData) => {
-        this.type_List = responseData.data;
+      getDictItemsByCode(DICT_CODE.MEDICAL_TYPE).then((data) => {
+        this.type_List = data;
       });
 
        getjglist(this.YpjxcRc).then((responseData)=>{
-              if (responseData.code == 100){
+              if (responseData.code === 100){
                   if(responseData.data.length>0){
                       // responseData.data.forEach((item)=>{
                       //     if(item.jgid!=currentUser.company.id){
@@ -532,8 +502,7 @@ export default {
                       //      this.zsids.push({jgid:item.jgid})
                       //    }
                       // })
-                      this.jglist = responseData.data.filter((item) => item.jgid !=currentUser.company.id)
-                      console.log(this.jglist,'不算');
+                      this.jglist = responseData.data.filter((item) => item.jgid !==currentUser.company.id)
                 //       this.zsids= this.zsids.substring(0, this.zsids.lastIndexOf(','));
                 //       console.info("zdzdzdzdzd:"+this.zsids)
                       this.init();
@@ -939,13 +908,13 @@ export default {
         if(typeof ArrayBuffer !=="undefined"){
           const buf=new ArrayBuffer(s.length);
           const view=new Uint8Array(buf);
-          for(let i=0;i!=s.length;++i){
+          for(let i=0;i!==s.length;++i){
             view[i]=s.charCodeAt(i)&0xff
           }
           return buf;
         }else{
           const buf=new Array(s.length);
-          for(let i=0;i!=s.length;++i){
+          for(let i=0;i!==s.length;++i){
             buf[i]=s.charCodeAt(i)&0xff;
           }
           return buf;
@@ -959,7 +928,7 @@ export default {
   },
   computed:{
     Company() {
-      let company = JSON.parse(sessionStorage.getItem("currentUser")).company;
+      let company = getCurrentUser().company;
       return {
         id: company.id,
         label: company.label,
@@ -977,7 +946,7 @@ export default {
   padding: 0px 0px 10px 0px;
 }
 .typeClass{
-  /deep/ .el-input{
+  ::v-deep .el-input{
     width: 100% !important;
     input{
       width: 100% !important;
@@ -986,7 +955,7 @@ export default {
   }
 }
 .el-col{
-  /deep/ .el-range-separator{
+  ::v-deep .el-range-separator{
     width: 10%;
   }
 }
@@ -997,7 +966,7 @@ export default {
     text-align: right;
   }
 }
-/deep/ .el-table__footer-wrapper{
+::v-deep .el-table__footer-wrapper{
   td:not(:nth-of-type(1)){
     .cell{
       display: inline-block;
@@ -1010,10 +979,10 @@ export default {
 .el-table::before{
   height: 0;
 }
-/deep/ .el-table colgroup col[name='gutter']{
+::v-deep .el-table colgroup col[name='gutter']{
   width:5px !important
 }
-/deep/ .el-table__body{
+::v-deep .el-table__body{
   width:100% !important
 }
 </style>

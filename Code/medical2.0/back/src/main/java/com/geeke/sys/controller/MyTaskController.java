@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.geeke.common.controller.SearchParams;
 import com.geeke.common.data.Page;
 
-import com.geeke.cure.entity.InspectionCheckInfo;
+
 import com.geeke.sys.entity.MyTask;
 import com.geeke.sys.service.MyTaskService;
 import com.geeke.utils.ResultUtil;
@@ -56,33 +56,8 @@ public class MyTaskController {
         MyTask myTask = JSONObject.parseObject(strTask, MyTask.class);
         // MultipartFile[] multipartFiles = JSONObject.parseObject(fileIdUploads, MultipartFile[].class);
         String[] deleteIds = JSONObject.parseObject(strDeleteIds, String[].class);
-        System.out.println(myTask);
         myTaskService.save(myTask, fileIdUploads, deleteIds);
         return ResponseEntity.ok(ResultUtil.successJson(myTask.getId()));
     }
-//        @PostMapping(value = "delete")
-//        public ResponseEntity<JSONObject> delete(@RequestBody ClinicOffice entity) {
-//            int rows = myTaskService.delete(entity);
-//            return ResponseEntity.ok(ResultUtil.successJson(rows));
-//        }
-//
-//        @PostMapping(value = "bulkInsert")
-//        public ResponseEntity<JSONObject> bulkInsert(@RequestBody List<ClinicOffice> entitys) {
-//            List<String> ids = myTaskService.bulkInsert(entitys);
-//            return ResponseEntity.ok(ResultUtil.successJson(ids));
-//        }
-//
-//        @PostMapping(value = "bulkUpdate")
-//        public ResponseEntity<JSONObject> bulkUpdate(@RequestBody List<ClinicOffice> entitys) {
-//            List<String> ids = myTaskService.bulkUpdate(entitys);
-//            return ResponseEntity.ok(ResultUtil.successJson(ids));
-//        }
-//
-//        @PostMapping(value = "bulkDelete")
-//        public ResponseEntity<JSONObject> bulkDelete(@RequestBody List<ClinicOffice> entitys) {
-//            int rows = myTaskService.bulkDelete(entitys);
-//            return ResponseEntity.ok(ResultUtil.successJson(rows));
-//        }
-//
 
 }

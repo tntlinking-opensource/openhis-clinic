@@ -112,34 +112,34 @@ export default {
 		},
 		// 周期两个值变化时
 		cycleChange() {
-			if (this.radioValue == '3') {
+			if (this.radioValue === '3') {
 				this.$emit('update', 'day', this.cycleTotal);
 			}
 		},
 		// 平均两个值变化时
 		averageChange() {
-			if (this.radioValue == '4') {
+			if (this.radioValue === '4') {
 				this.$emit('update', 'day', this.averageTotal);
 			}
 		},
 		// 最近工作日值变化时
 		workdayChange() {
-			if (this.radioValue == '5') {
+			if (this.radioValue === '5') {
 				this.$emit('update', 'day', this.workday + 'W');
 			}
 		},
 		// checkbox值变化时
 		checkboxChange() {
-			if (this.radioValue == '7') {
+			if (this.radioValue === '7') {
 				this.$emit('update', 'day', this.checkboxString);
 			}
 		},
 		// 父组件传递的week发生变化触发
 		weekChange() {
 			//判断week值与day不能同时为“?”
-			if (this.cron.week == '?' && this.radioValue == '2') {
+			if (this.cron.week === '?' && this.radioValue === '2') {
 				this.radioValue = '1';
-			} else if (this.cron.week !== '?' && this.radioValue != '2') {
+			} else if (this.cron.week !== '?' && this.radioValue !== '2') {
 				this.radioValue = '2';
 			}
 		},
@@ -172,7 +172,7 @@ export default {
 		// 计算勾选的checkbox值合集
 		checkboxString: function () {
 			let str = this.checkboxList.join();
-			return str == '' ? '*' : str;
+			return str === '' ? '*' : str;
 		}
 	}
 }

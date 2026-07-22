@@ -6,7 +6,7 @@
     <registration-form
       ref="registrationForm"
       :permission="permission"
-      @save-finished="getRegistrationList"
+      @save-finished="loadData"
     ></registration-form>
     <ys-form ref="ysForm" :permission="permission" @typeclick="rettonys"></ys-form>
     <beforehand-form ref="beforehandForm" :permission="permission" @typeclick="rettonys"></beforehand-form>
@@ -157,7 +157,7 @@
                       v-show="permission.add"
                       type="primary"
                       icon="el-icon-plus"
-                      @click="onCreateRegistration()"
+                      @click="onCreateEntity('registrationForm')"
                     >新增登记
                     </el-button
                     >
@@ -219,19 +219,19 @@
                     <template slot-scope="{ row, $index }">
                   <span
                     v-if="
-                      columnViews[index].showType == 'Switch' ||
-                      columnViews[index].showType == 'Checkbox' ||
-                      columnViews[index].showType == 'Radio'
+                      columnViews[index].showType === 'Switch' ||
+                      columnViews[index].showType === 'Checkbox' ||
+                      columnViews[index].showType === 'Radio'
                     "
                   >
                     <li
-                      v-if="getAttrValue(row, columnViews[index].prop) == '1'"
+                      v-if="getAttrValue(row, columnViews[index].prop) === '1'"
                       class="el-icon-check"
                       style="color: #f56c6c"
                     ></li>
                   </span>
-                      <div v-else-if="columnViews[index].label == '状态'">
-                    <span v-if="getAttrValue(row, columnViews[index].prop) == '待就诊'"
+                      <div v-else-if="columnViews[index].label === '状态'">
+                    <span v-if="getAttrValue(row, columnViews[index].prop) === '待就诊'"
                           style="color: #f56c6c">待就诊</span>
                         <span v-else>{{
                             getAttrValue(
@@ -278,7 +278,7 @@
                       <!-- 已就诊 -->
                       <div style="display:flex;justify-content:space-around">
                         <p class="btn" v-if="scope.row.status.value === 'registrationStatus_3'|| scope.row.status.value === null">
-                      <span @click="onEditRegistration(scope.$index, scope.row)"
+                      <span @click="onEditEntity(scope.$index, scope.row, 'registrationForm')"
                       >查看或修改</span>
                           <span
                             @click="updateStatusId(scope.row.id, scope.row.status.value,scope.row.doctor,scope.row.clinicOffice,scope.row.subscribeDate)"
@@ -289,7 +289,7 @@
                           v-if="scope.row.status.value === 'registrationStatus_0' || scope.row.status.value === 'registrationStatus_5' || scope.row.status.name === ''"
                         >
                           <span v-show="permission.edit" @click="applyForStudentExcel(scope.$index, scope.row)">远程诊疗&nbsp;</span>
-                          <span @click="onEditRegistration(scope.$index, scope.row)">修改</span>
+                          <span @click="onEditEntity(scope.$index, scope.row, 'registrationForm')">修改</span>
                           <el-popconfirm title="确定退号吗？" @confirm="chargeClick(scope.row)">
                             <span slot="reference">退号</span>
                           </el-popconfirm>
@@ -303,7 +303,7 @@
                       scope.row.status.value === 'registrationStatus_2' ||
                       scope.row.status.value === 'registrationStatus_4'
                     "
-                          @click="onViewRegistration(scope.$index, scope.row)"
+                          @click="onViewEntity(scope.$index, scope.row, 'registrationForm')"
                         >
                           查看
                         </p>
@@ -633,7 +633,9 @@
     updateStatus,
     refundRegistrationPay,
   } from "@/api/outpatient/registration";
-  import {listResourcePermission} from "@/api/admin/common/permission";
+  import listViewMixin from '@/mixins/listViewMixin'
+  import { listResourcePermission } from '@/api/admin/common/permission'
+  import { mapPermissions } from '@/utils/searchParamsBuilder'
   import RegistrationForm from "./registrationForm";
   import YsForm from "./ysForm";
   import BeforehandForm from "./beforehandForm";
@@ -644,9 +646,9 @@
   import ViewColumnsSelect from "@/views/components/ViewColumnsSelect";
   import QueryForm from "@/views/components/queryForm";
   import MainUI from "@/views/components/mainUI";
-  import OperationIcon from "@/components/OperationIcon";
   import History from "@/views/components/history";
   import {listDictItemAll} from "@/api/sys/dictItem";
+  import { getDictItemsByCode, DICT_CODE } from '@/utils/dictCache'
   import {getTollInfoByRegistrationId, saveTollInfo} from "@/api/toll/tollInfo";
   import axios from 'axios'
   import Vue from "vue";
@@ -681,13 +683,13 @@
   export default {
 
     extends: MainUI,
+    mixins: [listViewMixin],
     components: {
       PatientManage,
       RegistrationForm,
       ExportExcelButton,
       ViewColumnsSelect,
       QueryForm,
-      OperationIcon,
       History,
       YsForm,
       BeforehandForm,
@@ -707,14 +709,11 @@
         },
         // exitNumberDate:"",      //退号时间
         activeName: "djxx",
-        permission: {
-          view: false,
-          add: false,
-          edit: false,
-          remove: false,
-          export: false,
-          skip: false,
-        },
+        listApi: listRegistrationPage,
+        getApi: getRegistrationById,
+        deleteApi: deleteRegistration,
+        entityName: 'Registration',
+        permissionPrefix: 'registration',
         queryTypes: {
           department_id: "=",
           patient_id: "=",
@@ -755,19 +754,6 @@
           }
         ],
         returnToll: {},
-        search: {
-          params: [
-            {
-              columnName: "company_id",
-              queryType: "=",
-              value: currentUser.company.id,
-            },
-          ],
-          offset: 0,
-          limit: 20,
-          columnName: "", // 排序字段名
-          order: "", // 排序
-        },
         statusSearch: {
           params: [{columnName: "company_id", queryType: "=", value: ""}],
           offset: 0,
@@ -776,7 +762,6 @@
           order: "", // 排序
         },
         statusList: null,
-        currentPage: 1,
         registrationTotal: 0,
         registrationList: [],
 
@@ -833,22 +818,20 @@
     },
     methods: {
       handleClick(tab, event) {
-        if (tab.name == "djxx") {
+        if (tab.name === "djxx") {
           this.pageInit();
-        } else if (tab.name == "yyfz") {
+        } else if (tab.name === "yyfz") {
           this.pageInitnew();
         }
 
       },
       buttonyz(data) {
-        console.log(data, '预诊');
-        this.$refs.beforehandForm.$emit("openViewbeforehandDialog", data);
+        this.$refs.beforehandForm.openViewbeforehandDialog(data);
       },
       buttonys(data) {
         debugger
-        console.log(data, '医生');
-        if (this.types != "") {
-          this.$refs.ysForm.$emit("openViewysDialog", data, this.types);
+        if (this.types !== "") {
+          this.$refs.ysForm.openViewysDialog(data, this.types);
         } else {
           this.$message.warning("请先进行预诊！")
         }
@@ -861,7 +844,7 @@
           if (res.data !== null) {
             this.applyForDialogVisible = false
             this.$message.warning("该用户已申请远程诊疗，请前往远程诊疗管理界面查看!")
-            this.getRegistrationList();
+            this.loadData();
           } else {
             this.applyForDialogVisible = true
           }
@@ -873,8 +856,7 @@
           .then((response) => {
             this.tokenData = response.data.BusData.data.Token
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
 
         // 获取远程诊所医院
@@ -886,11 +868,8 @@
           .then((response) => {
             this.bizFormModel.hospital = response.data.BusData.data
             this.selects_mechanism = this.bizFormModel.hospital
-            console.log("11111111111111"+this.bizFormModel.hospital);
-            console.log("22222222222222"+this.selects_mechanism);
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
 
         // 获取远程诊所科室
@@ -907,8 +886,7 @@
           .then((response) => {
             this.departments_List = response.data.BusData.data
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
 
         // 获取远程诊所医生
@@ -927,13 +905,12 @@
           .then((response) => {
             this.doctors_List = response.data.BusData.data
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
 
         await getRegistrationById(row.id)
           .then((responseData) => {
-            if (responseData.code == 100) {
+            if (responseData.code === 100) {
               this.bizFormModel = responseData.data
             } else {
               this.showMessage(responseData);
@@ -958,12 +935,11 @@
         this.bizFormModel.medicId = this.bizFormModel.doctor.ysgh
         this.bizFormModel.status = '0'
         this.bizFormModel.id = null
-        console.log(this.bizFormModel, '远程诊疗申请保存');
         saveDiagnosis(this.bizFormModel).then((res) => {
-          if (res.code === "100") {
+          if (res.code === 100) {
             this.applyForDialogVisible = false
             this.$message.success("保存成功！")
-            this.getRegistrationList();
+            this.loadData();
           } else {
             this.$message.error("保存失败，请联系后台!")
           }
@@ -986,8 +962,7 @@
           .then((response) => {
             this.departments_List = response.data.BusData.data
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
       },
 
@@ -1008,8 +983,7 @@
           .then((response) => {
             this.doctors_List = response.data.BusData.data
           })
-          .catch(function (error) {
-            console.log(error);
+          .catch((error) => {
           });
       },
 
@@ -1026,11 +1000,9 @@
         this.refundRegistrationPayClick()
       },
       sortDoc(clinicOffice, officename) {
-        console.log(clinicOffice, '........');
-        if (this.doctors_List.length != 0) {
+        if (this.doctors_List.length !== 0) {
           //过滤医生
-          this.selects_doctor = this.doctors_List.filter(doctor => doctor.office == clinicOffice)
-          console.log(this.selects_doctor, '.......');
+          this.selects_doctor = this.doctors_List.filter(doctor => doctor.office === clinicOffice)
         }
       },
       reset() {
@@ -1044,7 +1016,6 @@
         }
       },
       async refundRegistrationPayClick() {
-        console.log(this.returnToll);
         let toll = {
           company: this.returnToll.company,
           registrationFeeId: this.returnToll.id,
@@ -1062,7 +1033,6 @@
           },    //收费类型
           remarks: ""   //备注信息
         }
-        console.log(toll);
 
         const res = await refundRegistrationPay(
           this.refundRegistrationId,
@@ -1070,33 +1040,31 @@
           this.refundReistrationPayType,
           this.refundRegistrationRemarks,
         );
-        if (res.code == "100") {
+        if (res.code === 100) {
           //退费成功后修改费用表的状态
           // getTollInfoByRegistrationId(this.refundRegistrationId).then((res)=>{
           //   if(res.code=="100"){
-          //     //console.log(res,'路程');
           //     let tollMesssage=res.data
           //     tollMesssage.amountStatus.name="已退费"
           //     tollMesssage.amountStatus.value="amountStatus_2"
           //     saveTollInfo(tollMesssage).then((res)=>{
           //           if(res.code=="100"){
-          //            console.log(res,'kaknkanknkan');
           //           }
           //         }).catch(()=>{})
           //   }
           // }).catch(()=>{})
           //在收费表中插入数据
-          if (res.data == 1) {
-            if (this.returnToll.freeRegistrationFee != "1") {
+          if (res.data === 1) {
+            if (this.returnToll.freeRegistrationFee !== "1") {
               saveTollInfo(toll).then((res) => {
-                if (res.code == "100") {
+                if (res.code === 100) {
 
                 }
               }).catch(() => {
               })
             }
 
-            this.getRegistrationList();
+            this.loadData();
             this.refundRegistraionVisible = false;
           } else {
             this.$message.error(res.data)
@@ -1113,7 +1081,7 @@
         this.refundRegistraionVisible = true;
       },
       async updateStatusId(id, status, doctor, clinicOffice, subscribeDate) {
-        let flage = false
+        let flag = false
         //判断预约时间是否在当天
         if (subscribeDate) {
           let orderDate = new Date(subscribeDate);
@@ -1121,7 +1089,6 @@
           let orderMonth = orderDate.getMonth() + 1
           let orderDay = orderDate.getDate()
           let newOrderTime = orderYear + "-" + orderMonth + "-" + orderDay
-          console.log(newOrderTime);
 
           //获取当前时间
           let now = new Date();
@@ -1130,11 +1097,11 @@
           let nowDay = now.getDate();
           let newTime = nowYear + "-" + nowMonth + "-" + nowDay
           if (newOrderTime !== newTime) {
-            flage = true
+            flag = true
           }
         }
 
-        if (flage) {
+        if (flag) {
           this.$message.warning("还未到预约时间,不能进行签到！")
           return
         }
@@ -1145,10 +1112,10 @@
 
         if (doctor && clinicOffice) {
           updateStatus(this.bizFormModel.id, this.bizFormModel.status, clinicOffice.id, doctor.id).then((res) => {
-            if (res.code === "100") {
+            if (res.code === 100) {
 
               this.signDialogVisible = false
-              this.getRegistrationList();
+              this.loadData();
 
 
             } else {
@@ -1163,127 +1130,26 @@
         this.signDialogVisible = true;
 
       },
-      getRegistrationList() {
-        //this.queryModel.createDate = [this.addCreateDate(),new Date()]
-        this.setLoad();
-        /* 查询参数 和数据权限 */
+      appendSearchParams() {
         this.search.params = [
-          {
-            columnName: "company_id",
-            queryType: "=",
-            value: currentUser.company.id,
-          },
-        ];
+          { columnName: 'company_id', queryType: '=', value: currentUser.company.id }
+        ]
         if (this.moreCodition) {
-          this.search.params = this.search.params.concat(
-            this.compositeCondition()
-          );
+          this.search.params = this.search.params.concat(this.compositeCondition())
         } else {
-          // 查询参数: 科室
-          this.search.params.push({
-            columnName: "department_id",
-            queryType: "=",
-            value: validatenull(this.queryModel.department.id)
-              ? ""
-              : this.queryModel.department.id,
-          });
-          // 查询参数: 患者
-          this.search.params.push({
-            columnName: "patient_id",
-            queryType: "=",
-            value: validatenull(this.queryModel.patientId.id)
-              ? ""
-              : this.queryModel.patientId.id,
-          });
-          // 查询参数: 医生
-          this.search.params.push({
-            columnName: "doctor_id",
-            queryType: "=",
-            value: validatenull(this.queryModel.doctor.id)
-              ? ""
-              : this.queryModel.doctor.id,
-          });
-          // 查询参数: 状态
-          this.search.params.push({
-            columnName: "status",
-            queryType: "=",
-            value: this.queryModel.status != undefined ? this.queryModel.status.value : '',
-          });
-          // 查询参数: 来源
-          this.search.params.push({
-            columnName: "source.value",
-            queryType: "=",
-            value: this.queryModel.source != undefined ? this.queryModel.source : '',
-          });
-          this.search.params.push({
-            columnName: "create_date",
-            queryType: ">=",
-            value: this.queryModel.createDate
-              ? this.$moment(this.queryModel.createDate[0]).format(
-                "YYYY-MM-DD HH:mm:ss"
-              )
-              : "",
-          });
-          this.search.params.push({
-            columnName: "create_date",
-            queryType: "<=",
-            value: this.queryModel.createDate
-              ? this.$moment(this.queryModel.createDate[1]).format(
-                "YYYY-MM-DD HH:mm:ss"
-              )
-              : "",
-          });
+          this.search.params.push({ columnName: 'department_id', queryType: '=', value: validatenull(this.queryModel.department.id) ? '' : this.queryModel.department.id })
+          this.search.params.push({ columnName: 'patient_id', queryType: '=', value: validatenull(this.queryModel.patientId.id) ? '' : this.queryModel.patientId.id })
+          this.search.params.push({ columnName: 'doctor_id', queryType: '=', value: validatenull(this.queryModel.doctor.id) ? '' : this.queryModel.doctor.id })
+          this.search.params.push({ columnName: 'status', queryType: '=', value: this.queryModel.status !== undefined ? this.queryModel.status.value : '' })
+          this.search.params.push({ columnName: 'source.value', queryType: '=', value: this.queryModel.source !== undefined ? this.queryModel.source : '' })
+          this.search.params.push({ columnName: 'create_date', queryType: '>=', value: this.queryModel.createDate ? this.$moment(this.queryModel.createDate[0]).format('YYYY-MM-DD HH:mm:ss') : '' })
+          this.search.params.push({ columnName: 'create_date', queryType: '<=', value: this.queryModel.createDate ? this.$moment(this.queryModel.createDate[1]).format('YYYY-MM-DD HH:mm:ss') : '' })
         }
-        // 数据权限: 挂号表registration
-        this.pushDataPermissions(
-          this.search.params,
-          this.$route.meta.routerId,
-          this.tableId
-        );
-
-        console.log(this.search);
-        listRegistrationPage(this.search)
-          .then((responseData) => {
-
-            if (responseData.code == 100) {
-              this.registrationTotal = responseData.data.total;
-              this.registrationList = responseData.data.rows;
-            } else {
-              this.showMessage(responseData);
-            }
-            this.resetLoad();
-          })
-          .catch((error) => {
-            this.outputError(error);
-          });
+        this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
       },
-      onSearch() {
-        if (this.moreCodition) {
-          this.search.offset = 0;
-          this.currentPage = 1;
-          this.getRegistrationList();
-        } else {
-          this.$refs["queryForm"].validate((valid) => {
-            if (valid) {
-              this.search.offset = 0;
-              this.currentPage = 1;
-              this.getRegistrationList();
-            } else {
-              return false;
-            }
-          });
-        }
-      },
-      onSizeChange(val) {
-        this.currentPage = 1;
-        this.search.limit = val;
-        this.search.offset = (this.currentPage - 1) * val;
-        this.getRegistrationList();
-      },
-      onCurrentChange(val) {
-        this.search.offset = (val - 1) * this.search.limit;
-        this.currentPage = val;
-        this.getRegistrationList();
+      handleListResponse(responseData) {
+        this.registrationTotal = responseData.data.total
+        this.registrationList = responseData.data.rows
       },
       async pageInitnew() {
         this.setLoad();
@@ -1335,33 +1201,18 @@
               listResourcePermission(this.$route.meta.routerId),
             ]);
           if (
-            listRegistrationRespData.code == 100 &&
-            listPermissionRespData.code == 100
+            listRegistrationRespData.code === 100 &&
+            listPermissionRespData.code === 100
           ) {
-            console.log(listRegistrationRespData, '档案信息new');
             this.registrationTotal = listRegistrationRespData.data.total;
             this.registrationList = listRegistrationRespData.data.rows;
-            this.permission.view = listPermissionRespData.data.find((item) => {
-              return item.permission === "registration:read";
-            });
-            this.permission.export = listPermissionRespData.data.find((item) => {
-              return item.permission === "registration:export";
-            });
-            this.permission.add = listPermissionRespData.data.find((item) => {
-              return item.permission === "registration:create";
-            });
-            this.permission.edit = listPermissionRespData.data.find((item) => {
-              return item.permission === "registration:update";
-            });
-            this.permission.remove = listPermissionRespData.data.find((item) => {
-              return item.permission === "registration:delete";
-            });
-            this.permission.skip = listPermissionRespData.data.find((item) => {
-              return item.permission === "registration:jump";
-            });
+            this.permission = {
+              ...mapPermissions(listPermissionRespData.data, 'registration'),
+              skip: !!listPermissionRespData.data.find(item => item.permission === 'registration:jump')
+            }
           } else {
             this.showMessage(
-              listPermissionRespData.code != 100
+              listPermissionRespData.code !== 100
                 ? listPermissionRespData
                 : listRegistrationRespData
             );
@@ -1372,196 +1223,62 @@
         }
       },
       async pageInit() {
-        this.setLoad();
+        this.setLoad()
         try {
-          this.initOptions(this.queryModel);
-
-          this.search.params = [
-            {
-              columnName: "company_id",
-              queryType: "=",
-              value: currentUser.company.id,
-            },
-          ];
-          this.search.params.push({
-            columnName: "create_date",
-            queryType: ">=",
-            value: this.queryModel.createDate[0]
-              ? this.$moment(this.queryModel.createDate[0]).format(
-                "YYYY-MM-DD HH:mm:ss"
-              )
-              : "",
-          });
-          this.search.params.push({
-            columnName: "create_date",
-            queryType: "<=",
-            value: this.queryModel.createDate[1]
-              ? this.$moment(this.queryModel.createDate[1]).format(
-                "YYYY-MM-DD HH:mm:ss"
-              )
-              : "",
-          });
-          // 数据权限: 挂号表registration
-          this.pushDataPermissions(
-            this.search.params,
-            this.$route.meta.routerId,
-            this.tableId
-          );
-          let [listRegistrationRespData, listPermissionRespData] =
-            await Promise.all([
-              listRegistrationPage(this.search),
-              listResourcePermission(this.$route.meta.routerId),
-            ]);
-          if (
-            listRegistrationRespData.code == 100 &&
-            listPermissionRespData.code == 100
-          ) {
-            console.log(listRegistrationRespData, '档案信息');
-            this.registrationTotal = listRegistrationRespData.data.total;
-            this.registrationList = listRegistrationRespData.data.rows;
+          if (this.initOptions) {
+            this.initOptions(this.queryModel)
+          }
+          this.search.params = []
+          if (this.appendSearchParams) {
+            this.appendSearchParams()
+          }
+          const prefix = this.permissionPrefix || this.entityName
+          const [listRespData, permissionRespData] = await Promise.all([
+            this.listApi(this.search),
+            listResourcePermission(this.$route.meta.routerId)
+          ])
+          if (listRespData.code === 100 && permissionRespData.code === 100) {
+            this.handleListResponse(listRespData)
+            this.permission = {
+              ...mapPermissions(permissionRespData.data, prefix),
+              skip: !!permissionRespData.data.find(item => item.permission === `${prefix}:jump`)
+            }
             this.ColumnWidth = 200
-            this.permission.view = listPermissionRespData.data.find((item) => {
-              return item.permission === "registration:read";
-            });
-            this.permission.export = listPermissionRespData.data.find((item) => {
-              return item.permission === "registration:export";
-            });
-            this.permission.add = listPermissionRespData.data.find((item) => {
-              return item.permission === "registration:create";
-            });
-            this.permission.edit = listPermissionRespData.data.find((item) => {
-              return item.permission === "registration:update";
-            });
-            this.permission.remove = listPermissionRespData.data.find((item) => {
-              return item.permission === "registration:delete";
-            });
-            this.permission.skip = listPermissionRespData.data.find((item) => {
-              return item.permission === "registration:jump";
-            });
-            // ===== 新增：同时获取患者管理权限（patient权限）=====
-            const patientPermissionRes = await listResourcePermission('patient-router-id'); // 替换为实际的patient路由ID
-
-            if (patientPermissionRes.code == 100) {
+            // Load patient permissions for PatientManage component
+            const patientPermissionRes = await listResourcePermission('patient-router-id')
+            if (patientPermissionRes.code === 100) {
               this.patientPermission = {
-                view: !!patientPermissionRes.data.find(item => item.permission === "patient:read"),
-                add: !!patientPermissionRes.data.find(item => item.permission === "patient:create"),
-                edit: !!patientPermissionRes.data.find(item => item.permission === "patient:update"),
-                remove: !!patientPermissionRes.data.find(item => item.permission === "patient:delete"),
-                export: !!patientPermissionRes.data.find(item => item.permission === "patient:export"),
+                view: !!patientPermissionRes.data.find(item => item.permission === 'patient:read'),
+                add: !!patientPermissionRes.data.find(item => item.permission === 'patient:create'),
+                edit: !!patientPermissionRes.data.find(item => item.permission === 'patient:update'),
+                remove: !!patientPermissionRes.data.find(item => item.permission === 'patient:delete'),
+                export: !!patientPermissionRes.data.find(item => item.permission === 'patient:export'),
                 skip: false
-              };
+              }
             }
           } else {
-            this.showMessage(
-              listPermissionRespData.code != 100
-                ? listPermissionRespData
-                : listRegistrationRespData
-            );
+            this.showMessage(permissionRespData.code !== 100 ? permissionRespData : listRespData)
           }
-          this.resetLoad();
+          this.resetLoad()
         } catch (error) {
-          this.outputError(error);
+          this.outputError(error)
         }
-      },
-      onViewRegistration(index, row) {
-        this.setLoad();
-        getRegistrationById(row.id)
-          .then((responseData) => {
-            if (responseData.code == 100) {
-              this.$refs.registrationForm.$emit(
-                "openViewRegistrationDialog",
-                responseData.data
-              );
-            } else {
-              this.showMessage(responseData);
-            }
-            this.resetLoad();
-          })
-          .catch((error) => {
-            this.outputError(error);
-          });
       },
       onCreateRegistration() {
-        var longRange = this.longRange;
-        console.log("跳转信息状态1：" + this.permission.skip)
-        console.log("远程诊疗状态1：" + this.permission.edit)
-        console.log("跳转信息状态1：" + this.permission.remove)
-        console.log("默认医生：" + this.permission.view)
-        this.$refs.registrationForm.$emit("openAddRegistrationDialog",this.permission.remove,this.permission.view);
-      },
-      onEditRegistration(index, row) {
-        this.setLoad();
-        getRegistrationById(row.id)
-          .then((responseData) => {
-            if (responseData.code == 100) {
-              this.$refs.registrationForm.$emit(
-                "openEditRegistrationDialog",
-                responseData.data
-              );
-            } else {
-              this.showMessage(responseData);
-            }
-            this.resetLoad();
-          })
-          .catch((error) => {
-            this.outputError(error);
-          });
+        this.$refs.registrationForm.openAddRegistrationDialog(this.permission.remove, this.permission.view)
       },
       onCopyRegistration(index, row) {
-        this.setLoad();
-        getRegistrationById(row.id)
-          .then((responseData) => {
-            if (responseData.code == 100) {
-              this.$refs.registrationForm.$emit(
-                "openCopyRegistrationDialog",
-                responseData.data,
-                this.permission.remove,
-                this.permission.view
-              );
-            } else {
-              this.showMessage(responseData);
-            }
-            this.resetLoad();
-          })
-          .catch((error) => {
-            this.outputError(error);
-          });
-      },
-      onDeleteRegistration(index, row) {
-        this.$confirm("确定删除吗？", "确认", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning",
+        this.setLoad()
+        getRegistrationById(row.id).then(responseData => {
+          if (responseData.code === 100) {
+            this.$refs.registrationForm.openCopyRegistrationDialog(responseData.data, this.permission.remove, this.permission.view)
+          } else {
+            this.showMessage(responseData)
+          }
+          this.resetLoad()
+        }).catch(error => {
+          this.outputError(error)
         })
-          .then(() => {
-            this.setLoad();
-            deleteRegistration(row)
-              .then((responseData) => {
-                if (responseData.code == 100) {
-                  this.getRegistrationList();
-                  this.showMessage({type: "success", msg: "删除成功"});
-                } else {
-                  this.showMessage(responseData);
-                }
-                this.resetLoad();
-              })
-              .catch((error) => {
-                this.outputError(error);
-              });
-          })
-          .catch(() => {
-          });
-      },
-      onSortChange(orderby) {
-        if (validatenull(orderby.prop)) {
-          this.search.columnName = "";
-          this.search.order = "";
-        } else {
-          this.search.columnName = orderby.prop;
-          this.search.order = orderby.order === "descending" ? "desc" : "asc";
-        }
-
-        this.getRegistrationList();
       },
       initOptions(This) {
         this.key_department++;
@@ -1647,40 +1364,15 @@
           this.doctor_List = responseData.data;
         });
 
-        this.statusSearch.params = [
-          {
-            columnName: "dict_type_id",
-            queryType: "=",
-            value: "1008898177293385773",
-          },
-        ];
-        listDictItemAll(this.statusSearch).then((responseData) => {
-          this.statusList = responseData.data;
-          console.log(this.statusList, "sss");
+        //挂号状态
+        getDictItemsByCode(DICT_CODE.REGISTRATION_STATUS).then((data) => {
+          this.statusList = data;
         });
 
 
         //支付类型查询
-        let payType_search = {
-          params: [
-            {
-              columnName: "dict_type_id",
-              queryType: "=",
-              value: "1008793465990693120",
-            },
-          ],
-        };
-        // 字段对应表上filter条件
-        payType_search.params.push.apply(payType_search.params, []);
-        // 数据权限: 字典项sys_dict_item
-        this.pushDataPermissions(
-          payType_search.params,
-          this.$route.meta.routerId,
-          "4005"
-        );
-        this.payType_List.splice(0, this.payType_List.length);
-        listDictItemAll(payType_search).then((responseData) => {
-          this.payType_List = responseData.data;
+        getDictItemsByCode(DICT_CODE.PAY_TYPE).then((data) => {
+          this.payType_List = data;
         });
         //查询可挂号科室
         this.keys_department++;
@@ -1731,12 +1423,11 @@
         );
         this.doctors_List.splice(0, this.doctors_List.length);
         listDoctorsAll().then((responseData) => {
-          console.log(responseData, '医生');
           this.doctors_List = responseData.data;
           listClinicOfficeAll(departments_search).then((responseData) => {
             this.departments_List = responseData.data;
             for (let i = 0; i < this.departments_List.length; i++) {
-              if (this.departments_List[i].isDefault == '1') {
+              if (this.departments_List[i].isDefault === '1') {
                 this.bizFormModel.clinicOffice.id = this.departments_List[i].id
                 this.sortDoc(this.departments_List[i].id)
               }
@@ -1749,7 +1440,6 @@
 
         let myDate = new Date();
         let lw = new Date(myDate.getTime() - 1000 * 60 * 60 * 24 * 30); //最后一个数字30可改，30天的意思
-        console.log(lw.getDate());
         let lastY = lw.getFullYear();
         let lastM = lw.getMonth() + 1;
         let lastD = lw.getDate();
@@ -1766,16 +1456,12 @@
         return startData;
 
       },
-      indexMethod(index) {
-        return (this.currentPage - 1) * this.search.limit + index + 1;
-      },
       signIn() {
-        console.log(this.bizFormModel, '签到');
         updateStatus(this.bizFormModel.id, this.bizFormModel.status, this.bizFormModel.clinicOffice.id, this.bizFormModel.doctor.id).then((res) => {
-          if (res.code === "100") {
+          if (res.code === 100) {
 
             this.signDialogVisible = false
-            this.getRegistrationList();
+            this.loadData();
 
 
           } else {
@@ -1787,8 +1473,8 @@
       }
     },
     watch: {
-      "queryModel.department.id": function (val, oldVal) {
-        if (val != oldVal) {
+      "queryModel.department.id"(val, oldVal) {
+        if (val !== oldVal) {
           let This = this.queryModel;
           this.queryModel.doctor = {
             // 医生
@@ -1930,47 +1616,47 @@
   }
 
 
-  /deep/ .el-table__fixed-right-patch {
+  ::v-deep .el-table__fixed-right-patch {
     width: 5px !important;
   }
 
-  /deep/ .el-table colgroup col[name='gutter'] {
+  ::v-deep .el-table colgroup col[name='gutter'] {
     width: 5px !important;
   }
 
-  /deep/ .el-table__body {
+  ::v-deep .el-table__body {
     width: 100% !important;
   }
 
-  /deep/ .el-table__fixed-body-wrapper {
+  ::v-deep .el-table__fixed-body-wrapper {
     top: 47px !important;
   }
 
   .registration-table {
     // 设置表格header的高度
-    /deep/ th {
+    ::v-deep th {
       height: 44px;
       vertical-align: middle !important;
     }
 
-    /deep/ th.gutter:last-of-type {
+    ::v-deep th.gutter:last-of-type {
       height: 0 !important;
     }
 
     // 设置表格body的高度
-    /deep/ .el-table__body-wrapper {
+    ::v-deep .el-table__body-wrapper {
       //解决数据展示超出body高度不滚动bug
       overflow-y: auto;
       // 减去的是表格header的高度
       height: calc(100vh - 350px - 44px) !important;
     }
 
-    /deep/ .el-table__fixed-right {
+    ::v-deep .el-table__fixed-right {
       height: 100% !important;
     }
     
     // 修复操作列按钮对齐
-    /deep/ .el-table__column--fixed-right .cell {
+    ::v-deep .el-table__column--fixed-right .cell {
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
@@ -1980,17 +1666,17 @@
     }
     
     // 修复表格行高度和对齐
-    /deep/ .el-table__row {
+    ::v-deep .el-table__row {
       height: 48px !important;
     }
     
     // 修复单元格内容垂直居中
-    /deep/ .el-table__cell {
+    ::v-deep .el-table__cell {
       vertical-align: middle !important;
     }
     
     // 修复表头对齐
-    /deep/ .el-table__header th {
+    ::v-deep .el-table__header th {
       vertical-align: middle !important;
     }
 

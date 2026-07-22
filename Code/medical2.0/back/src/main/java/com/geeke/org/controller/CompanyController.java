@@ -1,11 +1,10 @@
 package com.geeke.org.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.geeke.common.controller.CrudController;
 import com.geeke.common.controller.SearchParams;
-import com.geeke.common.data.Page;
 import com.geeke.org.entity.Company;
 import com.geeke.org.service.CompanyService;
-import com.geeke.sys.controller.BaseController;
 import com.geeke.sys.utils.SessionUserDto;
 import com.geeke.utils.ResultUtil;
 import com.geeke.utils.SessionUtils;
@@ -23,27 +22,14 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(value = "/org/company")
-public class CompanyController extends BaseController {
+public class CompanyController extends CrudController<CompanyService, Company> {
 
-	@Autowired
-	private CompanyService companyService;
-	
-    @GetMapping("/{id}")
-    public ResponseEntity<JSONObject> getById(@PathVariable("id") String id) {
-        Company entity = companyService.get(id);
-        return ResponseEntity.ok(ResultUtil.successJson(entity));
-    }
-    
-    @PostMapping(value = {"list", ""})
-    public ResponseEntity<JSONObject> listPage(@RequestBody SearchParams searchParams) {
-        Page<Company> result = companyService.listPage(searchParams.getParams(), searchParams.getOffset(), searchParams.getLimit(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
-    }
-    
-    @PostMapping(value = "listAll")
-    public ResponseEntity<JSONObject> listAll(@RequestBody SearchParams searchParams) {
-        List<Company> result = companyService.listAll(searchParams.getParams(), searchParams.getOrderby());
-        return ResponseEntity.ok(ResultUtil.successJson(result));
+    @Autowired
+    protected CompanyService companyService;
+
+    @Override
+    protected CompanyService getService() {
+        return companyService;
     }
 
     @PostMapping(value = "getCompanys")
@@ -56,11 +42,11 @@ public class CompanyController extends BaseController {
     public ResponseEntity<JSONObject> tree(@RequestBody SearchParams searchParams) {
         List<Company> result = companyService.tree(searchParams.getParams(), searchParams.getOrderby());
         return ResponseEntity.ok(ResultUtil.successJson(result));
-    } 
+    }
 
-    @PostMapping(value = "save")
-    public ResponseEntity<JSONObject> save(@RequestParam("entity") String strEntity,
-      @RequestParam("fileIdUploads") MultipartFile[] fileIdUploads,  // 文件: 诊所许可证图片
+    @PostMapping(value = "saveWithFile")
+    public ResponseEntity<JSONObject> saveWithFile(@RequestParam("entity") String strEntity,
+      @RequestParam("fileIdUploads") MultipartFile[] fileIdUploads,
       @RequestParam("deleteIds")String strDeleteIds) throws java.io.IOException {
         Company entity = JSONObject.parseObject(strEntity, Company.class);
         String[] deleteIds = JSONObject.parseObject(strDeleteIds, String[].class);
@@ -69,30 +55,6 @@ public class CompanyController extends BaseController {
             deleteIds
         ).getId();
         return ResponseEntity.ok(ResultUtil.successJson(id));
-    }
-  
-    @PostMapping(value = "delete")
-    public ResponseEntity<JSONObject> delete(@RequestBody Company entity) {
-        int rows = companyService.delete(entity);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
-    }
-
-    @PostMapping(value = "bulkInsert")
-    public ResponseEntity<JSONObject> bulkInsert(@RequestBody List<Company> entitys) {
-        List<String> ids = companyService.bulkInsert(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkUpdate")
-    public ResponseEntity<JSONObject> bulkUpdate(@RequestBody List<Company> entitys) {
-        List<String> ids = companyService.bulkUpdate(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(ids));
-    }
-    
-    @PostMapping(value = "bulkDelete")
-    public ResponseEntity<JSONObject> bulkDelete(@RequestBody List<Company> entitys) {
-        int rows = companyService.bulkDelete(entitys);
-        return ResponseEntity.ok(ResultUtil.successJson(rows));
     }
 
     /**

@@ -1,62 +1,25 @@
+import { createCrudApi } from '@/utils/apiFactory'
 import request from '@/utils/request'
 import qs from "qs";
 
-export const getMedicalRecordById = (id) =>
-    request({
-        url: '/outpatient/medicalRecord/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/outpatient/medicalRecord')
 
-export const listMedicalRecordPage = (search) =>
+// Re-export standard CRUD with original names for backward compatibility
+export const getMedicalRecordById = baseApi.getById
+export const listMedicalRecordPage = baseApi.listPage
+export const listMedicalRecordAll = baseApi.listAll
+export const saveMedicalRecord = (data) =>
     request({
-        url: '/outpatient/medicalRecord/list',
+        url: '/outpatient/medicalRecord/saveWithFile',
         method: 'post',
-        data: search
+        data
     })
+export const deleteMedicalRecord = baseApi.delete
+export const bulkInsertMedicalRecord = baseApi.bulkInsert
+export const bulkUpdateMedicalRecord = baseApi.bulkUpdate
+export const bulkDeleteMedicalRecord = baseApi.bulkDelete
 
-export const listMedicalRecordAll = (search) =>
-    request({
-        url: '/outpatient/medicalRecord/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveMedicalRecord = (medicalRecord) =>
-    request({
-        url: '/outpatient/medicalRecord/save',
-        method: 'post',
-        data: medicalRecord
-    })
-
-export const deleteMedicalRecord = (medicalRecord) =>
-    request({
-        url: '/outpatient/medicalRecord/delete',
-        method: 'post',
-        data: medicalRecord
-    })
-
-export const bulkInsertMedicalRecord = (medicalRecords) =>
-    request({
-        url: '/outpatient/medicalRecord/bulkInsert',
-        method: 'post',
-        data: medicalRecords
-    })
-
-export const bulkUpdateMedicalRecord = (medicalRecords) =>
-    request({
-        url: '/outpatient/medicalRecord/bulkUpdate',
-        method: 'post',
-        data: medicalRecords
-    })
-
-export const bulkDeleteMedicalRecord = (medicalRecords) =>
-    request({
-        url: '/outpatient/medicalRecord/bulkDelete',
-        method: 'post',
-        data: medicalRecords
-    })
-
+// Keep custom endpoints as-is
 export const allSaveMedicalRecord = (medicalRecords) =>
     request({
         url: '/outpatient/medicalRecord/allSave',
@@ -84,12 +47,12 @@ export const getHistoryRecipel = (search) =>
 
     export const ureport = (params) =>{
         let str = ''
-        let type = params.type=='recipelType_0'?'westMedicine':params.type=='recipelType_1'?'chineseMedicine':'costItem'
+        let type = params.type==='recipelType_0'?'westMedicine':params.type==='recipelType_1'?'chineseMedicine':'costItem'
         if(params.recipelInfoId){
             str = '&recipelInfoId=' + params.recipelInfoId
         }
 
-        window.open('http://localhost:9999/ureport/preview?_u=Newtouch:'+ type +'.ureport.xml' + str + '&type=0')
+        window.open(process.env.UREPORT_URL + '?_u=Newtouch:'+ type +'.ureport.xml' + str + '&type=0')
         // request({
         //     url: '/ureport/preview?_u=mysql:recipel.ureport.xml&_t=1,6,7,8,9&id=' + params.id + str,
         //     method: 'get'

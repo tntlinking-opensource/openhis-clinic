@@ -2,9 +2,11 @@ package com.geeke.stock.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.geeke.basicdata.entity.ManufactureFactory;
+import com.geeke.common.constants.BizConstants;
 import com.geeke.common.persistence.DataEntity;
 import com.geeke.org.entity.Company;
 import com.geeke.sys.entity.DictItem;
+import com.geeke.utils.excel.ExcelImportField;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.validator.constraints.Length;
@@ -21,6 +23,7 @@ import java.math.BigDecimal;
 public class Drug extends DataEntity<Drug> {
 
 	private static final long serialVersionUID = 1004078055755374623L;
+	@ExcelImportField(columnIndex = 0, required = true, maxLength = 128, label = "药品名称")
 	private String goodsName;		// 药品名称
 
     private String syncId;     //同步过来的ID
@@ -29,32 +32,51 @@ public class Drug extends DataEntity<Drug> {
 
 
 	private Company company;      // 诊所id 
+	@ExcelImportField(columnIndex = 1, maxLength = 128, label = "商品名称")
 	private String brandName;		// 商品名称
-	private DictItem type;      // 药品类型 
+	@ExcelImportField(columnIndex = 3, required = true, dictTypeId = BizConstants.DICT_TYPE_DRUG_TYPE, label = "药品类型")
+	private DictItem type;      // 药品类型
 	private String code;		// 药品编码
+	@ExcelImportField(columnIndex = 4, maxLength = 128, label = "药品来源")
 	private String source;		// 药品来源
-	private DictItem nature;      // 性质 
+	@ExcelImportField(columnIndex = 5, dictTypeId = BizConstants.DICT_TYPE_DRUG_NATURE, label = "药品性质")
+	private DictItem nature;      // 性质
 	private ManufactureFactory factory;      // 生产厂家 
+	@ExcelImportField(columnIndex = 7, maxLength = 64, label = "国药准字")
 	private String standardCode;		// 国药准字
+	@ExcelImportField(columnIndex = 8, maxLength = 64, label = "本位码")
 	private String bitCode;		// 本位码
+	@ExcelImportField(columnIndex = 9, maxLength = 64, label = "条形码")
 	private String barCode;		// 条形码
+	@ExcelImportField(columnIndex = 10, maxLength = 64, label = "医保编码")
 	private String insuranceCode;		// 医保编码
+	@ExcelImportField(columnIndex = 11, maxLength = 45, label = "剂量")
 	private String dosis;		// 剂量
-	private DictItem dosisUnit;      // 剂量单位 
+	@ExcelImportField(columnIndex = 12, dictTypeId = BizConstants.DICT_TYPE_DOSAGE_UNIT, label = "剂量单位")
+	private DictItem dosisUnit;      // 剂量单位
+	@ExcelImportField(columnIndex = 13, maxLength = 45, label = "制剂")
 	private String preparation;		// 制剂
-	private DictItem preparationUnit;      // 制剂单位 
-	private DictItem pack;      // 包装 
+	@ExcelImportField(columnIndex = 14, dictTypeId = BizConstants.DICT_TYPE_PREPARATION_UNIT, label = "制剂单位")
+	private DictItem preparationUnit;      // 制剂单位
+	@ExcelImportField(columnIndex = 15, dictTypeId = BizConstants.DICT_TYPE_PACK_SPEC, label = "包装规格")
+	private DictItem pack;      // 包装
+	@ExcelImportField(columnIndex = 16, label = "售价")
 	private BigDecimal price;		// 售价
+	@ExcelImportField(columnIndex = 17, maxLength = 1, label = "是否拆零销售")
 	private String isUnpackSell;		// 允许拆零销售
+	@ExcelImportField(columnIndex = 18, label = "零售价")
 	private BigDecimal retailPrice;		// 拆开后零售价
 	private String stockNumber;	//库存数量
 	private String stockUnit; //库存单位
+	@ExcelImportField(columnIndex = 19, maxLength = 1, label = "状态")
 	private String status;   //启用标志
+	@ExcelImportField(columnIndex = 2, maxLength = 64, label = "拼音码")
 	private String pinyinCode;  //拼音码
 	private int inventory;  //库存
 	private DictItem westernMedicineUse;      // 西药用法
 	private DictItem chineseMedicineUse;      // 中药用法
 	private Integer singleDosage;		// 单次用量
+	@ExcelImportField(columnIndex = 21, label = "总量")
 	private Integer total;		// 总量
 	private DictItem frequency;      // 频次用量
 	private DictItem days;      // 天数

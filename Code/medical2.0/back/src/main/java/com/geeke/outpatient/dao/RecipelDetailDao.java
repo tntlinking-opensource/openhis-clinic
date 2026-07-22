@@ -20,6 +20,13 @@ public interface RecipelDetailDao extends CrudDao<RecipelDetail> {
 
     List<RecipelDetail> getByRecipelInfoId(@Param("recipelInfoId") String recipelInfoId);
 
+    /**
+     * 批量查询多个处方的明细
+     * @param recipelInfoIds 处方ID列表
+     * @return 处方明细列表
+     */
+    List<RecipelDetail> getByRecipelInfoIds(@Param("recipelInfoIds") List<String> recipelInfoIds);
+
     void updateActualPayment(@Param("actualPayment")  BigDecimal actualPayment, @Param("id") String id);
 
     List<RecipelDetail> getRecipelDetail(@Param("id") String id);

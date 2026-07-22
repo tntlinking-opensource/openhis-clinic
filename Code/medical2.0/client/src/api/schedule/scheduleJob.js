@@ -1,60 +1,16 @@
 import request from '@/utils/request'
+import { createCrudApi } from '@/utils/apiFactory'
 
-export const getScheduleJobById = (id) =>
-    request({
-        url: '/schedule/scheduleJob/' + id,
-        method: 'get'
-    })
+const baseApi = createCrudApi('/schedule/scheduleJob')
 
-export const listScheduleJobPage = (search) =>
-    request({
-        url: '/schedule/scheduleJob/list',
-        method: 'post',
-        data: search
-    })
-
-export const listScheduleJobAll = (search) =>
-    request({
-        url: '/schedule/scheduleJob/listAll',
-        method: 'post',
-        data: search
-    })
-
-
-export const saveScheduleJob = (scheduleJob) => 
-    request({
-        url: '/schedule/scheduleJob/save',
-        method: 'post',
-        data: scheduleJob
-    })
-
-export const deleteScheduleJob = (scheduleJob) =>
-    request({
-        url: '/schedule/scheduleJob/delete',
-        method: 'post',
-        data: scheduleJob
-    })
-    
-export const bulkInsertScheduleJob = (scheduleJobs) =>
-    request({
-        url: '/schedule/scheduleJob/bulkInsert',
-        method: 'post',
-        data: scheduleJobs
-    })
-    
-export const bulkUpdateScheduleJob = (scheduleJobs) =>
-    request({
-        url: '/schedule/scheduleJob/bulkUpdate',
-        method: 'post',
-        data: scheduleJobs
-    })
-
-export const bulkDeleteScheduleJob = (scheduleJobs) =>
-    request({
-        url: '/schedule/scheduleJob/bulkDelete',
-        method: 'post',
-        data: scheduleJobs
-    })
+export const getScheduleJobById = baseApi.getById
+export const listScheduleJobPage = baseApi.listPage
+export const listScheduleJobAll = baseApi.listAll
+export const saveScheduleJob = baseApi.save
+export const deleteScheduleJob = baseApi.delete
+export const bulkInsertScheduleJob = baseApi.bulkInsert
+export const bulkUpdateScheduleJob = baseApi.bulkUpdate
+export const bulkDeleteScheduleJob = baseApi.bulkDelete
 
 // 启动定时器
 export const startTask = (scheduleJob) =>
@@ -63,7 +19,6 @@ export const startTask = (scheduleJob) =>
     method: 'post',
     data: scheduleJob
   })
-
 
 // 启动定时器
 export const endTask = (scheduleJob) =>

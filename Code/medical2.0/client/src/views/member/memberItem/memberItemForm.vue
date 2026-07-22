@@ -8,11 +8,11 @@
 
     <el-form :model='bizFormModel' :rules='formRules' 
       ref='memberItemForm' label-width='120px' label-position='right' class='edit-form'>  
-      <div class="tab-item" v-show='tabIndex=="1"'>  
+      <div class="tab-item" v-show='tabIndex==="1"'>  
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='诊所id' prop='company.id' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.company.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.company.name'></el-input>
             <el-select v-else v-model='bizFormModel.company' value-key='id' filterable clearable placeholder='请选择诊所id' 
               @clear='bizFormModel.company={
                 "id": null,
@@ -24,7 +24,7 @@
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='会员卡id' prop='member.id' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.member.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.member.name'></el-input>
             <el-select v-else v-model='bizFormModel.member' value-key='id' filterable clearable placeholder='请选择会员卡id' 
               @clear='bizFormModel.member={
                 "id": null,
@@ -38,7 +38,7 @@
               <el-row>
         <el-col :span='24/2'>
           <el-form-item label='对应的项目id' prop='costItem.id' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.costItem.name'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.costItem.name'></el-input>
             <el-select v-else v-model='bizFormModel.costItem' value-key='id' filterable clearable placeholder='请选择对应的项目id' 
               @clear='bizFormModel.costItem={
                 "id": null,
@@ -50,7 +50,7 @@
         </el-col>
                 <el-col :span='24/2'>
           <el-form-item label='赠送项目数量' prop='number' >
-            <el-input v-if='dialogProps.action == "view"' :disabled='true' v-model='bizFormModel.number'></el-input>
+            <el-input v-if='dialogProps.action === "view"' :disabled='true' v-model='bizFormModel.number'></el-input>
             <number-input v-else v-model="bizFormModel.number"  :precision="0"></number-input>
           </el-form-item>
         </el-col>
@@ -58,9 +58,9 @@
       </div>
     </el-form>
     <span slot='footer' class='dialog-footer'>
-      <el-button v-if='dialogProps.action != "view"' type='primary' :plain='true' @click='onSubmit("memberItemForm")'>保 存</el-button>
-      <el-button v-if='dialogProps.action != "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
-      <el-button v-if='dialogProps.action == "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
+      <el-button v-if='dialogProps.action !== "view"' type='primary' :plain='true' @click='onSubmit("memberItemForm")'>保 存</el-button>
+      <el-button v-if='dialogProps.action !== "view"' :plain='true' @click='onDialogClose()'>取 消</el-button>
+      <el-button v-if='dialogProps.action === "view"' :plain='true' @click='onDialogClose()'>关 闭</el-button>
     </span>    
   </el-dialog>
 </template>
@@ -72,6 +72,7 @@ import { listCostItemAll } from '@/api/treatment/costItem'
 import { saveMemberItem } from '@/api/member/memberItem'
 import BaseUI from '@/views/components/baseUI'
 import OperationIcon from '@/components/OperationIcon'
+import { getCurrentCompanyId } from "@/utils/userCache";
 export default {
   extends: BaseUI,
   name: 'memberItem-form',
@@ -122,7 +123,7 @@ export default {
     doSave() {
       this.setLoad()
       saveMemberItem(this.bizFormModel).then(responseData => {
-        if(responseData.code == 100) {
+        if(responseData.code === 100) {
           this.dialogProps.visible = false
           this.$emit('save-finished')
         } else {
@@ -177,7 +178,7 @@ export default {
         this.company_List = responseData.data
         // 获取初始项的值
         this.company_List.forEach( item => {
-          if(item.id == this.bizFormModel.company.id) {
+          if(item.id === this.bizFormModel.company.id) {
             this.bizFormModel.company = item
             return
           }
@@ -198,53 +199,47 @@ export default {
         params: []
       }
         // 字段对应表上filter条件
-        costItem_search.params.push.apply(costItem_search.params, [{columnName: 'company_id', queryType: '=', value: function() {var user = JSON.parse(sessionStorage.getItem('currentUser')); return user.company.id;}()}])
+        costItem_search.params.push.apply(costItem_search.params, [{columnName: 'company_id', queryType: '=', value: getCurrentCompanyId()}])
       // 数据权限: 费用项目cost_item
       this.pushDataPermissions(costItem_search.params, this.$route.meta.routerId, '998465736089977637')
       this.costItem_List.splice(0, this.costItem_List.length)
       listCostItemAll(costItem_search).then(responseData => {
         this.costItem_List = responseData.data
       })
-    }
+    },
+    openViewMemberItemDialog(memberItem) {
+      this.dialogProps.action = 'view'
+      this.dialogProps.title = '查看会员卡详情'
+      this.bizFormModel = {...this.initFormModel(), ...memberItem}
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openEditMemberItemDialog(memberItem) {
+      this.dialogProps.action = 'edit'
+      this.dialogProps.title = '修改会员卡详情'
+      this.bizFormModel = {...this.initFormModel(), ...memberItem}
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openAddMemberItemDialog() {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加会员卡详情'
+      this.bizFormModel = this.initFormModel()
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.dialogProps.visible = true
+    },
+    openCopyMemberItemDialog(memberItem) {
+      this.dialogProps.action = 'add'
+      this.dialogProps.title = '添加会员卡详情'
+      this.bizFormModel = {...this.initFormModel(), ...memberItem}
+      this.initOptions(this.bizFormModel)
+      this.tabIndex = '1'
+      this.bizFormModel.id = null
+      this.dialogProps.visible = true
+    },
   },
-  watch: {
-  },
-  mounted: function() {
-    this.$nextTick(() => {
-      this.$on('openViewMemberItemDialog', function(memberItem) {
-        this.dialogProps.action = 'view'
-        this.dialogProps.title = '查看会员卡详情'
-        this.bizFormModel = {...this.initFormModel(), ...memberItem}
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openEditMemberItemDialog', function(memberItem) {
-        this.dialogProps.action = 'edit'
-        this.dialogProps.title = '修改会员卡详情'
-        this.bizFormModel = {...this.initFormModel(), ...memberItem}
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openAddMemberItemDialog', function() {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加会员卡详情'
-        this.bizFormModel = this.initFormModel()
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.dialogProps.visible = true
-      })
-      this.$on('openCopyMemberItemDialog', function(memberItem) {
-        this.dialogProps.action = 'add'
-        this.dialogProps.title = '添加会员卡详情'
-        this.bizFormModel = {...this.initFormModel(), ...memberItem}
-        this.initOptions(this.bizFormModel)
-        this.tabIndex = '1'
-        this.bizFormModel.id = null   //把id设置为空，添加一个新的
-        this.dialogProps.visible = true
-      })
-    })
-  }  
 }
 </script>

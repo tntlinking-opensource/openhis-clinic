@@ -89,7 +89,7 @@
         // if (route.meta.parentId && route.meta.parentId != 0) {
         //   this.getMenus(route.meta.parentId)
         // }
-        if (route.meta.family && route.meta.parentId != 0) {
+        if (route.meta.family && route.meta.parentId !== 0) {
           this.getMenus(route.meta.family[0])
         }
         return route.meta.routerId

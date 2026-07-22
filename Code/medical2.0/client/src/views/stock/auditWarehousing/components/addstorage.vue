@@ -19,7 +19,7 @@
       </el-col>
 
       <el-col :span="6">
-        <span v-if="addType == 1"><b>药品名称：</b></span>
+        <span v-if="addType === 1"><b>药品名称：</b></span>
         <span v-else><b>材料名称：</b></span>
         <el-popover
           placement="right"
@@ -36,54 +36,54 @@
           >
             <el-table-column
               prop="goodsName"
-              :label="addType == 1 ? '药品名称' : '材料名称'"
-              v-if="addType == 1"
+              :label="addType === 1 ? '药品名称' : '材料名称'"
+              v-if="addType === 1"
             >
             </el-table-column>
             <el-table-column
               prop="name"
-              :label="addType == 1 ? '药品名称' : '材料名称'"
-              v-if="addType == 2"
+              :label="addType === 1 ? '药品名称' : '材料名称'"
+              v-if="addType === 2"
             >
             </el-table-column>
             <el-table-column
               prop="type.name"
-              :label="addType == 1 ? '药品类型' : '材料类型'"
+              :label="addType === 1 ? '药品类型' : '材料类型'"
             >
             </el-table-column>
             <el-table-column
               prop="specification"
               label="规格"
               width="100"
-              v-if="addType == 1"
+              v-if="addType === 1"
             >
             </el-table-column>
             <el-table-column
               prop="price1"
               label="单价"
               width="100"
-              v-if="addType == 2"
+              v-if="addType === 2"
             >
             </el-table-column>
             <el-table-column
               prop="factory.name"
               label="厂家"
               width="100"
-              v-if="addType == 1"
+              v-if="addType === 1"
             >
             </el-table-column>
             <el-table-column
               prop="pack.name"
               label="单位"
               width="80"
-              v-if="addType == 1"
+              v-if="addType === 1"
             >
             </el-table-column>
             <el-table-column
               prop="price1"
               label="零售"
               width="80"
-              v-if="addType == 1"
+              v-if="addType === 1"
             >
             </el-table-column>
           </el-table>
@@ -137,7 +137,7 @@
             prop="goodsName"
             label="药品/材料名称"
             width="200"
-            v-if="radio == 2"
+            v-if="radio === 2"
           >
           </el-table-column> -->
           <el-table-column prop="specification" label="规格"></el-table-column>
@@ -171,7 +171,7 @@
             </template>
           </el-table-column>
           <el-table-column
-            v-if="addType == 1"
+            v-if="addType === 1"
             prop="drugTracCodg"
             label="药品追溯码"
           > <template slot-scope="scope">
@@ -204,7 +204,7 @@
           <el-table-column :required="true" label="进价">
             <template slot-scope="scope">
               <el-input
-                v-if="systemParamConfig==1"
+                v-if="systemParamConfig===1"
                 disabled
                 v-model="scope.row.outPrice"
                 type="number"
@@ -212,7 +212,7 @@
                 placeholder="进价"
               ></el-input>
               <el-input
-                v-if="systemParamConfig==2"
+                v-if="systemParamConfig===2"
                 v-model="scope.row.inPrice"
                 type="number"
                 :change="checkPrice()"
@@ -221,13 +221,13 @@
             </template>
           </el-table-column>
           <el-table-column prop="outPrice" label="零售价"></el-table-column>
-          <el-table-column label="总进价" v-if="systemParamConfig==1">
+          <el-table-column label="总进价" v-if="systemParamConfig===1">
             <template slot-scope="scope"
             >{{ calcTotalOutPrice(scope.row) }}
             </template>
           </el-table-column>
-          <el-table-column label="总进价" v-if="systemParamConfig==2">
-            <template slot-scope="scope" v-if="systemParamConfig==2"
+          <el-table-column label="总进价" v-if="systemParamConfig===2">
+            <template slot-scope="scope" v-if="systemParamConfig===2"
             >{{ calcTotalInPrice(scope.row) }}
             </template>
           </el-table-column>
@@ -256,8 +256,8 @@
     <el-row>
       <el-col :span="3" :offset="12">品种：{{ CalcBreed() }}</el-col>
       <el-col :span="3">数量：{{ calcTotalNumber() }}</el-col>
-      <el-col :span="3" v-if="systemParamConfig==1">总进价：{{ calcAllRetailPrice() }}</el-col>
-      <el-col :span="3" v-if="systemParamConfig==2">总进价：{{ calcAllBid() }}</el-col>
+      <el-col :span="3" v-if="systemParamConfig===1">总进价：{{ calcAllRetailPrice() }}</el-col>
+      <el-col :span="3" v-if="systemParamConfig===2">总进价：{{ calcAllBid() }}</el-col>
       <el-col :span="3">总零售价：{{ calcAllRetailPrice() }}</el-col>
     </el-row>
     <el-row>
@@ -454,16 +454,15 @@
     watch: {
       addType: function (newVal, oldVal) {
         this.otherInfo.supplierID = null
-        if (newVal == 1) this.getDrugList();
-        if (newVal == 2) this.getStuffList();
+        if (newVal === 1) this.getDrugList();
+        if (newVal === 2) this.getStuffList();
       },
 
       searchName: function (newVal, oldVal) {
-        var pattern = new RegExp("[A-Za-z]+");
+        const pattern = new RegExp("[A-Za-z]+");
         if (this.flag) {
           if (newVal === "") {
             this.newList = this.queryList;
-            console.log(this.queryList, 'quanbu');
           } else if (pattern.test(newVal)) {
 
             window.setTimeout(() => {
@@ -497,8 +496,6 @@
         handler(newVal, oldVal) {
           if (newVal.length !== 0) {
             newVal.forEach((i, ind) => {
-              console.log(i.expireDate, "有效");
-              console.log(i.produceDate, "生产");
 
               if (
                 this.$moment(i.expireDate).format("YYYY-MM-DD HH:mm:ss") <
@@ -578,10 +575,9 @@
       },
       //  药品
       RowClickSurchargeTable(row) {
-        console.log(row, "====????");
 
         this.searchName = row.goodsName ? row.goodsName : row.name;
-        var newStorage = {
+        const newStorage = {
           goodsID: "",
           goodsName: "",
           specification: "",
@@ -616,13 +612,12 @@
         newStorage.packNumber = row.packNumber;
         newStorage.type = row.type;
         this.drugPreparation = row.preparation - 0;
-        if (row.packNumber != undefined) {
+        if (row.packNumber !== undefined) {
           this.stuffPackNum = row.packNumber;
         } else {
           this.stuffPackNum = 0
         }
 
-        // console.log(this.selectGoodsTemp, "0000333");
         this.selectGoodsTemp = newStorage;
         this.AddRow();
         // this.storageDetailTable.splice(
@@ -634,7 +629,7 @@
       //点击添加按钮
       AddRow() {
         if (this.selectGoodsTemp) {
-          var newStorage = {
+          const newStorage = {
             goodsID: "",
             goodsName: "",
             drugTracCodg:"",
@@ -668,10 +663,7 @@
           newStorage.packNumber = this.selectGoodsTemp.packNumber
           newStorage.drugTracCodg = this.selectGoodsTemp.drugTracCodg
           newStorage.type = this.selectGoodsTemp.type;
-          console.log(this.selectGoodsTemp, "]]]]]");
-          console.log(newStorage, '[[[[[?');
           this.storageDetailTable.push(newStorage);
-          console.log("里面都是什么" + JSON.stringify(this.storageDetailTable))
         } else {
           this.$message({
             message: "请选择要新增入库的药品或材料",
@@ -709,7 +701,7 @@
         );
         this.queryList.splice(0, this.queryList.length);
         listStuffAll(stuff_search).then((responseData) => {
-          if (responseData.data) {
+          if (Array.isArray(responseData.data)) {
             responseData.data.forEach((i) => {
               if (!i.price1) i.price1 = i.priceOutSell + "/" + i.packUnit.name;
               if (!i.price) i.price = i.priceOutSell;
@@ -723,7 +715,6 @@
           }
           this.queryList = responseData.data;
           this.newList = this.queryList;
-          console.log(this.newList, 'dadadada');
         });
 
         this.supplierSearch.params = [
@@ -740,8 +731,7 @@
         ];
         this.supplierLists = null
         listSupplierAll(this.supplierSearch).then((responseData) => {
-          // console.log(responseData);
-          if (responseData.code == 100) {
+          if (responseData.code === 100) {
             this.supplierLists = responseData.data
           }
         }).catch(() => {
@@ -771,7 +761,7 @@
         );
         this.queryList.splice(0, this.queryList.length);
         listDrugAll(drug_search).then((responseData) => {
-          if (responseData.data) {
+          if (Array.isArray(responseData.data)) {
             responseData.data.forEach((i) => {
               i.value = i.goodsName;
               i.goodsType = 1;
@@ -782,7 +772,6 @@
           }
           this.queryList = responseData.data;
           this.newList = this.queryList;
-          console.log("111111" + this.newList)
 
         });
 
@@ -800,8 +789,7 @@
         ];
         this.supplierLists = null
         listSupplierAll(this.supplierSearch).then((responseData) => {
-          if (responseData.code == 100) {
-            console.log(responseData, '呀品牌');
+          if (responseData.code === 100) {
             this.supplierLists = responseData.data
           }
         }).catch(() => {
@@ -851,8 +839,8 @@
       // 进价是否为零售价
       GetSysParamConfig() {
         listSysParamConfigAll(this.systemParamConfigSearch).then(responseData => {
-          if (responseData.code == 100) {
-            if (responseData.data.length >= 1) {
+          if (responseData.code === 100) {
+            if (Array.isArray(responseData.data) && responseData.data.length >= 1) {
               responseData.data.forEach(data => {
                 if (data.configName === "retailPrice") {
                   /*if (data.configValue){
@@ -863,7 +851,6 @@
                   this.systemParamConfig = ("true" === data.configValue) ? 1 : 2
                 }
               })
-              console.log(this.systemParamConfig, "this.systemParamConfig")
             }
           } else {
             this.showMessage(responseData)
@@ -875,7 +862,7 @@
       /*根据入参触发查询药品*/
       queryGoods(queryString, callback) {
         this.goodsInfo = [];
-        if (queryString != "") {
+        if (queryString !== "") {
           setTimeout(() => {
             queryString = "%" + queryString + "%";
             this.drugSearch.params = [
@@ -894,10 +881,8 @@
             if (this.addType === "1") {
               listDrug(this.drugSearch)
                 .then((responseData) => {
-                  console.log(responseData, '33333');
-                  if (responseData.code == 100) {
+                  if (responseData.code === 100) {
                     if (responseData.data.rows) {
-                      console.log(responseData.data.rows, 111);
                       responseData.data.rows.forEach((element) => {
                         this.goodsInfo.push({
                           id: element.id,
@@ -915,7 +900,6 @@
                           pack: element.pack,
                         });
                       });
-                      console.log(this.goodsInfo, "===");
                     } else {
                       return;
                     }
@@ -944,11 +928,9 @@
 
             if (this.addType === "2") {
               listStuffPage(this.stuffSearch).then((responseData) => {
-                if (responseData.code == 100) {
-                  console.log(responseData.data, "？？？===");
+                if (responseData.code === 100) {
                   if (responseData.data.rows) {
                     responseData.data.rows.forEach((element) => {
-                      console.log(elemetn, '看看');
                       this.goodsInfo.push({
                         id: element.id,
                         goodsName: element.name,
@@ -961,7 +943,6 @@
                         pack: element.pack,
                       });
                     });
-                    console.log(this.goodsInfo, "===");
                   } else {
                     return;
                   }
@@ -979,13 +960,12 @@
       },
       //选中药品或材料
       selectGoods(item) {
-        console.log(item, "////");
         this.selectGoodsTemp = item;
       },
       // 每条里的模糊查询后的选中
       selectGoodsItem(item) {
         this.selectGoodsTemp = item;
-        var newStorage = {
+        const newStorage = {
           goodsID: "",
           goodsName: "",
           specification: "",
@@ -1009,7 +989,6 @@
         newStorage.factoryID = this.selectGoodsTemp.factoryID;
         newStorage.outPrice = this.selectGoodsTemp.outPrice;
         newStorage.pack = this.selectGoodsTemp.pack;
-        console.log(this.selectGoodsTemp, "0000333");
         this.storageDetailTable.splice(
           this.storageDetailTable.length - 1,
           1,
@@ -1024,13 +1003,13 @@
           return;
         }
 
-        if (this.storageDetailTable.length == 0) {
+        if (this.storageDetailTable.length === 0) {
           this.$message({message: "请录入入库明细信息", type: "warning"});
           return;
         }
 
-        var day = new Date();
-        var saveInfo = {
+        const day = new Date();
+        const saveInfo = {
           supplierStorage: {
             company: {
               id: this.company_id,
@@ -1040,7 +1019,7 @@
             },
             code: "",
             breed: this.otherInfo.breed,
-            number: this.stuffPackNum == 0 ? this.otherInfo.totalNumber * this.drugPreparation : this.otherInfo.totalNumber * this.stuffPackNum,
+            number: this.stuffPackNum === 0 ? this.otherInfo.totalNumber * this.drugPreparation : this.otherInfo.totalNumber * this.stuffPackNum,
 
             allBid: this.otherInfo.allBid,
             allRetailPrice: this.otherInfo.allRetailPrice,
@@ -1057,13 +1036,12 @@
           },
           supplierStockList: [],
         };
-        console.log(this.storageDetailTable, 'lipu');
         this.storageDetailTable.forEach((element) => {
-          if (this.systemParamConfig == 1) {
+          if (this.systemParamConfig === 1) {
             element.inPrice = element.outPrice
           }
           try {
-            if (element.quantity === "" || element.quantity == 0) {
+            if (element.quantity === "" || element.quantity === 0) {
               throw "数量";
             }
             if (element.inPrice === "") {
@@ -1080,7 +1058,7 @@
             ) {
               throw "有效期";
             }
-            var detail = {
+            const detail = {
               company: {
                 // 诊所id
                 id: this.company_id,
@@ -1117,8 +1095,8 @@
                 element.expireDate !== ""
                   ? this.$moment(element.expireDate).format("YYYY-MM-DD HH:mm:ss")
                   : null, // 有效期
-              number: element.goodsType == 1 ? element.quantity * element.preparation : element.quantity * element.packNumber, // 数量
-              cnt: element.goodsType == 1 ? element.quantity : element.quantity * element.packNumber, // 医保字段数量
+              number: element.goodsType === 1 ? element.quantity * element.preparation : element.quantity * element.packNumber, // 数量
+              cnt: element.goodsType === 1 ? element.quantity : element.quantity * element.packNumber, // 医保字段数量
               bid: element.inPrice, // 进价
               retailPrice: element.outPrice, // 零售价
               allBid: element.totalInPrice, // 总进价
@@ -1131,13 +1109,10 @@
             this.flag = e;
           }
         });
-        console.log(this.flag, '报错');
-        if (this.systemParamConfig == 1) {
+        if (this.systemParamConfig === 1) {
           this.inPrice = this.outPrice
           this.totalInPrice = this.totalOutPrice
           saveInfo.supplierStockList.allBid = saveInfo.supplierStockList.allRetailPrice
-          console.log(saveInfo.supplierStockList.allBid + "==进价")
-          console.log(saveInfo.supplierStockList.allRetailPrice + "==进价价")
         }
         if (this.flag === "数量") {
           this.$message({message: "入库数量不可为空", type: "warning"});
@@ -1161,9 +1136,8 @@
           });
           return;
         } else {
-          console.log(saveInfo, '看info');
           saveSupplierStockList(saveInfo).then((responseData) => {
-            if (responseData.code == 100) {
+            if (responseData.code === 100) {
               this.$message({message: "保存成功", type: "success"});
               this.closeDialog();
             } else {
@@ -1174,7 +1148,6 @@
       },
       //关闭弹框
       closeDialog() {
-        console.log("1111====");
         this.storageDetailTable = [];
 
         this.otherInfo = {
@@ -1207,20 +1180,20 @@
         this.storageDetailTable.splice(index, 1);
       },
       calcTotalInPrice(row) {
-        var number = Number(row.quantity);
+        const number = Number(row.quantity);
         if (isNaN(number)) return;
-        var inPrice = Number(row.inPrice);
+        const inPrice = Number(row.inPrice);
         if (isNaN(inPrice)) return;
-        var result = number * inPrice;
+        const result = number * inPrice;
         row.totalInPrice = result;
         return result;
       },
       calcTotalOutPrice(row) {
-        var number = Number(row.quantity);
+        const number = Number(row.quantity);
         if (isNaN(number)) return;
-        var outPrice = Number(row.outPrice);
+        const outPrice = Number(row.outPrice);
         if (isNaN(outPrice)) return;
-        var result = number * outPrice;
+        let result = number * outPrice;
         result = result.toFixed(2)
         row.totalOutPrice = result;
         return result;
@@ -1233,10 +1206,10 @@
         return 0;
       },
       calcTotalNumber() {
-        var totalNumber = 0;
+        let totalNumber = 0;
         if (this.storageDetailTable) {
           this.storageDetailTable.forEach((element) => {
-            var number = Number(element.quantity);
+            const number = Number(element.quantity);
             if (isNaN(number)) totalNumber += 0;
             else totalNumber += number;
           });
@@ -1245,10 +1218,10 @@
         return totalNumber;
       },
       calcAllBid() {
-        var allBid = 0;
+        let allBid = 0;
         if (this.storageDetailTable) {
           this.storageDetailTable.forEach((element) => {
-            var number = Number(element.totalInPrice);
+            const number = Number(element.totalInPrice);
             if (isNaN(number)) allBid += 0;
             else allBid += number;
           });
@@ -1257,10 +1230,10 @@
         return allBid;
       },
       calcAllRetailPrice() {
-        var allRetailPrice = 0;
+        let allRetailPrice = 0;
         if (this.storageDetailTable) {
           this.storageDetailTable.forEach((element) => {
-            var number = Number(element.totalOutPrice);
+            const number = Number(element.totalOutPrice);
             if (isNaN(number)) allRetailPrice += 0;
             else allRetailPrice += number;
           });
@@ -1269,13 +1242,10 @@
         return allRetailPrice;
       },
       testSelectGoods(data) {
-        console.log("parent");
-        console.log(data);
       },
       // 批量导入按钮点击事件
       importStudentExcel() {
         this.importDialogVisible = true;
-        console.log(this.importDialogVisible)
       },
 
       // 关闭导入窗口
@@ -1288,8 +1258,8 @@
       handleChange(file, fileList) {
         this.fileTemp = file.raw;
         if (this.fileTemp) {
-          if ((this.fileTemp.type == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            || (this.fileTemp.type == 'application/vnd.ms-excel')) {
+          if ((this.fileTemp.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            || (this.fileTemp.type === 'application/vnd.ms-excel')) {
             this.importfxx(this.fileTemp);
           } else {
             this.$message({
@@ -1324,33 +1294,33 @@
 
         this.file = event.currentTarget.files[0];
 
-        var rABS = false; //是否将文件读取为二进制字符串
-        var f = this.file;
-        var newList = this.newList;
-        var storageDetailTable = this.storageDetailTable;
+        const rABS = false; //是否将文件读取为二进制字符串
+        const f = this.file;
+        const newList = this.newList;
+        const storageDetailTable = this.storageDetailTable;
         let dr = 0;
         let wdr = 0;
         let a = 0;
         let cw = "";
 
 
-        var reader = new FileReader();
+        const reader = new FileReader();
         //if (!FileReader.prototype.readAsBinaryString) {
         FileReader.prototype.readAsBinaryString = function (f) {
-          var binary = "";
-          var rABS = false; //是否将文件读取为二进制字符串
-          var pt = this;
-          var wb; //读取完成的数据
-          var outdata;
-          var reader = new FileReader();
+          let binary = "";
+          const rABS = false; //是否将文件读取为二进制字符串
+          const pt = this;
+          let wb; //读取完成的数据
+          let outdata;
+          const reader = new FileReader();
           reader.onload = function (e) {
-            var bytes = new Uint8Array(reader.result);
-            var length = bytes.byteLength;
-            for (var i = 0; i < length; i++) {
+            const bytes = new Uint8Array(reader.result);
+            const length = bytes.byteLength;
+            for (let i = 0; i < length; i++) {
               binary += String.fromCharCode(bytes[i]);
             }
             //此处引入，用于解析excel
-            var XLSX = require("xlsx");
+            const XLSX = require("xlsx");
             if (rABS) {
               wb = XLSX.read(btoa(fixdata(binary)), {
                 //手动转化
@@ -1362,7 +1332,6 @@
               });
             }
             outdata = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
-            console.log("看看解析的啥呢么" + JSON.stringify(outdata))
             //outdata就是读取的数据（不包含标题行即表头，表头会作为对象的下标）
             //此处可对数据进行处理
             // let arr = [];
@@ -1379,7 +1348,7 @@
             // _this.dalen=arr.length;
             for (let i = 0; i < outdata.length; i++) {
               for (let j = 0; j < newList.length; j++) {
-                if (outdata[i].药品材料名称 == newList[j].goodsName && outdata[i].规格 == newList[j].specification && outdata[i].售价 == newList[j].price) {
+                if (outdata[i].药品材料名称 === newList[j].goodsName && outdata[i].规格 === newList[j].specification && outdata[i].售价 === newList[j].price) {
                   newList[j].batchNumber = outdata[i].生产批号;
                   newList[j].producedDate = outdata[i].生产日期;
                   newList[j].expireDate = outdata[i].过期日期;
@@ -1387,7 +1356,6 @@
                   newList[j].inPrice = outdata[i].进价;
                   newList[j].outPrice = newList[j].price;
                   storageDetailTable.push(newList[j]);
-                  console.log(newList[j])
                   dr += 1;
                   a = 1;
                 }
@@ -1411,7 +1379,6 @@
 
         setTimeout(() => {
           if (wdr!==0){
-            console.log("到这没有")
             this.chengGong = dr
             this.shiBai = wdr
             this.mistake = cw
@@ -1433,8 +1400,8 @@
     },
     mounted() {
       this.GetSysParamConfig();
-      if (this.addType == 1) this.getDrugList();
-      if (this.addType == 2) this.getStuffList();
+      if (this.addType === 1) this.getDrugList();
+      if (this.addType === 2) this.getStuffList();
 
 
     },

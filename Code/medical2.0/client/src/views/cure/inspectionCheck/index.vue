@@ -3,7 +3,7 @@
     <!-- 历史记录  -->
     <History :bussObject='curentRow' ></History>
     <!-- 编辑窗口  -->
-    <inspectionCheck-form ref='inspectionCheckForm' :permission='permission' v-on:save-finished='getInspectionCheckList()'></inspectionCheck-form>
+    <inspectionCheck-form ref='inspectionCheckForm' :permission='permission' @save-finished='loadData'></inspectionCheck-form>
     <div class="page-container">
         <!--  搜索栏  开始 -->
         <div class='query-form-container'>
@@ -93,19 +93,19 @@
             </el-table-column>
               <el-table-column v-for="(cv, index) in columnViews" v-if='cv.display' :prop='cv.prop' :key="`columnViews_${index}`" :label='cv.label' sortable='custom' :align='cv.align' :min-width='cv.miniWidth+"px"' :width='cv.width+"px"' header-align='center' :column-key='index.toString()' :render-header="renderHeader">
                 <template slot-scope='{row,$index}'>
-                  <span v-if='columnViews[index].showType == "Switch" || columnViews[index].showType == "Checkbox" || columnViews[index].showType == "Radio"'>
-                    <li v-if='getAttrValue(row, columnViews[index].prop) == "1"' class='el-icon-check' style='color:#F56C6C;'></li>
+                  <span v-if='columnViews[index].showType === "Switch" || columnViews[index].showType === "Checkbox" || columnViews[index].showType === "Radio"'>
+                    <li v-if='getAttrValue(row, columnViews[index].prop) === "1"' class='el-icon-check' style='color:#F56C6C;'></li>
                   </span>
-                  <span v-else-if="columnViews[index].prop=='type'">
-                    <span v-if="getAttrValue(row, columnViews[index].prop)=='0'">检验</span>
+                  <span v-else-if="columnViews[index].prop==='type'">
+                    <span v-if="getAttrValue(row, columnViews[index].prop)==='0'">检验</span>
                     <span v-else>检查</span>
                   </span>
-                  <span v-else-if="columnViews[index].prop=='status'">
-                    <span v-if="getAttrValue(row, columnViews[index].prop)=='0'" style="color:#FF9966">待填写</span>
+                  <span v-else-if="columnViews[index].prop==='status'">
+                    <span v-if="getAttrValue(row, columnViews[index].prop)==='0'" style="color:#FF9966">待填写</span>
                     <span v-else style="color:#99CC66">已填写</span>
                   </span>
-                  <span  v-else-if="columnViews[index].prop=='sex'">
-                    <span v-if="getAttrValue(row, columnViews[index].prop)=='gender_1'">女</span>
+                  <span  v-else-if="columnViews[index].prop==='sex'">
+                    <span v-if="getAttrValue(row, columnViews[index].prop)==='gender_1'">女</span>
                     <span v-else>男</span>
                   </span>
                   <span v-else>{{ getAttrValue(row, columnViews[index].prop, columnViews[index].javaType )}}</span>
@@ -113,15 +113,15 @@
                 </template>
               </el-table-column>
               <!--表行级操作按钮-->
-              <el-table-column label='操作' header-align='center' :key="Math.random()" :width='120 + "px"'>        
+              <el-table-column label='操作' header-align='center' :key="'operate'" :width='120 + "px"'>        
                 <template slot='header' slot-scope="scope">
                   <span>操作</span>
                   <view-columns-select v-model='columnViews' v-on:save-column-view='saveColumn' v-on:show-all-column='showAllColumn' v-on:show-default-column='showDefaultColumn'></view-columns-select>
                   <export-excel-button v-show='permission.export' :data='inspectionCheckList' :tHeader='getHeads()' :filterVal='getFilterVal()' :plain='true'></export-excel-button>
                 </template>
                 <template slot-scope='scope'>
-                  <el-button type="text" v-if="scope.row.status=='0'"  @click="fill(scope.row,scope.$index,0)">填写报告</el-button>
-                  <el-button type="text" v-if="scope.row.status=='1'"  @click="fill(scope.row,scope.$index,1)">查看详情</el-button>
+                  <el-button type="text" v-if="scope.row.status==='0'"  @click="fill(scope.row,scope.$index,0)">填写报告</el-button>
+                  <el-button type="text" v-if="scope.row.status==='1'"  @click="fill(scope.row,scope.$index,1)">查看详情</el-button>
                   <!-- <OperationIcon v-show='permission.view' type='info' content='查看' placement='top-start' icon-name='el-icon-view' 
                     @click='onViewInspectionCheck(scope.$index, scope.row)'></OperationIcon>
                   <OperationIcon v-show='permission.edit' type='primary' content='编辑' placement='top-start' icon-name='el-icon-edit' 
@@ -174,7 +174,7 @@
             @click="switchEdits"
           ></OperationIcon>
         </div>
-         <div v-if="this.type=='0'">
+         <div v-if="this.type==='0'">
             <el-form :model='bizFormModel.inspectionCheckInfo' :rules='formRules' 
               ref='bizFormModel' label-width='120px' label-position='right' class='edit-form'> 
            <!-- <el-card class="box-card main-card"> -->
@@ -324,7 +324,7 @@
               <el-upload
                 class="avatar-uploader"
                  action="#"
-                :show-file-list="switchEdit==0"
+                :show-file-list="switchEdit===0"
                 :on-change="handleLicensePreview"
                 :before-upload="beforeLicenseUpload"
                 :on-remove="handleRemove"
@@ -337,11 +337,11 @@
 
               >          
              
-                <el-button v-if="photoId==null||photoId=='' || switchEdit==0" slot="trigger" size="mini" type="primary">上传文件</el-button>           
+                <el-button v-if="photoId==null||photoId==='' || switchEdit===0" slot="trigger" size="mini" type="primary">上传文件</el-button>           
               </el-upload>
                <img v-if="bizFormModel.uploadFile" :src="bizFormModel.uploadFile" class="avatar">
                <i v-else class="el-icon-plus avatar-uploader-icon"></i> 
-                  <el-button  size="mini" type="primary" v-if="bizFormModel.uploadFile && switchEdit==1"  @click="look(bizFormModel.uploadFile)">预览文件</el-button>
+                  <el-button  size="mini" type="primary" v-if="bizFormModel.uploadFile && switchEdit===1"  @click="look(bizFormModel.uploadFile)">预览文件</el-button>
             </el-form-item> -->
             <el-form-item label='' prop='' >
               <div style="margin-left:-50px">
@@ -351,7 +351,7 @@
           </el-form>
           
          </div>
-          <div v-if="this.type=='1'">
+          <div v-if="this.type==='1'">
             <el-form :model='bizFormModel.inspectionCheckInfo' :rules='formRules' 
               ref='bizFormModel' label-width='120px' label-position='right' class='edit-form'> 
            <!-- <el-card class="box-card main-card"> -->
@@ -436,7 +436,7 @@
               <el-upload
                 class="avatar-uploader"
                  action="#"
-                :show-file-list="switchEdit==0"
+                :show-file-list="switchEdit===0"
                 :on-change="handleLicensePreview"
                 :before-upload="beforeLicenseUpload"
                 :on-remove="handleRemove"
@@ -449,11 +449,11 @@
 
               >   
                    
-                <el-button v-if="photoId==null||photoId=='' || switchEdit==0" slot="trigger" size="mini" type="primary">上传文件</el-button>           
+                <el-button v-if="photoId==null||photoId==='' || switchEdit===0" slot="trigger" size="mini" type="primary">上传文件</el-button>           
               </el-upload>
               <img v-if="bizFormModel.uploadFile" :src="bizFormModel.uploadFile" class="avatar">
                <i v-else class="el-icon-plus avatar-uploader-icon"></i>  
-                  <el-button  size="mini" type="primary" v-if="bizFormModel.uploadFile && switchEdit==1"  @click="look(bizFormModel.uploadFile)">预览文件</el-button>
+                  <el-button  size="mini" type="primary" v-if="bizFormModel.uploadFile && switchEdit===1"  @click="look(bizFormModel.uploadFile)">预览文件</el-button>
             </el-form-item> -->
              <el-form-item label='' prop='' >
               <div >
@@ -473,10 +473,9 @@
 </template>
 
 <script>
-import { validatenull } from '@/utils/validate'
 import { getPhotoById,getFiled } from "@/api/sys/sysSeting"
 import { listInspectionCheckPage, getInspectionCheckById, deleteInspectionCheck } from '@/api/cure/inspectionCheck'
-import { listResourcePermission } from '@/api/admin/common/permission'
+import listViewMixin from '@/mixins/listViewMixin'
 import {getInspectionCheckInfoByInspecId,saveInspectionCheckInfo} from '@/api/cure/inspectionCheckInfo'
 import {getInspectionCheckDetailById} from '@/api/cure/inspectionCheckDetail'
 import InspectionCheckForm from './inspectionCheckForm'
@@ -492,7 +491,8 @@ import UploadFile from '../../components/uploadFile.vue'
 let Base64 = require('js-base64').Base64
 export default {
   extends: MainUI,BaseUI,
-  components: { 
+  mixins: [listViewMixin],
+  components: {
     InspectionCheckForm,
     ExportExcelButton,
     ViewColumnsSelect,
@@ -503,13 +503,13 @@ export default {
   },
   data() {
     return {
-      permission: {
-        view: false,
-        add: false,
-        edit: false,
-        remove: false,
-        export: false
-      },
+      // listViewMixin 配置
+      listApi: listInspectionCheckPage,
+      getApi: getInspectionCheckById,
+      deleteApi: deleteInspectionCheck,
+      entityName: 'InspectionCheck',
+      permissionPrefix: 'inspectionCheck',
+
       queryTypes: {
         'name': 'like',
       },
@@ -519,15 +519,7 @@ export default {
         'status':'',    //状态
         'completeBy':'',  //开单医生
       },
-      search: {
-        params: [{columnName: 'company_id', queryType: '=', value: currentUser.company.id}],    
-        offset: 0,
-        limit: 20,
-		columnName: '',      // 排序字段名
-        order: ''            // 排序
-      },
       switchEdit:0,  //编辑上传文件按钮
-      currentPage: 1,
       inspectionCheckTotal: 0,
       inspectionCheckList: [],
       fileName:'',  //文件名称
@@ -575,7 +567,7 @@ export default {
       ],
       uploadFiles:'',
       fileIds:[],
-      flages:false,  //防止重复提交
+      flags:false,  //防止重复提交
     }
   },
   methods: {
@@ -587,23 +579,18 @@ export default {
         'status':'',    //状态
         'completeBy':'',  //开单医生
       }
-      this.getInspectionCheckList()
+      this.loadData()
     },
     getFileList(fileList){
-      console.log(fileList,'撒娇发生了警方破案就');
       this.bizFormModel.fileIdFile=[]
       this.bizFormModel.uploadFile=[]
       this.bizFormModel.uploadFile=fileList
       for (let i = 0; i < fileList.length; i++) {
        this.bizFormModel.fileIdFile.push(fileList[i].raw)
       }
-     
-      console.log(this.bizFormModel.uploadFile,'撒娇发生了警方破案就');
-      console.log(this.bizFormModel.fileIdFile,'按法律框架老咔叽分类');
     },
     deleteFile(fileIds){
       this.fileIds.push(fileIds)
-      console.log(this.fileIds,'删除看');
     },
     //编辑
     switchEdits(){
@@ -624,15 +611,15 @@ export default {
       //   document.body.appendChild(elink)
       //   elink.click()
       //   document.body.removeChild(elink)
-     window.open("http://192.168.0.31:8099/ffview/onlinePreview?url=" + encodeURIComponent(Base64.encode(row)));
+     window.open(process.env.KK_FILE_URL + encodeURIComponent(Base64.encode(row)));
     },
     // 将base64转换为blob
     dataURLtoBlob: function (dataurl) {
-      var arr = dataurl.split(',')
-      var mime = arr[0].match(/:(.*?);/)[1]
-      var bstr = atob(arr[1])
-      var n = bstr.length
-      var u8arr = new Uint8Array(n)
+      const arr = dataurl.split(',')
+      const mime = arr[0].match(/:(.*?);/)[1]
+      const bstr = atob(arr[1])
+      let n = bstr.length
+      const u8arr = new Uint8Array(n)
       while (n--) {
         u8arr[n] = bstr.charCodeAt(n)
       }
@@ -643,23 +630,20 @@ export default {
         this.bizFormModel.uploadFile = ''
       }else{
         getFiled(id).then((res) => {
-          console.log(res,'就是看');
          const src = `data:text/plain;base64,${res.base64Str}`;
         // let name = res.name.substring(0,res.name.lastIndexOf("."))
         let name = res.name
         this.fileName=name
         this.bizFormModel.uploadFile = src;
-        console.log(this.fileName, ".......");
         return src;
       });
       }
     },
     save(){
-     if(this.flages){
+     if(this.flags){
        return
      }
-     this.flages=true
-      console.log(this.bizFormModel.fileIdFile,'萨拉时间分厘卡');
+     this.flags=true
     //  let userHeaderFile = new FormData();
       //  userHeaderFile.append("entity", JSON.stringify(this.bizFormModel.inspectionCheckInfo));
       // userHeaderFile.append("deleteIds",JSON.stringify([this.photoId]));
@@ -677,18 +661,18 @@ export default {
         // userHeaderFile.fileIdUploads=item;
      
       saveInspectionCheckInfo(userHeaderFile).then((res)=>{
-          if(res.code=="100"){
+          if(res.code==="100"){
             this.$message.success("操作成功!")
-            this.getInspectionCheckList()
+            this.loadData()
           }else{
             this.$message.error("保存失败!")
           }
           this.dialogVisible=false
           this.resetLoad()
-          this.flages=false
+          this.flags=false
       }).catch((error)=>{
         this.$message.error("执行失败，请联系管理处理!")
-        this.flages=false
+        this.flags=false
       })
       })
      }else{
@@ -701,10 +685,10 @@ export default {
         // userHeaderFile.fileIdUploads=item;
      
       saveInspectionCheckInfo(userHeaderFile).then((res)=>{
-          if(res.code=="100"){
+          if(res.code==="100"){
             this.$message.success("操作成功!")
             this.dialogVisible=false
-            this.getInspectionCheckList()
+            this.loadData()
           }
       }).catch((error)=>{
         this.$message.error("执行失败，请联系管理处理!")
@@ -714,14 +698,12 @@ export default {
     handleRemove(file, fileList){
       this.bizFormModel.uploadFile=""
       this.bizFormModel.fileIdFile=""
-      console.log(file,fileList,'hfsakfhaslkjf ');
     },
     handleExceed(file, fileList){
       // this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${file.length} 个文件，共选择了 ${file.length + fileList.length} 个文件`);
       this.$message.warning(`当前只支持上传单个文件`);
     },
     hanldeError(err, file, fileList){
-      console.log(err,'gsahalkxnnxcoao');
     },
     handlePreview(file){
       // 创建a标签
@@ -746,20 +728,14 @@ export default {
         // 存储文件，点击确认按钮时统一上传
 
         this.bizFormModel.uploadFile = URL.createObjectURL(file.raw);
-        console.log(this.bizFormModel.uploadFile,"这安徽康师傅沙龙课拉开");
         this.bizFormModel.fileIdFile = file.raw;
-        console.log(this.bizFormModel.fileIdFile,"这安徽康师傅沙龙课拉开");
       }
-    },
-   indexMethod(index){
-       return (this.currentPage-1)*this.search.limit+index +1;
     },
     //上传限制
     beforeLicenseUpload(file) {
       const fileSuffix = file.name.substring(file.name.lastIndexOf(".") + 1);
        const whiteList = ["jpg", "jpeg", "png", "gif", "JPG", "JPEG","rar","zip","doc","docx","pdf", "xls", "xlsx", "ppt","txt"];
 
-         console.log(fileSuffix,'这是什么卡号给凯撒好看');
       if (whiteList.indexOf(fileSuffix) === -1) {
         this.$message.error("文件格式不允许");
         return false;
@@ -774,22 +750,21 @@ export default {
 
     fill(row,index,flag){
       this.fileIds=[]
-      console.log(flag,'ajkfskja');
       this.inspectionCheckTableData=[]
       this.bizFormModel={
         fileIdFile:[],   //文件
         uploadFile:[],  //文件
         inspectionCheckInfo:{}
       }
-      if(row.type=="0"){
+      if(row.type==="0"){
         // 通过项目是否为打包项目
         getInspectionCheckInfoByInspecId(row.id).then((res)=>{
-          if(res.code=="100"){
+          if(res.code==="100"){
             this.bizFormModel.inspectionCheckInfo=res.data
             this.typeName="填写检验报告"
             this.type="0"
             this.inspectionIndex=index
-             if(flag==1){
+             if(flag===1){
               this.flags=true
               this.switchEdit=1
             }else{
@@ -797,30 +772,28 @@ export default {
               this.switchEdit=0
             }
             
-            let sex=row.sex=="gender_0"?"男":"女"
+            let sex=row.sex==="gender_0"?"男":"女"
             this.bizFormModel.inspectionCheckInfo.name=row.patientName+"/"+sex+"/"+row.patient.age+"岁"
             this.getPhoto(this.bizFormModel.inspectionCheckInfo.fileId)
 
             this.photoId=this.bizFormModel.inspectionCheckInfo.fileId
             this.uploadFiles=this.bizFormModel.inspectionCheckInfo.id
-            console.log(this.bizFormModel,'jiusfajhfak');
             this.dialogVisible=true
           }else{
             this.$message.error("后台数据异常，请重试或联系管理员!")
           }
         }).catch((error)=>{
-          this.$message.error("afasfasf")
+          this.$message.error("获取检查信息失败，请重试")
         })
       }else{
          // 通过项目是否为打包项目
         getInspectionCheckInfoByInspecId(row.id).then((res)=>{
-          if(res.code=="100"){
-            console.log(res.data,'ajkfskja');
+          if(res.code==="100"){
             this.bizFormModel.inspectionCheckInfo=res.data
             this.typeName="填写检查报告"
             this.type="1"
             this.inspectionIndex=index
-             if(flag==1){
+             if(flag===1){
               this.flags=true
               this.switchEdit=1
             }else{
@@ -828,183 +801,88 @@ export default {
               this.switchEdit=0
             }
             
-            console.log(row,'ahglakglsak');
-            let sex=row.patient.gender=="gender_0"?"男":"女"
+            let sex=row.patient.gender==="gender_0"?"男":"女"
             this.bizFormModel.inspectionCheckInfo.name=row.patientName+"/"+sex+"/"+row.patient.age+"岁"
             this.getPhoto(this.bizFormModel.inspectionCheckInfo.fileId)
             this.photoId=this.bizFormModel.inspectionCheckInfo.fileId
             this.uploadFiles=this.bizFormModel.inspectionCheckInfo.id
-            console.log(this.bizFormModel,'jiusfajhfak');
             this.dialogVisible=true
           }else{
             this.$message.error("后台数据异常，请重试或联系管理员!")
           }
         }).catch((error)=>{
-          this.$message.error("afasfasf")
+          this.$message.error("获取检查信息失败，请重试")
         })
       }
       //this.dialogVisible=true
     },
-    getInspectionCheckList() {
-      this.setLoad()
-      /* 查询参数 和数据权限 */
-      this.search.params = [{columnName: 'company_id', queryType: '=', value: currentUser.company.id}]
-      if(this.moreCodition) {
+    appendSearchParams() {
+      this.search.params.push({
+        columnName: 'company_id',
+        queryType: '=',
+        value: currentUser.company.id
+      })
+      if (this.moreCodition) {
         this.search.params = this.search.params.concat(this.compositeCondition())
-      }else{
-        // 查询参数: 项目名称
+      } else {
         this.search.params.push({
-      	  columnName: 'patient_name',
-      	  queryType: 'like',
+          columnName: 'patient_name',
+          queryType: 'like',
           value: this.queryModel.patientName
         })
         this.search.params.push({
           columnName: 'complete_by',
-      	  queryType: 'like',
+          queryType: 'like',
           value: this.queryModel.completeBy
         })
         this.search.params.push({
           columnName: 'status',
-      	  queryType: '=',
+          queryType: '=',
           value: this.queryModel.status
         })
-         if (this.queryModel.completeDate && this.queryModel.completeDate.length) {
-                  this.search.params.push({
-                      logic: "AND",
-                      queryType: "("
-                    },{
-                      columnName: "complete_date",
-                      logic: "",
-                      queryType: 'between',
-                      value: this.queryModel.completeDate,
-                    },{
-                      logic: "",
-                      queryType: ")"
-                    })
-                }
-      }
-      // 数据权限: 检验检查inspection_check
-      this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-      listInspectionCheckPage(this.search).then(responseData => {
-        if(responseData.code == 100) {
-          console.log("asgksaahakjflafjlksj");
-          this.inspectionCheckTotal = responseData.data.total
-          this.inspectionCheckList = responseData.data.rows
-          let doctorArr=[]
-          this.doctorList=[]
-          if(responseData.data.rows){
-            this.inspectionCheckList.forEach(element => {
-            doctorArr.push(element.completeBy)
-          });
-          doctorArr=[...new Set(doctorArr)]
-          let doctorObject={
-            name:'',
-            value:''
-          }
-          doctorArr.forEach(element=>{
-            doctorObject.name=element
-            this.doctorList.push(doctorObject)
+        if (this.queryModel.completeDate && this.queryModel.completeDate.length) {
+          this.search.params.push({
+            logic: "AND",
+            queryType: "("
+          }, {
+            columnName: "complete_date",
+            logic: "",
+            queryType: 'between',
+            value: this.queryModel.completeDate,
+          }, {
+            logic: "",
+            queryType: ")"
           })
-          }
-          this.resetLoad()
-          console.log(this.doctorList,'看医生');
-        } else {
-          this.resetLoad()
-          this.showMessage(responseData)
         }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
+      }
     },
-    onSearch() {
-      if(this.moreCodition) {
-        this.search.offset = 0
-        this.currentPage = 1
-        this.getInspectionCheckList()
-      } else {
-        this.$refs['queryForm'].validate(valid => {
-          if (valid) {
-            this.search.offset = 0
-            this.currentPage = 1
-            this.getInspectionCheckList()
-          } else {
-            return false
-          }
+    handleListResponse(responseData) {
+      this.inspectionCheckTotal = responseData.data.total
+      this.inspectionCheckList = responseData.data.rows
+      let doctorArr = []
+      this.doctorList = []
+      if (responseData.data.rows) {
+        this.inspectionCheckList.forEach(element => {
+          doctorArr.push(element.completeBy)
+        })
+        doctorArr = [...new Set(doctorArr)]
+        doctorArr.forEach(element => {
+          this.doctorList.push({ name: element, value: '' })
         })
       }
     },
-    onSizeChange(val) {
-      this.currentPage = 1
-      this.search.limit = val;
-      this.search.offset = (this.currentPage - 1) * val
-      this.getInspectionCheckList()
-    },
-    onCurrentChange(val) {
-      this.search.offset = (val - 1) * this.search.limit
-      this.currentPage = val
-      this.getInspectionCheckList()
-    },
-    async pageInit() {
-      console.log(this.columnViews,'fanlkfnaslfkan');
+    loadData() {
       this.setLoad()
-      try {
-        this.initOptions(this.queryModel)
-        this.search.params = [{columnName: 'company_id', queryType: '=', value: currentUser.company.id}]
-        // 数据权限: 检验检查inspection_check
+      this.search.params = []
+      if (this.appendSearchParams) {
+        this.appendSearchParams()
+      }
+      if (this.tableId) {
         this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-        let [listInspectionCheckRespData, listPermissionRespData] = await Promise.all([
-          listInspectionCheckPage(this.search),
-          listResourcePermission(this.$route.meta.routerId)
-        ])
-        if(listInspectionCheckRespData.code == 100 && listPermissionRespData.code == 100) {
-          this.inspectionCheckTotal = listInspectionCheckRespData.data.total
-          this.inspectionCheckList = listInspectionCheckRespData.data.rows
-           let doctorArr=[]
-         this.doctorList=[]
-         if(listInspectionCheckRespData.data.rows){
-            this.inspectionCheckList.forEach(element => {
-            doctorArr.push(element.completeBy)
-          });
-          doctorArr=[...new Set(doctorArr)]
-          let doctorObject={
-            name:'',
-            value:''
-          }
-          doctorArr.forEach(element=>{
-            doctorObject.name=element
-            this.doctorList.push(doctorObject)
-          })
-         }
-          console.log(this.doctorList,'看医生');
-          this.permission.view = listPermissionRespData.data.find(item => {
-            return item.permission === 'inspectionCheck:read'
-          })
-          this.permission.export = listPermissionRespData.data.find(item => {
-            return item.permission === 'inspectionCheck:export'
-          })
-          this.permission.add = listPermissionRespData.data.find(item => {
-            return item.permission === 'inspectionCheck:create'
-          })
-          this.permission.edit = listPermissionRespData.data.find(item => {
-            return item.permission === 'inspectionCheck:update'
-          })
-          this.permission.remove = listPermissionRespData.data.find(item => {
-            return item.permission === 'inspectionCheck:delete'
-          })
-        } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listInspectionCheckRespData)
-        }
-        this.resetLoad()
-      } catch(error) {
-        this.outputError(error) 
       }
-    },
-    onViewInspectionCheck(index, row) {
-      this.setLoad()
-      getInspectionCheckById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.inspectionCheckForm.$emit('openViewInspectionCheckDialog', responseData.data)
+      this.listApi(this.search).then(responseData => {
+        if (responseData.code === 100) {
+          this.handleListResponse(responseData)
         } else {
           this.showMessage(responseData)
         }
@@ -1013,68 +891,8 @@ export default {
         this.outputError(error)
       })
     },
-    onCreateInspectionCheck() {
-      this.$refs.inspectionCheckForm.$emit('openAddInspectionCheckDialog')
-    },
-    onEditInspectionCheck(index, row) {
-      this.setLoad()
-      getInspectionCheckById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.inspectionCheckForm.$emit('openEditInspectionCheckDialog', responseData.data)
-        }else{
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onCopyInspectionCheck(index, row) {
-      this.setLoad()
-      getInspectionCheckById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.inspectionCheckForm.$emit('openCopyInspectionCheckDialog', responseData.data)
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onDeleteInspectionCheck(index, row) {
-      this.$confirm('确定删除吗？', '确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.setLoad()
-        deleteInspectionCheck(row).then(responseData => {
-          if(responseData.code == 100) {
-            this.getInspectionCheckList()
-            this.showMessage({type: 'success', msg: '删除成功'})
-          } else {
-            this.showMessage(responseData)
-          }
-          this.resetLoad()
-        }).catch(error => {
-          this.outputError(error)  
-        })
-      }).catch(() => {})
-    },
-    onSortChange( orderby ) {
-      if(validatenull(orderby.prop)) {
-        this.search.columnName = ''
-        this.search.order = ''
-      } else  {
-        this.search.columnName = orderby.prop
-        this.search.order = orderby.order === 'descending' ? 'desc' : 'asc'
-      }
-
-      this.getInspectionCheckList()
-    },
-    initOptions(This) {
-    } 
+    initOptions() {
+    }
   },
   watch: {
      // tableData是el-table绑定的数据
@@ -1110,31 +928,4 @@ export default {
   }
 
   
-</style>
-<style lang="scss" scoped>
-  .drag_table {
- // 设置表格header的高度
- /deep/ th {
-   height: 44px;
- }
-/deep/ th.gutter:last-of-type {
-  height: 0 !important;
-}
- // 设置表格body的高度
- /deep/.el-table__body-wrapper {
-  //解决数据展示超出body高度不滚动bug
-  overflow-y: auto;
-   // 减去的是表格header的高度
-   height: calc(100% - 44px) !important;
- }
-
- .el-table__fixed-right {
-      height: 100% !important;
-  }
-}
-</style>
-<style scoped>
-/deep/ .el-table__body-wrapper{
-    height: calc(100% - 44px) !important;
-  }
 </style>

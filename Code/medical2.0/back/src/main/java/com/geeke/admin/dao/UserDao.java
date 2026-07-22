@@ -37,7 +37,7 @@ public interface UserDao extends CrudDao<User> {
 
     List<User> getUserByCompanyIdAndJob(@Param("companyId")String companyId,@Param("jobType") String jobType);
 
-    List<User> NEWgetUserByCompanyIdAndJob(@Param("companyId")String companyId,@Param("jobType") String jobType);
+    List<User> getUserByCompanyIdAndJobV2(@Param("companyId")String companyId,@Param("jobType") String jobType);
 
     int countForNoAdmin(PageRequestClinic var1);
 

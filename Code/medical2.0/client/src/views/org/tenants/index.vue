@@ -3,7 +3,7 @@
     <!-- 历史记录  -->
     <History :bussObject='curentRow' ></History>
     <!-- 编辑窗口  -->
-    <lessee-form ref='lesseeForm' :permission='permission' v-on:save-finished='getLesseeList()'></lessee-form>
+    <lessee-form ref='lesseeForm' :permission='permission' @save-finished='loadData'></lessee-form>
     <div class="page-container">
         <!--  搜索栏  开始 -->
         <div class='query-form-container'>
@@ -54,38 +54,38 @@
       <!-- 表格栏  开始 -->
       <el-row>
         <el-col :span='24'>
-          <div @mouseleave='moveTableOutside'>        
-            <el-table class='drag_table' :data='lesseeList' border @sort-change='onSortChange' @header-dragend='onChangeWidth' :cell-class-name='cellClassName' :header-cell-class-name='headerCellClassName' highlight-current-row>                
+          <div @mouseleave='moveTableOutside'>
+            <el-table class='drag_table' :data='lesseeList' border @sort-change='onSortChange' @header-dragend='onChangeWidth' :cell-class-name='cellClassName' :header-cell-class-name='headerCellClassName' highlight-current-row>
               <el-table-column v-for="(cv, index) in columnViews" v-if='cv.display' :prop='cv.prop' :key="`columnViews_${index}`" :label='cv.label' sortable='custom' :align='cv.align' :min-width='cv.miniWidth+"px"' :width='cv.width+"px"' header-align='center' :column-key='index.toString()' :render-header="renderHeader">
                 <template slot-scope='{row,$index}'>
-                  <span v-if='columnViews[index].showType == "Switch" || columnViews[index].showType == "Checkbox" || columnViews[index].showType == "Radio"'>
-                    <li v-if='getAttrValue(row, columnViews[index].prop) == "1"' class='el-icon-check' style='color:#F56C6C;'></li>
+                  <span v-if='columnViews[index].showType === "Switch" || columnViews[index].showType === "Checkbox" || columnViews[index].showType === "Radio"'>
+                    <li v-if='getAttrValue(row, columnViews[index].prop) === "1"' class='el-icon-check' style='color:#F56C6C;'></li>
                   </span>
                   <span v-else>{{ getAttrValue(row, columnViews[index].prop, columnViews[index].javaType )}}</span>
                 </template>
               </el-table-column>
               <!--表行级操作按钮-->
-              <el-table-column label='操作' header-align='center' :width='oprColumnWidth + "px"'>        
+              <el-table-column label='操作' header-align='center' :width='oprColumnWidth + "px"'>
                 <template slot='header' slot-scope="scope">
                   <span>操作</span>
                   <view-columns-select v-model='columnViews' v-on:save-column-view='saveColumn' v-on:show-all-column='showAllColumn' v-on:show-default-column='showDefaultColumn'></view-columns-select>
                   <export-excel-button v-show='permission.export' :data='lesseeList' :tHeader='getHeads()' :filterVal='getFilterVal()' :plain='true'></export-excel-button>
                 </template>
                 <template slot-scope='scope'>
-                  <OperationIcon v-show='permission.view' type='info' content='查看' placement='top-start' icon-name='el-icon-view' 
-                    @click='onViewLessee(scope.$index, scope.row)'></OperationIcon>
-                  <OperationIcon v-show='permission.edit' type='primary' content='编辑' placement='top-start' icon-name='el-icon-edit' 
-                    @click='onEditLessee(scope.$index, scope.row)'></OperationIcon>
-                  <OperationIcon v-show='permission.add' type='primary' content='复制' placement='top-start' icon-name='el-icon-document' 
-                    @click='onCopyLessee(scope.$index, scope.row)'></OperationIcon>
-                  <OperationIcon v-show='permission.remove' type='danger' content='删除' placement='top-start' icon-name='el-icon-delete' 
-                    @click='onDeleteLessee(scope.$index, scope.row)'></OperationIcon>
-                  <OperationIcon v-show='permission.view' type='info' content='历史记录' placement='top-start' icon-name='el-icon-info' 
+                  <OperationIcon v-show='permission.view' type='info' content='查看' placement='top-start' icon-name='el-icon-view'
+                    @click='onViewEntity(scope.$index, scope.row, "lesseeForm")'></OperationIcon>
+                  <OperationIcon v-show='permission.edit' type='primary' content='编辑' placement='top-start' icon-name='el-icon-edit'
+                    @click='onEditEntity(scope.$index, scope.row, "lesseeForm")'></OperationIcon>
+                  <OperationIcon v-show='permission.add' type='primary' content='复制' placement='top-start' icon-name='el-icon-document'
+                    @click='onCopyEntity(scope.$index, scope.row, "lesseeForm")'></OperationIcon>
+                  <OperationIcon v-show='permission.remove' type='danger' content='删除' placement='top-start' icon-name='el-icon-delete'
+                    @click='onDeleteEntity(scope.$index, scope.row, deleteTenant)'></OperationIcon>
+                  <OperationIcon v-show='permission.view' type='info' content='历史记录' placement='top-start' icon-name='el-icon-info'
                     @click='onShowHistory(scope.$index, scope.row)'></OperationIcon>
                 </template>
               </el-table-column>
             </el-table>
-    	  </div>	          
+    	  </div>
         </el-col>
       </el-row>
       <!-- 表格栏  结束 -->
@@ -93,7 +93,7 @@
       <el-row>
         <el-col :span='24'>
           <el-pagination
-            background     
+            background
             @size-change='onSizeChange'
             @current-change='onCurrentChange'
             :current-page.sync='currentPage'
@@ -111,7 +111,7 @@
 <script>
 import { validatenull } from '@/utils/validate'
 import { listTenantPage, getTenantById, deleteTenant } from '@/api/tenant/tenant'
-import { listResourcePermission } from '@/api/admin/common/permission'
+import listViewMixin from '@/mixins/listViewMixin'
 import LesseeForm from './lesseeForm'
 import ExportExcelButton from '@/components/ExportExcelButton'
 import ViewColumnsSelect from '@/views/components/ViewColumnsSelect'
@@ -121,7 +121,8 @@ import OperationIcon from '@/components/OperationIcon'
 import History from '@/views/components/history'
 export default {
   extends: MainUI,
-  components: { 
+  mixins: [listViewMixin],
+  components: {
     LesseeForm,
     ExportExcelButton,
     ViewColumnsSelect,
@@ -131,13 +132,11 @@ export default {
   },
   data() {
     return {
-      permission: {
-        view: false,
-        add: false,
-        edit: false,
-        remove: false,
-        export: false
-      },
+      listApi: listTenantPage,
+      getApi: getTenantById,
+      deleteApi: deleteTenant,
+      entityName: 'Lessee',
+      permissionPrefix: 'lessee',
       queryTypes: {
         'user_name': 'like',
         'phone_number': 'like',
@@ -148,28 +147,16 @@ export default {
         'phoneNumber': '',   // 电话号码
         'status': '1',   // 状态
       },
-      search: {
-        params: [],    
-        offset: 0,
-        limit: 10,
-		columnName: '',      // 排序字段名
-        order: ''            // 排序
-      },
-      currentPage: 1,
       lesseeTotal: 0,
       lesseeList: [],
-        
-      
+
       oprColumnWidth: 140,  // 操作列宽
       tableId: '985180319911059468',
       schemeId: '985210453401632768'
     }
   },
   methods: {
-    getLesseeList() {
-      this.setLoad()
-      /* 查询参数 和数据权限 */
-      this.search.params = []
+    appendSearchParams() {
       if(this.moreCodition) {
         this.search.params = this.search.params.concat(this.compositeCondition())
       }else{
@@ -194,164 +181,13 @@ export default {
       }
       // 数据权限: 租户lessee
       this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-      listTenantPage(this.search).then(responseData => {
-        if(responseData.code == 100) {
-          this.lesseeTotal = responseData.data.total
-          this.lesseeList = responseData.data.rows
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
     },
-    onSearch() {
-      if(this.moreCodition) {
-        this.search.offset = 0
-        this.currentPage = 1
-        this.getLesseeList()
-      } else {
-        this.$refs['queryForm'].validate(valid => {
-          if (valid) {
-            this.search.offset = 0
-            this.currentPage = 1
-            this.getLesseeList()
-          } else {
-            return false
-          }
-        })
-      }
-    },
-    onSizeChange(val) {
-      this.currentPage = 1
-      this.search.limit = val;
-      this.search.offset = (this.currentPage - 1) * val
-      this.getLesseeList()
-    },
-    onCurrentChange(val) {
-      this.search.offset = (val - 1) * this.search.limit
-      this.currentPage = val
-      this.getLesseeList()
-    },
-    async pageInit() {
-      this.setLoad()
-      try {
-        this.initOptions(this.queryModel)
-        this.search.params = [
-          {
-            columnName: 'status',
-            queryType: '=',
-            value: this.queryModel.status
-          }
-        ]
-        // 数据权限: 租户lessee
-        this.pushDataPermissions(this.search.params, this.$route.meta.routerId, this.tableId)
-        let [listLesseeRespData, listPermissionRespData] = await Promise.all([
-          listTenantPage(this.search),
-          listResourcePermission(this.$route.meta.routerId)
-        ])
-        if(listLesseeRespData.code == 100 && listPermissionRespData.code == 100) {
-          this.lesseeTotal = listLesseeRespData.data.total
-          this.lesseeList = listLesseeRespData.data.rows
-          this.permission.view = listPermissionRespData.data.find(item => {
-            return item.permission === 'lessee:read'
-          })
-          this.permission.export = listPermissionRespData.data.find(item => {
-            return item.permission === 'lessee:export'
-          })
-          this.permission.add = listPermissionRespData.data.find(item => {
-            return item.permission === 'lessee:create'
-          })
-          this.permission.edit = listPermissionRespData.data.find(item => {
-            return item.permission === 'lessee:update'
-          })
-          this.permission.remove = listPermissionRespData.data.find(item => {
-            return item.permission === 'lessee:delete'
-          })
-        } else {
-          this.showMessage(listPermissionRespData.code != 100 ? listPermissionRespData : listLesseeRespData)
-        }
-        this.resetLoad()
-      } catch(error) {
-        this.outputError(error) 
-      }
-    },
-    onViewLessee(index, row) {
-      this.setLoad()
-      getTenantById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.lesseeForm.$emit('openViewLesseeDialog', responseData.data)
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onCreateLessee() {
-      this.$refs.lesseeForm.$emit('openAddLesseeDialog')
-    },
-    onEditLessee(index, row) {
-      this.setLoad()
-      getTenantById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.lesseeForm.$emit('openEditLesseeDialog', responseData.data)
-        }else{
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onCopyLessee(index, row) {
-      this.setLoad()
-      getTenantById(row.id).then(responseData => {
-        if(responseData.code == 100) {
-          this.$refs.lesseeForm.$emit('openCopyLesseeDialog', responseData.data)
-        } else {
-          this.showMessage(responseData)
-        }
-        this.resetLoad()
-      }).catch(error => {
-        this.outputError(error)
-      })
-    },
-    onDeleteLessee(index, row) {
-      this.$confirm('确定删除吗？', '确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.setLoad()
-        deleteTenant(row).then(responseData => {
-          if(responseData.code == 100) {
-            this.getLesseeList()
-            this.showMessage({type: 'success', msg: '删除成功'})
-          } else {
-            this.showMessage(responseData)
-          }
-          this.resetLoad()
-        }).catch(error => {
-          this.outputError(error)  
-        })
-      }).catch(() => {})
-    },
-    onSortChange( orderby ) {
-      if(validatenull(orderby.prop)) {
-        this.search.columnName = ''
-        this.search.order = ''
-      } else  {
-        this.search.columnName = orderby.prop
-        this.search.order = orderby.order === 'descending' ? 'desc' : 'asc'
-      }
-
-      this.getLesseeList()
+    handleListResponse(responseData) {
+      this.lesseeTotal = responseData.data.total
+      this.lesseeList = responseData.data.rows
     },
     initOptions(This) {
-    } 
+    }
   },
   watch: {
   },

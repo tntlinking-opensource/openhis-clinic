@@ -17,7 +17,7 @@
         </el-radio-group>
 
         <!-- 月 -->
-        <span  v-if="dateType == 1">
+        <span  v-if="dateType === 1">
           <el-date-picker v-model="value" type="month" :clearable="false"></el-date-picker>
           <el-button-group>
             <el-button plain @click="handleMonth('on')" icon="el-icon-arrow-left">上月</el-button>
@@ -41,17 +41,17 @@
       <el-container class='query-form-container'>
         <el-main>
           <!-- 日历 -->
-          <el-calendar v-model="value" :range="range" :class="{'weeks': dateType == '1' ? false : true}">
+          <el-calendar v-model="value" :range="range" :class="{'weeks': dateType === '1' ? false : true}">
             <template slot="dateCell" slot-scope="{ date, data }">
               <div @click="calendarOnClick(data)" :class="['date-content', data.isSelected ? 'is-selected' : '']">
                 <div>
-                  <span v-if="systemTime == data.day">今天</span>
+                  <span v-if="systemTime === data.day">今天</span>
                   <span v-else :class="[isWeek(date) ? 'restRed' : '' , 'isrest']">{{ getDay(date, data) }}</span>
                   <!-- <span v-if="isWeek(date)" class="rest">休</span> -->
                   <span>{{ data.isSelected ? '✔️' : ''}}</span>
                   <div>{{solarDate2lunar(data.day)}}</div>
                   <div v-for="memoItem in dataList" :key="memoItem.data">
-                    <div v-if="memoItem.date == data.day && memoItem.list && memoItem.list.length > 0" class="round">
+                    <div v-if="memoItem.date === data.day && memoItem.list && memoItem.list.length > 0" class="round">
                       <svg-icon iconClass="round"/>
                     </div>
                   </div>
@@ -141,7 +141,7 @@ export default {
     },
     value: {
       handler(newVal,oldVal) {
-        if (newVal != oldVal) {
+        if (newVal !== oldVal) {
           this.headOptions = this.solarlunarDay(newVal)
         }
       }
@@ -154,7 +154,7 @@ export default {
   },
   methods: {
     schedule() {
-      this.$refs.addTodayWorkForm.$emit('openAddGroupDeviceDialog', this.systemTime)
+      this.$refs.addTodayWorkForm.openAddGroupDeviceDialog(this.systemTime)
     },
     fadeShow() {
       this.show3 = !this.show3
@@ -164,16 +164,16 @@ export default {
     },
     // 农历显示
     solarDate2lunar(solarDate) {
-      var solar = solarDate.split('-')
-      var lunar = calendar.solar2lunar(solar[0], solar[1], solar[2])
+      const solar = solarDate.split('-')
+      const lunar = calendar.solar2lunar(solar[0], solar[1], solar[2])
       return lunar.lunarFestival || lunar.festival || lunar.Term || lunar.IDayCn
     },
     // 获取当前日期具体信息
     solarlunarDay(solarDate) {
-      var timestamp = new Date(solarDate);
-      var res = timestamp.toISOString().slice(0,10)
-      var solar = res.split('-')
-      var lunar = calendar.solar2lunar(solar[0], solar[1], solar[2])
+      const timestamp = new Date(solarDate);
+      const res = timestamp.toISOString().slice(0,10)
+      const solar = res.split('-')
+      const lunar = calendar.solar2lunar(solar[0], solar[1], solar[2])
       return lunar
     },
     // 查看更多，获取当前日期所有日程
@@ -193,16 +193,14 @@ export default {
     },
     // 选中具体待办事项
     getMemorandum (memoItem) {
-      console.log(memoItem);
     },
     // 点击日历块
     calendarOnClick(data) {
-      console.log(data);
       this.popoverList = []
       let calendardata;
       this.dataList.forEach(item => {
-        calendardata = typeof (data) == 'object' ? data.day : data
-        if (item.date == calendardata) {
+        calendardata = typeof (data) === 'object' ? data.day : data
+        if (item.date === calendardata) {
           this.popoverList = item.list
           return
         } 
@@ -210,8 +208,8 @@ export default {
     },
     // 跳转today
     getToday() {
-      if (this.dateType == '2') { // 周
-        var weeks = this.GetMonday(new Date())
+      if (this.dateType === '2') { // 周
+        let weeks = this.GetMonday(new Date())
         weeks = new Date(Date.parse(weeks))
         this.weekChange(weeks) // 跳转至当前日所在周
       } else {
@@ -222,22 +220,22 @@ export default {
     },
     // 切换上下月
     handleMonth(type) {
-      var month = this.getLastMonth(this.value, type)
+      const month = this.getLastMonth(this.value, type)
       this.value = new Date(Date.parse(month))
     },
     getLastMonth(Time,type) {
-      var year = Time.getFullYear();   // 当前年：四位数字
-      var month = Time.getMonth() + 1;     // 当前月：0-11
-      if (type == 'on' ) {// 如果是1，上一个月就是去年的12月
-        if (month == 1) {
+      let year = Time.getFullYear();   // 当前年：四位数字
+      let month = Time.getMonth() + 1;     // 当前月：0-11
+      if (type === 'on' ) {// 如果是1，上一个月就是去年的12月
+        if (month === 1) {
           year -= 1;
           month = 12;
         } else {
           month -= 1
         }
       } 
-      if (type == 'next' ) {// 如果是12上一个月就是去年的12月
-        if (month == 12) {
+      if (type === 'next' ) {// 如果是12上一个月就是去年的12月
+        if (month === 12) {
           year += 1;
           month = 1;
         } else {
@@ -250,10 +248,10 @@ export default {
     },
     // 切换 月/周 显示
     dateTypeChange(val) {
-      if (val == '1') { // 月
+      if (val === '1') { // 月
         this.range = null
       } else { // 周
-        var weeks = this.GetMonday(this.value)
+        const weeks = this.GetMonday(this.value)
         this.value = new Date(Date.parse(weeks))
         this.weekChange(this.value)
       }
@@ -267,11 +265,11 @@ export default {
     },
     // 切换上下周
     handleOnWeek(val) {
-      var weeks = this.GetMonday(this.value)
+      let weeks = this.GetMonday(this.value)
       weeks = new Date(weeks).getTime()
-      if (val == 'on') { // 上周
+      if (val === 'on') { // 上周
         weeks = this.fun(weeks - (24 * 60 * 60 * 1000) * 7)
-      } else if (val == 'next'){ // 下周
+      } else if (val === 'next'){ // 下周
         weeks = this.fun(weeks + (24 * 60 * 60 * 1000) * 7)
       }
       this.value = new Date(Date.parse(weeks))
@@ -279,16 +277,16 @@ export default {
     },
     // 获取日期当前周的周一：日历控件的时间范围，开始时间必须是周一，结束时间必须是周日
     GetMonday(dd) {
-      var week = dd.getDay(); // 获取时间的星期数
-      var minus = week ? week - 1 : 6;
+      const week = dd.getDay(); // 获取时间的星期数
+      const minus = week ? week - 1 : 6;
       dd.setDate(dd.getDate() - minus); // 获取minus天前的日期
-      var res = dd.toISOString().slice(0,10)
+      const res = dd.toISOString().slice(0,10)
       return res
     },
     // 时间戳转为 yyyy-mm-dd
     fun(unixtimestamp) {
-      var timestamp = unixtimestamp ? new Date(unixtimestamp): new Date();
-      var res = timestamp.toISOString().slice(0,10)
+      const timestamp = unixtimestamp ? new Date(unixtimestamp): new Date();
+      const res = timestamp.toISOString().slice(0,10)
       return res
     },
     // 处理日期
@@ -304,10 +302,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-/deep/ .el-calendar__header { // 移除组件头部
+::v-deep .el-calendar__header { // 移除组件头部
   display: none;
 }
-.index-module-card.el-card /deep/ .el-card__header {
+.index-module-card.el-card ::v-deep .el-card__header {
   padding: 10px 16px!important;
   .card-close, .card-setting {
     float: right;
@@ -330,20 +328,20 @@ export default {
 .el-card-title {
   font-weight: bold;
 }
-.weeks /deep/ .el-calendar-table .el-calendar-day {
+.weeks ::v-deep .el-calendar-table .el-calendar-day {
   height: 515px;
   padding: 0px !important;
 }
-/deep/ .el-calendar-table .el-calendar-day {
+::v-deep .el-calendar-table .el-calendar-day {
   padding: 0px !important;
 }
-/deep/ .el-calendar__header {
+::v-deep .el-calendar__header {
   padding: 0px 20px 8px 20px;
 }
-/deep/ .el-calendar-table thead th {
+::v-deep .el-calendar-table thead th {
   padding: 5px 0px;
 }
-/deep/ .el-card__body {
+::v-deep .el-card__body {
   padding: 8px;
 }
 .date-content {
@@ -377,7 +375,7 @@ export default {
   overflow: hidden;
   margin-top: 5px;
 }
-/deep/ .el-avatar {
+::v-deep .el-avatar {
   background: #d1d2d5;
   font-size: 36px ;
 }
