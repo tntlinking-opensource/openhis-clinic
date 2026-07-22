@@ -1,19 +1,14 @@
 package com.geeke.config.shiro;
 
-import com.geeke.config.cache.RedisConfig;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
-import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.session.mgt.SessionManager;
+import org.apache.shiro.session.mgt.eis.MemorySessionDAO;
 import org.apache.shiro.session.mgt.eis.SessionDAO;
 import org.apache.shiro.spring.LifecycleBeanPostProcessor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.crazycake.shiro.IRedisManager;
-import org.crazycake.shiro.RedisCacheManager;
-import org.crazycake.shiro.RedisManager;
-import org.crazycake.shiro.RedisSessionDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -21,15 +16,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.servlet.Filter;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-
-import javax.servlet.ServletResponse;
-
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author: lys
@@ -109,46 +97,12 @@ public class ShiroConfiguration {
         return shiroFilterFactoryBean;
     }
 
-	// ************************** redis管理用户会话 开始*******************
-    /**
-     * Redis Manager
-     * @param redisConfig  redis 服务配置
-     * @return
-     */
     @Bean
-    public IRedisManager redisManager(RedisConfig redisConfig, org.springframework.boot.autoconfigure.data.redis.RedisProperties springRedisProperties) {
-    	RedisManager redisManager = new RedisManager();
-    	redisManager.setHost(springRedisProperties.getHost() + ":" + springRedisProperties.getPort());
-    	redisManager.setDatabase(springRedisProperties.getDatabase());
-    	redisManager.setPassword(springRedisProperties.getPassword());
-    	redisManager.setTimeout((int) springRedisProperties.getTimeout().toMillis());
-    	return redisManager;
+    public SessionDAO sessionDAO() {
+        // 使用内存SessionDAO替代RedisSessionDAO
+        return new MemorySessionDAO();
     }
-    
-    /**
-     * redis SessionDAO
-     * @param redisManager  Redis Manager
-     * @return
-     */
-    @Bean
-    public SessionDAO redisSessionDAO(IRedisManager redisManager) {
-    	RedisSessionDAO redisSessionDAO = new RedisSessionDAO();
-    	redisSessionDAO.setRedisManager(redisManager);
-    	return redisSessionDAO;
-    }
-    
-    /**
-     * Redis Cache Manager
-     * @param redisManager  Redis Manager
-     * @return
-     */
-	@Bean
-    public RedisCacheManager redisCacheManager(IRedisManager redisManager) {
-    	RedisCacheManager redisCacheManager = new RedisCacheManager();
-    	redisCacheManager.setRedisManager(redisManager);
-    	return redisCacheManager;
-    }
-	
+
     @Bean
     public StatelessSessionManager sessionManager(SessionDAO sessionDAO) {
         StatelessSessionManager sessionManager = new StatelessSessionManager();
@@ -166,8 +120,6 @@ public class ShiroConfiguration {
         return sessionManager;
 
     }
-    
-    // ************************** redis管理用户会话 结束*******************
     
 	
 	/**
@@ -187,17 +139,11 @@ public class ShiroConfiguration {
      * @return
      */
     @Bean
-    public SecurityManager securityManager(Realm realm, SessionManager sessionManager, CacheManager redisCacheManager, RedisConfig redisConfig) {
+    public SecurityManager securityManager(Realm realm, SessionManager sessionManager) {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setRealm(realm);
-        
-        /* 采用redis进行会话管理 */
-        if(redisConfig.isRedisCache()) {
-	        securityManager.setSessionManager(sessionManager);
-	        logger.info("Use the customer StatelessSessionManager in SecurityManager");
-	        securityManager.setCacheManager(redisCacheManager);
-	        logger.info("Use the RedisCacheManager in SecurityManager");
-        }
+        securityManager.setSessionManager(sessionManager);
+        logger.info("Use the StatelessSessionManager in SecurityManager");
         return securityManager;
     }
 
@@ -214,13 +160,8 @@ public class ShiroConfiguration {
         HashedCredentialsMatcher hashedCredentialsMatcher = new HashedCredentialsMatcher();
         //散列算法:这里使用MD5算法;
         hashedCredentialsMatcher.setHashAlgorithmName("md5");
-        //散列的次数 — 提升至10000次以增强安全性（原为2次，强度不足）
-        //注意：升级后旧密码将无法直接验证，需要做渐进式迁移：
-        //  1. 登录时先用新迭代次数验证，失败后回退到旧迭代次数验证
-        //  2. 旧迭代次数验证成功后，用新迭代次数重新哈希密码并更新数据库
-        //  3. 迁移完成后可移除回退逻辑
-        //  UserRealm.doGetAuthenticationInfo 中已实现双次验证逻辑
-        hashedCredentialsMatcher.setHashIterations(10000);
+        //散列的次数，默认2次
+        hashedCredentialsMatcher.setHashIterations(2);
         //storedCredentialsHexEncoded默认是true，此时用的是密码加密用的是Hex编码；false时用Base64编码
         hashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
         return hashedCredentialsMatcher;

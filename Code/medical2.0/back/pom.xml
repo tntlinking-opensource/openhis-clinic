@@ -112,8 +112,8 @@
             <version>${quartz.version}</version>
         </dependency>
 
-        <!-- fastjson 1.2.83：1.x系列安全版本，未使用autoType，风险可控 -->
-        <dependency>
+		<!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->
+		<dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>1.2.83</version>
@@ -122,11 +122,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-redis -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 <!--        <dependency>-->
 <!--            <groupId>org.springframework.boot</groupId>-->
@@ -142,7 +137,7 @@
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
-            <version>0.9.1</version>
+            <version>0.9.0</version>
         </dependency>
 
         <dependency>
@@ -155,14 +150,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.12.0</version>
-        </dependency>
-
-
-        <!-- https://github.com/alexxiyang/shiro-redis -->
-        <dependency>
-            <groupId>org.crazycake</groupId>
-            <artifactId>shiro-redis</artifactId>
-            <version>3.3.1</version>
         </dependency>
 
         <!-- GENERAL UTILS begin -->
@@ -188,6 +175,13 @@
 
         <!-- GENERAL UTILS end -->
 
+        <!-- https://mvnrepository.com/artifact/org.camunda.bpm.springboot/camunda-bpm-spring-boot-starter-rest -->
+<!--        <dependency>-->
+<!--            <groupId>org.camunda.bpm.springboot</groupId>-->
+<!--            <artifactId>camunda-bpm-spring-boot-starter-rest</artifactId>-->
+<!--            <version>3.3.1</version>-->
+<!--        </dependency>-->
+
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
@@ -204,17 +198,6 @@
             <version>3.5.5</version>
         </dependency>
 
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>2.9.2</version>
-        </dependency>
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger-ui</artifactId>
-            <version>2.9.2</version>
-        </dependency>
-
         <!-- JAXB API (Java 9+ 移除了 javax.xml.bind) -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
@@ -227,6 +210,23 @@
             <version>2.3.1</version>
         </dependency>
 
+        <!--<dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.31</version>
+        </dependency>-->
+
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>2.9.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>2.9.2</version>
+        </dependency>
+
         <dependency>
           <groupId>com.geeke</groupId>
           <artifactId>camundaex</artifactId>
@@ -234,6 +234,34 @@
           <scope>system</scope>
           <systemPath>${project.basedir}/lib/camundaex-1.0.0.jar</systemPath>
         </dependency>
+        
+<!--        <dependency>-->
+<!--          <groupId>com.geeke</groupId>-->
+<!--          <artifactId>gencode</artifactId>-->
+<!--          <version>1.0.0</version>-->
+<!--          <scope>system</scope>-->
+<!--          <systemPath>${project.basedir}/lib/gencode-1.0.0.jar</systemPath>-->
+<!--        </dependency>-->
+
+        <!-- https://mvnrepository.com/artifact/org.camunda.bpm/camunda-engine-plugin-connect -->
+<!--        <dependency>-->
+<!--          <groupId>org.camunda.bpm</groupId>-->
+<!--          <artifactId>camunda-engine-plugin-connect</artifactId>-->
+<!--          <version>7.13.0</version>-->
+<!--        </dependency>-->
+
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.camunda.bpm.extension/camunda-bpm-mail-core &ndash;&gt;-->
+<!--        <dependency>-->
+<!--          <groupId>org.camunda.bpm.extension</groupId>-->
+<!--          <artifactId>camunda-bpm-mail-core</artifactId>-->
+<!--          <version>1.2.0</version>-->
+<!--          <exclusions>-->
+<!--            <exclusion>-->
+<!--              <groupId>org.camunda.commons</groupId>-->
+<!--              <artifactId>camunda-commons-utils</artifactId>-->
+<!--            </exclusion>-->
+<!--          </exclusions>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -291,7 +319,6 @@
             <artifactId>ooxml-schemas</artifactId>
             <version>1.4</version>
         </dependency>
-
         <!-- EasyExcel - 阿里巴巴 Excel 处理库 -->
         <dependency>
             <groupId>com.alibaba</groupId>

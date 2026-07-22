@@ -104,9 +104,7 @@
         ORDER BY a.sort ASC
     </select>
     <select id="getUserIndateWarning" resultType="java.lang.String">
-        SELECT sr.id from sys_router_permission sr
-        INNER JOIN sys_user_role sur ON sur.role_id = sr.role_id AND sur.user_id = #{userId}
-        WHERE sr.router_id = '1287878070080970787'
+        SELECT sr.id from sys_router_permission sr where sr.role_id in (select sur.role_id from sys_user_role sur where sur.user_id  = #{userId}) and sr.router_id = '1287878070080970787'
     </select>
 
     <insert id="insert">

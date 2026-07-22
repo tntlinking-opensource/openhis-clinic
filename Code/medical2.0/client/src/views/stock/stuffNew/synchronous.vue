@@ -838,7 +838,12 @@ export default {
       getDictItemsByCode(DICT_CODE.STUFF_TYPE).then((data) => {
         this.typeList = data
       })
-    }
+    },
+    openSyncStuffDialog() {
+      this.dialogProps.title = "同步材料信息";
+      this.dialogProps.visible = true;
+      this.pageInit()
+    },
   },
   watch: {
     // tableData是el-table绑定的数据
@@ -866,13 +871,6 @@ export default {
     } else {
       this.columnList = this.columnListTwo
     }
-  },
-  methods: {
-    openSyncStuffDialog() {
-      this.dialogProps.title = "同步材料信息";
-      this.dialogProps.visible = true;
-      this.pageInit()
-    },
   },
 };
 </script>

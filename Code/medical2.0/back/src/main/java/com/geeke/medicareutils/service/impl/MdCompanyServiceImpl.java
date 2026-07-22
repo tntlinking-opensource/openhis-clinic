@@ -15,7 +15,6 @@ import com.geeke.medicareutils.util.YbWebApiUtil;
 import com.geeke.org.entity.ClinicOffice;
 import com.geeke.utils.SessionUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -35,8 +34,6 @@ public class MdCompanyServiceImpl implements MdCompanyService {
 //    private final MdRequestUtil mdRequestUtil;
 
     private final YbWebApiUtil mdRequestUtil;
-
-    private final StringRedisTemplate stringRedisTemplate;
 
 
     @Override
@@ -134,8 +131,8 @@ public class MdCompanyServiceImpl implements MdCompanyService {
         requestData.setFixmedins_code(FixmedinsCode);
         requestData.setFixmedins_name(FixmedinsName);
         //签到接口
-        //从redis中获取签到流水号
-        requestData.setSign_no(stringRedisTemplate.opsForValue().get("sign_no"));
+        //从本地缓存获取签到流水号（医保未启用时为空）
+        requestData.setSign_no("");
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("data", JSON.toJSON(requestData));
         return mdRequestUtil.getMedicareData("5101", jsonObject.toJSONString());

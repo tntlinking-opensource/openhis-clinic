@@ -321,20 +321,7 @@ export default {
       listClinicVersionAll(version_search).then(responseData => {
         this.version_List = responseData.data
       })
-    }
-  },
-  watch: {
-    parent_List(newVal, oldVal) {
-      if(newVal !== oldVal && this.dialogProps.action === 'add' ) {
-        this.$nextTick(() => {
-          this.onParentChange()
-        })
-      }
     },
-  },
-  mounted: function() {
-  },
-  methods: {
     openViewCompanyDialog(company) {
       this.dialogProps.action = 'view'
       this.dialogProps.title = '查看公司'
@@ -368,6 +355,17 @@ export default {
       this.bizFormModel.id = null
       this.dialogProps.visible = true
     },
+  },
+  watch: {
+    parent_List(newVal, oldVal) {
+      if(newVal !== oldVal && this.dialogProps.action === 'add' ) {
+        this.$nextTick(() => {
+          this.onParentChange()
+        })
+      }
+    },
+  },
+  mounted: function() {
   },
 }
 </script>

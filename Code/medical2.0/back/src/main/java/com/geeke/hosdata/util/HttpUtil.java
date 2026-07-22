@@ -6,8 +6,6 @@ import com.geeke.common.data.Parameter;
 import com.geeke.hosdata.config.HosConfigProperties;
 import com.geeke.hosdata.constant.ApiUrl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -15,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,8 +29,9 @@ public class HttpUtil {
 
     private  final RestTemplate restTemplate;
 
-    private final StringRedisTemplate stringRedisTemplate;
-
+    /** 本地Token缓存（替代Redis） */
+    private String tokenCache;
+    private LocalDateTime tokenExpireTime;
 
 
     public  JSONObject getHosData(SearchParams params, String apiUrl){
@@ -51,13 +51,7 @@ public class HttpUtil {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         // 添加 token 到请求头
-        String token;
-        if( stringRedisTemplate.opsForValue().get("Histoken")!=null){
-            token = stringRedisTemplate.opsForValue().get("Histoken");
-        }else {
-            token = getHosToken();
-        }
-
+        String token = getToken();
         headers.set("Authorization", "Bearer " + token);
         // 创建 HttpEntity，并设置请求体和请求头
         HttpEntity<Map<String,Object>> request = new HttpEntity<>(data, headers);
@@ -85,19 +79,13 @@ public class HttpUtil {
          // 构造HttpEntity对象
          // 设置请求头
          HttpHeaders headers = new HttpHeaders();
-         String token;
-         if( stringRedisTemplate.opsForValue().get("Histoken")!=null){
-             token = stringRedisTemplate.opsForValue().get("Histoken");
-         }else {
-             token = getHosToken();
-         }
+         String token = getToken();
          headers.set("Authorization", "Bearer " + token);
          headers.setContentType(MediaType.APPLICATION_JSON);
          HttpEntity<String> requestEntity = new HttpEntity<>(requestData.toString(), headers);
          ResponseEntity<String> responseEntity = restTemplate.postForEntity(hosConfigProperties.getHosDataServerUrl()+apiUrl, requestEntity, String.class);
          return responseEntity.getStatusCodeValue() == 200;
      }
-
 
 
 
@@ -112,8 +100,19 @@ public class HttpUtil {
         String response = restTemplate.postForObject(hosConfigProperties.getHosTokenUrl()+ApiUrl.HOS_GET_TOKEN, request,String.class);
         JSONObject jsonObject = JSONObject.parseObject(response);
         JSONObject busData = jsonObject.getJSONObject("BusData").getJSONObject("data");
-        stringRedisTemplate.opsForValue().set("Histoken",busData.getString("Token"));
-        return busData.getString("Token");
+        String token = busData.getString("Token");
+        // 缓存Token 20分钟过期
+        tokenCache = token;
+        tokenExpireTime = LocalDateTime.now().plusMinutes(20);
+        return token;
+    }
+
+    /** 获取Token，缓存有效直接返回，否则重新获取 */
+    private String getToken() {
+        if (tokenCache != null && tokenExpireTime != null && LocalDateTime.now().isBefore(tokenExpireTime)) {
+            return tokenCache;
+        }
+        return getHosToken();
     }
 
 

@@ -184,13 +184,7 @@ export default {
       }
     },
     initOptions(This) {
-    }
-  },
-  watch: {
-  },
-  mounted: function() {
-  },
-  methods: {
+    },
     openViewLesseeDialog(lessee) {
       this.dialogProps.action = 'view'
       this.dialogProps.title = '查看租户'
@@ -224,6 +218,10 @@ export default {
       this.bizFormModel.id = null
       this.dialogProps.visible = true
     },
+  },
+  watch: {
+  },
+  mounted: function() {
   },
 }
 </script>

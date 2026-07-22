@@ -307,7 +307,7 @@
             #{entity.id}
         </foreach>
     </update>
-    <update id="updateStatus">
+    <update id="updaStatus">
         update member_management set status = '1' where id = #{id}
     </update>
 

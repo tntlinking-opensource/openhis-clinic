@@ -182,9 +182,7 @@
     </update>
 
     <select id="getCase" resultType="com.geeke.outpatient.entity.RecipelInfo">
-        SELECT
-        <include refid="com.geeke.outpatient.dao.RecipelInfoDao.recipelInfoColumns"/>
-        FROM recipel_info a
+        SELECT * FROM recipel_info a
         WHERE a.registration_id = #{id}
     </select>
 

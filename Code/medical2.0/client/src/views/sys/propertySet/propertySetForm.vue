@@ -125,13 +125,7 @@ export default {
       }
     },
     initOptions(This) {
-    }
-  },
-  watch: {
-  },
-  mounted: function() {
-  },
-  methods: {
+    },
     openViewPropertySetDialog(propertySet) {
       this.dialogProps.action = 'view'
       this.dialogProps.title = '查看属性集'
@@ -161,6 +155,10 @@ export default {
       this.bizFormModel.id = null
       this.dialogProps.visible = true
     },
+  },
+  watch: {
+  },
+  mounted: function() {
   },
 }
 </script>

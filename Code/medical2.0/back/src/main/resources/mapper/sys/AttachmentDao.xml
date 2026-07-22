@@ -4,8 +4,6 @@
     
     <sql id="attachmentColumns">
         a.id AS "id",
-        a.company_id AS "company.id",
-        IFNULL(company.name,'') AS "company.name",
         a.name AS "name",
         a.biz_id AS "bizId",
         a.type AS "type",
@@ -17,9 +15,8 @@
         a.update_date AS "updateDate",
         a.del_flag AS "delFlag"
     </sql>
-
+    
     <sql id="attachmentJoins">
-        LEFT JOIN org_company company ON company.id = a.company_id
     </sql>
     
     <select id="get" resultType="com.geeke.sys.entity.Attachment">
@@ -87,7 +84,6 @@
     <insert id="insert">
         INSERT INTO sys_attachment(
             id,
-            company_id,
             name,
             biz_id,
             type,
@@ -100,7 +96,6 @@
             del_flag
         ) VALUES (
             #{id},
-            #{company.id},
             #{name},
             #{bizId},
             #{type},

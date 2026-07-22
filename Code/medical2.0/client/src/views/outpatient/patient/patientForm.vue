@@ -717,22 +717,7 @@ export default {
 
       this.area = data.value
 
-    }
-  },
-  watch: {
-    'bizFormModel.age': function () {
-      if (this.bizFormModel.age < 12) {
-        this.formRules.guardianName[0].required = true
-        this.formRules.guardianPhone[0].required = true
-      } else {
-        this.formRules.guardianName[0].required = false
-        this.formRules.guardianPhone[0].required = false
-      }
-    }
-  },
-  mounted: function () {
-  },
-  methods: {
+    },
     openViewPatientDialog(patient) {
       this.dialogProps.action = 'view'
       this.dialogProps.title = '查看患者信息'
@@ -775,6 +760,19 @@ export default {
       this.bizFormModel.id = null
       this.dialogProps.visible = true
     },
+  },
+  watch: {
+    'bizFormModel.age': function () {
+      if (this.bizFormModel.age < 12) {
+        this.formRules.guardianName[0].required = true
+        this.formRules.guardianPhone[0].required = true
+      } else {
+        this.formRules.guardianName[0].required = false
+        this.formRules.guardianPhone[0].required = false
+      }
+    }
+  },
+  mounted: function () {
   },
 }
 </script>

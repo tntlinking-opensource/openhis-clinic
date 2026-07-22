@@ -1,7 +1,6 @@
 package com.geeke.outpatient.dao;
 
 import com.geeke.common.data.PageRequest;
-import com.geeke.outpatient.controller.SchedulingController;
 import com.geeke.outpatient.entity.SchedulingmxDTO;
 import com.geeke.outpatient.entity.Scheduling;
 import com.geeke.outpatient.entity.SchedulingDTO;

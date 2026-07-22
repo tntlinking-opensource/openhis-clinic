@@ -183,11 +183,7 @@ export default {
             this.$refs['password'].focus()
         })
       }
-    }
-  },
-  mounted: function() {
-  },
-  methods: {
+    },
     openPersonalInfoDialog() {
       this.loading = true
       this.changePassword = false
@@ -205,6 +201,8 @@ export default {
           this.outputError(error)
         })
     },
+  },
+  mounted: function() {
   },
 }
 </script>

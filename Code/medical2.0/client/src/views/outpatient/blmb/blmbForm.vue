@@ -442,10 +442,6 @@
             this.$message.error(error);
           });
       },
-    },
-    mounted: function () {
-    },
-    methods: {
       openAddworkbenchDialog(types) {
         let titles = "";
         if (types === "") {
@@ -477,6 +473,8 @@
         this.city = ''
         this.area = ''
       },
+    },
+    mounted: function () {
     },
   }
 </script>

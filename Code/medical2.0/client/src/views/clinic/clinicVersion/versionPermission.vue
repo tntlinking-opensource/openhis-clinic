@@ -200,16 +200,14 @@ export default {
       if(data.code) {
         this.$refs.dataPermission.openDataPermission(data.code, this.role.id, data.id)
       }
-    }
-  },
-  mounted: function() {
-  },
-  methods: {
+    },
     openSetPermissionDialog(role) {
       this.dialogProps.visible = true
       this.searchText = ''
       this.componentInit(role);
     },
+  },
+  mounted: function() {
   },
 }
 </script>

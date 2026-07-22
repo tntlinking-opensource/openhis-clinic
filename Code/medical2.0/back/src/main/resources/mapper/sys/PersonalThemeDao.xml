@@ -13,7 +13,7 @@
         a.update_date AS "updateDate",
         a.del_flag AS "delFlag"
     </sql>
-
+    
     <sql id="personalThemeJoins">
     </sql>
     
@@ -112,12 +112,8 @@
         WHERE id = #{id}
     </update>
     
-    <update id="delete">
-        UPDATE sys_personal_theme SET
-            del_flag = #{delFlag},
-            update_by = #{updateBy},
-            update_date = #{updateDate}
-        WHERE id = #{id}
-    </update>
+    <delete id="delete">
+        DELETE FROM sys_personal_theme WHERE id = #{id}
+    </delete>
     
 </mapper>

@@ -6,18 +6,6 @@ spring:
     url: ${DB_URL:jdbc:mysql://61.172.179.48:19011/medical_yzs?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8&useSSL=false}
     username: ${DB_USERNAME:new_touch}
     password: ${DB_PASSWORD:bW9Ivzt0CAQdoJTDZ2wAnduvi}
-  cache:
-    type: redis  # 可选 redis、none、ehcache
-  redis:
-    host: ${REDIS_HOST:61.172.179.48} # server host
-    port: ${REDIS_PORT:19013}
-    password: ${REDIS_PASSWORD:bW9Ivzt0CAQdoJTDZ2wAnduvi}
-    timeout: 3000
-    database: 0
-app:
-  redis:
-    cacheType: redis  # 可选 redis、none、ehcache
-
   rabbitmq:
     host: ${RABBITMQ_HOST:182.151.20.115}
     port: ${RABBITMQ_PORT:7014}

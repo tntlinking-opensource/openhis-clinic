@@ -8,7 +8,8 @@ import com.geeke.admin.entity.User;
 import com.geeke.admin.service.UserService;
 import com.geeke.common.data.Parameter;
 import com.geeke.common.data.SearchParamsBuilder;
-import com.geeke.config.cache.RedisProperties;
+
+
 import com.geeke.config.shiro.StatelessSessionManager;
 import com.geeke.org.entity.Company;
 import com.geeke.org.service.CompanyService;

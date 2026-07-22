@@ -153,7 +153,32 @@ import moment from "moment";
           return 'success-row';
         }
         return '';
-      }
+      },
+
+      //重置
+      reset(){
+        this. formInline = {
+          values: '',
+          status: ''
+        };
+        this.TimeInterval='';
+        this. visitprogresspara = {
+        limit: 20,
+        offset: 0,
+        companyId: currentUser.company.id,
+        status: "",
+        values:"",
+        kssj:"",
+        jssj:"",
+        };
+        this.Getvisiprogresslist();
+      },
+
+      onSizeChange(val) {
+      this.currentPage = 1
+      this.visitprogresspara.limit = val;
+      this.visitprogresspara.offset = (this.currentPage - 1) * val
+      this.Getvisiprogresslist();
     },
     data() {
       return {
@@ -218,33 +243,6 @@ pickerOptions: {
         },
 
       }
-    },
-    methods: {
-
-      //重置
-      reset(){
-        this. formInline = {
-          values: '',
-          status: ''
-        };
-        this.TimeInterval='';
-        this. visitprogresspara = {
-        limit: 20,
-        offset: 0,
-        companyId: currentUser.company.id,
-        status: "",
-        values:"",
-        kssj:"",
-        jssj:"",
-        };
-        this.Getvisiprogresslist();
-      },
-
-      onSizeChange(val) {
-      this.currentPage = 1
-      this.visitprogresspara.limit = val;
-      this.visitprogresspara.offset = (this.currentPage - 1) * val
-      this.Getvisiprogresslist();
     },
     onCurrentChange(val) {
       this.visitprogresspara.offset = (val - 1) * this.visitprogresspara.limit

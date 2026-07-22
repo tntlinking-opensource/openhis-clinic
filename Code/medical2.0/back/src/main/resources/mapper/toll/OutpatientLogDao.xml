@@ -90,6 +90,7 @@
                p.card,
                a.workplace,
                s.name as doctor_id,
+               p.card,
                p.phone,
                a.morbidity_time,
                m.health_education
@@ -123,6 +124,7 @@
                p.card,
                a.workplace,
                s.name as doctor_id,
+               p.card,
                p.phone,
                a.morbidity_time,
                m.health_education
@@ -146,14 +148,15 @@
     <select id="getOutpatientLog" resultType="com.geeke.toll.entity.OutpatientLog" resultMap="OutpatientLogRespVO">
         select a.id,p.name,p.guardian_name,p.gender,p.age,a.nation,a.occupation,p.address,a.reception_end_date,a.source,
         a.blood_pressure,m.patient_tell,a.temperature,m.epidemic_disease,m.china_diagnose,m.western_diagnose,m.diagnose,a.infect_type,m.handling_situation,
-        p.card,a.workplace,s.name as doctor_id,p.phone,a.morbidity_time,m.health_education
+        p.card,a.workplace,s.name as doctor_id,p.card,p.phone,a.morbidity_time,m.health_education
         from registration a
         inner join patient p on a.patient_id = p.id
         inner join medical_record m on a.id = m.registration_id
         inner join sys_user s on a.doctor_id = s.id
         inner join org_company oc ON a.company_id = oc.id and oc.del_flag ='0'
         <if test=" jgid!=null and jgzt==1">and a.company_id =#{jgid}</if>
-        <if test=" jgid==null and jgzt==1">and oc.parent_id = (SELECT parent_id FROM org_company WHERE id = #{companyId})
+        <if test=" jgid==null and jgzt==1">and oc.parent_id in (select parent_id from org_company oc2 where
+            id=#{companyId})
         </if>
         <if test="jgid==null and jgzt==null">and a.company_id =#{companyId}</if>
         <if test="kssj!=null and jssj!=null">and a.reception_end_date between #{kssj} and #{jssj}</if>
@@ -165,14 +168,15 @@
     <select id="getOutpatientlist" resultType="com.geeke.toll.entity.OutpatientLog" resultMap="OutpatientLogRespVO">
         select a.id,p.name,p.guardian_name,p.gender,p.age,a.nation,a.occupation,p.address,a.reception_end_date,a.source,
         a.blood_pressure,m.patient_tell,a.temperature,m.epidemic_disease,m.china_diagnose,m.western_diagnose,m.diagnose,a.infect_type,m.handling_situation,
-        p.card,a.workplace,s.name as doctor_id,p.phone,a.morbidity_time,m.health_education
+        p.card,a.workplace,s.name as doctor_id,p.card,p.phone,a.morbidity_time,m.health_education
         from registration a
         inner join patient p on a.patient_id = p.id
         inner join medical_record m on a.id = m.registration_id
         inner join sys_user s on a.doctor_id = s.id
         inner join org_company oc ON a.company_id = oc.id and oc.del_flag ='0'
         <if test=" jgid!=null and jgzt==1">and a.company_id =#{jgid}</if>
-        <if test=" jgid==null and jgzt==1">and oc.parent_id = (SELECT parent_id FROM org_company WHERE id = #{companyId})
+        <if test=" jgid==null and jgzt==1">and oc.parent_id in (select parent_id from org_company oc2 where
+            id=#{companyId})
         </if>
         <if test="jgid==null and jgzt==null">and a.company_id =#{companyId}</if>
         <if test="kssj!=null and jssj!=null">and a.reception_end_date between #{kssj} and #{jssj}</if>

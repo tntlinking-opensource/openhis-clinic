@@ -251,13 +251,7 @@ export default {
 
       // 子表  回收站
       This = this.actionRecycleCurrentRow
-    }
-  },
-  watch: {
-  },
-  mounted: function() {
-  },
-  methods: {
+    },
     openViewActionDialog(action) {
       this.dialogProps.action = 'view'
       this.dialogProps.title = '查看操作日志'
@@ -289,6 +283,10 @@ export default {
       }
       this.dialogProps.visible = true
     },
+  },
+  watch: {
+  },
+  mounted: function() {
   },
 }
 </script>

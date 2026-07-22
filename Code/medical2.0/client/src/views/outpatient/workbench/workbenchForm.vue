@@ -611,10 +611,6 @@ this.selectpatientdjyjclist();
   break;
 }
     },
-  },
-  mounted: function() {
-  },
-  methods: {
     openAddworkbenchDialog(types) {
       let titles = "";
       this.titletype = types;
@@ -638,6 +634,8 @@ this.selectpatientdjyjclist();
       this.area = ''
       this.Getpatenlist()
     },
+  },
+  mounted: function() {
   },
 }
 </script>

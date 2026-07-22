@@ -614,6 +614,21 @@
         this.$refs["drugForm"].clearValidate();
       });
     },
+    openMigratingDrugDialog() {
+      this.drugSource = 1
+      this.dialogProps.action = "add";
+      this.dialogProps.title = "同步药品信息";
+      this.search.offset = 0;
+      this.currentPage = 1;
+      this.drugList = []
+      this.selectDrugList = []
+      if (this.drugSource === 1) {
+        this.getListByInstitution()
+      } else if (this.drugSource === 2) {
+        this.getlistByHospitalDrug()
+      }
+      this.dialogProps.visible = true;
+    },
   },
   watch: {
     drugList(val) {
@@ -635,23 +650,6 @@
       }
   },
   mounted: function () {
-  },
-  methods: {
-    openMigratingDrugDialog() {
-      this.drugSource = 1
-      this.dialogProps.action = "add";
-      this.dialogProps.title = "同步药品信息";
-      this.search.offset = 0;
-      this.currentPage = 1;
-      this.drugList = []
-      this.selectDrugList = []
-      if (this.drugSource === 1) {
-        this.getListByInstitution()
-      } else if (this.drugSource === 2) {
-        this.getlistByHospitalDrug()
-      }
-      this.dialogProps.visible = true;
-    },
   },
 };
 </script>

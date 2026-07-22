@@ -98,10 +98,10 @@
     </select>
     
     <select id="count" resultType="int">
-        SELECT COUNT(DISTINCT a.id) FROM registration a
+        SELECT COUNT(*) FROM registration a
         <include refid="registrationJoins"/>
         <where>
-            AND (a.is_pre is null or a.is_pre = false)
+            AND a.is_pre is null
             AND a.id > 0
             and a.status != 'registrationStatus_4'
             AND a.del_flag = #{DEL_FLAG_NORMAL}
@@ -111,12 +111,21 @@
 
     <select id="countId" resultType="String">
         SELECT a.id FROM registration a
-        <include refid="registrationJoins"/>
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN clinic_office clinicOffice ON clinicOffice.id = a.department_id
+        LEFT JOIN patient patientId ON patientId.id = a.patient_id
+        LEFT JOIN sys_dict_item gender ON gender.value = patientId.gender
+        LEFT JOIN sys_user doctor ON doctor.id = a.doctor_id
+        LEFT JOIN sys_dict_item treatType ON treatType.value = a.treat_type
+        LEFT JOIN sys_dict_item infectType ON infectType.value = a.infect_type
+        LEFT JOIN sys_dict_item source ON source.value = a.source
+        LEFT JOIN sys_dict_item payType ON payType.value = a.pay_type
+        LEFT JOIN sys_dict_item status ON status.value = a.status
         INNER JOIN recipel_info ri ON a.id=ri.registration_id
         LEFT JOIN recipel_detail rd on ri.id=rd.recipel_info_id
         LEFT JOIN cost_item ci on ci.id=rd.drug_stuff_id
         <where>
-            AND (a.is_pre is null or a.is_pre = false)
+            AND a.is_pre is null
             and
             ri.status=1
             <if test="chargeStatus!=3">
@@ -187,12 +196,21 @@
         SELECT
         a.id
         FROM registration a
-        <include refid="registrationJoins"/>
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN clinic_office clinicOffice ON clinicOffice.id = a.department_id
+        LEFT JOIN patient patientId ON patientId.id = a.patient_id
+        LEFT JOIN sys_dict_item gender ON gender.value = patientId.gender
+        LEFT JOIN sys_user doctor ON doctor.id = a.doctor_id
+        LEFT JOIN sys_dict_item treatType ON treatType.value = a.treat_type
+        LEFT JOIN sys_dict_item infectType ON infectType.value = a.infect_type
+        LEFT JOIN sys_dict_item source ON source.value = a.source
+        LEFT JOIN sys_dict_item payType ON payType.value = a.pay_type
+        LEFT JOIN sys_dict_item status ON status.value = a.status
         INNER JOIN recipel_info ri on a.id=ri.registration_id
         LEFT JOIN recipel_detail rd on ri.id=rd.recipel_info_id
         LEFT JOIN cost_item ci on ci.id=rd.drug_stuff_id
         WHERE
-            ri.status=1  AND (a.is_pre is null or a.is_pre = false)
+            ri.status=1  AND a.is_pre is null
         <if test="chargeStatus!=3">
             AND ri.charge_status = #{chargeStatus}
         </if>
@@ -244,7 +262,7 @@
         FROM registration a
         <include refid="registrationJoins"/>
         <where>
-            AND (a.is_pre is null or a.is_pre = false)
+            AND a.is_pre is null
             AND a.id > 0
             and a.status != 'registrationStatus_4'
             AND a.del_flag = #{DEL_FLAG_NORMAL}
@@ -761,22 +779,22 @@
         <include refid="registrationJoins"/>
         <where>
                 a.company_id = #{companyId}
-                AND (patientId.name like concat('%', #{value}, '%')
-                or patientId.phone like concat('%', #{value}, '%')
-                or patientId.card like concat('%', #{value}, '%'))
+                AND (patientId.name like '%#{value}%'
+                or patientId.phone like '%#{value}%'
+                or patientId.card like '%#{value}%')
         </where>
         ORDER BY case a.status when 'registrationStatus_2' then 0 else 1 end desc,a.update_date desc
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="countConditionList" resultType="int">
-        SELECT COUNT(DISTINCT a.id) FROM registration a
+        SELECT COUNT(*) FROM registration a
         <include refid="registrationJoins"/>
         <where>
             a.company_id = #{companyId}
-            AND (patientId.name like concat('%', #{value}, '%')
-            or patientId.phone like concat('%', #{value}, '%')
-            or patientId.card like concat('%', #{value}, '%'))
+            AND (patientId.name like '%#{value}%'
+            or patientId.phone like '%#{value}%'
+            or patientId.card like '%#{value}%')
             <include refid="Common.whereParams"/>
         </where>
     </select>
@@ -800,40 +818,29 @@
         order by a.update_date desc
     </select>
 
-    <select id="countByOpenId" resultType="int">
-        SELECT COUNT(DISTINCT a.id)
-        FROM registration a
-        INNER JOIN patient p ON p.id = a.patient_id AND p.open_id = #{openId}
-        WHERE a.company_id = #{companyId}
-          AND a.del_flag = '0'
-    </select>
-
-    <select id="listByOpenId" resultType="com.geeke.outpatient.entity.Registration">
-        SELECT
-          <include refid="registrationColumns"/>
-        FROM registration a
-          <include refid="registrationJoins"/>
-        INNER JOIN patient p ON p.id = a.patient_id AND p.open_id = #{openId}
-        WHERE a.company_id = #{companyId}
-          AND a.del_flag = '0'
-        ORDER BY a.update_date DESC
-        LIMIT #{limit} OFFSET #{offset}
-    </select>
-
 
     <select id="wxCount" resultType="String">
         SELECT a.id FROM registration a
-        <include refid="registrationJoins"/>
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN clinic_office clinicOffice ON clinicOffice.id = a.department_id
+        LEFT JOIN patient patientId ON patientId.id = a.patient_id
+        LEFT JOIN sys_dict_item gender ON gender.value = patientId.gender
+        LEFT JOIN sys_user doctor ON doctor.id = a.doctor_id
+        LEFT JOIN sys_dict_item treatType ON treatType.value = a.treat_type
+        LEFT JOIN sys_dict_item infectType ON infectType.value = a.infect_type
+        LEFT JOIN sys_dict_item source ON source.value = a.source
+        LEFT JOIN sys_dict_item payType ON payType.value = a.pay_type
+        LEFT JOIN sys_dict_item status ON status.value = a.status
         INNER JOIN recipel_info ri ON a.id=ri.registration_id
         LEFT JOIN recipel_detail rd on ri.id=rd.recipel_info_id
         LEFT JOIN cost_item ci on ci.id=rd.drug_stuff_id
-        INNER JOIN patient p ON p.id = a.patient_id AND p.open_id = #{openId}
         <where>
             ri.status=1
             AND a.company_id=#{companyId}
             AND a.recipe_status=#{recipeStatus}
             AND a.update_date > #{updateDate}
             AND a.status=#{status}
+            AND a.patient_id in (select id from patient where open_id = #{openId})
         </where>
         GROUP BY a.id
         ORDER BY ${columnName} desc
@@ -843,17 +850,26 @@
         SELECT
         a.id
         FROM registration a
-        <include refid="registrationJoins"/>
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN clinic_office clinicOffice ON clinicOffice.id = a.department_id
+        LEFT JOIN patient patientId ON patientId.id = a.patient_id
+        LEFT JOIN sys_dict_item gender ON gender.value = patientId.gender
+        LEFT JOIN sys_user doctor ON doctor.id = a.doctor_id
+        LEFT JOIN sys_dict_item treatType ON treatType.value = a.treat_type
+        LEFT JOIN sys_dict_item infectType ON infectType.value = a.infect_type
+        LEFT JOIN sys_dict_item source ON source.value = a.source
+        LEFT JOIN sys_dict_item payType ON payType.value = a.pay_type
+        LEFT JOIN sys_dict_item status ON status.value = a.status
         INNER JOIN recipel_info ri on a.id=ri.registration_id
         LEFT JOIN recipel_detail rd on ri.id=rd.recipel_info_id
         LEFT JOIN cost_item ci on ci.id=rd.drug_stuff_id
-        INNER JOIN patient p ON p.id = a.patient_id AND p.open_id = #{openId}
         WHERE
         ri.status=1
         AND a.company_id=#{companyId}
         AND a.recipe_status=#{recipeStatus}
         AND a.update_date>#{updateDate}
         AND a.status=#{status}
+        AND a.patient_id in (select id from patient where open_id = #{openId})
         GROUP BY a.id
         ORDER BY ${columnName} desc
         LIMIT #{limit} OFFSET #{offset}
@@ -861,11 +877,19 @@
 
     <select id="wxDispensingCount" resultType="String">
         SELECT a.id FROM registration a
-        <include refid="registrationJoins"/>
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN clinic_office clinicOffice ON clinicOffice.id = a.department_id
+        LEFT JOIN patient patientId ON patientId.id = a.patient_id
+        LEFT JOIN sys_dict_item gender ON gender.value = patientId.gender
+        LEFT JOIN sys_user doctor ON doctor.id = a.doctor_id
+        LEFT JOIN sys_dict_item treatType ON treatType.value = a.treat_type
+        LEFT JOIN sys_dict_item infectType ON infectType.value = a.infect_type
+        LEFT JOIN sys_dict_item source ON source.value = a.source
+        LEFT JOIN sys_dict_item payType ON payType.value = a.pay_type
+        LEFT JOIN sys_dict_item status ON status.value = a.status
         INNER JOIN recipel_info ri ON a.id=ri.registration_id
         LEFT JOIN recipel_detail rd on ri.id=rd.recipel_info_id
         LEFT JOIN cost_item ci on ci.id=rd.drug_stuff_id
-        INNER JOIN patient p ON p.id = a.patient_id AND p.open_id = #{openId}
         <where>
             ri.status=1
             AND ri.charge_status = 1
@@ -874,6 +898,7 @@
             AND a.recipe_status=#{recipeStatus}
             AND a.update_date > #{updateDate}
             AND a.status=#{status}
+            AND a.patient_id in (select id from patient where open_id = #{openId})
         </where>
         GROUP BY a.id
         ORDER BY ${columnName} desc
@@ -883,11 +908,19 @@
         SELECT
         a.id
         FROM registration a
-        <include refid="registrationJoins"/>
+        LEFT JOIN org_company company ON company.id = a.company_id
+        LEFT JOIN clinic_office clinicOffice ON clinicOffice.id = a.department_id
+        LEFT JOIN patient patientId ON patientId.id = a.patient_id
+        LEFT JOIN sys_dict_item gender ON gender.value = patientId.gender
+        LEFT JOIN sys_user doctor ON doctor.id = a.doctor_id
+        LEFT JOIN sys_dict_item treatType ON treatType.value = a.treat_type
+        LEFT JOIN sys_dict_item infectType ON infectType.value = a.infect_type
+        LEFT JOIN sys_dict_item source ON source.value = a.source
+        LEFT JOIN sys_dict_item payType ON payType.value = a.pay_type
+        LEFT JOIN sys_dict_item status ON status.value = a.status
         INNER JOIN recipel_info ri on a.id=ri.registration_id
         LEFT JOIN recipel_detail rd on ri.id=rd.recipel_info_id
         LEFT JOIN cost_item ci on ci.id=rd.drug_stuff_id
-        INNER JOIN patient p ON p.id = a.patient_id AND p.open_id = #{openId}
         WHERE
         ri.status=1
         AND ri.charge_status = 1
@@ -896,6 +929,7 @@
         AND a.recipe_status=#{recipeStatus}
         AND a.update_date > #{updateDate}
         AND a.status=#{status}
+        AND a.patient_id in (select id from patient where open_id = #{openId})
         GROUP BY a.id
         ORDER BY ${columnName} desc
         LIMIT #{limit} OFFSET #{offset}

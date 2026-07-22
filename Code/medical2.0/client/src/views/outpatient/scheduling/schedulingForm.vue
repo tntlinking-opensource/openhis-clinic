@@ -1060,66 +1060,6 @@ export default {
       }
     },
 
-  },
-  watch: {
-    //监视器监视到科室改变，获取科室内的操作员绑定
-    "bizFormModel.department.id": function (val, oldVal) {
-      if (val !== oldVal) {
-        if (
-          this.dialogProps.action === "add" ||
-          this.dialogProps.action === "edit"
-        ) {
-          this.bizFormModel.doctor = {
-            // 医生
-            id: null,
-            name: null,
-          };
-        }
-        let doctor_search = {
-          params: [
-            {
-              columnName: "department_id",
-              queryType: "=",
-              value: currentUser.department.id,
-            },
-          ],
-        };
-        // 字段对应表上filter条件
-        doctor_search.params.push.apply(doctor_search.params, []);
-        // 表有禁用字段
-        doctor_search.params.push.apply(doctor_search.params, [
-          {columnName: "is_locked", queryType: "=", value: "0"},
-        ]);
-        // 数据权限:  用户sys_user
-        this.pushDataPermissions(
-          doctor_search.params,
-          this.$route.meta.routerId,
-          "4004"
-        );
-        this.doctor_List.splice(0, this.doctor_List.length);
-        listDoctorsAll().then((responseData) => {
-          this.doctor_List = responseData.data;
-        });
-      }
-    },
-    "bizFormModel.age": function (newValue, oldValue) {
-      if (newValue < 12) {
-        this.formRules.guardianName[0].required = true
-        this.formRules.guardianPhone[0].required = true
-        //this.formRules.phone[0].required=false
-
-      } else {
-        this.formRules.guardianName[0].required = false
-        this.formRules.guardianPhone[0].required = false
-        this.$refs["testForm"].clearValidate();
-        //this.formRules.phone[0].required=true
-      }
-    }
-
-  },
-  mounted: async function () {
-  },
-  methods: {
     async openViewRegistrationDialog(registration) {
       this.dialogProps.action = "view";
       this.dialogProps.title = "查看登记信息";
@@ -1194,6 +1134,64 @@ export default {
       this.bizFormModel.id = null;
       this.dialogProps.visible = true;
     },
+  },
+  watch: {
+    //监视器监视到科室改变，获取科室内的操作员绑定
+    "bizFormModel.department.id": function (val, oldVal) {
+      if (val !== oldVal) {
+        if (
+          this.dialogProps.action === "add" ||
+          this.dialogProps.action === "edit"
+        ) {
+          this.bizFormModel.doctor = {
+            // 医生
+            id: null,
+            name: null,
+          };
+        }
+        let doctor_search = {
+          params: [
+            {
+              columnName: "department_id",
+              queryType: "=",
+              value: currentUser.department.id,
+            },
+          ],
+        };
+        // 字段对应表上filter条件
+        doctor_search.params.push.apply(doctor_search.params, []);
+        // 表有禁用字段
+        doctor_search.params.push.apply(doctor_search.params, [
+          {columnName: "is_locked", queryType: "=", value: "0"},
+        ]);
+        // 数据权限:  用户sys_user
+        this.pushDataPermissions(
+          doctor_search.params,
+          this.$route.meta.routerId,
+          "4004"
+        );
+        this.doctor_List.splice(0, this.doctor_List.length);
+        listDoctorsAll().then((responseData) => {
+          this.doctor_List = responseData.data;
+        });
+      }
+    },
+    "bizFormModel.age": function (newValue, oldValue) {
+      if (newValue < 12) {
+        this.formRules.guardianName[0].required = true
+        this.formRules.guardianPhone[0].required = true
+        //this.formRules.phone[0].required=false
+
+      } else {
+        this.formRules.guardianName[0].required = false
+        this.formRules.guardianPhone[0].required = false
+        this.$refs["testForm"].clearValidate();
+        //this.formRules.phone[0].required=true
+      }
+    }
+
+  },
+  mounted: async function () {
   },
 }
 </script>

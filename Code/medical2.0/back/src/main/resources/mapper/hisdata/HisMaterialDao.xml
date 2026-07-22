@@ -248,17 +248,7 @@
     </update>
 
     <select id="repeat" resultType="com.geeke.stock.entity.Drug">
-        SELECT
-        a.id AS "id",
-        a.goods_name AS "goodsName",
-        a.company_id AS "company.id",
-        a.brand_name AS "brandName",
-        a.code AS "code",
-        a.price AS "price",
-        a.dosis AS "dosis",
-        a.preparation AS "preparation",
-        a.del_flag AS "delFlag"
-        FROM drug a
+        SELECT * FROM drug a
         LEFT JOIN org_company company ON company.id = a.company_id
         <where>
             AND a.id > 0

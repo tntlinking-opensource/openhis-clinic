@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.geeke.gen.dao.SchemaTableDao">
+    
+    <sql id="schemaTableColumns">
+        a.table_name AS "name",
+        CASE a.table_type WHEN 'BASE TABLE' THEN a.table_comment ELSE '' END AS "comments",
+        a.table_type AS "source"
+    </sql>
+    
+    <sql id="schemaTableJoins">
+    </sql>
+    
+    <select id="get" resultType="com.geeke.gen.entity.GenTableEx">
+        SELECT 
+            <include refid="schemaTableColumns"/>
+        FROM information_schema.tables a
+        <include refid="schemaTableJoins"/>
+        WHERE a.id = #{id}
+			AND a.TABLE_SCHEMA = (select database())
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM information_schema.tables a
+        <include refid="schemaTableJoins"/>
+		<where>
+			a.TABLE_SCHEMA = (select database())
+        		<include refid="Common.whereParams"/>
+		</where>
+    </select>    
+    
+    <select id="listPage" resultType="com.geeke.gen.entity.GenTableEx">
+        SELECT 
+            <include refid="schemaTableColumns"/>
+        FROM information_schema.tables a
+        <include refid="schemaTableJoins"/>
+        <where>
+            a.TABLE_SCHEMA = (select database())
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when>            
+	    <otherwise>
+	    	ORDER BY name ASC
+	    </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="listAll" resultType="com.geeke.gen.entity.GenTableEx">
+        SELECT 
+            <include refid="schemaTableColumns"/>
+        FROM information_schema.tables a
+        <include refid="schemaTableJoins"/>
+        <where>
+            a.TABLE_SCHEMA = (select database())
+            <include refid="Common.whereParams"/>
+        </where>
+        <choose>
+            <when test="order != null and order != ''">
+                ORDER BY ${order}
+            </when> 
+	    <otherwise>
+		ORDER BY name ASC
+	    </otherwise>
+        </choose>
+    </select>
+    
+    
+    <insert id="insert">
+        INSERT INTO information_schema.tables(
+            table_name,
+            table_comment,
+            table_type
+        ) VALUES (
+            #{name},
+            #{comments},
+            #{source}
+        )
+    </insert>
+    
+    <update id="update">
+        UPDATE information_schema.tables SET     
+            table_name = #{name},
+            table_comment = #{comments},
+            table_type = #{source}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="delete">
+        DELETE FROM information_schema.tables
+        WHERE id = #{id}
+    </update>
+    
+    
+</mapper>

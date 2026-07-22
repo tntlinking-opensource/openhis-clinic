@@ -108,12 +108,15 @@
     </select>
 
     <select id="getusertree" resultType="com.geeke.taskmanagement.entity.Sysusertreeentity">
-        select id,name,parent_id patid from org_company
-        where parent_id = (SELECT parent_id FROM org_company WHERE id=#{companyId})
+
+        select id,name,parent_id patid  from org_company
+        where parent_id in (select parent_id  from org_company where id=#{companyId})
         union all
         select a.id,a.name,a.company_id patid from sys_user a
-        inner join org_company b on a.company_id = b.id and b.del_flag = '0'
-        where b.parent_id = (SELECT parent_id FROM org_company WHERE id=#{companyId})
+        left join org_company b on a.company_id =b.id and b.del_flag ='0'
+        -- left join org_company c on b.parent_id  =c.parent_id and c.del_flag ='0'
+        where company_id in (
+        select id from org_company where parent_id in (select parent_id  from org_company where id=#{companyId}))
     </select>
 
     <insert id="savetaskexecutor">

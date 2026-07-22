@@ -470,12 +470,6 @@ export default {
         this.company_List = responseData.data;
       });
     },
-  },
-  watch: {},
-  mounted: function () {
-    this.isCompany();
-  },
-  methods: {
     openViewClinicOfficeDialog(clinicOffice) {
       this.dialogProps.action = "view";
       this.dialogProps.title = "查看科室";
@@ -509,6 +503,10 @@ export default {
       this.bizFormModel.id = null;
       this.dialogProps.visible = true;
     },
+  },
+  watch: {},
+  mounted: function () {
+    this.isCompany();
   },
 };
 </script>

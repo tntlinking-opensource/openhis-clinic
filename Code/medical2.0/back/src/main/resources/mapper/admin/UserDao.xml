@@ -66,7 +66,7 @@
         </where>
         ORDER BY a.update_date DESC
     </select>
-    <select id="getUserByCompanyIdAndJobV2" resultType="com.geeke.admin.entity.User">
+    <select id="NEWgetUserByCompanyIdAndJob" resultType="com.geeke.admin.entity.User">
         SELECT DISTINCT
         <include refid="userColumns"/>,
         o.id AS office
@@ -421,19 +421,9 @@
     </update>
 
     <select id="loginUser" resultType="com.geeke.admin.entity.User">
-        SELECT
-            a.id AS "id",
-            a.company_id AS "company.id",
-            o.name AS "company.name",
-            a.name AS "name",
-            a.login_name AS "loginName",
-            a.phone AS "phone",
-            a.email AS "email",
-            a.is_locked AS "isLocked",
-            a.is_admin AS "isAdmin",
-            a.del_flag AS "delFlag"
-        FROM sys_user a
-                 LEFT JOIN org_company o ON o.id = a.company_id
+        select *, o.name AS "company.id"
+        from sys_user a
+                 left join org_company o on o.id = a.company_id
         WHERE o.parent_id = '1639720158872479714'
     </select>
 

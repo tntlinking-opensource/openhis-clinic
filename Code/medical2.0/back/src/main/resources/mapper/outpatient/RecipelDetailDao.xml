@@ -70,7 +70,7 @@
     </select>
 
     <select id="count" resultType="int">
-        SELECT COUNT(DISTINCT a.id) FROM recipel_detail a
+        SELECT COUNT(*) FROM recipel_detail a
         <include refid="recipelDetailJoins"/>
         <where>
             1=1
@@ -502,6 +502,17 @@
         </foreach>
     </update>
 
+    <select id="getByRecipelInfoIds" resultType="com.geeke.outpatient.entity.RecipelDetail">
+        SELECT
+        <include refid="recipelDetailColumns"/>
+        FROM recipel_detail a
+        <include refid="recipelDetailJoins"/>
+        WHERE a.recipel_info_id IN
+        <foreach collection="recipelInfoIds" item="recipelInfoId" open="(" separator="," close=")">
+            #{recipelInfoId}
+        </foreach>
+    </select>
+
     <select id="getByRecipelInfoId" parameterType="java.lang.String"
             resultType="com.geeke.outpatient.entity.RecipelDetail">
         SELECT
@@ -509,19 +520,6 @@
         FROM recipel_detail a
         <include refid="recipelDetailJoins"/>
         WHERE a.recipel_info_id = #{recipelInfoId}
-    </select>
-
-    <select id="getByRecipelInfoIds" resultType="com.geeke.outpatient.entity.RecipelDetail">
-        SELECT
-        <include refid="recipelDetailColumns"/>
-        FROM recipel_detail a
-        <include refid="recipelDetailJoins"/>
-        WHERE a.recipel_info_id IN
-        <foreach collection="recipelInfoIds" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
-        AND a.del_flag = '0'
-        ORDER BY a.drug_order ASC
     </select>
 
     <select id="getRecipelDetail" parameterType="java.lang.String"

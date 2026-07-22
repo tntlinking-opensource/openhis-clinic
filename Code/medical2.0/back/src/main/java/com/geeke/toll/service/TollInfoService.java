@@ -314,7 +314,7 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
             newTollInfo.setTollType(tollType);
             this.save(newTollInfo);
             // 医保收费信息上传
-            if (medicareConfigProperties.getCheck().equals("true")) {
+            if ("true".equals(medicareConfigProperties.getCheck())) {
                 registration = buildAndUploadMedicareData(tollInfo, newTollInfo, recipelInfoEvt, array);
             }
             // 体验卡扣减
@@ -440,7 +440,7 @@ public class TollInfoService extends CrudService<TollInfoDao, TollInfo>{
             }
         }
         // 医保退费
-        if (medicareConfigProperties.getCheck().equals("true")) {
+        if ("true".equals(medicareConfigProperties.getCheck())) {
             Registration registration = registrationService.get(tollInfo.getMedical().getRegistration().getId());
             mdPsnDataService.getAndSetPsnData(registration);
             PatientMdData psnData = patientMdDataService.getOne(new LambdaQueryWrapper<PatientMdData>().eq(PatientMdData::getPatientId, registration.getPatientId().getId()));

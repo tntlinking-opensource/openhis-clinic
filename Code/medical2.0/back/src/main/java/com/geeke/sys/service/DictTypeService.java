@@ -15,7 +15,6 @@ import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
 import com.geeke.common.data.SearchParamsBuilder;
 import com.geeke.common.service.CrudService;
-import com.geeke.org.entity.Company;
 import com.geeke.sys.dao.DictItemDao;
 import com.geeke.sys.dao.DictTypeDao;
 import com.geeke.sys.entity.Action;
@@ -23,7 +22,6 @@ import com.geeke.sys.entity.ActionRecycle;
 import com.geeke.sys.entity.DictItem;
 import com.geeke.sys.entity.DictType;
 import com.geeke.utils.Reflections;
-import com.geeke.utils.SessionUtils;
 import com.geeke.utils.StringUtils;
 import com.google.common.collect.Lists;
 
@@ -45,9 +43,7 @@ public class DictTypeService extends CrudService<DictTypeDao, DictType>{
      */
     @Override
     public Page<DictType> listPage(List<Parameter> parameters, int offset, int limit, String orderby) {
-        // 不调用父类的 ensureCompanyFilter，手动处理租户过滤
-        // 为非系统级字典添加租户过滤
-        addCompanyFilterForNonSystem(parameters);
+        // 字典已优化为全局共享，不再按租户隔离
         PageRequest pageRequest = new PageRequest(offset, limit, parameters, orderby);
         int total = dao.count(pageRequest);
         List<DictType> list = total > 0 ? dao.listPage(pageRequest) : java.util.Collections.emptyList();
@@ -55,49 +51,12 @@ public class DictTypeService extends CrudService<DictTypeDao, DictType>{
     }
 
     /**
-     * 重写列表查询：系统级字典对所有租户可见，业务级字典按租户隔离
+     * 重写列表查询：字典全局共享，所有租户可见
      */
     @Override
     public List<DictType> listAll(List<Parameter> parameters, String orderby) {
-        // 不调用父类的 ensureCompanyFilter，手动处理租户过滤
-        addCompanyFilterForNonSystem(parameters);
         PageRequest pageRequest = new PageRequest(parameters, orderby);
         return dao.listAll(pageRequest);
-    }
-
-    /**
-     * 为非系统级字典添加租户过滤
-     * 如果查询条件中已有 is_system='0'，则添加 company_id 过滤
-     */
-    private void addCompanyFilterForNonSystem(List<Parameter> parameters) {
-        if (parameters == null) {
-            return;
-        }
-        // 检查是否查询的是非系统级字典
-        boolean isNonSystemQuery = false;
-        for (Parameter param : parameters) {
-            if ("is_system".equals(param.getColumnName()) && "0".equals(param.getValue())) {
-                isNonSystemQuery = true;
-                break;
-            }
-        }
-        // 如果是查询非系统级字典，添加租户过滤
-        if (isNonSystemQuery) {
-            String companyId = SessionUtils.getLoginTenantId();
-            if (StringUtils.isNotBlank(companyId) && !"null".equals(companyId)) {
-                // 检查是否已有 company_id 过滤
-                boolean hasCompanyFilter = false;
-                for (Parameter param : parameters) {
-                    if ("company_id".equals(param.getColumnName())) {
-                        hasCompanyFilter = true;
-                        break;
-                    }
-                }
-                if (!hasCompanyFilter) {
-                    parameters.add(new Parameter("company_id", "=", companyId));
-                }
-            }
-        }
     }
 
     @Override
@@ -108,13 +67,6 @@ public class DictTypeService extends CrudService<DictTypeDao, DictType>{
         /*获取子表列表   字典项*/
         SearchParamsBuilder builder = SearchParamsBuilder.create()
                 .eq("dict_type_id", dictType.getId());
-        // 系统级字典不按租户过滤，业务级字典按租户过滤
-        if (!"1".equals(dictType.getIsSystem())) {
-            String companyId = SessionUtils.getLoginTenantId();
-            if (StringUtils.isNotBlank(companyId) && !"null".equals(companyId)) {
-                builder.eq("company_id", companyId);
-            }
-        }
         PageRequest pageRequest = new PageRequest(builder.build());
         dictType.setDictItemList(dictItemDao.listAll(pageRequest));
         return dictType;
@@ -218,13 +170,6 @@ public class DictTypeService extends CrudService<DictTypeDao, DictType>{
     private void saveDictItemList(DictType dictType) {
         SearchParamsBuilder builder = SearchParamsBuilder.create()
                 .eq("dict_type_id", dictType.getId());
-        // 系统级字典不按租户过滤，业务级字典按租户过滤
-        if (!"1".equals(dictType.getIsSystem())) {
-            String companyId = SessionUtils.getLoginTenantId();
-            if (StringUtils.isNotBlank(companyId) && !"null".equals(companyId)) {
-                builder.eq("company_id", companyId);
-            }
-        }
         PageRequest pageRequest = new PageRequest(builder.build());
         List<DictItem> list_DictItem = dictItemDao.listAll(pageRequest);
         List<DictItem> deletes = Lists.newArrayList(); // 删除列表
@@ -245,20 +190,9 @@ public class DictTypeService extends CrudService<DictTypeDao, DictType>{
         if(deletes.size() > 0) {
             dictItemDao.bulkDelete(deletes);
         }
-        // 获取当前租户
-        String companyId = SessionUtils.getLoginTenantId();
-        boolean isSystemDict = "1".equals(dictType.getIsSystem());
         for (DictItem dictItem : dictType.getDictItemList()){
             if (StringUtils.isBlank(dictItem.getId())) {
                 dictItem.setDictType(dictType);
-                // 系统级字典的子项 company_id 也为 NULL，业务级字典设置租户
-                if (!isSystemDict && StringUtils.isNotBlank(companyId) && !"null".equals(companyId)) {
-                    Company company = new Company();
-                    company.setId(companyId);
-                    dictItem.setCompany(company);
-                } else if (isSystemDict) {
-                    dictItem.setCompany(null);
-                }
                 dictItem.preInsert();
                 inserts.add(dictItem);
             } else {

@@ -78,9 +78,7 @@ export default {
     },
     onDialogClose() {
       this.visible = false
-    }
-  },
-  methods: {
+    },
     openDataPermission(code, roleId, routerId) {
       this.roleId = roleId
       this.routerId = routerId
@@ -128,6 +126,6 @@ export default {
       })
       this.visible = true
     },
-  }
+  },
 }
 </script>

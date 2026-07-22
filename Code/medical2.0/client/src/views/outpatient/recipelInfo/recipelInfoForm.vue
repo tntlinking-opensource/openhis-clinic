@@ -291,13 +291,7 @@ export default {
       getDictItemsByCode(DICT_CODE.CHINESE_MEDICINE_RECIPEL_TAKE_FREQUENCY).then((data) => {
         this.takeFrequency_List = data;
       });
-    }
-  },
-  watch: {
-  },
-  mounted: function() {
-  },
-  methods: {
+    },
     openViewRecipelInfoDialog(recipelInfo) {
       this.dialogProps.action = 'view'
       this.dialogProps.title = '查看处方信息'
@@ -331,6 +325,10 @@ export default {
       this.bizFormModel.id = null
       this.dialogProps.visible = true
     },
+  },
+  watch: {
+  },
+  mounted: function() {
   },
 }
 </script>

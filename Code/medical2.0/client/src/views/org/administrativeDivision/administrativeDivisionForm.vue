@@ -143,13 +143,7 @@ export default {
       listAdministrativeDivisionAll(parten_search).then(responseData => {
         this.parten_List = responseData.data
       })
-    }
-  },
-  watch: {
-  },
-  mounted: function() {
-  },
-  methods: {
+    },
     openViewAdministrativeDivisionDialog(administrativeDivision) {
       this.dialogProps.action = 'view'
       this.dialogProps.title = '查看行政区域划分'
@@ -183,6 +177,10 @@ export default {
       this.bizFormModel.id = null
       this.dialogProps.visible = true
     },
+  },
+  watch: {
+  },
+  mounted: function() {
   },
 }
 </script>

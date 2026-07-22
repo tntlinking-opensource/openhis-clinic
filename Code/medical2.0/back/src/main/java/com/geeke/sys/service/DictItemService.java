@@ -9,13 +9,12 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.geeke.common.data.Page;
+import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
 import com.geeke.common.service.CrudService;
-import com.geeke.org.entity.Company;
 import com.geeke.sys.dao.DictItemDao;
 import com.geeke.sys.entity.DictItem;
-import com.geeke.utils.SessionUtils;
-import com.geeke.utils.StringUtils;
 import com.google.common.collect.Lists;
 
 /**
@@ -37,6 +36,26 @@ public class DictItemService extends CrudService<DictItemDao, DictItem>{
         return super.get(id);
     }
 
+    /**
+     * 重写分页查询：字典已优化为全局共享，不按租户隔离
+     */
+    @Override
+    public Page<DictItem> listPage(List<Parameter> parameters, int offset, int limit, String orderby) {
+        PageRequest pageRequest = new PageRequest(offset, limit, parameters, orderby);
+        int total = dao.count(pageRequest);
+        List<DictItem> list = total > 0 ? dao.listPage(pageRequest) : java.util.Collections.emptyList();
+        return new Page<>(total, list);
+    }
+
+    /**
+     * 重写列表查询：字典全局共享，所有租户可见
+     */
+    @Override
+    public List<DictItem> listAll(List<Parameter> parameters, String orderby) {
+        PageRequest pageRequest = new PageRequest(parameters, orderby);
+        return dao.listAll(pageRequest);
+    }
+
     @Override
     @Transactional(readOnly = false)
     @Caching(evict = {
@@ -44,15 +63,7 @@ public class DictItemService extends CrudService<DictItemDao, DictItem>{
         @CacheEvict(value = "dict:itemsByCode", allEntries = true)
     })
     public DictItem save(DictItem entity) {
-        // 新增字典项时设置租户
-        if (StringUtils.isBlank(entity.getId()) && entity.getCompany() == null) {
-            String companyId = SessionUtils.getLoginTenantId();
-            if (StringUtils.isNotBlank(companyId) && !"null".equals(companyId)) {
-                Company company = new Company();
-                company.setId(companyId);
-                entity.setCompany(company);
-            }
-        }
+        // 字典已优化为全局共享，不再按租户隔离，故不再设置 company
         return super.save(entity);
     }
 

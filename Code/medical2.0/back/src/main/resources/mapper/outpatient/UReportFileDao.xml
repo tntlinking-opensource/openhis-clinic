@@ -4,8 +4,6 @@
     
     <sql id="uReportFileColumns">
         a.id AS "id",
-        a.company_id AS "company.id",
-        IFNULL(company.name,'') AS "company.name",
         a.name AS "name",
         a.content AS "content",
         a.remarks AS "remarks",
@@ -15,16 +13,11 @@
         a.update_date AS "updateDate",
         a.del_flag AS "delFlag"
     </sql>
-
-    <sql id="uReportFileJoins">
-        LEFT JOIN org_company company ON company.id = a.company_id
-    </sql>
     
     <select id="get" resultType="com.geeke.outpatient.entity.UReportFile">
-        SELECT
+        SELECT 
             <include refid="uReportFileColumns"/>
         FROM ureport_file a
-        <include refid="uReportFileJoins"/>
         WHERE a.id = #{id}
     </select>
 
@@ -32,35 +25,29 @@
         SELECT
         <include refid="uReportFileColumns"/>
         FROM ureport_file a
-        <include refid="uReportFileJoins"/>
         WHERE a.name = #{name}
-        AND a.company_id = #{companyId}
     </select>
 
     <select id="getListAll" resultType="com.geeke.outpatient.entity.UReportFile">
         SELECT
         <include refid="uReportFileColumns"/>
         FROM ureport_file a
-        <include refid="uReportFileJoins"/>
-        WHERE a.company_id = #{companyId}
     </select>
 
     <select id="count" resultType="int">
         SELECT COUNT(*) FROM ureport_file a
-        <include refid="uReportFileJoins"/>
         <where>
             1=1
             AND a.id > 0
             AND a.del_flag = #{DEL_FLAG_NORMAL}
             <include refid="Common.whereParams"/>
         </where>
-    </select>
-
+    </select>    
+    
     <select id="listPage" resultType="com.geeke.outpatient.entity.UReportFile">
-        SELECT
+        SELECT 
             <include refid="uReportFileColumns"/>
         FROM ureport_file a
-        <include refid="uReportFileJoins"/>
         <where>
             1=1
             AND a.id > 0
@@ -70,24 +57,23 @@
         <choose>
             <when test="order != null and order != ''">
                 ORDER BY ${order}
-            </when>
+            </when>            
             <otherwise>
                 ORDER BY a.update_date DESC
             </otherwise>
         </choose>
         LIMIT #{limit} OFFSET #{offset}
     </select>
-
+    
     <select id="listAll" resultType="com.geeke.outpatient.entity.UReportFile">
-        SELECT
+        SELECT 
             <include refid="uReportFileColumns"/>
         FROM ureport_file a
-        <include refid="uReportFileJoins"/>
         <where>
             1=1
             AND a.id > 0
             AND a.del_flag = #{DEL_FLAG_NORMAL}
-            <include refid="Common.whereParams"/>
+<!--            <include refid="Common.whereParams"/>-->
         </where>
         <choose>
             <when test="order != null and order != ''">
@@ -102,7 +88,6 @@
     <insert id="insert">
         INSERT INTO ureport_file(
             id,
-            company_id,
             name,
             content,
             remarks,
@@ -113,7 +98,6 @@
             del_flag
         ) VALUES (
             #{id},
-            #{company.id},
             #{name},
             #{content},
             #{remarks},

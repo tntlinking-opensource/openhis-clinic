@@ -59,7 +59,7 @@
     <insert id="insert">
         INSERT INTO sys_collect(
         id,
-        user_id,
+        user_id ,
         router_id,
         sort,
         create_by,

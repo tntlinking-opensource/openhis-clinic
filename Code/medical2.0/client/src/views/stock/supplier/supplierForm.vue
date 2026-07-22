@@ -224,12 +224,6 @@ export default {
        this.bizFormModel.pinyinCode=pinyin.getCamelChars(value)
 
      },
-  },
-  watch: {
-  },
-  mounted: function() {
-  },
-  methods: {
     openViewSupplierDialog(supplier) {
       this.dialogProps.action = 'view'
       this.dialogProps.title = '查看供应商管理'
@@ -274,6 +268,10 @@ export default {
       this.bizFormModel.id = null
       this.dialogProps.visible = true
     },
+  },
+  watch: {
+  },
+  mounted: function() {
   },
 }
 </script>

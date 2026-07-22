@@ -7,7 +7,7 @@
         a.company_id AS "company.id",
         IFNULL(company.name,'') AS "company.name",
         a.supplier_stock_id AS "supplierStock.id",
-        IFNULL(supplierStock.batch_no,'') AS "supplierStock.batchNo",
+        IFNULL(supplierStock.batch_no,'') AS "supplierStock.batchNo"
         a.number AS "number",
         a.create_by AS "createBy",
         a.create_date AS "createDate",
@@ -17,7 +17,7 @@
 
     <sql id="inventoryVerificationRecordJoins">
         LEFT JOIN org_company company ON company.id = a.company_id
-        LEFT JOIN supplier_stock supplierStock ON supplierStock.id = a.supplier_stock_id
+        LEFT JOIN supplier_stock suppler ON supplierStock.id = a.supplier_stock_id
     </sql>
 
     <insert id="insert">

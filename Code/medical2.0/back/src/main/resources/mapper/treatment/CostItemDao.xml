@@ -101,8 +101,7 @@
            <include refid="costItemColumns"/>
         FROM cost_item a
            <include refid="costItemJoins"/>
-           INNER JOIN recipel_detail rd ON rd.drug_stuff_id = a.id
-        WHERE rd.id = #{recipelDetailId}
+        where a.id=(select rd.drug_stuff_id from recipel_detail rd where rd.id=#{recipelDetailId})
     </select>
 
     <insert id="insert">

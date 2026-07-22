@@ -98,7 +98,7 @@
     </select>
 
     <select id="count" resultType="int">
-        SELECT COUNT(DISTINCT a.id) FROM drug a
+        SELECT COUNT(*) FROM drug a
         LEFT JOIN org_company company ON company.id = a.company_id
         LEFT JOIN sys_dict_item type ON type.value = a.type
         LEFT JOIN sys_dict_item nature ON nature.value = a.nature
@@ -405,7 +405,7 @@
     </select>
 
     <select id="countInventory" resultType="java.lang.Integer">
-        SELECT COUNT(DISTINCT a.id) FROM drug a
+        SELECT COUNT(*) FROM drug a
         <include refid="drugJoins"/>
         <where>
             1=1
@@ -844,6 +844,12 @@
             #{entity.id}
         </foreach>
     </update>
+    <update id="updateInventory">
+        update drug
+        set inventory=#{inventory},
+            update_date=now()
+        where id = #{id}
+    </update>
     <update id="updateAllIndate">
         update drug
         set indate = #{indate}
@@ -857,9 +863,7 @@
     </update>
 
     <select id="repeat" resultType="com.geeke.stock.entity.Drug">
-        SELECT
-        <include refid="drugColumns"/>
-        FROM drug a
+        SELECT * FROM drug a
         LEFT JOIN org_company company ON company.id = a.company_id
         <where>
             AND a.id > 0
@@ -881,7 +885,7 @@
     </select>
 
     <select id="countByInstitution" resultType="int">
-        SELECT COUNT(DISTINCT a.id) FROM drug a
+        SELECT COUNT(*) FROM drug a
         LEFT JOIN org_company company ON company.id = a.company_id
         LEFT JOIN sys_dict_item type ON type.value = a.type
         LEFT JOIN sys_dict_item nature ON nature.value = a.nature
@@ -1006,19 +1010,15 @@
 
     </select>
     <select id="getByCode" resultType="com.geeke.stock.entity.Drug">
-        SELECT
-        <include refid="drugColumns"/>
+        select   *
         FROM drug a
-        <include refid="drugJoins"/>
-        WHERE a.code=#{ypdm} AND a.company_id=#{companyId} AND a.del_flag = #{DEL_FLAG_NORMAL}
+            where a.code=#{ypdm} and a.company_id=#{companyId}
 
     </select>
     <select id="getByNameAndPrice" resultType="com.geeke.stock.entity.Drug">
-        SELECT
-        <include refid="drugColumns"/>
+        select   *
         FROM drug a
-        <include refid="drugJoins"/>
-        WHERE a.goods_name=#{name} AND a.price=#{retailPrice} AND a.company_id=#{companyId} AND a.del_flag = #{DEL_FLAG_NORMAL}
+        where a.goods_name=#{name} and a.price=#{retailPrice} and a.company_id=#{companyId}
 
     </select>
 </mapper>

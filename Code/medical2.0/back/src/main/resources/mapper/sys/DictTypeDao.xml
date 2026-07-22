@@ -4,8 +4,6 @@
     
     <sql id="dictTypeColumns">
         a.id AS "id",
-        a.company_id AS "company.id",
-        IFNULL(company.name,'') AS "company.name",
         a.code AS "code",
         a.name AS "name",
         a.remarks AS "remarks",
@@ -16,9 +14,8 @@
         a.update_date AS "updateDate",
         a.del_flag AS "delFlag"
     </sql>
-
+    
     <sql id="dictTypeJoins">
-        LEFT JOIN org_company company ON company.id = a.company_id
     </sql>
     
     <select id="get" resultType="com.geeke.sys.entity.DictType">
@@ -86,7 +83,6 @@
     <insert id="insert">
         INSERT INTO sys_dict_type(
             id,
-            company_id,
             code,
             name,
             remarks,
@@ -98,7 +94,6 @@
             del_flag
         ) VALUES (
             #{id},
-            #{company.id},
             #{code},
             #{name},
             #{remarks},
@@ -131,7 +126,6 @@
     <insert id="bulkInsert" parameterType="java.util.List">
         INSERT INTO sys_dict_type(
             id,
-            company_id,
             code,
             name,
             remarks,
@@ -141,11 +135,10 @@
             update_by,
             update_date,
             del_flag
-        ) VALUES
+        ) VALUES 
         <foreach collection="entitys" index="index" item="entity" open="" separator="," close="">
         (
             #{entity.id},
-            #{entity.company.id},
             #{entity.code},
             #{entity.name},
             #{entity.remarks},

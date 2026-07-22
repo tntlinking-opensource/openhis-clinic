@@ -23,17 +23,9 @@ spring:
     time-zone: GMT+8
   main:
     allow-bean-definition-overriding: true    #当遇到同样名字的时候，是否允许覆盖注册
-    allow-circular-references: true           #允许循环依赖（Shiro+Redis场景需要）
+    allow-circular-references: true
   cache:
-    type: redis  # 可选 redis、none、ehcache
-  redis:
-     timeout: 20000     # 链接超时时间（毫秒）
-     lettuce:
-       pool:
-         max-idle: 8        # 最大空闲连接
-         min-idle: 0        # 最小空闲链接
-         max-active: 8      # 最大连接数（负数表示没有限制）
-         max-wait: -1       # 最大阻塞等待时间（负数表示没有限制）
+    type: none
   #院版配置
   hosconfig:
     hos-token-url: http://61.172.179.73:41150 # 获取院版token的url
@@ -79,8 +71,8 @@ genConfigure:
   dbName: mysql                          #数据库类型:  mysql/oracle/mssql
 
 app:
-  redis:
-    cacheType: redis  # 可选 redis、none、ehcache
+  cache:
+    type: none  # 可选 redis、none、ehcache
 
 
 

@@ -9,7 +9,6 @@ import com.geeke.medicareutils.domain.reqpo.RequestData;
 import com.geeke.medicareutils.db.service.YbjkLogcontentService;
 import com.geeke.utils.SessionUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -21,11 +20,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
-/**
- * 医保请求封装
- */
 @Component
 @RequiredArgsConstructor
 public class MdRequestUtil {
@@ -33,8 +28,9 @@ public class MdRequestUtil {
     private final MedicareConfigProperties medicareConfigProperties;
     //请求封装
     private  final RestTemplate restTemplate;
-    //采用redis存储签到流水号
-    private final StringRedisTemplate stringRedisTemplate;
+    //签到流水号缓存（本地内存替代Redis）
+    private String signNoCache;
+    private LocalDateTime signNoExpireTime;
     //电子处方需加密集合
     private final static List<String> INFO_LIST = Arrays.asList("Ld7801","Ld7802","Ld7101","Ld7104","Ld7202","Ld7102","Ld7805","Ld7804","Ld7806");
     //日志表
@@ -180,15 +176,16 @@ public class MdRequestUtil {
         //设置定点医疗机构名称
         requestData.setFixmedins_name(FixmedinsName);
         //签到接口
-        //从redis中获取签到流水号
+        //从本地缓存中获取签到流水号
         if(infoNo.equals("9001")){
             requestData.setSign_no("");
         }else{
-            String signNo = stringRedisTemplate.opsForValue().get("sign_no");
+            String signNo = getSignNoFromCache();
             if (signNo == null) {
                 JSONObject signNoData = new JSONObject();
                 //TODO 签到参数待定
                 getMedicareSignNo("9001",signNoData);  // 调用方法生成签到流水号
+                signNo = getSignNoFromCache();
             }
             requestData.setSign_no(signNo);
         }
@@ -227,42 +224,24 @@ public class MdRequestUtil {
         String response = restTemplate.postForObject(medicareConfigProperties.getUrl(), request,String.class);
         if(infoNo.equals("9001")){
             //保存当天24点之前签到码
-            //
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime endOfDay = now.toLocalDate().atStartOfDay().plusDays(1);
-            // 计算当前时间到24点的秒数
-            long remainingTimeInSeconds = Duration.between(now, endOfDay).getSeconds();
-            // 保存签到码并设置过期时间为当天24点之前
-            stringRedisTemplate.opsForValue().set("sign_no",
-                    JSONObject.parseObject(response).getString("sign_no"),
-                    remainingTimeInSeconds, TimeUnit.SECONDS);
+            signNoCache = JSONObject.parseObject(response).getString("sign_no");
+            signNoExpireTime = LocalDateTime.now().toLocalDate().atStartOfDay().plusDays(1);
         }
         if(infoNo.equals("9002")){
             //删除签到码
-            stringRedisTemplate.delete("sign_no");
+            signNoCache = null;
+            signNoExpireTime = null;
         }
         return JSONObject.parseObject(response);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    /** 从本地缓存获取签到流水号，过期返回null */
+    private String getSignNoFromCache() {
+        if (signNoCache != null && LocalDateTime.now().isBefore(signNoExpireTime)) {
+            return signNoCache;
+        }
+        return null;
+    }
 
     public static void main(String[] args) {
 RequestData requestData = new RequestData();
@@ -392,5 +371,3 @@ RequestData requestData = new RequestData();
 
 
 }
-
-

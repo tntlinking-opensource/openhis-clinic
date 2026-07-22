@@ -245,21 +245,7 @@ export default {
         this.manager_List = responseData.data
       })
 
-    }
-  },
-  watch: {
-    parent_List(newVal, oldVal) {
-      if(newVal !== oldVal && this.dialogProps.action === 'add' ) {
-        this.$nextTick(() => {
-          this.onParentChange()
-        })
-      }
-    }
-
-  },
-  mounted: function() {
-  },
-  methods: {
+    },
     openViewDepartmentDialog(department) {
       this.dialogProps.action = 'view'
       this.dialogProps.title = '查看部门'
@@ -288,6 +274,18 @@ export default {
       this.bizFormModel.id = null
       this.dialogProps.visible = true
     },
-  }
+  },
+  watch: {
+    parent_List(newVal, oldVal) {
+      if(newVal !== oldVal && this.dialogProps.action === 'add' ) {
+        this.$nextTick(() => {
+          this.onParentChange()
+        })
+      }
+    }
+
+  },
+  mounted: function() {
+  },
 }
 </script>

@@ -16,45 +16,33 @@
     </sql>
     
     <select id="get" resultType="com.geeke.toll.entity.TollDetail">
-        SELECT
+        SELECT 
             <include refid="tollDetailColumns"/>
         FROM toll_detail a
         <include refid="tollDetailJoins"/>
         WHERE a.id = #{id}
     </select>
-
+    
     <select id="count" resultType="int">
         SELECT COUNT(*) FROM toll_detail a
         <include refid="tollDetailJoins"/>
         <where>
             1=1
             AND a.id > 0
-            <if test="params != null">
-                <foreach collection="params" item="item" index="index">
-                    <if test='item != null and item.columnName == "company_id"'>
-                        ${item.logic} tollId.company_id ${item.queryType} #{item.value}
-                    </if>
-                </foreach>
-            </if>
+            
             <include refid="Common.whereParams"/>
         </where>
-    </select>
-
+    </select>    
+    
     <select id="listPage" resultType="com.geeke.toll.entity.TollDetail">
-        SELECT
+        SELECT 
             <include refid="tollDetailColumns"/>
         FROM toll_detail a
         <include refid="tollDetailJoins"/>
         <where>
             1=1
             AND a.id > 0
-            <if test="params != null">
-                <foreach collection="params" item="item" index="index">
-                    <if test='item != null and item.columnName == "company_id"'>
-                        ${item.logic} tollId.company_id ${item.queryType} #{item.value}
-                    </if>
-                </foreach>
-            </if>
+            
             <include refid="Common.whereParams"/>
         </where>
         <choose>
@@ -68,20 +56,14 @@
     </select>
     
     <select id="listAll" resultType="com.geeke.toll.entity.TollDetail">
-        SELECT
+        SELECT 
             <include refid="tollDetailColumns"/>
         FROM toll_detail a
         <include refid="tollDetailJoins"/>
         <where>
             1=1
             AND a.id > 0
-            <if test="params != null">
-                <foreach collection="params" item="item" index="index">
-                    <if test='item != null and item.columnName == "company_id"'>
-                        ${item.logic} tollId.company_id ${item.queryType} #{item.value}
-                    </if>
-                </foreach>
-            </if>
+            
             <include refid="Common.whereParams"/>
         </where>
         <choose>

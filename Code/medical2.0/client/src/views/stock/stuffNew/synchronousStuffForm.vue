@@ -488,11 +488,6 @@ export default {
       this.bizFormModel.pinyinCode = pinyin.getCamelChars(value)
 
     },
-  },
-  watch: {},
-  mounted: function () {
-  },
-  methods: {
     openViewStuffDialog(stuff) {
       this.dialogProps.action = "view";
       this.updateType = "0"
@@ -534,6 +529,9 @@ export default {
       this.bizFormModel.id = null;
       this.dialogProps.visible = true;
     },
+  },
+  watch: {},
+  mounted: function () {
   },
 };
 </script>

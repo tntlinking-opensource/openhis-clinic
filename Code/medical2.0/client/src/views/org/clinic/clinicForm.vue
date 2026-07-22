@@ -387,12 +387,7 @@
         listClinicVersionAll(version_search).then(responseData => {
           this.version_List = responseData.data
         })
-      }
-    },
-    watch: {},
-    mounted: function () {
-    },
-    methods: {
+      },
       openViewClinicDialog(clinic) {
         this.dialogProps.action = 'view'
         this.dialogProps.title = '查看诊所'
@@ -426,6 +421,9 @@
         this.bizFormModel.id = null
         this.dialogProps.visible = true
       },
+    },
+    watch: {},
+    mounted: function () {
     },
   }
 </script>

@@ -123,13 +123,7 @@ export default {
       }
     },
     initOptions(This) {
-    }
-  },
-  watch: {
-  },
-  mounted: function() {
-  },
-  methods: {
+    },
     openViewCompanyCodeRuleDialog(companyCodeRule) {
       this.dialogProps.action = 'view'
       this.dialogProps.title = '查看公司编码规则'
@@ -158,6 +152,10 @@ export default {
       this.bizFormModel.id = null
       this.dialogProps.visible = true
     },
+  },
+  watch: {
+  },
+  mounted: function() {
   },
 }
 </script>

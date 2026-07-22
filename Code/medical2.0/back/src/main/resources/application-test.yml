@@ -9,13 +9,6 @@ spring:
     url: ${DB_URL:jdbc:mysql://192.168.0.4:3306/medical2.0?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:aTze0ubeJisUbDKB}
-  cache:
-    type: redis  # 可选 redis、none、ehcache
-  redis:
-    host: ${REDIS_HOST:192.168.0.31} # server host
-    password: ${REDIS_PASSWORD:001e4E29a09e05b73b}
-    port: ${REDIS_PORT:6379}
-    database: 0
   rabbitmq:
     host: ${RABBITMQ_HOST:192.168.0.31}
     port: ${RABBITMQ_PORT:5672}

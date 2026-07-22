@@ -306,13 +306,7 @@ export default {
       getDictItemsByCode(DICT_CODE.SKIN_TEST).then((data) => {
         this.skinTest_List = data;
       });
-    }
-  },
-  watch: {
-  },
-  mounted: function() {
-  },
-  methods: {
+    },
     openViewRecipelDetailDialog(recipelDetail) {
       this.dialogProps.action = 'view'
       this.dialogProps.title = '查看处方详情'
@@ -346,6 +340,10 @@ export default {
       this.bizFormModel.id = null
       this.dialogProps.visible = true
     },
+  },
+  watch: {
+  },
+  mounted: function() {
   },
 }
 </script>

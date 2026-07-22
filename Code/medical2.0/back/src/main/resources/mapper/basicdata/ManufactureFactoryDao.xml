@@ -36,7 +36,7 @@
     </select>
     
     <select id="count" resultType="int">
-        SELECT COUNT(DISTINCT a.id) FROM manufacture_factory a
+        SELECT COUNT(*) FROM manufacture_factory a
         <include refid="manufactureFactoryJoins"/>
         <where>
             1=1
@@ -44,10 +44,10 @@
             AND a.del_flag = #{DEL_FLAG_NORMAL}
             <include refid="Common.whereParams"/>
         </where>
-    </select>
+    </select>    
     
     <select id="listPage" resultType="com.geeke.basicdata.entity.ManufactureFactory">
-        SELECT
+        SELECT DISTINCT
             <include refid="manufactureFactoryColumns"/>
         FROM manufacture_factory a
         <include refid="manufactureFactoryJoins"/>
@@ -57,11 +57,10 @@
             AND a.del_flag = #{DEL_FLAG_NORMAL}
             <include refid="Common.whereParams"/>
         </where>
-        GROUP BY a.id
         <choose>
             <when test="order != null and order != ''">
                 ORDER BY ${order}
-            </when>
+            </when>            
             <otherwise>
                 ORDER BY a.update_date DESC
             </otherwise>
@@ -70,7 +69,7 @@
     </select>
     
     <select id="listAll" resultType="com.geeke.basicdata.entity.ManufactureFactory">
-        SELECT
+        SELECT DISTINCT
             <include refid="manufactureFactoryColumns"/>
         FROM manufacture_factory a
         <include refid="manufactureFactoryJoins"/>
@@ -81,7 +80,6 @@
             AND a.status="1"
             <include refid="Common.whereParams"/>
         </where>
-        GROUP BY a.id
         <choose>
             <when test="order != null and order != ''">
                 ORDER BY ${order}

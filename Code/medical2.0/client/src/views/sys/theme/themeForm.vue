@@ -126,13 +126,7 @@ export default {
       }
     },
     initOptions(This) {
-    }
-  },
-  watch: {
-  },
-  mounted: function() {
-  },
-  methods: {
+    },
     openViewThemeDialog(theme) {
       this.dialogProps.action = 'view'
       this.dialogProps.title = '查看系统主题'
@@ -162,6 +156,10 @@ export default {
       this.bizFormModel.id = null
       this.dialogProps.visible = true
     },
+  },
+  watch: {
+  },
+  mounted: function() {
   },
 }
 </script>
