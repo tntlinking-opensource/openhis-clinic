@@ -3,14 +3,14 @@ server:
 
 spring:
   datasource:
-    url: ${DB_URL:jdbc:mysql://61.172.179.48:19011/medical_yzs?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8&useSSL=false}
-    username: ${DB_USERNAME:new_touch}
-    password: ${DB_PASSWORD:bW9Ivzt0CAQdoJTDZ2wAnduvi}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/medical?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8&useSSL=false}
+    username: ${DB_USERNAME:your_db_user}
+    password: ${DB_PASSWORD:your_db_password}
   rabbitmq:
-    host: ${RABBITMQ_HOST:182.151.20.115}
-    port: ${RABBITMQ_PORT:7014}
-    username: ${RABBITMQ_USERNAME:rys}
-    password: ${RABBITMQ_PASSWORD:123456}
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
 
 jwtUtils:
   id: jwt
@@ -19,28 +19,28 @@ jwtUtils:
 
 #启信宝
 qixin:
-  appkey: ${QIXIN_APPKEY:266b93724-e6d3f-48397-ab308-a003d9554c2fd}
-  secretKey: ${QIXIN_SECRET_KEY:a11377eb8-1326b-4033c-a3cbd-026ff9ec3eb5d}
+  appkey: ${QIXIN_APPKEY:your_appkey_here}
+  secretKey: ${QIXIN_SECRET_KEY:your_secretkey_here}
   host: https://api.qixin.com/
   profile: APIService
 
 #企业微信
 weChat:
-  corpid: ${WECHAT_CORPID:ww21ecf19d6c519f83}
-  corpsecret: ${WECHAT_CORPSECRET:G3rf94sZqkZJ90duduA-TCIaou-QUeA9qNe7ANtjR9Y}
-  agentid: ${WECHAT_AGENTID:1000006}
+  corpid: ${WECHAT_CORPID:your_corpid_here}
+  corpsecret: ${WECHAT_CORPSECRET:your_corpsecret_here}
+  agentid: ${WECHAT_AGENTID:your_agentid_here}
 
 # 报表集成
 report:
   dataease:
-    username: ${REPORT_USERNAME:wdmpk}
-    password: ${REPORT_PASSWORD:kjuuIYcARhyk+R5Q1s8QLwmZzfeoRgoYGHaIFzsoKD10nNbEukHG2hxieAqrHD/tN0IpsBOTEIFbnn5uIwM+tw==}
+    username: ${REPORT_USERNAME:your_report_user}
+    password: ${REPORT_PASSWORD:your_report_password}
     frontend:
       host: localhost
       port: 9528
       useSSLLink: 0
     backend:
-      host: localhostx
+      host: localhost
       port: 8081
       useSSLLink: 0
-    rsa_public_key: ${REPORT_RSA_PUBLIC_KEY:MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANL378k3RiZHWx5AfJqdH9xRNBmD9wGD2iRe41HdTNF8RUhNnHit5NpMNtGL0NPTSSpPjjI1kJfVorRvaQerUgkCAwEAAQ==}
+    rsa_public_key: ${REPORT_RSA_PUBLIC_KEY:your_rsa_public_key_here}

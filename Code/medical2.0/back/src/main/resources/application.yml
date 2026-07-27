@@ -26,12 +26,12 @@ spring:
     allow-circular-references: true
   cache:
     type: none
-  #院版配置
+  #院版配置（开源版请根据实际环境配置）
   hosconfig:
-    hos-token-url: http://61.172.179.73:41150 # 获取院版token的url
-    hos-data-server-url: http://61.172.179.73:41149 #获取院版数据的url
-    app-id: Oh_Newtouch_Clinic # 院版对应的appid
-    organize-id: 6d5752a7-234a-403e-aa1c-df8b45d3469f #院版对应的organizeid
+    hos-token-url: ${HOS_TOKEN_URL:}
+    hos-data-server-url: ${HOS_DATA_SERVER_URL:}
+    app-id: ${HOS_APP_ID:}
+    organize-id: ${HOS_ORGANIZE_ID:}
   #医保配置
   medicare:
     check: false #开启医保配置

@@ -3,48 +3,45 @@ server:
 
 spring:
   datasource:
-#    url: jdbc:mysql://127.0.0.1:3306/medical_test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8
-#    username: root
-#    password: Ntc<om02wPk
-    url: ${DB_URL:jdbc:mysql://192.168.0.4:3306/medical2.0?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/medical_test?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8}
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:aTze0ubeJisUbDKB}
+    password: ${DB_PASSWORD:your_password_here}
   rabbitmq:
-    host: ${RABBITMQ_HOST:192.168.0.31}
+    host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USERNAME:wisdompark}
-    password: ${RABBITMQ_PASSWORD:eTcQBz7eNBXjwvAVlE}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
 
 jwtUtils:
   id: jwt
-  secret: ${JWT_SECRET:6686df7fc3a34e26a61c034d5ec82488}
+  secret: ${JWT_SECRET:your_jwt_secret_here}
   ttlMillis: 3600000
 
 #启信宝
 qixin:
-  appkey: ${QIXIN_APPKEY:266b93724-e6d3f-48397-ab308-a003d9554c2fd}
-  secretKey: ${QIXIN_SECRET_KEY:a11377eb8-1326b-4033c-a3cbd-026ff9ec3eb5d}
+  appkey: ${QIXIN_APPKEY:your_appkey_here}
+  secretKey: ${QIXIN_SECRET_KEY:your_secretkey_here}
   host: https://api.qixin.com/
   profile: APIService
 
 
 #企业微信
 weChat:
-  corpid: ${WECHAT_CORPID:ww21ecf19d6c519f83}
-  corpsecret: ${WECHAT_CORPSECRET:G3rf94sZqkZJ90duduA-TCIaou-QUeA9qNe7ANtjR9Y}
-  agentid: ${WECHAT_AGENTID:1000006}
+  corpid: ${WECHAT_CORPID:your_corpid_here}
+  corpsecret: ${WECHAT_CORPSECRET:your_corpsecret_here}
+  agentid: ${WECHAT_AGENTID:your_agentid_here}
 
 # 报表集成
 report:
   dataease:
-    username: ${REPORT_USERNAME:wdmpk}
-    password: ${REPORT_PASSWORD:kjuuIYcARhyk+R5Q1s8QLwmZzfeoRgoYGHaIFzsoKD10nNbEukHG2hxieAqrHD/tN0IpsBOTEIFbnn5uIwM+tw==}
+    username: ${REPORT_USERNAME:your_report_user}
+    password: ${REPORT_PASSWORD:your_report_password}
     frontend:
-      host: 127.0.0.1
+      host: localhost
       port: 9528
       useSSLLink: 0
     backend:
-      host: 127.0.0.1
+      host: localhost
       port: 8081
       useSSLLink: 0
-    rsa_public_key: ${REPORT_RSA_PUBLIC_KEY:MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBANL378k3RiZHWx5AfJqdH9xRNBmD9wGD2iRe41HdTNF8RUhNnHit5NpMNtGL0NPTSSpPjjI1kJfVorRvaQerUgkCAwEAAQ==}
+    rsa_public_key: ${REPORT_RSA_PUBLIC_KEY:your_rsa_public_key_here}
