@@ -56,6 +56,9 @@ target/
 *.log
 log/
 logs/
+
+# MCP MySQL server (contains sensitive DB credentials)
+mcp-mysql-server/
  
 # others
 *.zip
