@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 
-
 /**
  * Service基类
  * @author lys
@@ -30,13 +29,13 @@ import java.util.Map;
  */
 @Transactional
 public abstract class CrudService<D extends CrudDao<T>, T extends DataEntity<T>> extends BaseService {
-	
+
 	/**
 	 * 持久层对象
 	 */
 	@Autowired
 	protected D dao;
-	
+
 	@Autowired
 	IActionSaver actionSaver;
 	@Autowired
@@ -132,7 +131,7 @@ public abstract class CrudService<D extends CrudDao<T>, T extends DataEntity<T>>
 		dao.bulkInsert(entitys);
 		return ids;
 	}
-	
+
 	/**
 	 * 批量修改
 	 * @param entitys
@@ -181,20 +180,12 @@ public abstract class CrudService<D extends CrudDao<T>, T extends DataEntity<T>>
 			logger.debug("ensureCompanyFilter check failed: {}", e.getMessage());
 			return;
 		}
-		// 检查是否已经有 company_id 过滤
-		boolean hasCompanyFilter = false;
-		for (Parameter param : parameters) {
-			if (param != null && "company_id".equals(param.getColumnName())) {
-				hasCompanyFilter = true;
-				break;
-			}
-		}
-		// 如果没有 company_id 过滤，自动注入当前租户ID
-		if (!hasCompanyFilter) {
-			String tenantId = SessionUtils.getLoginTenantId();
-			if (StringUtils.isNotBlank(tenantId) && !"null".equals(tenantId)) {
-				parameters.add(new Parameter("company_id", "=", tenantId));
-			}
+		// 移除前端传入的 company_id，避免越权查询/操作其它租户数据（IDOR）
+		Parameter.extractAndRemoveCompanyId(parameters);
+		// 统一以【会话登录租户】作为隔离边界，与 verifyTenantOwnership 保持一致
+		String tenantId = SessionUtils.getLoginTenantId();
+		if (StringUtils.isNotBlank(tenantId) && !"null".equals(tenantId)) {
+			parameters.add(new Parameter("company_id", "=", tenantId));
 		}
 	}
 
@@ -209,15 +200,38 @@ public abstract class CrudService<D extends CrudDao<T>, T extends DataEntity<T>>
 			return;
 		}
 		String tenantId = SessionUtils.getLoginTenantId();
-		if (StringUtils.isNotBlank(tenantId) && !"null".equals(tenantId)) {
-			String entityCompanyId = entity.getCompany().getId();
-			if (StringUtils.isNotBlank(entityCompanyId) && !tenantId.equals(entityCompanyId)) {
-				throw new ServiceException("无权访问其他租户数据");
+		// 超管 / 哨兵（tenantId 为空或 "null"）不限制
+		if (StringUtils.isBlank(tenantId) || "null".equals(tenantId)) {
+			return;
+		}
+		String entityCompanyId = entity.getCompany().getId();
+		if (StringUtils.isBlank(entityCompanyId)) {
+			return;
+		}
+		// 诊所级数据隔离：业务数据只属于登录诊所自己（与列表 ensureCompanyFilter 的精确 company_id 一致）。
+		if (!tenantId.equals(entityCompanyId)) {
+			// 机构共享字典实体（药品/耗材/费用项目等，列表 SQL 为 company_id=#{id} or #{institution}）：
+			// 允许访问归属"机构诊所"(同 parent 下 is_institution=1) 的数据，与列表可见范围保持一致
+			if (isInstitutionShared()) {
+				String institution = companyService.getInstitution(tenantId);
+				if (StringUtils.isNotBlank(institution) && institution.equals(entityCompanyId)) {
+					return;
+				}
 			}
+			throw new ServiceException("无权访问其他租户数据");
 		}
 	}
-	
-	
+
+	/**
+	 * 实体是否为"机构共享字典"（基础资料随机构诊所共享给同机构下各诊所）。
+	 * 默认 false（业务数据严格诊所级隔离）；仅字典类 Service（Drug/Stuff/CostItem 等）重写为 true，
+	 * 与其列表 SQL（company_id = #{id} or company_id = #{institution}）的可见范围保持一致。
+	 */
+	protected boolean isInstitutionShared() {
+		return false;
+	}
+
+
 	/**
 	 * 构建带租户信息的分页请求
 	 * 从参数中提取company_id，获取机构信息，构建PageRequest
@@ -226,7 +240,12 @@ public abstract class CrudService<D extends CrudDao<T>, T extends DataEntity<T>>
 	 * @return PageRequest
 	 */
 	protected PageRequest buildTenantPageRequest(List<Parameter> parameters, String orderby) {
-		String id = Parameter.extractAndRemoveCompanyId(parameters);
+		// 移除前端 company_id（防止越权），统一以会话登录租户作为隔离边界
+		Parameter.extractAndRemoveCompanyId(parameters);
+		String id = SessionUtils.getLoginTenantId();
+		if ("null".equals(id)) {
+			id = null;
+		}
 		String institution = companyService.getInstitution(id);
 		return new PageRequest(parameters, orderby, id, institution);
 	}
@@ -240,7 +259,12 @@ public abstract class CrudService<D extends CrudDao<T>, T extends DataEntity<T>>
 	 * @return PageRequest
 	 */
 	protected PageRequest buildTenantPageRequest(List<Parameter> parameters, int offset, int limit, String orderby) {
-		String id = Parameter.extractAndRemoveCompanyId(parameters);
+		// 移除前端 company_id（防止越权），统一以会话登录租户作为隔离边界
+		Parameter.extractAndRemoveCompanyId(parameters);
+		String id = SessionUtils.getLoginTenantId();
+		if ("null".equals(id)) {
+			id = null;
+		}
 		String institution = companyService.getInstitution(id);
 		return new PageRequest(offset, limit, parameters, orderby, id, institution);
 	}

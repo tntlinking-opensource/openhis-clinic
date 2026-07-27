@@ -40,6 +40,13 @@ import java.util.*;
 @Transactional(readOnly = true)
 public class SupplierStockService extends CrudService<SupplierStockDao, SupplierStock> {
 
+    /** 供应商库存为机构共享数据：允许同机构下诊所访问机构诊所的数据（与列表 #{institution} SQL 一致） */
+    @Override
+    protected boolean isInstitutionShared() {
+        return true;
+    }
+
+
     @Autowired
     private DispensingService dispensingService;
 
@@ -267,9 +274,12 @@ public class SupplierStockService extends CrudService<SupplierStockDao, Supplier
 
     public Page<SupplierStock> getDrugIndateWarning(List<Parameter> parameters, int offset, int limit, String
             orderby) {
-        Optional<Parameter> cartOptional = parameters.stream().filter(item -> item.getColumnName().equals("`company_id`")).findFirst();
-        parameters.remove(0);
-        String id = (String) cartOptional.get().getValue();
+        // 移除前端 company_id（防止越权），统一以会话登录租户作为隔离边界
+        Parameter.extractAndRemoveCompanyId(parameters);
+        String id = SessionUtils.getLoginTenantId();
+        if ("null".equals(id)) {
+            id = null;
+        }
         String institution = companyService.getInstitution(id);
 
         PageRequest pageRequest = new PageRequest(offset, limit, parameters, orderby, id, institution);

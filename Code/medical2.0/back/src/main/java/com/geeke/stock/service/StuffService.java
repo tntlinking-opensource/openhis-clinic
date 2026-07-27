@@ -53,6 +53,12 @@ import java.util.Objects;
 public class StuffService extends CrudService<StuffDao, Stuff> {
     private static final Logger logger = LoggerFactory.getLogger(StuffService.class);
 
+    /** 耗材为机构共享字典：允许同机构下诊所访问机构诊所的数据（与列表 #{institution} SQL 一致） */
+    @Override
+    protected boolean isInstitutionShared() {
+        return true;
+    }
+
     @Autowired
     SequenceService sequenceService;
     @Autowired
@@ -79,7 +85,12 @@ public class StuffService extends CrudService<StuffDao, Stuff> {
      * 使用 Parameter.extractAndRemoveCompanyId 统一处理
      */
     private PageRequest buildStuffTenantPageRequest(List<Parameter> params, int offset, int limit, String orderby) {
-        String id = Parameter.extractAndRemoveCompanyId(params);
+        // 移除前端 company_id（防止越权），统一以会话登录租户作为隔离边界
+        Parameter.extractAndRemoveCompanyId(params);
+        String id = SessionUtils.getLoginTenantId();
+        if ("null".equals(id)) {
+            id = null;
+        }
         String institution = companyService.getInstitution(id);
         return new PageRequest(offset, limit, params, orderby, id, institution);
     }
@@ -368,7 +379,11 @@ public class StuffService extends CrudService<StuffDao, Stuff> {
 
 
     public Page<Stuff> listByCompany(List<Parameter> params, int offset, int limit, String orderby) {
-        String id = Parameter.extractAndRemoveCompanyId(params);
+        Parameter.extractAndRemoveCompanyId(params);
+        String id = SessionUtils.getLoginTenantId();
+        if ("null".equals(id)) {
+            id = null;
+        }
         PageRequest pageRequest = new PageRequest(offset, limit, params, orderby, id);
         return paginate(
             () -> dao.count(pageRequest),

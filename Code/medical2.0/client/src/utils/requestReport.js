@@ -4,7 +4,7 @@
  */
 import axios from 'axios'
 import { getLocalToken, removeLocalToken } from '@/utils/auth'
-import router from '@/router'
+import { handleSessionExpired } from '@/utils/sessionExpired'
 
 // 创建axios实例
 const service = axios.create({
@@ -35,15 +35,10 @@ service.interceptors.response.use(
             data: error.response && error.response.data ? error.response.data : error
         }
 
-        // 处理 401 错误（未授权/未登录）— 与 request.js 保持一致
+        // 处理 401 错误（未授权/未登录）— 与 request.js 共用全局去重的会话过期处理
         if (error.response && error.response.status === 401) {
             removeLocalToken()
-            ELEMENT.Message({
-                message: '登录已过期，请重新登录',
-                type: 'warning',
-                duration: 2000
-            })
-            router.replace('/login')
+            handleSessionExpired()
         }
 
         return Promise.reject(errorData)

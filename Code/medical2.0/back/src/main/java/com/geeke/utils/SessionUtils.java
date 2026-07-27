@@ -64,12 +64,16 @@ public class SessionUtils extends com.geeke.sys.utils.SessionUtils {
 
 	/**
 	 * 获取当前用户所登录的诊所
-	 * @return 取不到返回 new User()
+	 * @return 取不到返回 null
 	 */
 	public static String getLoginTenantId(){
 		try {
 			Object attr = SecurityUtils.getSubject().getSession().getAttribute("tenantID");
-			return attr == null ? null : String.valueOf(attr);
+			if (attr == null) {
+				return null;
+			}
+			// 直接返回字符串，避免String.valueOf(null)返回"null"字符串的问题
+			return attr.toString();
 		} catch (Exception e) {
 			return null;
 		}

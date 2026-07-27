@@ -6,7 +6,7 @@
  */
 import axios from 'axios'
 import { getLocalToken, removeLocalToken, clearLocalData } from '@/utils/auth'
-import router from '@/router'
+import { handleSessionExpired } from '@/utils/sessionExpired'
 
 // 创建 axios 实例 - 默认超时30秒
 const service = axios.create({
@@ -15,7 +15,7 @@ const service = axios.create({
 })
 
 // 创建长超时实例 - 用于批量操作、导出等，超时5分钟
-export const serviceLong = axios.create({
+const serviceLongInstance = axios.create({
     baseURL: process.env.BASE_API,
     timeout: 300000
 })
@@ -49,15 +49,10 @@ const responseInterceptor = response => {
 
         const data = response.data
 
-        // 自动处理会话过期（code 20011）
+        // 自动处理会话过期（code 20011）：提示与跳转均全局去重，避免并发请求弹多个提示
         if (data && data.code === 20011) {
             clearLocalData()
-            ELEMENT.Message({
-                message: '登录已过期，请重新登录',
-                type: 'warning',
-                duration: 2000
-            })
-            router.replace('/login')
+            handleSessionExpired()
             return Promise.reject(data)
         }
 
@@ -92,12 +87,7 @@ const responseInterceptorError = error => {
     // 处理 401 错误（未授权/未登录）
     if (error.response && error.response.status === 401) {
         clearLocalData()
-        ELEMENT.Message({
-            message: '登录已过期，请重新登录',
-            type: 'warning',
-            duration: 2000
-        })
-        router.replace('/login')
+        handleSessionExpired()
     } else {
         // 网络错误等非业务错误也自动提示
         ELEMENT.Message({
@@ -115,7 +105,14 @@ const responseInterceptorError = error => {
 service.interceptors.request.use(requestInterceptor, requestInterceptorError)
 service.interceptors.response.use(responseInterceptor, responseInterceptorError)
 
-serviceLong.interceptors.request.use(requestInterceptor, requestInterceptorError)
-serviceLong.interceptors.response.use(responseInterceptor, responseInterceptorError)
+serviceLongInstance.interceptors.request.use(requestInterceptor, requestInterceptorError)
+serviceLongInstance.interceptors.response.use(responseInterceptor, responseInterceptorError)
 
-export default service
+// 与默认 service 一致：拦截器已弹提示，此处捕获 rejection 并返回错误体，避免 dev 遮罩
+export const serviceLong = (config) => serviceLongInstance(config).catch((errorData) => errorData)
+
+// 拦截器已统一弹出错误提示；此处捕获 rejection 并原样返回错误体，
+// 避免未捕获的 Promise rejection 触发 webpack-dev-server 错误遮罩、导致页面崩溃
+const safeRequest = (config) => service(config).catch((errorData) => errorData)
+
+export default safeRequest

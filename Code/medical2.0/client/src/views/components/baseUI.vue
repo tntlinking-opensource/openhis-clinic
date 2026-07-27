@@ -4,7 +4,7 @@
   </div>
 </template>
 <script>
-import { getLocalDataPermisions, clearLocalData } from '@/utils/auth'
+import { getLocalDataPermisions } from '@/utils/auth'
 export default {
   name: 'BaseUI',
   data() {
@@ -126,12 +126,24 @@ export default {
     },
     outputError(error) {
       this.resetLoad()
+      // 会话过期已由 request.js 拦截器统一提示并跳转（全局去重），此处不再弹窗
+      if (error && error.code === 20011) {
+        return
+      }
       console.error(error.response ? error.response : error.message)
       this.$alert('出错了，请按F12查看浏览器日志。', '提示', {
         type: 'error'
       })
     },
     showMessage(msgData) {
+      // 会话过期已由 request.js 拦截器统一提示并跳转（全局去重），
+      // 此处只做收尾（关闭对话框），不再弹窗、不再重复跳转
+      if (msgData && msgData.code === 20011) {
+        if (this.dialogProps) {
+          this.dialogProps.visible = false
+        }
+        return
+      }
       let tip = ''
       if(msgData.type === 'error' && msgData.data) {
         console.error(msgData.data)
@@ -156,20 +168,6 @@ export default {
           message: msgData.msg + tip,
           type: msgData.type
         })
-      }
-      if (msgData.code === 20011) {
-        if(this.dialogProps) {   // 隐藏对话框
-          this.dialogProps.visible = false
-        }
-        clearLocalData()
-        if(this.$router.currentRoute.fullPath.indexOf("login?redirect=") === -1){
-          this.$router.push({
-            path: "/login",
-            // 从哪个页面跳转
-            query: { redirect: this.$router.currentRoute.fullPath }
-          })
-        }
-        this.$router.go(0)
       }
     }
   },

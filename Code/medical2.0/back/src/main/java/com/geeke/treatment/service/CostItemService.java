@@ -39,6 +39,12 @@ import java.util.List;
 public class CostItemService extends CrudService<CostItemDao, CostItem>{
     @Autowired
     SequenceService sequenceService;
+
+    /** 费用项目为机构共享字典：允许同机构下诊所访问机构诊所的数据（与列表 #{institution} SQL 一致） */
+    @Override
+    protected boolean isInstitutionShared() {
+        return true;
+    }
     @Autowired
     RecipelDetailService recipelDetailService;
 

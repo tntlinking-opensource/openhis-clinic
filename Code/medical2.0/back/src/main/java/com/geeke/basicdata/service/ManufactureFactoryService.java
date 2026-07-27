@@ -28,6 +28,12 @@ import java.util.Map;
 public class ManufactureFactoryService extends CrudService<ManufactureFactoryDao, ManufactureFactory>{
     @Autowired
     private ManufactureFactoryDao manufactureFactoryDao;
+
+    /** 生产厂家为机构共享字典：允许同机构下诊所访问机构诊所的数据（与列表 #{institution} SQL 一致） */
+    @Override
+    protected boolean isInstitutionShared() {
+        return true;
+    }
     @Autowired
     private CompanyService companyService;
     @Override

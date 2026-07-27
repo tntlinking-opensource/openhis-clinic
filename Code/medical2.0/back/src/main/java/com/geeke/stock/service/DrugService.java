@@ -53,6 +53,12 @@ import java.util.Objects;
 public class DrugService extends CrudService<DrugDao, Drug>  {
     private static final Logger logger = LoggerFactory.getLogger(DrugService.class);
 
+    /** 药品为机构共享字典：允许同机构下诊所访问机构诊所的数据（与列表 #{institution} SQL 一致） */
+    @Override
+    protected boolean isInstitutionShared() {
+        return true;
+    }
+
     @Autowired
     SequenceService sequenceService;
     @Autowired
@@ -229,9 +235,17 @@ public class DrugService extends CrudService<DrugDao, Drug>  {
     }
 
     public List<Drug> inventory(List<Parameter> parameters, String orderby) {
-        String id = Parameter.extractAndRemoveCompanyId(parameters);
-        Company company = companyService.get(id);
-        String institution = company.getParent().getId();
+        // 移除前端 company_id（防止越权），统一以会话登录租户作为隔离边界
+        Parameter.extractAndRemoveCompanyId(parameters);
+        String id = SessionUtils.getLoginTenantId();
+        if ("null".equals(id)) {
+            id = null;
+        }
+        String institution = null;
+        if (id != null) {
+            Company company = companyService.get(id);
+            institution = company.getParent().getId();
+        }
         PageRequest pageRequest = new PageRequest(parameters, orderby, id, institution);
         return dao.inventory(pageRequest);
     }

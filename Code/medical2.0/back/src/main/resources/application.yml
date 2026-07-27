@@ -3,7 +3,7 @@ server:
     max-http-post-size: 104857600  # 100MB，防止恶意大请求体攻击
 spring:
   profiles:
-    active: dev
+    active: demo
   application:
     name: medical
   servlet:

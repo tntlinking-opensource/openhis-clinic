@@ -39,6 +39,13 @@ import javax.servlet.http.HttpServletResponse;
 @Transactional(readOnly = true)
 public class InventoryVerificationDetailService extends CrudService<InventoryVerificationDetailDao, InventoryVerificationDetail>{
 
+    /** 盘点明细为机构共享数据：允许同机构下诊所访问机构诊所的数据（与列表 #{institution} SQL 一致） */
+    @Override
+    protected boolean isInstitutionShared() {
+        return true;
+    }
+
+
     @Autowired
     private InventoryVerificationService inventoryVerificationService;
 
