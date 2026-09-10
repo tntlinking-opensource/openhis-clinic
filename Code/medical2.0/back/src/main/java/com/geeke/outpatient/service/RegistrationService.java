@@ -15,6 +15,7 @@ import com.geeke.utils.IdGen;
 import com.geeke.utils.SessionUtils;
 import com.geeke.utils.StringUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +31,6 @@ import java.util.stream.Collectors;
  
 @Service("registrationService")
 @Transactional(readOnly = true)
-@RequiredArgsConstructor
 public class RegistrationService extends CrudService<RegistrationDao, Registration>{
     private final RegistrationDao registrationDao;
 
@@ -42,6 +42,16 @@ public class RegistrationService extends CrudService<RegistrationDao, Registrati
 
     //医保挂号
     private final MdRegistrationService mdRegistrationService;
+
+    public RegistrationService(RegistrationDao registrationDao, MedicalRecordDao medicalRecordDao,
+            PatientService patientService, @Lazy MedicalRecordService medicalRecordService,
+            MdRegistrationService mdRegistrationService) {
+        this.registrationDao = registrationDao;
+        this.medicalRecordDao = medicalRecordDao;
+        this.patientService = patientService;
+        this.medicalRecordService = medicalRecordService;
+        this.mdRegistrationService = mdRegistrationService;
+    }
 
     @Transactional(readOnly = false)
     public int updateStatus(String id,String status,String departmentId,String doctorId)
