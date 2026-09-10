@@ -9,7 +9,6 @@
     <el-date-picker
       v-model="TimeInterval"
       type="datetimerange"
-      value-format="yyyy-MM-dd HH:mm:ss"
       :picker-options="pickerOptions"
       range-separator="至"
       start-placeholder="开始日期"
@@ -46,9 +45,7 @@
   <el-col :span="24">
     <el-table
     :data="tableData"
-    height="calc(100vh - 280px)"
-    style="width: 100%"
-    :row-class-name="tableRowClassName">
+    style="width: 100%">
     <el-table-column
              label="序号"
               type="index"
@@ -142,44 +139,9 @@ import {
 import moment from "moment"; 
   export default {
     extends: MainUI,
-  components: { 
+  components: {
     History
   },
-    methods: {
-      tableRowClassName({row, rowIndex}) {
-        if (rowIndex === 1) {
-          return 'warning-row';
-        } else if (rowIndex === 3) {
-          return 'success-row';
-        }
-        return '';
-      },
-
-      //重置
-      reset(){
-        this. formInline = {
-          values: '',
-          status: ''
-        };
-        this.TimeInterval='';
-        this. visitprogresspara = {
-        limit: 20,
-        offset: 0,
-        companyId: currentUser.company.id,
-        status: "",
-        values:"",
-        kssj:"",
-        jssj:"",
-        };
-        this.Getvisiprogresslist();
-      },
-
-      onSizeChange(val) {
-      this.currentPage = 1
-      this.visitprogresspara.limit = val;
-      this.visitprogresspara.offset = (this.currentPage - 1) * val
-      this.Getvisiprogresslist();
-    },
     data() {
       return {
         formInline: {
@@ -212,9 +174,9 @@ import moment from "moment";
       patientList: [],
 
       //时间选择
-      TimeInterval:'',
+      TimeInterval:[this.addCreateDate(), moment(new Date()).format("YYYY-MM-DD HH:mm:ss")],
 
-pickerOptions: {
+      pickerOptions: {
           shortcuts: [{
             text: '最近一周',
             onClick(picker) {
@@ -243,6 +205,31 @@ pickerOptions: {
         },
 
       }
+    },
+    methods: {
+      reset(){
+        this. formInline = {
+          values: '',
+          status: ''
+        };
+        this.TimeInterval='';
+        this. visitprogresspara = {
+        limit: 20,
+        offset: 0,
+        companyId: currentUser.company.id,
+        status: "",
+        values:"",
+        kssj:"",
+        jssj:"",
+        };
+        this.Getvisiprogresslist();
+      },
+
+      onSizeChange(val) {
+      this.currentPage = 1
+      this.visitprogresspara.limit = val;
+      this.visitprogresspara.offset = (this.currentPage - 1) * val
+      this.Getvisiprogresslist();
     },
     onCurrentChange(val) {
       this.visitprogresspara.offset = (val - 1) * this.visitprogresspara.limit
@@ -305,11 +292,15 @@ selectvisiprogresslist(this.visitprogresspara).then((responseData)=>{
               } else {
                 item.sr = "--";
               }
+      let djsj = "--";
+              if (item.djsj) {
+                djsj = moment(item.djsj).format("YYYY-MM-DD HH:mm:ss");
+              }
       this.tableData.push({
           jzzt:item.jzzt,
           xm:item.xm,
           ks:item.ks,
-          djsj:item.djsj,
+          djsj:djsj,
           jzlx:item.jzlx,
           ys:item.ys,
           cfs:item.cfs,
@@ -328,6 +319,12 @@ selectvisiprogresslist(this.visitprogresspara).then((responseData)=>{
         this.Getvisiprogresslist();
       },
 
+      addCreateDate() {
+        const d = new Date();
+        d.setTime(d.getTime() - 30 * 24 * 60 * 60 * 1000);
+        return moment(d).format("YYYY-MM-DD HH:mm:ss");
+      },
+
     },
   //  created(){
   //   this.Getvisiprogresslist();
@@ -339,13 +336,6 @@ selectvisiprogresslist(this.visitprogresspara).then((responseData)=>{
 </script>
 
 <style>
- .el-table .warning-row {
-    background: oldlace;
-  }
-
-  .el-table .success-row {
-    background: #f0f9eb;
-  }
   .el-popover{
     overflow-y: visible;
   }

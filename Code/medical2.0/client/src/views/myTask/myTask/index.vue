@@ -374,7 +374,7 @@ export default {
         // userHeaderFile.fileIdUploads=item;
 
       saveMyTask(userHeaderFile).then((res)=>{
-          if(res.code==="100"){
+          if(res.code===100){
             this.$message.success("操作成功!")
             this.uploadFilesTask = ""
             this.getMyTaskList("1")
@@ -397,7 +397,7 @@ export default {
         userHeaderFile.append("fileIdUploads",this.bizFormModelTask.fileIdFile);
 
       saveMyTask(userHeaderFile).then((res)=>{
-          if(res.code==="100"){
+          if(res.code===100){
             this.$message.success("操作成功!")
             this.executeDialogVisible=false
             this.flagsTask=false

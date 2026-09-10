@@ -593,7 +593,14 @@ export default {
       pack:[],        //药品/最小单位数量集合
       drugType:[],   //药品类型
       stuffType:[],  //材料类型
-      bizFormModel: this.initFormModel(),
+      bizFormModel: {
+        'company': {     // 诊所id
+          'id': currentUser.company.id,
+          'name': null,
+        },
+        'code': '',   // 盘点单号
+        'status': '',   // 盘点状态
+      },
       queryModel:{
         goodsName: "", // 药品名称
          type: {
@@ -702,7 +709,7 @@ export default {
         this.save()
       ]).then(()=>{
         accomplishInventoryVerification(this.inventoryVerifications).then((res)=>{
-        if(res.code==='100'){
+        if(res.code === 100){
           this.$message.success("完成盘点")
           this.$emit('save-finished')
             this.dialogProps.visible=false
@@ -734,7 +741,7 @@ export default {
     save(){
       this.saveInformation[this.currentPage-1]=this.inventoryVerificationDetail
       return saveAll(this.saveInformation).then((res)=>{
-        if(res.code==='100'&&res.data==='执行成功'){
+        if(res.code === 100&&res.data==='执行成功'){
           this.$message.success("保存成功！")
             this.$emit('save-finished')
             this.dialogProps.visible=false

@@ -7,11 +7,16 @@ import com.alibaba.fastjson.JSONObject;
 
 import com.geeke.common.data.PageRequest;
 import com.geeke.common.data.Parameter;
+import com.geeke.org.entity.Company;
 import com.geeke.outpatient.entity.RecipeTemplateDetail;
 import com.geeke.outpatient.entity.RecipeTemplateInfo;
 import com.geeke.outpatient.entity.Registration;
 import com.geeke.stock.entity.Drug;
+import com.geeke.stock.entity.Stuff;
 import com.geeke.stock.service.DrugService;
+import com.geeke.stock.service.StuffService;
+import com.geeke.treatment.entity.CostItem;
+import com.geeke.treatment.service.CostItemService;
 import com.geeke.sys.utils.SessionUtils;
 import com.geeke.utils.IdGen;
 import org.springframework.stereotype.Service;
@@ -46,6 +51,10 @@ public class RecipetemplateService extends CrudService<RecipetemplateDao, Recipe
     private RegistrationService registrationService;
     @Autowired
     private DrugService drugService;
+    @Autowired
+    private StuffService stuffService;
+    @Autowired
+    private CostItemService costItemService;
 
     public void allSave(Recipetemplate recipetemplate){
         if(StringUtils.isBlank(recipetemplate.getId())){
@@ -101,10 +110,25 @@ public class RecipetemplateService extends CrudService<RecipetemplateDao, Recipe
         }
         //保存模板的处方详情
         List<RecipeTemplateDetail> recipeTemplateDetails = recipetemplate.getRecipeTemplateDetail();
+        Company templateCompany = recipetemplate.getCompany();
+        // 诊所级隔离：过滤掉非本诊所的药品/材料/诊疗项目
+        if (templateCompany != null && recipeTemplateDetails != null) {
+            List<RecipeTemplateDetail> validDetails = new java.util.ArrayList<>();
+            for (RecipeTemplateDetail detail : recipeTemplateDetails) {
+                if (isDetailBelongsToCompany(detail, templateCompany.getId())) {
+                    validDetails.add(detail);
+                } else {
+                    logger.warn("保存模板时跳过非本诊所药品: companyId={}, drugStuffId={}, stuffType={}",
+                        templateCompany.getId(), detail.getDrugStuffId().getDrugStuffId(), detail.getStuffType());
+                }
+            }
+            recipeTemplateDetails.clear();
+            recipeTemplateDetails.addAll(validDetails);
+        }
         for (RecipeTemplateDetail recipeTemplateDetail:
         recipeTemplateDetails) {
             recipeTemplateDetail.setRecipeTemplateInfo(recipeTemplateInfo);
-            recipeTemplateDetail.setCompany(recipetemplate.getCompany());
+            recipeTemplateDetail.setCompany(templateCompany);
         }
         recipetemplateDetailService.allSave(recipeTemplateDetails);
     }
@@ -139,14 +163,22 @@ public class RecipetemplateService extends CrudService<RecipetemplateDao, Recipe
         recipetemplate.setPatientId(medicalRecord.getPatientId().getId());
         recipetemplate.setCompany(medicalRecord.getCompany());
         String a = "";
+        List<RecipeTemplateDetail> validDetails = new java.util.ArrayList<>();
         for (RecipeTemplateDetail r :recipetemplate.getRecipeTemplateDetail()){
+            if (!isDetailBelongsToCompany(r, medicalRecord.getCompany().getId())) {
+                logger.warn("AI保存模板时跳过非本诊所药品: companyId={}, drugStuffId={}, stuffType={}",
+                    medicalRecord.getCompany().getId(), r.getDrugStuffId().getDrugStuffId(), r.getStuffType());
+                continue;
+            }
             String id = drugService.getId(r.getDrugStuffId().getName(),r.getCompany().getId());
             if (id != null){
                 r.getDrugStuffId().setDrugStuffId(id);
+                validDetails.add(r);
             }else {
                 a += r.getDrugStuffId().getName()+ "药品无库存信息\n";
             }
         }
+        recipetemplate.setRecipeTemplateDetail(validDetails);
         if (!"".equals(a)) {
             return a;
         }
@@ -161,5 +193,37 @@ public class RecipetemplateService extends CrudService<RecipetemplateDao, Recipe
 
     public List<Recipetemplate> listAi(String id) {
         return dao.listAi(id);
+    }
+
+    /**
+     * 检查模板详情是否属于指定诊所
+     * @param detail 模板详情
+     * @param companyId 诊所ID
+     * @return true-属于当前诊所，false-不属于
+     */
+    private boolean isDetailBelongsToCompany(RecipeTemplateDetail detail, String companyId) {
+        if (detail == null || companyId == null) {
+            return false;
+        }
+        // 优先检查详情自身的company_id
+        if (detail.getCompany() != null && companyId.equals(detail.getCompany().getId())) {
+            return true;
+        }
+        // 检查关联的药品/材料/诊疗项目是否属于当前诊所
+        if (detail.getDrugStuffId() != null && detail.getDrugStuffId().getDrugStuffId() != null) {
+            String stuffType = detail.getStuffType();
+            String drugStuffId = detail.getDrugStuffId().getDrugStuffId();
+            if ("0".equals(stuffType) || "1".equals(stuffType) || "2".equals(stuffType)) {
+                Drug drug = this.drugService.get(drugStuffId);
+                return drug != null && drug.getCompany() != null && companyId.equals(drug.getCompany().getId());
+            } else if ("3".equals(stuffType)) {
+                CostItem costItem = this.costItemService.get(drugStuffId);
+                return costItem != null && costItem.getCompany() != null && companyId.equals(costItem.getCompany().getId());
+            } else if ("4".equals(stuffType)) {
+                Stuff stuff = this.stuffService.get(drugStuffId);
+                return stuff != null && stuff.getCompany() != null && companyId.equals(stuff.getCompany().getId());
+            }
+        }
+        return false;
     }
 }

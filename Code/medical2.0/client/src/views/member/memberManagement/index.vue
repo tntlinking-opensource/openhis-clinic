@@ -45,7 +45,6 @@
                         align="right"
                         start-placeholder="开始日期"
                         end-placeholder="结束日期"
-                        value-format="yyyy-MM-dd HH:mm:ss"
                         format="yyyy-MM-dd HH:mm:ss"
                         :default-time="['00:00:00', '23:59:59']">
                       </el-date-picker>
@@ -307,7 +306,7 @@ export default {
     //禁用会员
     disableMember(index,row){
       deleteMemberManagement(row).then((res)=>{
-        if(res.code==='100'){
+        if(res.code === 100){
             this.loadData()
             this.showMessage({type: 'success', msg: '禁用成功'})
         }else{

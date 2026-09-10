@@ -289,7 +289,7 @@
             style="margin-right:10px"
             title="确定退费吗？"
             @confirm="chargeClick(2)"
-            v-if="chargeStatusActiveName === '2' && selRowChargeStatus !== '4' && medicalEditTabs.length>0"
+            v-if="chargeStatusActiveName === '2' && selRowChargeStatus !== 4 && medicalEditTabs.length>0"
           >
             <el-button style="height:30px" slot="reference" type="primary" plain>退费</el-button>
 
@@ -925,7 +925,7 @@ export default {
       item.delType='1'
       item.recipelDetail.executions=item.executions
       saveCureManagement(item).then((res)=>{
-        if(res.code==="100"){
+        if(res.code===100){
           this.$message.success("撤销成功")
           this.getSaveInfo(this.getUserId)
           this.search()
@@ -976,7 +976,7 @@ export default {
       }
 
       saveCureManagement(executeModel).then((res)=>{
-        if(res.code==="100"){
+        if(res.code===100){
           this.$message.success("执行成功")
           this.getSaveInfo(this.getUserId)
           this.search()
@@ -1036,7 +1036,7 @@ export default {
 
 
       listCureManagement(cureSearch).then((res)=>{
-        if(res.code==="100"){
+        if(res.code===100){
           this.recordList=res.data.rows
         }
       }).catch(()=>{})
@@ -1092,7 +1092,7 @@ export default {
       }
 
       listCureManagement(cureSearch).then((res)=>{
-        if(res.code==="100"){
+        if(res.code===100){
           this.recordList=res.data.rows
         }
       }).catch(()=>{})
@@ -1210,7 +1210,7 @@ export default {
         this.$message.error("未选择数据");
         return;
       }
-      if (type === "1") {
+      if (type === 1) {
         if (!this.isRetail) {
           let IsOpen = this.IsChargeCorrect("0");
           if (!IsOpen) {
@@ -1364,7 +1364,7 @@ export default {
           if (responseData.code === 100) {
            if(responseData.data.rows!=null){
               this.patientList = responseData.data.rows.filter(
-              (item) => item.recipeStatus !== "1"
+              (item) => item.recipeStatus !== 1
 
             );
 
@@ -1868,15 +1868,15 @@ export default {
     },
     GetStatusColor(status) {
       return {
-        redStateStyle: status === "2",
-        greenStateStyle: status === "1",
+        redStateStyle: status === 2,
+        greenStateStyle: status === 1,
       };
     },
     GetPrescriptionStatus(status) {
       let returnStatus;
-      if (status === "0") returnStatus = "待收费";
-      else if (status === "1") returnStatus = "已收费";
-      else if (status === "-1") returnStatus = "已退费";
+      if (status === 0) returnStatus = "待收费";
+      else if (status === 1) returnStatus = "已收费";
+      else if (status === -1) returnStatus = "已退费";
       return returnStatus;
     },
 
@@ -1910,12 +1910,13 @@ export default {
     IsChargeCorrect(type) {
       let IsSure = true;
       let allFee = 0;
+      const typeNum = Number(type);
       this.prescriptionMainList.map((item) => {
         if (
           item.recipelInfo.recipelType.name === "西药处方" &&
           this.WesternCheck
         ) {
-          if (item.recipelInfo.isPay !== type) {
+          if (item.recipelInfo.chargeStatus !== typeNum) {
             IsSure = false;
           } else {
             allFee += item.recipelInfo.fee;
@@ -1924,7 +1925,7 @@ export default {
           item.recipelInfo.recipelType.name === "中药处方" &&
           this.ChineseCheck
         ) {
-          if (item.recipelInfo.isPay !== type) {
+          if (item.recipelInfo.chargeStatus !== typeNum) {
             IsSure = false;
           } else {
             allFee += item.recipelInfo.fee;
@@ -1933,7 +1934,7 @@ export default {
           item.recipelInfo.recipelType.name === "输液处方" &&
           this.InfusionCheck
         ) {
-          if (item.recipelInfo.isPay !== type) {
+          if (item.recipelInfo.chargeStatus !== typeNum) {
             IsSure = false;
           } else {
             allFee += item.recipelInfo.fee;
@@ -1942,7 +1943,7 @@ export default {
           item.recipelInfo.recipelType.name === "诊疗项目" &&
           this.CostItemCheck
         ) {
-          if (item.recipelInfo.isPay !== type) {
+          if (item.recipelInfo.chargeStatus !== typeNum) {
             IsSure = false;
           } else {
             allFee += item.recipelInfo.fee;
@@ -1951,17 +1952,17 @@ export default {
           item.recipelInfo.recipelType.name === "附加费" &&
           this.SurchargeCheck
         ) {
-          if (item.recipelInfo.isPay !== type) {
+          if (item.recipelInfo.chargeStatus !== typeNum) {
             IsSure = false;
           } else {
             allFee += item.recipelInfo.fee;
           }
         } else if (item.recipelInfo.recipelType.name === "零售处方") {
-          if (type === 0) {
+          if (typeNum === 0) {
             IsSure = false;
           } else if (
-            type === 1 &&
-            this.prescriptionMainList[0].recipelInfo.isPay === "2"
+            typeNum === 1 &&
+            this.prescriptionMainList[0].recipelInfo.chargeStatus === 1
           ) {
             IsSure = false;
           }
@@ -2257,8 +2258,8 @@ export default {
       this.prescriptionMainList.map((item) => {
         switch (item.recipelInfo.recipelType.name) {
           case "中药处方":
-            if (type === 1 && item.recipelInfo.isPay === 1) IsAll += 1;
-            else if (type === 2 && item.recipelInfo.isPay === 2) IsAll += 1;
+            if (type === 1 && item.recipelInfo.chargeStatus === 1) IsAll += 1;
+            else if (type === 2 && item.recipelInfo.chargeStatus === -1) IsAll += 1;
             if (this.ChineseCheck) {
               IsAll += 1;
               recipelInfos.push({
@@ -2269,8 +2270,8 @@ export default {
             }
             break;
           case "西药处方":
-            if (type === 1 && item.recipelInfo.isPay === 1) IsAll += 1;
-            else if (type === 2 && item.recipelInfo.isPay === 2) IsAll += 1;
+            if (type === 1 && item.recipelInfo.chargeStatus === 1) IsAll += 1;
+            else if (type === 2 && item.recipelInfo.chargeStatus === -1) IsAll += 1;
             if (this.WesternCheck) {
               IsAll += 1;
               recipelInfos.push({
@@ -2281,8 +2282,8 @@ export default {
             }
             break;
           case "输液处方":
-            if (type === 1 && item.recipelInfo.isPay === 1) IsAll += 1;
-            else if (type === 2 && item.recipelInfo.isPay === 2) IsAll += 1;
+            if (type === 1 && item.recipelInfo.chargeStatus === 1) IsAll += 1;
+            else if (type === 2 && item.recipelInfo.chargeStatus === -1) IsAll += 1;
             if (this.InfusionCheck) {
               IsAll += 1;
               recipelInfos.push({
@@ -2293,8 +2294,8 @@ export default {
             }
             break;
           case "诊疗项目":
-            if (type === 1 && item.recipelInfo.isPay === 1) IsAll += 1;
-            else if (type === 2 && item.recipelInfo.isPay === 2) IsAll += 1;
+            if (type === 1 && item.recipelInfo.chargeStatus === 1) IsAll += 1;
+            else if (type === 2 && item.recipelInfo.chargeStatus === -1) IsAll += 1;
             if (this.CostItemCheck) {
               IsAll += 1;
               recipelInfos.push({
@@ -2305,8 +2306,8 @@ export default {
             }
             break;
           case "附加费":
-            if (type === 1 && item.recipelInfo.isPay === 1) IsAll += 1;
-            else if (type === 2 && item.recipelInfo.isPay === 2) IsAll += 1;
+            if (type === 1 && item.recipelInfo.chargeStatus === 1) IsAll += 1;
+            else if (type === 2 && item.recipelInfo.chargeStatus === -1) IsAll += 1;
             if (this.SurchargeCheck) {
               IsAll += 1;
               recipelInfos.push({

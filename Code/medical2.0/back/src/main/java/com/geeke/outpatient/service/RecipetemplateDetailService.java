@@ -75,13 +75,19 @@ public class RecipetemplateDetailService extends CrudService<RecipeTemplateDetai
     public List<RecipeTemplateDetail> getByRecipeTemplateInfoId(String recipeTemplateInfoId) {
         List<RecipeTemplateDetail> recipeTemplateDetails=this.dao.getByRecipeTemplateInfoId(recipeTemplateInfoId);
 
-        //获取到处方详情后根据处方详情获取到药品材料
+        //获取到处方详情后根据处方详情获取到药品材料，过滤非本诊所药品
         if(!CollectionUtils.isEmpty(recipeTemplateDetails)){
+            List<RecipeTemplateDetail> validDetails = new java.util.ArrayList<>();
             for (RecipeTemplateDetail recipeTemplateDetail:
             recipeTemplateDetails) {
                 DrugStuffEvt drugStuffEvt = this.getDrugStuffEvt(recipeTemplateDetail);
-                recipeTemplateDetail.setDrugStuffId(drugStuffEvt);
+                if (drugStuffEvt != null) {
+                    recipeTemplateDetail.setDrugStuffId(drugStuffEvt);
+                    validDetails.add(recipeTemplateDetail);
+                }
             }
+            recipeTemplateDetails.clear();
+            recipeTemplateDetails.addAll(validDetails);
         }
         return recipeTemplateDetails;
     }
@@ -89,9 +95,17 @@ public class RecipetemplateDetailService extends CrudService<RecipeTemplateDetai
     public DrugStuffEvt getDrugStuffEvt(RecipeTemplateDetail recipeTemplateDetail) {
         DrugStuffEvt drugStuffEvt = new DrugStuffEvt();
         String stuffType = recipeTemplateDetail.getStuffType();        // 物料类型:0-西药 1-中药  2-输液 3-诊疗项目  4-材料
+        String detailCompanyId = recipeTemplateDetail.getCompany() != null ? recipeTemplateDetail.getCompany().getId() : null;
         if ("0".equals(stuffType) || "1".equals(stuffType) || "2".equals(stuffType)) {
             //中药、西药、输液处方查询药品信息
             Drug drug = this.drugService.get(recipeTemplateDetail.getDrugStuffId().getDrugStuffId());
+            if (drug == null) return null;
+            // 诊所级隔离：跳过其他诊所的药品
+            if (detailCompanyId != null && drug.getCompany() != null && !detailCompanyId.equals(drug.getCompany().getId())) {
+                logger.warn("模板详情包含非本诊所药品，已跳过: detailCompanyId={}, drugCompanyId={}, drugName={}",
+                    detailCompanyId, drug.getCompany().getId(), drug.getGoodsName());
+                return null;
+            }
             drugStuffEvt.setDrugStuffId(drug.getId());
             drugStuffEvt.setName(drug.getGoodsName());
             drugStuffEvt.setPrice(drug.getPrice());
@@ -104,6 +118,12 @@ public class RecipetemplateDetailService extends CrudService<RecipeTemplateDetai
         } else if ("3".equals(stuffType)) {
             //查询诊疗项目信息
             CostItem costItem = this.costItemService.get(recipeTemplateDetail.getDrugStuffId().getDrugStuffId());
+            if (costItem == null) return null;
+            if (detailCompanyId != null && costItem.getCompany() != null && !detailCompanyId.equals(costItem.getCompany().getId())) {
+                logger.warn("模板详情包含非本诊所诊疗项目，已跳过: detailCompanyId={}, costItemCompanyId={}, itemName={}",
+                    detailCompanyId, costItem.getCompany().getId(), costItem.getItemName());
+                return null;
+            }
             drugStuffEvt.setDrugStuffId(costItem.getId());
             drugStuffEvt.setName(costItem.getItemName());
             drugStuffEvt.setPrice(costItem.getSalePrice());
@@ -115,6 +135,12 @@ public class RecipetemplateDetailService extends CrudService<RecipeTemplateDetai
             drugStuffEvt.setCostItem(costItem);
         } else if ("4".equals(stuffType)) {
             Stuff stuff = this.stuffService.get(recipeTemplateDetail.getDrugStuffId().getDrugStuffId());
+            if (stuff == null) return null;
+            if (detailCompanyId != null && stuff.getCompany() != null && !detailCompanyId.equals(stuff.getCompany().getId())) {
+                logger.warn("模板详情包含非本诊所材料，已跳过: detailCompanyId={}, stuffCompanyId={}, stuffName={}",
+                    detailCompanyId, stuff.getCompany().getId(), stuff.getName());
+                return null;
+            }
             drugStuffEvt.setDrugStuffId(stuff.getId());
             drugStuffEvt.setName(stuff.getName());
             drugStuffEvt.setPrice(stuff.getPriceOutSell());

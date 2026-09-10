@@ -9,7 +9,7 @@
     <select id="visitprogresspage" resultType="com.geeke.workbench.entity.VisitProgress" >
         select a.name xm,(case when a.gender='gender_0' then '男' when a.gender='gender_1' then '女' else '' end) xb,
         a.birthday sr,a.phone ,c.name ks,b.treat_type jzlx,b.status jzzt,e.name ys,
-        date_format(b.create_date,"%H:%i") as djsj,count(d.status='1') cfs from patient a
+        date_format(b.create_date,"%Y-%m-%d %H:%i:%s") as djsj,count(d.status='1') cfs from patient a
         left join registration b on a.id=b.patient_id
         left join clinic_office c on c.id= b.department_id
         left join recipel_info d on d.registration_id =b.id
@@ -38,7 +38,7 @@
     <select id="visitprogresspagecounts" resultType="com.geeke.workbench.entity.VisitProgress" >
         select a.name xm,(case when a.gender='gender_0' then '男' when a.gender='gender_1' then '女' else '' end) xb,
         a.birthday sr,a.phone ,c.name ks,b.treat_type jzlx,b.status jzzt,e.name ys,
-        date_format(b.create_date,"%H:%i") as djsj,count(d.status='1') cfs from patient a
+        date_format(b.create_date,"%Y-%m-%d %H:%i:%s") as djsj,count(d.status='1') cfs from patient a
         left join registration b on a.id=b.patient_id
         left join clinic_office c on c.id= b.department_id
         left join recipel_info d on d.registration_id =b.id

@@ -271,9 +271,19 @@ export default {
               return;
             }
             if (!res || !Array.isArray(res) || res.length === 0) {
-              this.isError = true;
-              this.loginError = "未找到关联诊所";
-              return;
+              // 诊所列表为空时（如超级管理员），尝试直接登录
+              try {
+                const tokenRes = await getToken(this.loginForm.username, this.loginForm.password, "")
+                if (tokenRes && tokenRes.code === 100) {
+                  this.handleLoginInfo(tokenRes.data)
+                  return
+                }
+              } catch (e) {
+                // fall through to error
+              }
+              this.isError = true
+              this.loginError = "未找到关联诊所"
+              return
             }
             setLocalCompanys(res);
             this.firmList = res;
@@ -290,6 +300,9 @@ export default {
       });
     },
     initIndexRouter() {
+      if (sessionStorage.getItem('indexRouterGenerated') === 'true') {
+        return
+      }
       let childRouters = this.generateChildRouters();
       let indexRouter = {
         path: "/",
@@ -299,6 +312,7 @@ export default {
       };
       // this.$router.addRoutes([indexRouter])
       this.$router.addRoute("/", indexRouter);
+      sessionStorage.setItem('indexRouterGenerated', 'true')
     },
     generateChildRouters() {
       let routers = getLocalRouters();
