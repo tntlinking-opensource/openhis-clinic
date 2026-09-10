@@ -200,7 +200,8 @@ export default {
     }
   },
   mounted() {
-    this.initOptions()
+    // pageInit() 内部已调用 this.initOptions(this.queryModel)，
+    // 此处无需重复调用，避免重复发起字典请求
     this.pageInit()
   }
 }

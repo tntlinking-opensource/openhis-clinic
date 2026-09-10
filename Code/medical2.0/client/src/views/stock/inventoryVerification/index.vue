@@ -17,7 +17,6 @@
                         align="right"
                         start-placeholder="开始日期"
                         end-placeholder="结束日期"
-                        value-format="yyyy-MM-dd HH:mm:ss"
                         format="yyyy-MM-dd HH:mm:ss"
                         :default-time="['00:00:00', '23:59:59']">
                       </el-date-picker>
@@ -294,7 +293,7 @@ export default {
       let variety=sign
       //执行新增盘点
       saveInventoryVerification(type,variety).then(res=>{
-        if(res.code==='100'){
+        if(res.code === 100){
           this.$message.success("新增盘点成功")
           this.check=false
           this.loadData()

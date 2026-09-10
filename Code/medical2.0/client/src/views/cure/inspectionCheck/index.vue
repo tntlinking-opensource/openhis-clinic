@@ -17,7 +17,6 @@
                         align="right"
                         start-placeholder="开始日期"
                         end-placeholder="结束日期"
-                        value-format="yyyy-MM-dd HH:mm:ss"
                         format="yyyy-MM-dd HH:mm:ss"
                         :default-time="['00:00:00', '23:59:59']">
                       </el-date-picker>
@@ -661,7 +660,7 @@ export default {
         // userHeaderFile.fileIdUploads=item;
      
       saveInspectionCheckInfo(userHeaderFile).then((res)=>{
-          if(res.code==="100"){
+          if(res.code===100){
             this.$message.success("操作成功!")
             this.loadData()
           }else{
@@ -685,7 +684,7 @@ export default {
         // userHeaderFile.fileIdUploads=item;
      
       saveInspectionCheckInfo(userHeaderFile).then((res)=>{
-          if(res.code==="100"){
+          if(res.code===100){
             this.$message.success("操作成功!")
             this.dialogVisible=false
             this.loadData()
@@ -759,7 +758,7 @@ export default {
       if(row.type==="0"){
         // 通过项目是否为打包项目
         getInspectionCheckInfoByInspecId(row.id).then((res)=>{
-          if(res.code==="100"){
+          if(res.code===100){
             this.bizFormModel.inspectionCheckInfo=res.data
             this.typeName="填写检验报告"
             this.type="0"
@@ -788,7 +787,7 @@ export default {
       }else{
          // 通过项目是否为打包项目
         getInspectionCheckInfoByInspecId(row.id).then((res)=>{
-          if(res.code==="100"){
+          if(res.code===100){
             this.bizFormModel.inspectionCheckInfo=res.data
             this.typeName="填写检查报告"
             this.type="1"

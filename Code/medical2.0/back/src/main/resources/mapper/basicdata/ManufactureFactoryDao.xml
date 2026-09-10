@@ -36,7 +36,7 @@
     </select>
     
     <select id="count" resultType="int">
-        SELECT COUNT(*) FROM manufacture_factory a
+        SELECT COUNT(DISTINCT a.id) FROM manufacture_factory a
         <include refid="manufactureFactoryJoins"/>
         <where>
             1=1
@@ -44,7 +44,7 @@
             AND a.del_flag = #{DEL_FLAG_NORMAL}
             <include refid="Common.whereParams"/>
         </where>
-    </select>    
+    </select>
     
     <select id="listPage" resultType="com.geeke.basicdata.entity.ManufactureFactory">
         SELECT DISTINCT

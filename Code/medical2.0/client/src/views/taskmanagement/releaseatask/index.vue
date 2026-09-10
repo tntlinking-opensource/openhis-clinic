@@ -12,7 +12,6 @@
     <el-date-picker
       v-model="TimeInterval"
       type="datetimerange"
-      value-format="yyyy-MM-dd HH:mm:ss"
       :picker-options="pickerOptions"
       :default-time="['00:00:00','23:59:59']"
       range-separator="至"

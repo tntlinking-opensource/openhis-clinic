@@ -151,7 +151,7 @@
             }).then(() => {
               if(this.unreadList){
                 bulkUpdateNoticeRecordSite(this.unreadList).then(result =>{
-                      if(result.code ==="100"){
+                      if(result.code===100){
                         this.$store.dispatch('notices/SetNoticeTotal',0);
                         this.unreadList = [];
                         this.$message.success("全部已读");

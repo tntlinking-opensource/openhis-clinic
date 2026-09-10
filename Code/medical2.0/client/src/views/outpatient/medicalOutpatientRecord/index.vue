@@ -2009,7 +2009,6 @@
                      ref="queryForm" :inline-message="true">
               <el-form-item label="选择日期" prop="time">
                 <el-date-picker v-model="queryModel.dateRange" type="datetimerange" range-separator="至"
-                                start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd HH:mm:ss"
                                 format="yyyy-MM-dd HH:mm:ss">
                 </el-date-picker>
               </el-form-item>
@@ -2760,7 +2759,6 @@
                      ref="queryForm" :inline-message="true">
               <el-form-item label="选择日期" prop="time">
                 <el-date-picker v-model="queryModel.dateRange" type="datetimerange" range-separator="至"
-                                start-placeholder="开始日期" end-placeholder="结束日期" value-format="yyyy-MM-dd HH:mm:ss"
                                 format="yyyy-MM-dd HH:mm:ss">
                 </el-date-picker>
               </el-form-item>
@@ -4012,10 +4010,22 @@
             this.saveTemplateBizFormModel.createId = currentUser.id;
             this.saveTemplateBizFormModel.recipeTemplateInfo =
               this.medicalEditTabs[this.saveTemplateIndex].content.recipelInfo;
-            this.saveTemplateBizFormModel.recipeTemplateDetail =
-              this.medicalEditTabs[
-                this.saveTemplateIndex
-                ].content.recipelDetailEvtList;
+            // 诊所级隔离：仅保存当前诊所的药品/材料/诊疗项目
+            var currentCompanyId = currentUser.company.id;
+            var allDetails = this.medicalEditTabs[this.saveTemplateIndex].content.recipelDetailEvtList;
+            var filteredDetails = allDetails.filter(function(d) {
+              if (d.drugStuffId && d.drugStuffId.drug && d.drugStuffId.drug.company) {
+                return d.drugStuffId.drug.company.id === currentCompanyId;
+              }
+              if (d.drugStuffId && d.drugStuffId.stuff && d.drugStuffId.stuff.company) {
+                return d.drugStuffId.stuff.company.id === currentCompanyId;
+              }
+              if (d.drugStuffId && d.drugStuffId.costItem && d.drugStuffId.costItem.company) {
+                return d.drugStuffId.costItem.company.id === currentCompanyId;
+              }
+              return true;
+            });
+            this.saveTemplateBizFormModel.recipeTemplateDetail = filteredDetails;
             allSave(this.saveTemplateBizFormModel)
               .then((responseData) => {
                 if (responseData.code === 100) {
@@ -4223,8 +4233,22 @@
       },
 
       invoking2(row) {
+        // 诊所级隔离：过滤掉非本诊所的模板详情
+        var currentCompanyId = currentUser.company.id;
+        var safeDetails = (row.recipeTemplateDetail || []).filter(function(d) {
+          if (d.drugStuffId && d.drugStuffId.drug && d.drugStuffId.drug.company) {
+            return d.drugStuffId.drug.company.id === currentCompanyId;
+          }
+          if (d.drugStuffId && d.drugStuffId.stuff && d.drugStuffId.stuff.company) {
+            return d.drugStuffId.stuff.company.id === currentCompanyId;
+          }
+          if (d.drugStuffId && d.drugStuffId.costItem && d.drugStuffId.costItem.company) {
+            return d.drugStuffId.costItem.company.id === currentCompanyId;
+          }
+          return true;
+        });
         if (this.medicalEditTabs[this.singleRecipel].type === "recipelType_0") {
-          let recipelDetailEvtLists = row.recipeTemplateDetail.filter(
+          let recipelDetailEvtLists = safeDetails.filter(
             (item) => item.isExtra === 0
           );
           if (
@@ -4243,7 +4267,7 @@
             .length === 0
         ) {
           this.medicalEditTabs[this.singleRecipel].content.recipelDetailEvtList =
-            row.recipeTemplateDetail;
+            safeDetails;
           setTimeout(() => {
             this.MedicalCalculate();
           }, 0);
@@ -4251,7 +4275,7 @@
           this.medicalEditTabs[this.singleRecipel].type === "recipelType_0"
         ) {
           this.medicalEditTabs[this.singleRecipel].content.recipelDetailEvtList =
-            row.recipeTemplateDetail;
+            safeDetails;
           setTimeout(() => {
             this.MedicalCalculate();
           }, 0);
@@ -4259,7 +4283,7 @@
           this.medicalEditTabs[this.singleRecipel].type === "recipelType_2"
         ) {
           this.medicalEditTabs[this.singleRecipel].content.recipelDetailEvtList =
-            row.recipeTemplateDetail;
+            safeDetails;
           setTimeout(() => {
             this.MedicalCalculate();
           }, 0);
@@ -4272,7 +4296,7 @@
             .then(() => {
               this.medicalEditTabs[
                 this.singleRecipel
-                ].content.recipelDetailEvtList = row.recipeTemplateDetail;
+                ].content.recipelDetailEvtList = safeDetails;
               setTimeout(() => {
                 this.MedicalCalculate();
               }, 0);
@@ -4280,7 +4304,7 @@
             .catch(() => {
               let flag = true;
               let arr = [];
-              row.recipeTemplateDetail.forEach((item) => {
+              safeDetails.forEach((item) => {
                 this.medicalEditTabs[
                   this.singleRecipel
                   ].content.recipelDetailEvtList = this.medicalEditTabs[

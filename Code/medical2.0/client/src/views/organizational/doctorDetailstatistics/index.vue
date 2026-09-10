@@ -20,7 +20,6 @@
                   start-placeholder="开始日期"
                   end-placeholder="结束日期"
                   :default-time="['00:00:00', '23:59:59']"
-                  value-format="yyyy-MM-dd HH:mm:ss"
                   format="yyyy-MM-dd HH:mm:ss"
                 >
                 </el-date-picker>
@@ -457,9 +456,9 @@ export default {
   },
   watch: {},
   mounted() {
-    this.initOptions()
+    // reportViewMixin.mounted() 已调用 this.pageInit()（内含 initOptions + 数据加载），
+    // 此处仅补充加载机构列表
     this.Getcliniclist()
-    this.pageInit()
   },
 };
 </script>

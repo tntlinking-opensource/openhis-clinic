@@ -35,7 +35,6 @@
           </div>
           <div v-else-if="groupOne[idx].column && groupOne[idx].column.showType && groupOne[idx].column.showType.value === 'DateTimePicker'">
             <data-range-picker v-if="groupOne[idx].queryType === 'between' || groupOne[idx].queryType === 'not between'" v-model='groupOne[idx].value' type='datetimerange'></data-range-picker>
-            <el-date-picker v-else v-model='groupOne[idx].value' placeholder='请选择日期时间' type='datetime' value-format='yyyy-MM-dd HH:mm:ss'></el-date-picker>
           </div>
           <div v-else-if="groupOne[idx].column && groupOne[idx].column.showType && groupOne[idx].column.showType.value === 'TimePicker'">
             <el-time-picker v-if="groupOne[idx].queryType === 'between' || groupOne[idx].queryType === 'not between'" is-range v-model='groupOne[idx].value' range-separator='至' start-placeholder='开始时间' end-placeholder='结束时间' placeholder='选择时间范围' value-format='HH:mm:ss'></el-time-picker>
@@ -109,7 +108,6 @@
             </div>
             <div v-else-if="groupTwo[idx].column && groupTwo[idx].column.showType && groupTwo[idx].column.showType.value === 'DateTimePicker'">
               <data-range-picker v-if="groupTwo[idx].queryType === 'between' || groupTwo[idx].queryType === 'not between'" v-model='groupTwo[idx].value' type='datetimerange'></data-range-picker>
-              <el-date-picker v-else v-model='groupTwo[idx].value' placeholder='请选择日期时间' type='datetime' value-format='yyyy-MM-dd HH:mm:ss'></el-date-picker>
             </div>
             <div v-else-if="groupTwo[idx].column && groupTwo[idx].column.showType && groupTwo[idx].column.showType.value === 'TimePicker'">
               <el-time-picker v-if="groupTwo[idx].queryType === 'between' || groupTwo[idx].queryType === 'not between'" is-range v-model='groupTwo[idx].value' range-separator='至' start-placeholder='开始时间' end-placeholder='结束时间' placeholder='选择时间范围' value-format='HH:mm:ss'></el-time-picker>

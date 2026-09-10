@@ -112,7 +112,7 @@ export default {
       isCollapse: false,
       header: 'Jeeke demo',
       currentUsername: '',
-      userId: currentUser.id,
+      userId: window.currentUser ? window.currentUser.id : '',
 
       webSocketUrl:process.env.WEB_SOCKET_URL,
       websocket:null,

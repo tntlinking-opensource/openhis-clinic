@@ -110,7 +110,7 @@ router.afterEach((to, from) => {
 
 // 生成首页路由
 function generateIndexRouter() {
-  if (!sessionStorage.routers) {
+  if (!sessionStorage.routers || sessionStorage.getItem('indexRouterGenerated') === 'true') {
     return
   }
   let indexRouter = {
@@ -123,6 +123,7 @@ function generateIndexRouter() {
   }
   // router.addRoutes([indexRouter])
   router.addRoute('/', indexRouter)
+  sessionStorage.setItem('indexRouterGenerated', 'true')
 }
 
 // 生成嵌套路由（子路由）

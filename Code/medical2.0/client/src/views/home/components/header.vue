@@ -545,6 +545,9 @@ export default {
         });
     },
     initIndexRouter() {
+      if (sessionStorage.getItem('indexRouterGenerated') === 'true') {
+        return
+      }
       let indexRouter = {
         path: "/",
         name: "/",
@@ -552,6 +555,7 @@ export default {
         children: [...this.generateChildRouters()],
       };
       this.$router.addRoute("/", indexRouter);
+      sessionStorage.setItem('indexRouterGenerated', 'true')
     },
     generateChildRouters() {
       let routers = getLocalRouters();

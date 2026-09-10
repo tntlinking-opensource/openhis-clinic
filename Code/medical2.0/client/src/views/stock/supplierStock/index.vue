@@ -1112,7 +1112,6 @@ export default {
   extends: MainUI,
   components: {
     SupplierStockForm,
-    QueryForm,
     History,
   },
   data() {
@@ -1364,7 +1363,7 @@ export default {
 
       //根据患者id获取会员信息
         getByPatientId(this.patientInfoRow.patientId.id).then(res=>{
-          if(res.code==='100'){
+          if(res.code === 100){
             this.allMember=res.data
           }else{
             this.$message.error("后台数据异常请联系管理！")
@@ -1807,7 +1806,7 @@ export default {
             this.GetDispensingTable();
             this.buttonState = false;
             this.$message.success("操作成功！");
-          }else if(responseData.code==='50001'){
+          }else if(responseData.code === 50001){
             this.$message.warning(responseData.msg)
           }
           else {

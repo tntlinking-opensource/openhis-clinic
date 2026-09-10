@@ -916,11 +916,11 @@ export default {
           }
             this.setLoad();
             getBatchNumberStuff(this.stuffSearch).then((res) => {
-                if(res.code==="100"){
+                if(res.code===100){
                     this.stuffList=res.data.rows
                     this.dispensingTotal = res.data.total
                     getStuffSalesStatNumber(this.stuffSearch).then((res)=>{
-                    if(res.code==="100"){
+                    if(res.code===100){
                         this.allTotal = res.data
                         this.resetLoad();
                     }
@@ -1050,11 +1050,11 @@ export default {
           }
             this.setLoad();
             getStuff(this.stuffSearch).then((res) => {
-                if(res.code==="100"){
+                if(res.code===100){
                     this.stuffList=res.data.rows
                     this.dispensingTotal = res.data.total
                     getStuffSalesStat(salesSearch).then((res)=>{
-                    if(res.code==="100"){
+                    if(res.code===100){
                         this.allTotal = res.data
                         this.resetLoad();
                     }
@@ -1175,11 +1175,11 @@ export default {
           }
       this.setLoad();
       getDrug(this.search).then((res) => {
-          if(res.code==="100"){
+          if(res.code===100){
              this.dispensingList=res.data.rows
             this.dispensingTotal = res.data.total
             getDrugSalesStat(this.search).then((res)=>{
-              if(res.code==="100"){
+              if(res.code===100){
                   this.allTotal = res.data
                  this.resetLoad();
               }
@@ -1296,11 +1296,11 @@ export default {
 
         this.setLoad();
      getBatchNumberDrug(this.search).then((res) => {
-          if(res.code==="100"){
+          if(res.code===100){
              this.dispensingList=res.data.rows
             this.dispensingTotal = res.data.total
             getDrugSalesStatByNumber(this.search).then((res)=>{
-              if(res.code==="100"){
+              if(res.code===100){
                   this.allTotal = res.data
                  this.resetLoad();
               }
