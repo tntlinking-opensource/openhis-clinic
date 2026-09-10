@@ -251,7 +251,6 @@ export default {
         this.pushDataPermissions(params, this.$route.meta.routerId, '41040096140492800')
 
         this.search.params = []
-        this.appendSearchParams()
 
         let [treeCompanyRespData, listPermissionRespData] = await Promise.all([
           treeCompany({params: params, columnName: '', order: ''}),

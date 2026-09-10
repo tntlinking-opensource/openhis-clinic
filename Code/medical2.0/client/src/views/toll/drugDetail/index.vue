@@ -19,7 +19,6 @@
                 start-placeholder="开始日期"
                 end-placeholder="结束日期"
                 :default-time="['00:00:00', '23:59:59']"
-                value-format="yyyy-MM-dd HH:mm:ss"
                 format="yyyy-MM-dd HH:mm:ss"
               >
               </el-date-picker>
@@ -194,6 +193,7 @@
 import reportViewMixin from '@/mixins/reportViewMixin'
 import { BigNumber } from "bignumber.js";
 import { getDrugSales, getDrugSalesStat, exportExcel } from "@/api/toll/drugDetail";
+import { validatenull } from "@/utils/validate";
 export default {
   mixins: [reportViewMixin],
   data() {
@@ -206,7 +206,7 @@ export default {
       exportColumnName: 'drugDetail',
       queryModel: {
         name: '',
-        type: '',
+        type: {},
         dateRange: [this.addCreateDate(), new Date()]
       },
     };
@@ -244,7 +244,7 @@ export default {
             arr[index] = ''
           }
       })
-      arr[5] = new BigNumber(Number(this.allTotal.allFee)).toFormat(2)+'元'
+      arr[5] = this.amountTotal && this.amountTotal.allFee ? new BigNumber(Number(this.amountTotal.allFee)).toFormat(2)+'元' : ''
       return arr
     },
     appendSearchParams() {
@@ -289,7 +289,7 @@ export default {
     resetCondition(){
       this.queryModel = {
         name: '',
-        type: '',
+        type: {},
         dateRange: [this.addCreateDate(), new Date()]
       }
       this.currentPage = 1;

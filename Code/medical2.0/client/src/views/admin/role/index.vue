@@ -259,7 +259,6 @@ export default {
       if(currentRow !== oldCurrentRow) {
         this.currentCompany = currentRow
         this.queryModel['company'] = currentRow
-        this.initOptions(this.queryModel)
         this.onSearch()
       }
     },
